@@ -2,12 +2,7 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#000000</color>
+    <color name="colorAccent">#FF4081</color>
     <color name="colorPanelMain">#000000</color>
-    <color name="colorToggleBarBright">#3c3c3c</color>
-
-    <color name="toggle_button_bg">#99222B31</color>
-    <color name="close_button_bg">#992e3940</color>
-
-    <color name="toggle_button_text">#99ffffff</color>
+    <color name="colorStatusBarText">#FFFFFFFF</color>
 </resources>

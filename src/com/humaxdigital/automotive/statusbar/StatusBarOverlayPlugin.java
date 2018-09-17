@@ -32,6 +32,8 @@ import android.view.ViewTreeObserver.OnComputeInternalInsetsListener;
 import com.android.systemui.plugins.OverlayPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
+import com.humaxdigital.automotive.statusbar.controllers.PanelController;
+
 @Requires(target = OverlayPlugin.class, version = OverlayPlugin.VERSION)
 public class StatusBarOverlayPlugin implements OverlayPlugin {
     private static final String TAG = "StatusBarOverlayPlugin";
@@ -42,6 +44,8 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private boolean mInputSetup;
     private boolean mCollapseDesired;
     private float mStatusBarHeight;
+
+    private PanelController mPanelController; 
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
@@ -84,18 +88,28 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
         if ( navBar instanceof ViewGroup ) {
             View navBarView = ((ViewGroup)navBar).getChildAt(0);
             mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)navBarView, false);
-
+            
+            mPanelController = new PanelController(mPluginContext, mNavBarView); 
+            /*
             ImageButton btn = mNavBarView.findViewById(R.id.btn_open_droplist); 
             if ( btn != null ) 
             {
                 btn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Log.d(TAG, "++++++++++++ onClick"); 
                         Intent intent = new Intent("com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"); 
                         mPluginContext.sendBroadcast(intent); 
                     }
                 });
+            }
+            */
+            
+            boolean is_removed_all = false;
+            while( !is_removed_all )
+            {
+                View child = ((ViewGroup)navBarView).getChildAt(0); 
+                if ( child != null ) ((ViewGroup)navBarView).removeView(child); 
+                else is_removed_all = true;
             }
             ((ViewGroup)navBarView).addView(mNavBarView);
         }

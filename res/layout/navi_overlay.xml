@@ -1,32 +1,355 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-** Copyright 2016, The Android Open Source Project
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
--->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPanelMain"
     >
-    <ImageButton
-        android:id="@+id/btn_open_droplist"
-        android:layout_width="@dimen/toggle_button_width"
-        android:layout_height="@dimen/toggle_button_height"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/shape_button_toggle_bg"
-        android:padding="0dp"
-        android:src="@drawable/ic_droplist"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/co_bg_title_bar"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="36">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="10"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5" />
+
+            <FrameLayout
+                android:id="@+id/layout_userprofile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="20">
+
+                <com.humaxdigital.automotive.statusbar.ui.UserProfileView
+                    android:id="@+id/img_useprofile"
+                    android:layout_width="@dimen/userprofile_width"
+                    android:layout_height="@dimen/userprofile_height"
+                    android:layout_gravity="center"
+                    android:scaleType="fitXY" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/layout_date"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="35">
+
+                <com.humaxdigital.automotive.statusbar.ui.DateView
+                    android:id="@+id/text_date"
+                    android:layout_width="@dimen/date_width"
+                    android:layout_height="@dimen/date_height"
+                    android:layout_gravity="center"
+                    android:textColor="@color/colorStatusBarText"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="40" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/layout_climate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="16">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:weightSum="64">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4" />
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
+                        android:id="@+id/img_climate_temperature_out"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateAirView
+                        android:id="@+id/img_climate_cooler"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateModeView
+                        android:id="@+id/img_climate_mode"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateBlowerView
+                        android:id="@+id/img_climate_blower"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateACView
+                        android:id="@+id/img_climate_ac"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateAirView
+                        android:id="@+id/img_climate_heater"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/climate_icon_margin"
+                    android:layout_marginLeft="@dimen/climate_icon_margin"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
+                        android:id="@+id/img_climate_temperature_in"
+                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_height="@dimen/climate_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_system"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="10"
+            android:orientation="vertical"
+            android:weightSum="90">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="27">
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:weightSum="475"
+                android:layout_weight="36"
+                android:gravity="right"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_1"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_2"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_3"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_4"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_5"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_6"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_7"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_8"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="@dimen/status_icon_margin"
+                    android:layout_gravity="right"
+                    android:layout_weight="51">
+                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
+                        android:id="@+id/img_status_9"
+                        android:layout_width="@dimen/status_icon_width"
+                        android:layout_height="@dimen/status_icon_height"
+                        android:layout_gravity="center"
+                        android:scaleType="fitXY" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="27">
+            </FrameLayout>
+
+        </LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>

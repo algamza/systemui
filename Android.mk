@@ -26,6 +26,8 @@ LOCAL_USE_AAPT2 := true
 
 LOCAL_JAVA_LIBRARIES += \
 	android.car \
+	android-support-v7-preference \
+	android-support-v14-preference \
 	SystemUIPluginLib \
 
 LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
@@ -39,5 +41,7 @@ LOCAL_PROGUARD_ENABLED := disabled
 LOCAL_PRIVILEGED_MODULE := true
 
 LOCAL_DEX_PREOPT := false
+
+LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 
 include $(BUILD_PACKAGE)
