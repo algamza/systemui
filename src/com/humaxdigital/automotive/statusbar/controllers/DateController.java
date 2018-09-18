@@ -4,16 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.icu.text.DateFormat;
-import android.icu.text.DisplayContext;
 import android.provider.Settings;
 import android.view.View;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.text.DateFormat;
 
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.DateView;
 
-import java.util.Date;
-import java.util.Locale;
 
 public class DateController {
     private Context mContext;
@@ -21,6 +21,8 @@ public class DateController {
 
     public DateController(Context context, View view) {
         mContext = context;
+        if ( mContext == null ) return;
+
         initView(view);
         initClock();
     }
@@ -34,9 +36,7 @@ public class DateController {
             }
         });
         mDateVew = view.findViewById(R.id.text_date);
-
-        // test code
-        updateClockUI("19:20 PM");
+        updateClockUI(getCurrentTime());
     }
 
     private void updateClockUI(String time) {
@@ -44,11 +44,29 @@ public class DateController {
     }
 
     private void initClock() {
-        if ( mContext == null) return;
+        if ( mContext == null ) return;
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_TIME_TICK);
+        filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+        filter.addAction(Intent.ACTION_TIME_CHANGED);
+        mContext.registerReceiver(mDateTimeChangedReceiver, filter);
     }
 
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
+        mContext.unregisterReceiver(mDateTimeChangedReceiver);
+    }
+
+    private final BroadcastReceiver mDateTimeChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateClockUI(getCurrentTime());
+        }
+    };
+
+    private String getCurrentTime() {
+        DateFormat df = new SimpleDateFormat("h:mm a");
+        return df.format(Calendar.getInstance().getTime());
     }
 }

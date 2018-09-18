@@ -56,7 +56,9 @@
                     android:layout_width="@dimen/date_width"
                     android:layout_height="@dimen/date_height"
                     android:layout_gravity="center"
-                    android:textColor="@color/colorStatusBarText"/>
+                    android:textSize="@dimen/date_text_size"
+                    android:textColor="@color/colorStatusBarText"
+                    android:gravity="center_horizontal|center_vertical" />
 
             </FrameLayout>
 
@@ -93,9 +95,12 @@
 
                     <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
                         android:id="@+id/img_climate_temperature_out"
-                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_width="@dimen/climate_icon_text_width"
                         android:layout_height="@dimen/climate_icon_height"
                         android:layout_gravity="center"
+                        android:textSize="@dimen/climate_text_size"
+                        android:textColor="@color/colorStatusBarText"
+                        android:gravity="center_horizontal|center_vertical"
                         android:scaleType="fitXY" />
                 </FrameLayout>
 
@@ -135,9 +140,12 @@
                     android:layout_weight="8">
                     <com.humaxdigital.automotive.statusbar.ui.ClimateBlowerView
                         android:id="@+id/img_climate_blower"
-                        android:layout_width="@dimen/climate_icon_width"
+                        android:layout_width="@dimen/climate_icon_text_width"
                         android:layout_height="@dimen/climate_icon_height"
                         android:layout_gravity="center"
+                        android:textSize="@dimen/climate_text_size"
+                        android:textColor="@color/colorStatusBarText"
+                        android:gravity="center_horizontal|center_vertical"
                         android:scaleType="fitXY" />
                 </FrameLayout>
 
@@ -180,6 +188,9 @@
                         android:layout_width="@dimen/climate_icon_width"
                         android:layout_height="@dimen/climate_icon_height"
                         android:layout_gravity="center"
+                        android:textSize="@dimen/climate_text_size"
+                        android:textColor="@color/colorStatusBarText"
+                        android:gravity="center_horizontal|center_vertical"
                         android:scaleType="fitXY" />
                 </FrameLayout>
 
