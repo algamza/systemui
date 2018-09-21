@@ -34,14 +34,6 @@
         android:protectionLevel="signature" />
 
     <application>
-    <!-- 
-        <activity android:name=".PluginSettings"
-            android:label="@string/plugin_label">
-            <intent-filter>
-                <action android:name="com.android.systemui.action.PLUGIN_SETTINGS" />
-            </intent-filter>
-        </activity>
-    -->
 
         <service android:name=".StatusBarOverlayPlugin"
             android:label="@string/plugin_label">
