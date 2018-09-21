@@ -26,10 +26,20 @@ LOCAL_USE_AAPT2 := true
 
 LOCAL_JAVA_LIBRARIES += \
 	android.car \
-	android-support-v7-preference \
-	android-support-v14-preference \
 	SystemUIPluginLib \
 
+LOCAL_STATIC_ANDROID_LIBRARIES := \
+	android-support-car \
+	android-support-v7-preference \
+	android-support-v14-preference \
+	android-arch-lifecycle-extensions \
+	car-list \
+	car-settings-lib \
+	setup-wizard-lib-gingerbread-compat \
+	SettingsLib \
+
+LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
+	  
 LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
 
 LOCAL_CERTIFICATE := platform
@@ -42,6 +52,5 @@ LOCAL_PRIVILEGED_MODULE := true
 
 LOCAL_DEX_PREOPT := false
 
-LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 
 include $(BUILD_PACKAGE)

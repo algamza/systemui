@@ -17,8 +17,7 @@ public class PanelController {
     }
 
     private void initControllers(Context context, View panel) {
-
-        if ( panel == null ) return;
+        if ( (panel == null) || (context == null) ) return;
         mClimate = new ClimateController(context, panel.findViewById(R.id.layout_climate));
         mDate = new DateController(context, panel.findViewById(R.id.layout_date));
         mSystem = new SystemStatusController(context, panel.findViewById(R.id.layout_system));

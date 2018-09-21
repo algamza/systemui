@@ -13,6 +13,7 @@ import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.StatusIconView;
 
 public class SystemStatusController {
+    private final String ACTION_OPENDL = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST";
     private Context mContext;
     private Resources mRes;
     private View mStatusBar;
@@ -48,7 +49,7 @@ public class SystemStatusController {
         mStatusBar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent("com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"); 
+                Intent intent = new Intent(ACTION_OPENDL); 
                 if ( mContext != null ) mContext.sendBroadcast(intent); 
             }
         });

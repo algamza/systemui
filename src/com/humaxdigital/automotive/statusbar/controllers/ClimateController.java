@@ -7,6 +7,8 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.View;
 
+import android.content.Intent;
+
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.ClimateACView;
 import com.humaxdigital.automotive.statusbar.ui.ClimateAirView;
@@ -46,7 +48,8 @@ public class ClimateController {
             @Override
             public void onClick(View view) {
                 // open Climate full Screen
-                Log.d("TEST", "###### Open Climate Application");
+                Intent intent = new Intent("android.car.intent.action.TOGGLE_HVAC_CONTROLS"); 
+                if ( mContext != null ) mContext.sendBroadcast(intent); 
             }
         });
 
