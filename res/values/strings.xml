@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">statusbar</string>
+    <string name="plugin_label">statusbar plugin</string>
 </resources>
