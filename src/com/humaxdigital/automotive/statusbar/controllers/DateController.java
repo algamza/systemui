@@ -18,6 +18,7 @@ import com.humaxdigital.automotive.statusbar.ui.DateView;
 public class DateController {
     private Context mContext;
     private DateView mDateVew;
+    private DateView mDateNoonView;
 
     public DateController(Context context, View view) {
         mContext = context;
@@ -32,15 +33,32 @@ public class DateController {
             @Override
             public void onClick(View view) {
                 if ( view == null ) return;
-                view.getContext().startActivity(new Intent(Settings.ACTION_DATE_SETTINGS));
+                // todo : start custom date setting activity 
+                // Intent intent = new Intent(Settings.ACTION_DATE_SETTINGS); 
+                // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP); 
+                // if ( mContext != null ) mContext.startActivity(intent);
             }
         });
-        mDateVew = view.findViewById(R.id.text_date);
+        mDateVew = view.findViewById(R.id.text_date_time);
+        mDateNoonView = view.findViewById(R.id.text_date_noon);
+
         updateClockUI(getCurrentTime());
     }
 
     private void updateClockUI(String time) {
-        if ( mDateVew != null ) mDateVew.setText(time);
+        if ( mDateVew == null || mDateNoonView == null ) return;
+        String date = "";
+        String noon = "";
+        if ( time.contains("AM") ) {
+            date = time.substring(0, time.indexOf("AM"));
+            noon = "AM";
+        }
+        else if ( time.contains("PM") ) {
+            date = time.substring(0, time.indexOf("PM"));
+            noon = "PM";
+        }
+        mDateVew.setText(date);
+        mDateNoonView.setText(noon);
     }
 
     private void initClock() {

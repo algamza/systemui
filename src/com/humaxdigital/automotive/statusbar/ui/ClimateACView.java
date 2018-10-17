@@ -28,7 +28,7 @@ public class ClimateACView extends ImageView {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void setIcon(int key, Drawable icon) {
+    public void addIcon(int key, Drawable icon) {
         mIcons.put(key, icon);
     }
 

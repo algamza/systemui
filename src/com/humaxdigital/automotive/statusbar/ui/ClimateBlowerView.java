@@ -22,10 +22,6 @@ public class ClimateBlowerView extends ImageView {
         super(context, attrs, defStyleAttr);
     }
 
-    public ClimateBlowerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
     public void setIcon(Drawable drawable) {
         mIcon = drawable;
         setImageDrawable(mIcon);

@@ -23,10 +23,6 @@ public class StatusIconView extends ImageView {
         super(context, attrs, defStyleAttr);
     }
 
-    public StatusIconView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
     public void setIcon(int key, Drawable icon) {
         mIcons.put(key, icon);
     }

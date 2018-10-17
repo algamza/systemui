@@ -4,5 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="colorPanelMain">#000000</color>
-    <color name="colorStatusBarText">#FFFFFFFF</color>
+    <color name="colorStatusBarText">#ffffff</color>
+    <color name="colorClimateText">#ffffff</color>
 </resources>

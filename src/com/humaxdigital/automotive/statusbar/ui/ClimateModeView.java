@@ -24,11 +24,7 @@ public class ClimateModeView extends ImageView {
         super(context, attrs, defStyleAttr);
     }
 
-    public ClimateModeView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
-    public void setIcon(int key, Drawable icon) {
+    public void addIcon(int key, Drawable icon) {
         mIcons.put(key, icon);
     }
 

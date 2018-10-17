@@ -47,6 +47,7 @@ public class UserProfileController {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // todo : open user setting 
                 //Intent intent = new Intent("android.car.settings.ADD_ACCOUNT_SETTINGS"); 
                 //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 //if ( mContext != null ) mContext.startActivity(intent); 

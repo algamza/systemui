@@ -44,6 +44,7 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private boolean mInputSetup;
     private boolean mCollapseDesired;
     private float mStatusBarHeight;
+    private View mNavBarViewGroup;
 
     private PanelController mPanelController; 
 
@@ -86,32 +87,31 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
         }
 
         if ( navBar instanceof ViewGroup ) {
-            View navBarView = ((ViewGroup)navBar).getChildAt(0);
-            mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)navBarView, false);
-            
-            mPanelController = new PanelController(mPluginContext, mNavBarView); 
-            /*
-            ImageButton btn = mNavBarView.findViewById(R.id.btn_open_droplist); 
-            if ( btn != null ) 
-            {
-                btn.setOnClickListener(new View.OnClickListener() {
+            mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);
+            mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)mNavBarViewGroup, false);
+            if ( mNavBarView != null ) {
+                mPanelController = new PanelController(mPluginContext, mNavBarView); 
+
+                // todo : test code : The listener should be cleared.
+                mNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent("com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"); 
-                        mPluginContext.sendBroadcast(intent); 
+                    public boolean onLongClick(View v) {
+                        if ( mNavBarViewGroup != null && mNavBarView != null )
+                            ((ViewGroup)mNavBarViewGroup).removeView(mNavBarView); 
+                        return true;
                     }
                 });
+                /*
+                boolean is_removed_all = false;
+                while( !is_removed_all )
+                {
+                    View child = ((ViewGroup)navBarView).getChildAt(0); 
+                    if ( child != null ) ((ViewGroup)navBarView).removeView(child); 
+                    else is_removed_all = true;
+                }
+                */
+                ((ViewGroup)mNavBarViewGroup).addView(mNavBarView);
             }
-            */
-            
-            boolean is_removed_all = false;
-            while( !is_removed_all )
-            {
-                View child = ((ViewGroup)navBarView).getChildAt(0); 
-                if ( child != null ) ((ViewGroup)navBarView).removeView(child); 
-                else is_removed_all = true;
-            }
-            ((ViewGroup)navBarView).addView(mNavBarView);
         }
         
         /*
