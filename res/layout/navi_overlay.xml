@@ -69,7 +69,7 @@
                             android:id="@+id/text_date_time"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="@dimen/date_text"
+                            android:textSize="@dimen/text_date"
                             android:layout_gravity="bottom|center_horizontal"
                             android:textColor="@color/colorStatusBarText"/>
                     </FrameLayout>
@@ -95,7 +95,7 @@
                                 android:id="@+id/text_date_noon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="@dimen/date_noon_text"
+                                android:textSize="@dimen/text_date_noon"
                                 android:layout_gravity="bottom|left"
                                 android:textColor="@color/colorStatusBarText"/>
                         </FrameLayout>
@@ -144,12 +144,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="52">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
-                            android:id="@+id/img_climate_temperature_out_large"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                            android:id="@+id/climate_temp_dr_int"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="right|center_vertical"
-                            android:textSize="@dimen/climate_text_size_temp_large"
+                            android:textSize="@dimen/text_climate_temp_int"
                             android:textColor="@color/colorClimateText"
                             />
                     </FrameLayout>
@@ -176,12 +176,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="34" >
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
-                            android:id="@+id/img_climate_temperature_out_small"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                            android:id="@+id/climate_temp_dr_dec"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="left|center_vertical"
-                            android:textSize="@dimen/climate_text_size_temp_small"
+                            android:textSize="@dimen/text_climate_temp_dec"
                             android:textColor="@color/colorClimateText"
                             />
                     </FrameLayout>
@@ -215,8 +215,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="94">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateSeatView
-                            android:id="@+id/img_climate_seat_left"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                            android:id="@+id/climate_seat_dr"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical|center_horizontal" />
@@ -229,8 +229,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="94">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateModeView
-                            android:id="@+id/img_climate_mode"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                            android:id="@+id/climate_intake"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal|center_vertical" />
@@ -243,8 +243,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="94">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateACView
-                            android:id="@+id/img_climate_ac"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                            android:id="@+id/climate_mode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical|center_horizontal" />
@@ -263,8 +263,8 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="37">
-                            <com.humaxdigital.automotive.statusbar.ui.ClimateBlowerView
-                                android:id="@+id/img_climate_blower"
+                            <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                                android:id="@+id/climate_blower_img"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal|center_vertical" />
@@ -277,13 +277,13 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="33">
-                            <com.humaxdigital.automotive.statusbar.ui.ClimateBlowerTextView
-                                android:id="@+id/img_climate_blower_text"
+                            <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                                android:id="@+id/climate_blower_text"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="left|center_vertical"
                                 android:textColor="@color/colorClimateText"
-                                android:textSize="@dimen/climate_text_size_wind"/>
+                                android:textSize="@dimen/text_climate_wind"/>
                         </FrameLayout>
                     </LinearLayout>
                     <FrameLayout
@@ -294,8 +294,8 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="94">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateSeatView
-                            android:id="@+id/img_climate_seat_right"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                            android:id="@+id/climate_seat_ps"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical|center_horizontal" />
@@ -330,12 +330,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="52">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
-                            android:id="@+id/img_climate_temperature_in_large"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                            android:id="@+id/climate_temp_ps_int"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="right|center_vertical"
-                            android:textSize="@dimen/climate_text_size_temp_large"
+                            android:textSize="@dimen/text_climate_temp_int"
                             android:textColor="@color/colorClimateText"
                             />
                     </FrameLayout>
@@ -362,12 +362,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="34" >
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateTemperatureView
-                            android:id="@+id/img_climate_temperature_in_small"
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                            android:id="@+id/climate_temp_ps_dec"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="left|center_vertical"
-                            android:textSize="@dimen/climate_text_size_temp_small"
+                            android:textSize="@dimen/text_climate_temp_dec"
                             android:textColor="@color/colorClimateText"
                             />
                     </FrameLayout>
@@ -378,7 +378,7 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-        
+
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
