@@ -32,14 +32,20 @@
         android:protectionLevel="signature" />
 
     <application>
-
         <service android:name=".StatusBarOverlayPlugin"
             android:label="@string/plugin_label">
             <intent-filter>
                 <action android:name="com.android.systemui.action.PLUGIN_OVERLAY" />
             </intent-filter>
         </service>
-
+        <service 
+            android:name=".StatusBarService"
+            android:exported="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="com.humaxdigital.automotive.statusbar.StatusBarService"></action>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

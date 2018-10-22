@@ -23,7 +23,9 @@ import android.util.Log;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.UserProfileView;
 
-public class UserProfileController {
+import com.humaxdigital.automotive.statusbar.IStatusBarService;
+
+public class UserProfileController implements BaseController {
     private Context mContext;
     private UserProfileView mUserProfileView;
     private Drawable mUserImage;
@@ -42,6 +44,22 @@ public class UserProfileController {
         initUserProfile(); 
         initView(view);
     }
+    
+    @Override
+    public void init(IStatusBarService service) {
+
+    }
+    
+    @Override
+    public void deinit() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
     private void initView(View view) {
         if ( view == null ) return;
         view.setOnClickListener(new View.OnClickListener() {

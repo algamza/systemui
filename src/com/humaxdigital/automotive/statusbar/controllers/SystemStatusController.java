@@ -17,7 +17,9 @@ import android.util.Log;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.StatusIconView;
 
-public class SystemStatusController {
+import com.humaxdigital.automotive.statusbar.IStatusBarService;
+
+public class SystemStatusController implements BaseController {
     private final String ACTION_OPENDL = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST";
     private Context mContext;
     private Resources mRes;
@@ -51,6 +53,21 @@ public class SystemStatusController {
         mStatusBar = view;
         initManager(mContext); 
         initView();
+    }
+
+    @Override
+    public void init(IStatusBarService service) {
+
+    }
+
+    @Override
+    public void deinit() {
+
+    }
+
+    @Override
+    public void update() {
+
     }
 
     @Override

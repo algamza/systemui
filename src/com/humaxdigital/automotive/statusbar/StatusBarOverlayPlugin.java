@@ -20,19 +20,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.content.ComponentName;
+import android.os.Handler;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.os.RemoteException;
 
 import android.view.ViewTreeObserver.InternalInsetsInfo;
 import android.view.ViewTreeObserver.OnComputeInternalInsetsListener;
 import com.android.systemui.plugins.OverlayPlugin;
 import com.android.systemui.plugins.annotations.Requires;
-
-import com.humaxdigital.automotive.statusbar.controllers.PanelController;
 
 @Requires(target = OverlayPlugin.class, version = OverlayPlugin.VERSION)
 public class StatusBarOverlayPlugin implements OverlayPlugin {
@@ -46,21 +46,18 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private float mStatusBarHeight;
     private View mNavBarViewGroup;
 
-    private PanelController mPanelController; 
+    private ControllerManager mControllerManager; 
+
+    IStatusBarService mStatusBarService;
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
         mPluginContext = pluginContext;
+        startStatusBarService(mPluginContext); 
     }
 
     @Override
     public void onDestroy() {
-        /*
-        if (mInputSetup) {
-            mStatusBarView.getViewTreeObserver().removeOnComputeInternalInsetsListener(
-                    onComputeInternalInsetsListener);
-        }
-        */
         Log.d(TAG, "onDestroy");
         if (mStatusBarView != null) {
             mStatusBarView.post(
@@ -69,6 +66,8 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
         if (mNavBarView != null) {
             mNavBarView.post(() -> ((ViewGroup) mNavBarView.getParent()).removeView(mNavBarView));
         }
+
+        if ( mPluginContext != null ) mPluginContext.unbindService(mServiceConnection);
     }
 
     @Override
@@ -90,7 +89,7 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
             mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);
             mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)mNavBarViewGroup, false);
             if ( mNavBarView != null ) {
-                mPanelController = new PanelController(mPluginContext, mNavBarView); 
+                mControllerManager = new ControllerManager(mPluginContext, mNavBarView); 
 
                 // todo : test code : The listener should be cleared.
                 mNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -113,22 +112,6 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 ((ViewGroup)mNavBarViewGroup).addView(mNavBarView);
             }
         }
-        
-        /*
-        if (navBar instanceof ViewGroup) {
-            Log.d(TAG, "++++++++++ has navBar"); 
-            mNavBarView = LayoutInflater.from(mPluginContext)
-                    .inflate(R.layout.navi_overlay, (ViewGroup) navBar, false);
-            ((ViewGroup) navBar).addView(mNavBarView);
-        }
-        */
-
-        //ViewGroup parent = (ViewGroup)navBar.getParent(); 
-        //((ViewGroup)navBar.getParent()).removeView(navBar); 
-
-        //parent.addView(mNavBarView);
-        //mButton = (Button)mNavBarView.findViewById(R.id.button);
-        //mButton.setOnClickListener(mButtonClickListener);
     }
 
     @Override
@@ -148,12 +131,62 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
         return false;
     }
 
+    private void startStatusBarService(Context context){
+        if ( context == null ) return; 
+        Intent intent = new Intent().setAction("com.humaxdigital.automotive.statusbar.StatusBarService");
+        intent.setPackage("com.humaxdigital.automotive.statusbar"); 
+        context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE); 
+    }
+
     final OnComputeInternalInsetsListener onComputeInternalInsetsListener = inoutInfo -> {
         inoutInfo.setTouchableInsets(InternalInsetsInfo.TOUCHABLE_INSETS_REGION);
         if (mCollapseDesired) {
             inoutInfo.touchableRegion.set(new Rect(0, 0, 50000, (int) mStatusBarHeight));
         } else {
             inoutInfo.touchableRegion.set(new Rect(0, 0, 50000, 50000)); 
+        }
+    };
+
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            
+            if ( service == null ) return;
+
+            mStatusBarService = IStatusBarService.Stub.asInterface(service); 
+            
+            try {
+                mStatusBarService.registerStatusBarCallback(mBinderStatusBarCallback);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            if ( mControllerManager != null ) mControllerManager.deinit();
+            
+            if ( mStatusBarService != null ) {
+                try {
+                    mStatusBarService.unregisterStatusBarCallback(mBinderStatusBarCallback);
+                    mStatusBarService = null; 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
+    private final IStatusBarCallback.Stub mBinderStatusBarCallback = new IStatusBarCallback.Stub() {
+        @Override
+        public void onInitialized() throws RemoteException {
+            
+            if ( mControllerManager != null ) mControllerManager.init(mStatusBarService); 
+        }
+
+        @Override
+        public void onUpdated() throws RemoteException {
+            if ( mControllerManager != null ) mControllerManager.update(); 
         }
     };
 }

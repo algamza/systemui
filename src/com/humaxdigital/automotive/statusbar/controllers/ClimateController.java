@@ -13,7 +13,9 @@ import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.ClimateText;
 import com.humaxdigital.automotive.statusbar.ui.ClimateView;
 
-public class ClimateController {
+import com.humaxdigital.automotive.statusbar.IStatusBarService;
+
+public class ClimateController implements BaseController {
     private enum SeatState {
         HEATER3,
         HEATER2,
@@ -77,6 +79,22 @@ public class ClimateController {
         mClimate = view;
         initView();
     }
+
+    @Override
+    public void init(IStatusBarService service) {
+
+    }
+
+    @Override
+    public void deinit() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
     private void initView() {
         if ( mClimate == null ) return;
         mClimate.setOnClickListener(new View.OnClickListener() {

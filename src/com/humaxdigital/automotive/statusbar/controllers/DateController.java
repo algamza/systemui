@@ -14,8 +14,9 @@ import java.text.DateFormat;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.DateView;
 
+import com.humaxdigital.automotive.statusbar.IStatusBarService;
 
-public class DateController {
+public class DateController implements BaseController {
     private Context mContext;
     private DateView mDateVew;
     private DateView mDateNoonView;
@@ -27,6 +28,22 @@ public class DateController {
         initView(view);
         initClock();
     }
+
+    @Override
+    public void init(IStatusBarService service) {
+
+    }
+
+    @Override
+    public void deinit() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
     private void initView(View view) {
         if ( view == null ) return;
         view.setOnClickListener(new View.OnClickListener() {
