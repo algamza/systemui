@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.statusbar;
+package com.humaxdigital.automotive.statusbar.service;
 
 oneway interface IStatusBarCallback {
     void onInitialized();

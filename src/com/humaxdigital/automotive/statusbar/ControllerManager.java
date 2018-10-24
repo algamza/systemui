@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.humaxdigital.automotive.statusbar.R;
-import com.humaxdigital.automotive.statusbar.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 
 import com.humaxdigital.automotive.statusbar.controllers.BaseController;
 import com.humaxdigital.automotive.statusbar.controllers.ClimateController;

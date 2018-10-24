@@ -5,50 +5,24 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
-import android.util.Log;
 import android.view.View;
+import android.os.RemoteException;
 
 import com.humaxdigital.automotive.statusbar.R;
 
 import com.humaxdigital.automotive.statusbar.ui.ClimateText;
 import com.humaxdigital.automotive.statusbar.ui.ClimateView;
 
-import com.humaxdigital.automotive.statusbar.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.IClimateCallback; 
 
 public class ClimateController implements BaseController {
-    private enum SeatState {
-        HEATER3,
-        HEATER2,
-        HEATER1,
-        NONE,
-        COOLER1,
-        COOLER2,
-        COOLER3
-    };
+    private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
+    private enum IntakeState { FRE, REC }
+    private enum ClimateModeState { MODE1, MODE2, MODE3, MODE4 }
+    private enum BlowerSpeed { STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
 
-    private enum IntakeState {
-        FRE,
-        REC
-    };
-
-    private enum ClimateModeState {
-        MODE1,
-        MODE2,
-        MODE3,
-        MODE4
-    };
-
-    private enum BlowerSpeed {
-        STEP1,
-        STEP2,
-        STEP3,
-        STEP4,
-        STEP5,
-        STEP6,
-        STEP7,
-        STEP8
-    };
-
+    private IStatusBarService mService; 
     private Context mContext;
     private Resources mRes;
     private View mClimate;
@@ -73,21 +47,31 @@ public class ClimateController implements BaseController {
 
 
     public ClimateController(Context context, View view) {
-        if ( view == null ) return;
+        if ( view == null || context == null ) return;
         mContext = context;
-        if ( mContext != null ) mRes = mContext.getResources();
         mClimate = view;
-        initView();
+        mRes = mContext.getResources();
     }
 
     @Override
     public void init(IStatusBarService service) {
+        mService = service; 
+        try {
+            if ( mService != null ) mService.registerClimateCallback(mClimateCallback); 
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
 
+        initView();
     }
 
     @Override
     public void deinit() {
-
+        try {
+            if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -95,34 +79,34 @@ public class ClimateController implements BaseController {
 
     }
 
+    private void openClimateSetting() {
+        if ( mService == null ) return; 
+        try {
+            mService.openClimateSetting();
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
+    }
+
     private void initView() {
         if ( mClimate == null ) return;
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // todo : open climate full screen
-                Intent intent = new Intent("android.car.intent.action.TOGGLE_HVAC_CONTROLS");
-                if ( mContext != null ) mContext.sendBroadcast(intent);
+                openClimateSetting(); 
             }
         });
 
         mTempDRIntText = mClimate.findViewById(R.id.climate_temp_dr_int);
         mTempDRDecText = mClimate.findViewById(R.id.climate_temp_dr_dec);
         if ( mTempDRIntText != null && mTempDRDecText != null ) {
-
-            // todo : get climate DR Temperature
-            mTempDR = 27.5f;
-
-            String state = String.valueOf(mTempDR);
-            if ( state.contains(".") ) {
-                String tem = state.substring(0, state.indexOf(".") );
-                String dec = state.substring(state.indexOf("."), state.length());
-                mTempDRIntText.update(tem);
-                mTempDRDecText.update(dec);
-            } else {
-                mTempDRIntText.update(state);
-                mTempDRDecText.update(".0");
+            try {
+                if ( mService != null ) mTempDR = mService.getDRTemperature();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
             }
+
+            updateUITemp(mTempDRIntText, mTempDRDecText, mTempDR);
         }
 
         mSeatDRView = mClimate.findViewById(R.id.climate_seat_dr);
@@ -145,9 +129,13 @@ public class ClimateController implements BaseController {
                 mSeatDRView.addIcon(SeatState.HEATER3.ordinal(), heater3);
             }
 
-            // todo : get climate seat DR state
-            mSeatDRState = SeatState.HEATER2;
-
+            int status = 0; 
+            try {
+                if ( mService != null ) status = mService.getDRSeatStatus();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+            mSeatDRState = SeatState.values()[status]; 
             mSeatDRView.update(mSeatDRState.ordinal());
         }
 
@@ -232,29 +220,67 @@ public class ClimateController implements BaseController {
                 mSeatPSView.addIcon(SeatState.HEATER3.ordinal(), heater3);
             }
 
-            // todo : get climate seat PS state
-            mSeatPSState = SeatState.COOLER2;
-
+            int status = 0; 
+            try {
+                if ( mService != null ) status = mService.getPSSeatStatus();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+            
+            mSeatPSState = SeatState.values()[status]; 
             mSeatPSView.update(mSeatPSState.ordinal());
         }
 
         mTempPSIntText = mClimate.findViewById(R.id.climate_temp_ps_int);
         mTempPSDecText = mClimate.findViewById(R.id.climate_temp_ps_dec);
         if ( mTempPSIntText != null && mTempPSDecText != null ) {
-
-            // todo : get climate PS Temperature
-            mTempPS = 19.0f;
-
-            String state = String.valueOf(mTempPS);
-            if ( state.contains(".") ) {
-                String tem = state.substring(0, state.indexOf(".") );
-                String dec = state.substring(state.indexOf("."), state.length());
-                mTempPSIntText.update(tem);
-                mTempPSDecText.update(dec);
-            } else {
-                mTempPSIntText.update(state);
-                mTempPSDecText.update(".0");
+            try {
+                if ( mService != null ) mTempPS = mService.getPSTemperature();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
             }
+
+            updateUITemp(mTempPSIntText, mTempPSDecText, mTempPS);
         }
     }
+
+    private void updateUITemp(ClimateText tempInt, ClimateText tempDec, float temp) {
+        String state = String.valueOf(temp);
+        if ( state.contains(".") ) {
+            String tem = state.substring(0, state.indexOf(".") );
+            String dec = state.substring(state.indexOf("."), state.length());
+            tempInt.update(tem);
+            tempDec.update(dec);
+        } else {
+            tempInt.update(state);
+            tempDec.update(".0");
+        }
+    }
+
+    private final IClimateCallback.Stub mClimateCallback = new IClimateCallback.Stub() {
+        public void onDRTemperatureChanged(float temp) throws RemoteException {
+            mTempDR = temp;
+            updateUITemp(mTempDRIntText, mTempDRDecText, mTempDR);
+        }
+        public void onDRSeatStatusChanged(int status) throws RemoteException {
+            if ( mSeatDRView == null ) return;
+            mSeatDRState = SeatState.values()[status]; 
+            mSeatDRView.update(mSeatDRState.ordinal());
+        }
+        public void onIntakeStatusChanged(int status) throws RemoteException {
+        }
+        public void onClimateModeChanged(int status) throws RemoteException {
+        }
+        public void onBlowerSpeedChanged(int status) throws RemoteException {
+        }
+        public void onPSSeatStatusChanged(int status) throws RemoteException {
+            if ( mSeatPSView == null ) return;
+            mSeatPSState = SeatState.values()[status]; 
+            mSeatPSView.update(mSeatPSState.ordinal());
+        }
+        public void onPSTemperatureChanged(float temp) throws RemoteException {
+            mTempPS = temp;
+            updateUITemp(mTempPSIntText, mTempPSDecText, mTempPS);
+        }
+    };
 }

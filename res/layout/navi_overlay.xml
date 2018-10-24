@@ -54,13 +54,15 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="27"/>
+                    android:layout_weight="23"/>
+                    <!--android:layout_weight="27"-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_weight="40"
+                    android:layout_weight="44"
                     android:weightSum="164"
                     android:orientation="horizontal">
+                    <!--android:layout_weight="40"-->
                     <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
@@ -70,7 +72,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="@dimen/text_date"
-                            android:layout_gravity="bottom|center_horizontal"
+                            android:layout_gravity="center_vertical|center_horizontal"
                             android:textColor="@color/colorStatusBarText"/>
                     </FrameLayout>
                     <FrameLayout
@@ -96,7 +98,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="@dimen/text_date_noon"
-                                android:layout_gravity="bottom|left"
+                                android:layout_gravity="center_vertical|left"
                                 android:textColor="@color/colorStatusBarText"/>
                         </FrameLayout>
                         <FrameLayout
@@ -139,11 +141,13 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="21" />
+                        android:layout_weight="13" />
+                        <!--<android:layout_weight="21">-->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="52">
+                        android:layout_weight="60">
+                        <!--android:layout_weight="52">-->
                         <com.humaxdigital.automotive.statusbar.ui.ClimateText
                             android:id="@+id/climate_temp_dr_int"
                             android:layout_width="wrap_content"
@@ -171,11 +175,13 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="36"/>
+                        android:layout_weight="31"/>
+                        <!--<android:layout_weight="36">-->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="34" >
+                        <!--<android:layout_weight="36">-->
                         <com.humaxdigital.automotive.statusbar.ui.ClimateText
                             android:id="@+id/climate_temp_dr_dec"
                             android:layout_width="wrap_content"
@@ -325,11 +331,13 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="21" />
+                        android:layout_weight="13" />
+                        <!--<android:layout_weight="21">-->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="52">
+                        android:layout_weight="60">
+                        <!--<android:layout_weight="52">-->
                         <com.humaxdigital.automotive.statusbar.ui.ClimateText
                             android:id="@+id/climate_temp_ps_int"
                             android:layout_width="wrap_content"
@@ -357,11 +365,13 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="36"/>
+                        android:layout_weight="33"/>
+                        <!--<android:layout_weight="36">-->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="34" >
+                        android:layout_weight="37" >
+                        <!--<android:layout_weight="34">-->
                         <com.humaxdigital.automotive.statusbar.ui.ClimateText
                             android:id="@+id/climate_temp_ps_dec"
                             android:layout_width="wrap_content"

@@ -34,6 +34,9 @@ import android.view.ViewTreeObserver.OnComputeInternalInsetsListener;
 import com.android.systemui.plugins.OverlayPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
+import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback; 
+
 @Requires(target = OverlayPlugin.class, version = OverlayPlugin.VERSION)
 public class StatusBarOverlayPlugin implements OverlayPlugin {
     private static final String TAG = "StatusBarOverlayPlugin";
@@ -133,7 +136,7 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
 
     private void startStatusBarService(Context context){
         if ( context == null ) return; 
-        Intent intent = new Intent().setAction("com.humaxdigital.automotive.statusbar.StatusBarService");
+        Intent intent = new Intent().setAction("com.humaxdigital.automotive.statusbar.service.StatusBarService");
         intent.setPackage("com.humaxdigital.automotive.statusbar"); 
         context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE); 
     }
@@ -157,6 +160,11 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
             
             try {
                 mStatusBarService.registerStatusBarCallback(mBinderStatusBarCallback);
+                if( mStatusBarService.isInitialized() ) {
+                    updateUIController(() -> {
+                        mControllerManager.init(mStatusBarService); 
+                    });
+                }
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -164,8 +172,10 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            if ( mControllerManager != null ) mControllerManager.deinit();
-            
+            updateUIController(() -> {
+                mControllerManager.deinit();
+            });
+
             if ( mStatusBarService != null ) {
                 try {
                     mStatusBarService.unregisterStatusBarCallback(mBinderStatusBarCallback);
@@ -180,13 +190,22 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private final IStatusBarCallback.Stub mBinderStatusBarCallback = new IStatusBarCallback.Stub() {
         @Override
         public void onInitialized() throws RemoteException {
-            
-            if ( mControllerManager != null ) mControllerManager.init(mStatusBarService); 
+            updateUIController(() -> {
+                mControllerManager.init(mStatusBarService); 
+            });
         }
 
         @Override
         public void onUpdated() throws RemoteException {
-            if ( mControllerManager != null ) mControllerManager.update(); 
+            updateUIController(() -> {
+                mControllerManager.update(); 
+            }); 
         }
     };
+
+    private void updateUIController(Runnable r) {
+        if ( mPluginContext == null || mControllerManager == null ) return;
+        Handler handler = new Handler(mPluginContext.getMainLooper()); 
+        handler.post(r); 
+    }
 }

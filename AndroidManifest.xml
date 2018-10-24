@@ -27,6 +27,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS_PRIVILEGED"/>
     <uses-permission android:name="android.permission.GET_PACKAGE_SIZE"/>
     <uses-permission android:name="android.permission.MASTER_CLEAR" />
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
     <uses-permission android:name="com.android.systemui.permission.PLUGIN" 
         android:protectionLevel="signature" />
@@ -39,11 +41,11 @@
             </intent-filter>
         </service>
         <service 
-            android:name=".StatusBarService"
+            android:name=".service.StatusBarService"
             android:exported="true"
             android:process=":remote">
             <intent-filter>
-                <action android:name="com.humaxdigital.automotive.statusbar.StatusBarService"></action>
+                <action android:name="com.humaxdigital.automotive.statusbar.service.StatusBarService"></action>
             </intent-filter>
         </service>
     </application>

@@ -31,16 +31,15 @@ LOCAL_JAVA_LIBRARIES += \
 	SystemUIPluginLib \
 
 LOCAL_STATIC_ANDROID_LIBRARIES := \
-	android-support-car \
 	android-support-v7-preference \
 	android-support-v14-preference \
 	android-arch-lifecycle-extensions \
-	car-list \
-	car-settings-lib \
 	setup-wizard-lib-gingerbread-compat \
 	SettingsLib \
 
 LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
+	android.support.car \
+	androidx.legacy_legacy-support-v4
 	  
 LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
 

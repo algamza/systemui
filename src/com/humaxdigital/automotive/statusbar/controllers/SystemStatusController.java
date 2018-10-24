@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
+import android.os.RemoteException;
 
 import android.os.UserHandle;
 import android.os.BatteryManager; 
@@ -17,7 +18,8 @@ import android.util.Log;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.StatusIconView;
 
-import com.humaxdigital.automotive.statusbar.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
+import com.humaxdigital.automotive.statusbar.service.ISystemCallback; 
 
 public class SystemStatusController implements BaseController {
     private final String ACTION_OPENDL = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST";
@@ -46,23 +48,35 @@ public class SystemStatusController implements BaseController {
     private BatteryManager mBatteryManager; 
     private Intent mBatteryStatus;
 
+    private IStatusBarService mService; 
+
     public SystemStatusController(Context context, View view) {
         if ( (view == null) || (context == null) ) return;
         mContext = context;
         if ( mContext != null ) mRes = mContext.getResources();
         mStatusBar = view;
         initManager(mContext); 
-        initView();
+        
     }
 
     @Override
     public void init(IStatusBarService service) {
-
+        mService = service; 
+        try {
+            if ( mService != null ) mService.registerSystemCallback(mSystemCallback); 
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
+        initView();
     }
 
     @Override
     public void deinit() {
-
+        try {
+            if ( mService != null ) mService.unregisterSystemCallback(mSystemCallback); 
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -89,8 +103,13 @@ public class SystemStatusController implements BaseController {
         mStatusBar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ACTION_OPENDL); 
-                if ( mContext != null ) mContext.sendBroadcast(intent); 
+                /*
+                try {
+                    if ( mService != null ) mService.openSystemSetting(); 
+                } catch( RemoteException e ) {
+                    e.printStackTrace();
+                }
+                */
             }
         });
 
@@ -308,4 +327,25 @@ public class SystemStatusController implements BaseController {
         mIconBattery.update((int)(batteryPct/17)); 
     }
 
+    private final ISystemCallback.Stub mSystemCallback = new ISystemCallback.Stub() {
+
+        public void onMuteStatusChanged(int status) throws RemoteException {
+        }
+        public void onBLEStatusChanged(int status) throws RemoteException {
+        }
+        public void onBTBatteryStatusChanged(int status) throws RemoteException {
+        }
+        public void onBTCallStatusChanged(int status) throws RemoteException {
+        }
+        public void onAntennaStatusChanged(int stataus) throws RemoteException {
+        }
+        public void onDataStatusChanged(int status) throws RemoteException {
+        }
+        public void onWifiStatusChanged(int status) throws RemoteException {
+        }
+        public void onWirelessChargeStatusChanged(int status) throws RemoteException {
+        }
+        public void onModeStatusChanged(int status) throws RemoteException {
+        }
+    };
 }
