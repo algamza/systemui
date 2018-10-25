@@ -22,6 +22,7 @@ import android.os.UserManager;
 import android.app.ActivityManager;
 import android.content.pm.UserInfo;
 import com.android.internal.util.UserIcons;
+
 import android.graphics.Bitmap;
 
 
@@ -59,8 +60,7 @@ public class StatusBarService extends Service {
     }
     public static class ClimateStatus {
         enum SeatStatus { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-        enum IntakeStatus { FRE, REC }
-        enum ClimateModeStatus { BELOW, MIDDLE, BELOW_MIDDLE, BELOW_WINDOW }
+        enum ClimateModeStatus { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
         enum BlowerSpeedStatus { STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
     }
 
@@ -70,20 +70,28 @@ public class StatusBarService extends Service {
     private static final String OPEN_DATE_SETTING = "";
     private static final String OPEN_USERPROFILE_SETTING = "";
     
-    private static final int DRIVER_ZONE_ID = VehicleAreaSeat.SEAT_ROW_1_LEFT |
-    VehicleAreaSeat.SEAT_ROW_2_LEFT | VehicleAreaSeat.SEAT_ROW_2_CENTER;
-    private static final int PASSENGER_ZONE_ID = VehicleAreaSeat.SEAT_ROW_1_RIGHT |
+    private static final int DRIVER_ZONE_ID = 
+        VehicleAreaSeat.SEAT_ROW_1_LEFT |
+        VehicleAreaSeat.SEAT_ROW_2_LEFT | 
+        VehicleAreaSeat.SEAT_ROW_2_CENTER;
+
+    private static final int PASSENGER_ZONE_ID = 
+        VehicleAreaSeat.SEAT_ROW_1_RIGHT |
         VehicleAreaSeat.SEAT_ROW_2_RIGHT;
 
     public static final int[] AIRFLOW_STATES = new int[]{
-        CarHvacManager.FAN_DIRECTION_FACE,
         CarHvacManager.FAN_DIRECTION_FLOOR,
-        (CarHvacManager.FAN_DIRECTION_FACE | CarHvacManager.FAN_DIRECTION_FLOOR)
+        CarHvacManager.FAN_DIRECTION_FACE,
+        (CarHvacManager.FAN_DIRECTION_FACE | CarHvacManager.FAN_DIRECTION_FLOOR),
+        (CarHvacManager.FAN_DIRECTION_FLOOR | CarHvacManager.FAN_DIRECTION_DEFROST)
     };
     // Hardware specific value for the front seats
-    public static final int SEAT_ALL = VehicleAreaSeat.SEAT_ROW_1_LEFT |
-        VehicleAreaSeat.SEAT_ROW_1_RIGHT | VehicleAreaSeat.SEAT_ROW_2_LEFT |
-        VehicleAreaSeat.SEAT_ROW_2_CENTER | VehicleAreaSeat.SEAT_ROW_2_RIGHT;
+    public static final int SEAT_ALL = 
+        VehicleAreaSeat.SEAT_ROW_1_LEFT |
+        VehicleAreaSeat.SEAT_ROW_1_RIGHT | 
+        VehicleAreaSeat.SEAT_ROW_2_LEFT |
+        VehicleAreaSeat.SEAT_ROW_2_CENTER | 
+        VehicleAreaSeat.SEAT_ROW_2_RIGHT;
 
     private final IStatusBarService.Stub mBinder = new IStatusBarService.Stub() {
         public boolean isInitialized() throws RemoteException {
@@ -130,11 +138,19 @@ public class StatusBarService extends Service {
         public int getDRSeatStatus() throws RemoteException { 
             return getDriverSeatWarmerLevel().ordinal(); 
         }
-        public int getIntakeStatus() throws RemoteException { 
-            return 0; 
+        public boolean getAirCirculationState() throws RemoteException { 
+            return getAirCirculation(); 
         }
-        public int getClimateMode() throws RemoteException { return 0; }
-        public int getBlowerSpeed() throws RemoteException { return 0; }
+        public void setAirCirculationState(boolean state) throws RemoteException { 
+            setAirCirculation(state);
+        }
+        public int getFanDirection() throws RemoteException {
+            // todo : check humax specification 
+            return getAirflowStatus(DRIVER_ZONE_ID); 
+        }
+        public int getBlowerSpeed() throws RemoteException { 
+            return getFanSpeed();
+        }
         public int getPSSeatStatus() throws RemoteException {
             return getPassengerSeatWarmerLevel().ordinal();
          }
@@ -142,9 +158,8 @@ public class StatusBarService extends Service {
             return getPassengerTemperature(); 
         }
         public void openClimateSetting() throws RemoteException {
-            // todo : havc action is protected-broadcast. 
-            // Intent intent = new Intent(OPEN_HVAC_APP);
-            // mContext.sendBroadcast(intent);
+            Intent intent = new Intent(OPEN_HVAC_APP);
+            mContext.sendBroadcast(intent);
         }
         public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
             if ( callback == null ) return;
@@ -378,9 +393,6 @@ public class StatusBarService extends Service {
                 Log.d(TAG, "HVAC event, id: " + val.getPropertyId());
                 int areaId = val.getAreaId();
                 switch (val.getPropertyId()) {
-                    case CarHvacManager.ID_ZONED_AC_ON:
-                        //handleAcStateUpdate(getValue(val));
-                        break;
                     case CarHvacManager.ID_ZONED_FAN_DIRECTION:
                         handleFanPositionUpdate(areaId, getValue(val));
                         break;
@@ -390,20 +402,11 @@ public class StatusBarService extends Service {
                     case CarHvacManager.ID_ZONED_TEMP_SETPOINT:
                         handleTempUpdate(val);
                         break;
-                    case CarHvacManager.ID_WINDOW_DEFROSTER_ON:
-                        handleDefrosterUpdate(areaId, getValue(val));
-                        break;
                     case CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
                         break;
                     case CarHvacManager.ID_ZONED_SEAT_TEMP:
                         handleSeatWarmerUpdate(areaId, getValue(val));
-                        break;
-                    case CarHvacManager.ID_ZONED_AUTOMATIC_MODE_ON:
-                        //handleAutoModeUpdate(getValue(val));
-                        break;
-                    case CarHvacManager.ID_ZONED_HVAC_POWER_ON:
-                        //handleHvacPowerOn(getValue(val));
                         break;
                     default:
                         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -528,37 +531,12 @@ public class StatusBarService extends Service {
         return seatWarmerLeveltoStatus(temp);
     }
 
-    private ClimateStatus.SeatStatus seatWarmerLeveltoStatus(int level) {
-        ClimateStatus.SeatStatus status = ClimateStatus.SeatStatus.NONE; 
-        switch(level) {
-            case 0: break;
-            case 1: break; 
-            case 2: break;
-            case 3: break;
-            default: break; 
-        }
-        return status;
-    }
-
-    private int seatWarmerStatustoLevel(ClimateStatus.SeatStatus status) {
-        int level = 0;
-        switch(status) {
-            case NONE: break;
-            case HEATER1: break;
-            case HEATER2: break;
-            case HEATER3: break;
-            case COOLER1: break;
-            case COOLER2: break;
-            case COOLER3: break;
-            default: break;
-        }
-        return level;
-    }
-
     void handleSeatWarmerUpdate(int zone, int level) {
         boolean shouldPropagate = mDataStore.shouldPropagateSeatWarmerLevelUpdate(zone, level);
-        Log.d(TAG, "Seat Warmer Update, zone: " + zone + " level: " + level +
-                " should propagate: " + shouldPropagate);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Seat Warmer Update, zone: " + zone + " level: " + level +
+                    " should propagate: " + shouldPropagate);
+        }
         if (shouldPropagate) {
             synchronized (mClimateCallbacks) {
                 for ( IClimateCallback callback : mClimateCallbacks ) {
@@ -576,233 +554,21 @@ public class StatusBarService extends Service {
         }
     }
 
-    private void handleAirCirculationUpdate(boolean airCirculationState) {
-        boolean shouldPropagate
-                = mDataStore.shouldPropagateAirCirculationUpdate(airCirculationState);
-  
-            Log.d(TAG, "Air Circulation Update: " + airCirculationState +
-                    " should propagate: " + shouldPropagate);
-        
-        if (shouldPropagate) {
-            for ( IClimateCallback callback : mClimateCallbacks ) {
-                //callback.onClimateModeChanged(acState);
-            }
+    private ClimateStatus.SeatStatus seatWarmerLeveltoStatus(int level) {
+        ClimateStatus.SeatStatus status = ClimateStatus.SeatStatus.NONE; 
+        // todo : match enum 
+        switch(level) {
+            case 0: status = ClimateStatus.SeatStatus.NONE; break;
+            case 1: status = ClimateStatus.SeatStatus.HEATER1; break; 
+            case 2: status = ClimateStatus.SeatStatus.HEATER2; break;
+            case 3: status = ClimateStatus.SeatStatus.HEATER3; break;
+            case 4: status = ClimateStatus.SeatStatus.COOLER1; break;
+            case 5: status = ClimateStatus.SeatStatus.COOLER2; break; 
+            case 6: status = ClimateStatus.SeatStatus.COOLER3; break;
+            default: break; 
         }
+        return status;
     }
-
-   
-
-    private void handleFanPositionUpdate(int zone, int position) {
-        int index = fanPositionToAirflowIndex(position);
-        boolean shouldPropagate = mDataStore.shouldPropagateFanPositionUpdate(zone, index);
-        
-            Log.d(TAG, "Fan Position Update, zone: " + zone + " position: " + position +
-                    " should propagate: " + shouldPropagate);
-        
-        if (shouldPropagate) {
-            /*
-            synchronized (mCallbacks) {
-                for (int i = 0; i < mCallbacks.size(); i++) {
-                    mCallbacks.get(i).onFanDirectionChange(position);
-                }
-            }
-            */
-        }
-    }
-
-    private void handleFanSpeedUpdate(int zone, int speed) {
-        boolean shouldPropagate = mDataStore.shouldPropagateFanSpeedUpdate(zone, speed);
-        
-            Log.d(TAG, "Fan Speed Update, zone: " + zone + " speed: " + speed +
-                    " should propagate: " + shouldPropagate);
-        
-        if (shouldPropagate) {
-            /*
-            synchronized (mCallbacks) {
-                for (int i = 0; i < mCallbacks.size(); i++) {
-                    mCallbacks.get(i).onFanSpeedChange(speed);
-                }
-            }
-            */
-        }
-    }
-
-
-
-    private void handleDefrosterUpdate(int zone, boolean defrosterState) {
-        boolean shouldPropagate = mDataStore.shouldPropagateDefrosterUpdate(zone, defrosterState);
-        
-            Log.d(TAG, "Defroster Update, zone: " + zone + " state: " + defrosterState +
-                    " should propagate: " + shouldPropagate);
-        
-        if (shouldPropagate) {
-            /*
-            synchronized (mCallbacks) {
-                for (int i = 0; i < mCallbacks.size(); i++) {
-                    if (zone == VehicleAreaWindow.WINDOW_FRONT_WINDSHIELD) {
-                        mCallbacks.get(i).onFrontDefrosterChange(defrosterState);
-                    } else if (zone == VehicleAreaWindow.WINDOW_REAR_WINDSHIELD) {
-                        mCallbacks.get(i).onRearDefrosterChange(defrosterState);
-                    }
-                }
-            }
-            */
-        }
-    }    
-    
-
-    
-
-    private void fetchFanSpeed() {
-        if (mHvacManager != null) {
-            int zone = SEAT_ALL; // Car specific workaround.
-            try {
-                mDataStore.setFanSpeed(mHvacManager.getIntProperty(
-                        CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, zone));
-            } catch (android.car.CarNotConnectedException e) {
-                Log.e(TAG, "Car not connected in fetchFanSpeed");
-            }
-        }
-    }
-
-    public int getFanSpeed() {
-        return mDataStore.getFanSpeed();
-    }
-
-    public void setFanSpeed(final int fanSpeed) {
-        mDataStore.setFanSpeed(fanSpeed);
-
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            int newFanSpeed;
-
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    int zone = SEAT_ALL; // Car specific workaround.
-                    try {
-                        if (Log.isLoggable(TAG, Log.DEBUG)) {
-                            Log.d(TAG, "Setting fanspeed to: " + fanSpeed);
-                        }
-                        mHvacManager.setIntProperty(
-                                CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, zone, fanSpeed);
-
-                        newFanSpeed = mHvacManager.getIntProperty(
-                                CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, zone);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setFanSpeed");
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(final Void result) {
-                Log.e(TAG, "postExecute new fanSpeed: " + newFanSpeed);
-            }
-        };
-        task.execute();
-    }
-
-    private void fetchDefrosterState(int zone) {
-        if (mHvacManager != null) {
-            try {
-                mDataStore.setDefrosterState(zone, mHvacManager.getBooleanProperty(
-                        CarHvacManager.ID_WINDOW_DEFROSTER_ON, zone));
-            } catch (android.car.CarNotConnectedException e) {
-                Log.e(TAG, "Car not connected in fetchDefrosterState");
-            }
-        }
-    }
-
-    public boolean getFrontDefrosterState() {
-        return mDataStore.getDefrosterState(VehicleAreaWindow.WINDOW_FRONT_WINDSHIELD);
-    }
-
-    public boolean getRearDefrosterState() {
-        return mDataStore.getDefrosterState(VehicleAreaWindow.WINDOW_REAR_WINDSHIELD);
-    }
-
-    public void setFrontDefrosterState(boolean state) {
-        setDefrosterState(VehicleAreaWindow.WINDOW_FRONT_WINDSHIELD, state);
-    }
-
-    public void setRearDefrosterState(boolean state) {
-        setDefrosterState(VehicleAreaWindow.WINDOW_REAR_WINDSHIELD, state);
-    }
-
-    public void setDefrosterState(final int zone, final boolean state) {
-        mDataStore.setDefrosterState(zone, state);
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    try {
-                        mHvacManager.setBooleanProperty(
-                                CarHvacManager.ID_WINDOW_DEFROSTER_ON, zone, state);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setDeforsterState");
-                    }
-                }
-                return null;
-            }
-        };
-        task.execute();
-    }
-
-
-    private int fanPositionToAirflowIndex(int fanPosition) {
-        for (int i = 0; i < AIRFLOW_STATES.length; i++) {
-            if (fanPosition == AIRFLOW_STATES[i]) {
-                return i;
-            }
-        }
-        Log.e(TAG, "Unknown fan position " + fanPosition + ". Returning default.");
-        return AIRFLOW_STATES[0];
-    }
-
-    private void fetchAirflow(int zone) {
-        if (mHvacManager != null) {
-            zone = SEAT_ALL; // Car specific workaround.
-            try {
-                int val = mHvacManager.getIntProperty(CarHvacManager.ID_ZONED_FAN_DIRECTION, zone);
-                mDataStore.setAirflow(zone, fanPositionToAirflowIndex(val));
-            } catch (android.car.CarNotConnectedException e) {
-                Log.e(TAG, "Car not connected in fetchAirFlow");
-            }
-        }
-    }
-
-    public int getAirflowIndex(int zone) {
-        return mDataStore.getAirflow(zone);
-    }
-
-    public void setAirflowIndex(final int zone, final int index) {
-        mDataStore.setAirflow(zone, index);
-        int override = SEAT_ALL; // Car specific workaround.
-        int val = AIRFLOW_STATES[index];
-        setFanDirection(override, val);
-    }
-
-    public void setFanDirection(final int direction) {
-        mDataStore.setAirflow(SEAT_ALL, direction);
-        setFanDirection(SEAT_ALL, direction);
-    }
-
-    private void setFanDirection(final int zone, final int direction) {
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    try {
-                        mHvacManager.setIntProperty(
-                                CarHvacManager.ID_ZONED_FAN_DIRECTION, zone, direction);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setAirflowIndex");
-                    }
-                }
-                return null;
-            }
-        };
-        task.execute();
-    }
-
 
     private void fetchAirCirculation() {
         if (mHvacManager != null) {
@@ -816,7 +582,7 @@ public class StatusBarService extends Service {
         }
     }
 
-    public boolean getAirCirculationState() {
+    public boolean getAirCirculation() {
         return mDataStore.getAirCirculationState();
     }
 
@@ -838,154 +604,132 @@ public class StatusBarService extends Service {
         };
         task.execute();
     }
-/*
 
-
-void handleHvacPowerOn(boolean isOn) {
-    boolean shouldPropagate = mDataStore.shouldPropagateHvacPowerUpdate(isOn);
-
-    Log.d(TAG, "Hvac Power On: " + isOn + " should propagate: " + shouldPropagate);
-    
-    if (shouldPropagate) {
-        
-        synchronized (mCallbacks) {
-            for (int i = 0; i < mCallbacks.size(); i++) {
-                mCallbacks.get(i).onHvacPowerChange(isOn);
-            }
+    private void handleAirCirculationUpdate(boolean airCirculationState) {
+        boolean shouldPropagate
+                = mDataStore.shouldPropagateAirCirculationUpdate(airCirculationState);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Air Circulation Update: " + airCirculationState +
+                        " should propagate: " + shouldPropagate);
         }
-        
-    }
-}
-
- private void handleAutoModeUpdate(boolean autoModeState) {
-        boolean shouldPropagate = mDataStore.shouldPropagateAutoModeUpdate(autoModeState);
-       
-            Log.d(TAG, "AutoMode Update, id: " + autoModeState +
-                    " should propagate: " + shouldPropagate);
-        
         if (shouldPropagate) {
-            
-            synchronized (mCallbacks) {
-                for (int i = 0; i < mCallbacks.size(); i++) {
-                    mCallbacks.get(i).onAutoModeChange(autoModeState);
+            for ( IClimateCallback callback : mClimateCallbacks ) {
+                try {
+                    callback.onAirCirculationChanged(airCirculationState); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
-            }
-            
-        }
-    }
-
-    private void handleAcStateUpdate(boolean acState) {
-        boolean shouldPropagate = mDataStore.shouldPropagateAcUpdate(acState);
-        
-            Log.d(TAG, "AC State Update, id: " + acState +
-                    " should propagate: " + shouldPropagate);
-        
-        if (shouldPropagate) {
-            synchronized (mClimateCallbacks) {
-                
-                for ( IClimateCallback callback : mClimateCallbacks ) {
-                    callback.onClimateModeChanged(acState);
-                }
-                
             }
         }
     }
 
-    public boolean getAutoModeState() {
-        return mDataStore.getAutoModeState();
-    }
-
-    public void setAutoMode(final boolean state) {
-        mDataStore.setAutoModeState(state);
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    try {
-                        mHvacManager.setBooleanProperty(CarHvacManager.ID_ZONED_AUTOMATIC_MODE_ON,
-                                SEAT_ALL, state);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setAutoModeState");
-                    }
-                }
-                return null;
-            }
-        };
-        task.execute();
-    }
-*/
-    /*
-    public boolean getHvacPowerState() {
-        return mDataStore.getHvacPowerState();
-    }
-
-    private void fetchHvacPowerState() {
+    private void fetchFanSpeed() {
         if (mHvacManager != null) {
+            // todo : Car specific workaround.
+            int zone = SEAT_ALL; 
             try {
-                mDataStore.setHvacPowerState(mHvacManager.getBooleanProperty(
-                        CarHvacManager.ID_ZONED_HVAC_POWER_ON, SEAT_ALL));
+                mDataStore.setFanSpeed(mHvacManager.getIntProperty(
+                        CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, zone));
             } catch (android.car.CarNotConnectedException e) {
-                Log.e(TAG, "Car not connected in fetchHvacPowerState");
+                Log.e(TAG, "Car not connected in fetchFanSpeed");
             }
         }
     }
 
-    public void setHvacPowerState(final boolean state) {
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    try {
-                        mHvacManager.setBooleanProperty(CarHvacManager.ID_ZONED_HVAC_POWER_ON,
-                            SEAT_ALL, state);
-                        // if the set() succeeds, consider the property available
-                        mDataStore.setHvacPowerState(state);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setHvacPowerState");
-                    } catch (Exception e) {
-                        Log.e(TAG, "set power failed", e);
-                    }
-                }
-                return null;
-            }
-        };
-        task.execute();
+    public int getFanSpeed() {
+        return fanSpeedToStatus(mDataStore.getFanSpeed()).ordinal();
     }
+
+    private void handleFanSpeedUpdate(int zone, int speed) {
+        boolean shouldPropagate = mDataStore.shouldPropagateFanSpeedUpdate(zone, speed);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Fan Speed Update, zone: " + zone + " speed: " + speed +
+                        " should propagate: " + shouldPropagate);
+        }
     
-    */
-
-    /*
-    private void fetchAcState() {
-        if (mHvacManager != null) {
-            try {
-                mDataStore.setAcState(mHvacManager.getBooleanProperty(CarHvacManager.ID_ZONED_AC_ON,
-                        SEAT_ALL));
-            } catch (android.car.CarNotConnectedException e) {
-                Log.e(TAG, "Car not connected in fetchAcState");
+        if (shouldPropagate) {
+            for ( IClimateCallback callback : mClimateCallbacks ) {
+                try {
+                    callback.onBlowerSpeedChanged(fanSpeedToStatus(speed).ordinal()); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    public boolean getAcState() {
-        return mDataStore.getAcState();
+    private ClimateStatus.BlowerSpeedStatus fanSpeedToStatus(int speed) {
+        ClimateStatus.BlowerSpeedStatus status = ClimateStatus.BlowerSpeedStatus.STEP_1; 
+        // todo : change speed to status
+        switch(speed) {
+            case 1: status = ClimateStatus.BlowerSpeedStatus.STEP_1; break;
+            case 2: status = ClimateStatus.BlowerSpeedStatus.STEP_2; break;
+            case 3: status = ClimateStatus.BlowerSpeedStatus.STEP_3; break;
+            case 4: status = ClimateStatus.BlowerSpeedStatus.STEP_4; break;
+            case 5: status = ClimateStatus.BlowerSpeedStatus.STEP_5; break;
+            case 6: status = ClimateStatus.BlowerSpeedStatus.STEP_6; break;
+            case 7: status = ClimateStatus.BlowerSpeedStatus.STEP_7; break;
+            case 8: status = ClimateStatus.BlowerSpeedStatus.STEP_8; break;
+            default: break;
+        }
+        return status;
     }
 
-    public void setAcState(final boolean state) {
-        mDataStore.setAcState(state);
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
-                if (mHvacManager != null) {
-                    try {
-                        mHvacManager.setBooleanProperty(CarHvacManager.ID_ZONED_AC_ON,
-                                SEAT_ALL, state);
-                    } catch (android.car.CarNotConnectedException e) {
-                        Log.e(TAG, "Car not connected in setAcState");
-                    }
-                }
-                return null;
+    private void fetchAirflow(int zone) {
+        if (mHvacManager != null) {
+            zone = SEAT_ALL; // Car specific workaround.
+            try {
+                int val = mHvacManager.getIntProperty(CarHvacManager.ID_ZONED_FAN_DIRECTION, zone);
+                mDataStore.setAirflow(zone, fanPositionToAirflowIndex(val));
+            } catch (android.car.CarNotConnectedException e) {
+                Log.e(TAG, "Car not connected in fetchAirFlow");
             }
-        };
-        task.execute();
+        }
     }
-    */
+
+    public int getAirflowStatus(int zone) {
+        return airflowIndexToStatus(mDataStore.getAirflow(zone)).ordinal();
+    }
+
+    private void handleFanPositionUpdate(int zone, int position) {
+        int index = fanPositionToAirflowIndex(position);
+        boolean shouldPropagate = mDataStore.shouldPropagateFanPositionUpdate(zone, index);
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Log.d(TAG, "Fan Position Update, zone: " + zone + " position: " + position +
+                    " should propagate: " + shouldPropagate);
+        }
+        if (shouldPropagate) {
+            for ( IClimateCallback callback : mClimateCallbacks ) {
+                try {
+                    callback.onFanDirectionChanged(airflowIndexToStatus(index).ordinal()); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private int fanPositionToAirflowIndex(int fanPosition) {
+        for (int i = 0; i < AIRFLOW_STATES.length; i++) {
+            if (fanPosition == AIRFLOW_STATES[i]) {
+                return i;
+            }
+        }
+        Log.e(TAG, "Unknown fan position " + fanPosition + ". Returning default.");
+        return 0;
+    }
+
+    private ClimateStatus.ClimateModeStatus airflowIndexToStatus(int index) {
+        ClimateStatus.ClimateModeStatus status = ClimateStatus.ClimateModeStatus.FLOOR;
+        switch(index) {
+            case 0: status = ClimateStatus.ClimateModeStatus.FLOOR; break;
+            case 1: status = ClimateStatus.ClimateModeStatus.FACE; break;
+            case 2: status = ClimateStatus.ClimateModeStatus.FLOOR_FACE; break; 
+            case 3: status = ClimateStatus.ClimateModeStatus.FLOOR_DEFROST; break;
+            default: break; 
+        }
+        return status; 
+    }
 
     public void requestHvacRefresh() {
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -1008,8 +752,6 @@ void handleHvacPowerOn(boolean isOn) {
                 fetchSeatWarmer(DRIVER_ZONE_ID);
                 fetchSeatWarmer(PASSENGER_ZONE_ID);
                 fetchFanSpeed();
-                fetchDefrosterState(VehicleAreaWindow.WINDOW_FRONT_WINDSHIELD);
-                fetchDefrosterState(VehicleAreaWindow.WINDOW_REAR_WINDSHIELD);
                 fetchAirflow(DRIVER_ZONE_ID);
                 fetchAirflow(PASSENGER_ZONE_ID);
                 fetchAirCirculation();

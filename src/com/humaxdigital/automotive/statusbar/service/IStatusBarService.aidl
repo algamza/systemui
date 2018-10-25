@@ -25,8 +25,9 @@ interface IStatusBarService {
 
     float getDRTemperature();
     int getDRSeatStatus();
-    int getIntakeStatus();
-    int getClimateMode();
+    boolean getAirCirculationState();
+    void setAirCirculationState(boolean state);
+    int getFanDirection();
     int getBlowerSpeed();
     int getPSSeatStatus();
     float getPSTemperature();

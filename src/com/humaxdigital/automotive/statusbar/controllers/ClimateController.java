@@ -18,8 +18,7 @@ import com.humaxdigital.automotive.statusbar.service.IClimateCallback;
 
 public class ClimateController implements BaseController {
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum IntakeState { FRE, REC }
-    private enum ClimateModeState { MODE1, MODE2, MODE3, MODE4 }
+    private enum ClimateModeState { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
     private enum BlowerSpeed { STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
 
     private IStatusBarService mService; 
@@ -33,9 +32,9 @@ public class ClimateController implements BaseController {
     private ClimateView mSeatDRView;
     private SeatState mSeatDRState = SeatState.NONE;
     private ClimateView mIntakeView;
-    private IntakeState mIntakeState = IntakeState.FRE;
+    private boolean mIntakeState = false;
     private ClimateView mClimateModeView;
-    private ClimateModeState mClimateModeState = ClimateModeState.MODE1;
+    private ClimateModeState mClimateModeState = ClimateModeState.FLOOR;
     private ClimateView mBlowerView;
     private ClimateText mBlowerText;
     private BlowerSpeed mBlowerSpeed = BlowerSpeed.STEP1;
@@ -141,46 +140,58 @@ public class ClimateController implements BaseController {
 
         mIntakeView = mClimate.findViewById(R.id.climate_intake);
         if ( mIntakeView != null ) {
-            Drawable rec = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car, null);
-            Drawable fre = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_disable, null);
-            if ( rec != null && fre != null ) {
-                mIntakeView.addIcon(IntakeState.FRE.ordinal(), fre);
-                mIntakeView.addIcon(IntakeState.REC.ordinal(), rec);
+            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car, null);
+            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_disable, null);
+            if ( on != null && off != null ) {
+                mIntakeView.addIcon(1, on);
+                mIntakeView.addIcon(0, off);
             }
 
-            // todo : get climate intake state
-            mIntakeState = IntakeState.FRE;
+            try {
+                if ( mService != null ) mIntakeState = mService.getAirCirculationState();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
 
-            mIntakeView.update(mIntakeState.ordinal());
+            mIntakeView.update(mIntakeState ? 1 : 0);
             mIntakeView.setListener(new ClimateView.ClickListener() {
                 @Override
                 public void onClicked(int state) {
-                    // todo : changed climate intake mode
-                    if ( state == IntakeState.FRE.ordinal() ) {
-                        mIntakeState = IntakeState.REC;
-                    } else if ( state == IntakeState.REC.ordinal() ) {
-                        mIntakeState = IntakeState.FRE;
+                    if ( state == 0 ) {
+                        mIntakeView.update(1);
+                        mIntakeState = true;
+                    } else {
+                        mIntakeState = false;
+                        mIntakeView.update(0);
                     }
-                    mIntakeView.update(mIntakeState.ordinal());
+                    
+                    try {
+                        if ( mService != null ) mService.setAirCirculationState(mIntakeState);
+                    } catch( RemoteException e ) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }
 
         mClimateModeView = mClimate.findViewById(R.id.climate_mode);
         if ( mClimateModeView != null ) {
-            Drawable mode1 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null);
-            Drawable mode2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null);
-            Drawable mode3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null);
-            Drawable mode4 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null);
-            if ( mode1 != null && mode2 != null && mode3 != null && mode4 != null ) {
-                mClimateModeView.addIcon(ClimateModeState.MODE1.ordinal(), mode1);
-                mClimateModeView.addIcon(ClimateModeState.MODE2.ordinal(), mode2);
-                mClimateModeView.addIcon(ClimateModeState.MODE3.ordinal(), mode3);
-                mClimateModeView.addIcon(ClimateModeState.MODE4.ordinal(), mode4);
-
-                // todo : get climate mode state
-                mClimateModeState = ClimateModeState.MODE1;
-
+            Drawable floor = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null);
+            Drawable face = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null);
+            Drawable floor_face = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null);
+            Drawable floor_defrost = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null);
+            if ( floor != null && face != null && floor_face != null && floor_defrost != null ) {
+                mClimateModeView.addIcon(ClimateModeState.FLOOR.ordinal(), floor);
+                mClimateModeView.addIcon(ClimateModeState.FACE.ordinal(), face);
+                mClimateModeView.addIcon(ClimateModeState.FLOOR_FACE.ordinal(), floor_face);
+                mClimateModeView.addIcon(ClimateModeState.FLOOR_DEFROST.ordinal(), floor_defrost);
+                int direction = 0;
+                try {
+                    if ( mService != null ) direction = mService.getFanDirection();
+                } catch( RemoteException e ) {
+                    e.printStackTrace();
+                }
+                mClimateModeState = ClimateModeState.values()[direction];
                 mClimateModeView.update(mClimateModeState.ordinal());
             }
         }
@@ -193,10 +204,14 @@ public class ClimateController implements BaseController {
                 mBlowerView.addIcon(0, img);
                 mBlowerView.update(0);
             }
-
-            // todo : get climate blower speed
-            mBlowerSpeed = BlowerSpeed.STEP8;
-
+            
+            int status = 0; 
+            try {
+                if ( mService != null ) status = mService.getBlowerSpeed();
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+            mBlowerSpeed = BlowerSpeed.values()[status]; 
             mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()));
         }
 
@@ -267,11 +282,20 @@ public class ClimateController implements BaseController {
             mSeatDRState = SeatState.values()[status]; 
             mSeatDRView.update(mSeatDRState.ordinal());
         }
-        public void onIntakeStatusChanged(int status) throws RemoteException {
+        public void onAirCirculationChanged(boolean isOn) throws RemoteException {
+            if ( mIntakeView == null ) return; 
+            mIntakeState = isOn;
+            mIntakeView.update(mIntakeState ? 1:0);
         }
-        public void onClimateModeChanged(int status) throws RemoteException {
+        public void onFanDirectionChanged(int direction) throws RemoteException {
+            if ( mClimateModeView == null ) return; 
+            mClimateModeState = ClimateModeState.values()[direction];
+            mClimateModeView.update(mClimateModeState.ordinal());
         }
         public void onBlowerSpeedChanged(int status) throws RemoteException {
+            if ( mBlowerText == null ) return;
+            mBlowerSpeed = BlowerSpeed.values()[status]; 
+            mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()));
         }
         public void onPSSeatStatusChanged(int status) throws RemoteException {
             if ( mSeatPSView == null ) return;

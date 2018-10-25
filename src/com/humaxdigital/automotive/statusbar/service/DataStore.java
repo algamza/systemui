@@ -240,7 +240,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mAirCirculationLastSet < COALESCE_TIME_MS) {
                 return false;
             }
-            mAcState = airCirculationState;
+            mAirCirculationState = airCirculationState;
         }
         return true;
     }
