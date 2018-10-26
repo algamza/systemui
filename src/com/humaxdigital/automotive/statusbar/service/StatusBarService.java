@@ -193,7 +193,9 @@ public class StatusBarService extends Service {
             }
         }
 
-        public int getUserProfileImage() throws RemoteException { return 0; } 
+        public BitmapParcelable getUserProfileImage() throws RemoteException { 
+            return new BitmapParcelable(getCurrentUserBitmap()); 
+        } 
         public void openUserProfileSetting() throws RemoteException {
             // todo : open user profile setting 
         } 
@@ -332,8 +334,7 @@ public class StatusBarService extends Service {
             synchronized (mUserProfileCallbacks) {
                 for ( IUserProfileCallback callback : mUserProfileCallbacks ) {
                     try {
-                        //callback.onUserChanged(getCurrentUserBitmap()); 
-                        callback.onUserChanged(0);
+                        callback.onUserChanged(new BitmapParcelable(getCurrentUserBitmap())); 
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }

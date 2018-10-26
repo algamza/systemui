@@ -14,6 +14,7 @@ import com.humaxdigital.automotive.statusbar.ui.UserProfileView;
 
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IUserProfileCallback; 
+import com.humaxdigital.automotive.statusbar.service.BitmapParcelable; 
 
 public class UserProfileController implements BaseController {
     private Context mContext;
@@ -72,10 +73,8 @@ public class UserProfileController implements BaseController {
     private Bitmap getUserBitmap() {
         if ( mService == null ) return null; 
         Bitmap img = null; 
-
         try {
-            //img = mService.getUserProfileImage(); 
-            mService.getUserProfileImage();
+            img = mService.getUserProfileImage().getBitmap();
         } catch( RemoteException e ) {
             e.printStackTrace();
             return null; 
@@ -89,8 +88,8 @@ public class UserProfileController implements BaseController {
     }
 
     private final IUserProfileCallback.Stub mUserProfileCallback = new IUserProfileCallback.Stub() {
-        public void onUserChanged(int id) throws RemoteException {
-           // if ( mUserProfileView != null ) mUserProfileView.setImageBitmap(getUserBitmap()); 
+        public void onUserChanged(BitmapParcelable data) throws RemoteException {
+           if ( mUserProfileView != null ) mUserProfileView.setImageBitmap(getUserBitmap()); 
         }
     };
 }

@@ -34,6 +34,14 @@ import android.view.ViewTreeObserver.OnComputeInternalInsetsListener;
 import com.android.systemui.plugins.OverlayPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
+import android.view.View.DragShadowBuilder;
+import android.view.View.OnDragListener;
+import android.view.View.OnTouchListener;
+import android.view.DragEvent;
+import android.view.MotionEvent;
+
+import java.lang.System; 
+
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback; 
 
@@ -52,6 +60,32 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private ControllerManager mControllerManager; 
 
     IStatusBarService mStatusBarService;
+
+    private final class StatusBarTouchListener implements View.OnTouchListener {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            /*
+            switch(event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                {
+                    float x = event.getRawX();
+                    float y = event.getRawY();
+                    Log.e("KSKIM", "######### ACTION_DOWN x="+x+", y="+y);
+                    return true;
+                }
+                case MotionEvent.ACTION_UP:
+                {
+                    float x = event.getRawX();
+                    float y = event.getRawY();
+                    Log.e("KSKIM", "######### ACTION_DOWN x="+x+", y="+y);
+                    break;
+                }
+                default: break;
+            }
+            */
+            return false;
+        }
+    }
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
@@ -81,12 +115,15 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 "android");
         mStatusBarHeight = mPluginContext.getResources().getDimension(id);
         if (statusBar instanceof ViewGroup) {
+            statusBar.setOnTouchListener(new StatusBarTouchListener()); 
             /*
             mStatusBarView = LayoutInflater.from(mPluginContext)
                     .inflate(R.layout.statusbar_overlay, (ViewGroup) statusBar, false);
             ((ViewGroup) statusBar).addView(mStatusBarView);
             */
         }
+
+
 
         if ( navBar instanceof ViewGroup ) {
             mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);

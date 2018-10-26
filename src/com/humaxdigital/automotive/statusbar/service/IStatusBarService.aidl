@@ -5,6 +5,7 @@ import com.humaxdigital.automotive.statusbar.service.IClimateCallback;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback;
 import com.humaxdigital.automotive.statusbar.service.IDateTimeCallback;
 import com.humaxdigital.automotive.statusbar.service.IUserProfileCallback;
+import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
 
 interface IStatusBarService {
     boolean isInitialized();
@@ -40,7 +41,7 @@ interface IStatusBarService {
     void registerDateTimeCallback(IDateTimeCallback callback);
     void unregisterDateTimeCallback(IDateTimeCallback callback);
 
-    int getUserProfileImage(); 
+    BitmapParcelable getUserProfileImage(); 
     void openUserProfileSetting(); 
     void registerUserProfileCallback(IUserProfileCallback callback);
     void unregisterUserProfileCallback(IUserProfileCallback callback);
