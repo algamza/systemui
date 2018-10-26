@@ -64,7 +64,6 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
     private final class StatusBarTouchListener implements View.OnTouchListener {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            /*
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                 {
@@ -82,7 +81,7 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 }
                 default: break;
             }
-            */
+
             return false;
         }
     }
@@ -115,15 +114,13 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 "android");
         mStatusBarHeight = mPluginContext.getResources().getDimension(id);
         if (statusBar instanceof ViewGroup) {
-            statusBar.setOnTouchListener(new StatusBarTouchListener()); 
+            // statusBar.setOnTouchListener(new StatusBarTouchListener()); 
             /*
             mStatusBarView = LayoutInflater.from(mPluginContext)
                     .inflate(R.layout.statusbar_overlay, (ViewGroup) statusBar, false);
             ((ViewGroup) statusBar).addView(mStatusBarView);
             */
         }
-
-
 
         if ( navBar instanceof ViewGroup ) {
             mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);

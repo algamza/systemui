@@ -72,7 +72,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="@dimen/text_date"
-                            android:layout_gravity="center_vertical|center_horizontal"
+                            android:layout_gravity="center_vertical|right"
                             android:textColor="@color/colorStatusBarText"/>
                     </FrameLayout>
                     <FrameLayout
@@ -341,7 +341,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="16"/>
-                            <!--<android:layout_weight="25">-->
+                        <!--<android:layout_weight="25">-->
                         <FrameLayout
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
@@ -489,128 +489,126 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:weightSum="475"
                 android:layout_weight="36"
-                android:gravity="right"
+                android:weightSum="513"
                 android:orientation="horizontal">
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_1"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_2"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_3"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_4"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_5"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
-
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_6"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_7"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_8"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="@dimen/status_icon_margin"
-                    android:layout_gravity="right"
+                    android:layout_weight="6" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="51">
                     <com.humaxdigital.automotive.statusbar.ui.StatusIconView
                         android:id="@+id/img_status_9"
-                        android:layout_width="@dimen/status_icon_width"
-                        android:layout_height="@dimen/status_icon_height"
-                        android:layout_gravity="center"
-                        android:scaleType="fitXY" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </FrameLayout>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="6" />
             </LinearLayout>
             <FrameLayout
                 android:layout_width="match_parent"

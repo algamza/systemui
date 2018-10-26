@@ -25,6 +25,8 @@ import com.android.internal.util.UserIcons;
 
 import android.graphics.Bitmap;
 
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 
 import android.car.VehicleAreaSeat;
 import android.car.VehicleAreaWindow;
@@ -55,8 +57,9 @@ public class StatusBarService extends Service {
             , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
         enum DataStatus { DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
         enum WifiStatus { WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
-        enum WirelessChargeStatus { WIRELESS_CHARGING, WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
-        enum ModeStatus { LOCATION_SHARING, QUIET_MODE }
+        enum WirelessChargeStatus { WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
+            , WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
+        enum ModeStatus { LOCATION_SHARING }
     }
     public static class ClimateStatus {
         enum SeatStatus { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
@@ -116,7 +119,9 @@ public class StatusBarService extends Service {
         public int getBTCallStatus() throws RemoteException { return 0; }
         public int getAntennaStatus() throws RemoteException { return 0; }
         public int getDataStatus() throws RemoteException { return 0; }
-        public int getWifiStatus() throws RemoteException { return 0; }
+        public int getWifiStatus() throws RemoteException { 
+            return getSystemWifiStatus().ordinal(); 
+        }
         public int getWirelessChargeStatus() throws RemoteException { return 0; }
         public int getModeStatus() throws RemoteException { return 0; }
         public void registerSystemCallback(ISystemCallback callback) throws RemoteException {
@@ -228,6 +233,9 @@ public class StatusBarService extends Service {
     private Context mContext = this; 
     private boolean mIsInitialized = false;
 
+    private WifiManager mWifiMgr; 
+    private SystemStatus.WifiStatus mWifiStatus = SystemStatus.WifiStatus.WIFI_1; 
+
     @GuardedBy("mCallbacks")
     //private List<Callback> mCallbacks = new ArrayList<>();
     private DataStore mDataStore = new DataStore();
@@ -253,9 +261,9 @@ public class StatusBarService extends Service {
         
         requestHvacRefresh();
 
-        initDateTime();
-        initUserProfile();
-
+        connectDateTime();
+        connectUserProfile();
+        connectSystemStatus(); 
     }
 
     @Override
@@ -284,7 +292,55 @@ public class StatusBarService extends Service {
         return START_STICKY;
     }
 
-    private void initDateTime() {
+    private void connectSystemStatus() {
+        connectWifiManager(); 
+    }
+
+    private void connectWifiManager() {
+        mWifiMgr = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
+        registerReceiver(mWifiReceiver, filter);
+    }
+
+    // todo : fetch status
+    private SystemStatus.WifiStatus getSystemWifiStatus() {
+        SystemStatus.WifiStatus status = SystemStatus.WifiStatus.WIFI_1; 
+        switch(getWifiSignalLevel()) {
+            case 0: status = SystemStatus.WifiStatus.WIFI_1; break;
+            case 1: status = SystemStatus.WifiStatus.WIFI_2; break;
+            case 2: status = SystemStatus.WifiStatus.WIFI_3; break;
+            case 3: status = SystemStatus.WifiStatus.WIFI_4; break; 
+            default: break; 
+        }
+        mWifiStatus = status;
+        return mWifiStatus; 
+    }
+
+    private int getWifiSignalLevel() {
+        if ( mWifiMgr == null ) return 0; 
+        int numberOfLevels = SystemStatus.WifiStatus.values().length;
+        WifiInfo wifiinfo = mWifiMgr.getConnectionInfo();
+        int level = WifiManager.calculateSignalLevel(wifiinfo.getRssi(), numberOfLevels);
+        return level; 
+    }
+
+    private final BroadcastReceiver mWifiReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (mSystemCallbacks) {
+                for ( ISystemCallback callback : mSystemCallbacks ) {
+                    try {
+                        callback.onWifiStatusChanged(getSystemWifiStatus().ordinal()); 
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    };
+
+    private void connectDateTime() {
         if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_TIME_TICK);
@@ -313,7 +369,7 @@ public class StatusBarService extends Service {
         return df.format(Calendar.getInstance().getTime());
     }
 
-    private void initUserProfile() {
+    private void connectUserProfile() {
         if ( mContext == null ) return;
         mUserManager = (UserManager) mContext.getSystemService(Context.USER_SERVICE); 
         mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE); 

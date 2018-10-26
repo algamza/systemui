@@ -5,10 +5,6 @@
     <dimen name="text_climate_temp_int">63.84sp</dimen>
     <dimen name="text_climate_temp_dec">39.9sp</dimen>
     <dimen name="text_climate_wind">58.52sp</dimen>
-    
-    <dimen name="status_icon_width"> 67.83dp </dimen>
-    <dimen name="status_icon_height"> 47.88dp </dimen>
-    <dimen name="status_icon_margin"> 7.98dp </dimen>
 
     <!--<dimen name="text_date"> 36sp </dimen>-->
     <!--<dimen name="text_date_noon"> 26sp </dimen>-->
