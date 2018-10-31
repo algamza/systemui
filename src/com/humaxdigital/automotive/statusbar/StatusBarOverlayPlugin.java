@@ -48,43 +48,18 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback;
 @Requires(target = OverlayPlugin.class, version = OverlayPlugin.VERSION)
 public class StatusBarOverlayPlugin implements OverlayPlugin {
     private static final String TAG = "StatusBarOverlayPlugin";
-    private Context mPluginContext;
+    private Context mPluginContext = null;
 
-    private View mStatusBarView;
-    private View mNavBarView;
-    private boolean mInputSetup;
-    private boolean mCollapseDesired;
-    private float mStatusBarHeight;
-    private View mNavBarViewGroup;
+    private View mStatusBarView = null;
+    private View mNavBarView = null;
+    private boolean mInputSetup = false;
+    private boolean mCollapseDesired = false;
+    private float mStatusBarHeight = 0.0f;
+    private View mNavBarViewGroup = null;
 
     private ControllerManager mControllerManager; 
 
     IStatusBarService mStatusBarService;
-
-    private final class StatusBarTouchListener implements View.OnTouchListener {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch(event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                {
-                    float x = event.getRawX();
-                    float y = event.getRawY();
-                    Log.e("KSKIM", "######### ACTION_DOWN x="+x+", y="+y);
-                    return true;
-                }
-                case MotionEvent.ACTION_UP:
-                {
-                    float x = event.getRawX();
-                    float y = event.getRawY();
-                    Log.e("KSKIM", "######### ACTION_DOWN x="+x+", y="+y);
-                    break;
-                }
-                default: break;
-            }
-
-            return false;
-        }
-    }
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
@@ -114,7 +89,6 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 "android");
         mStatusBarHeight = mPluginContext.getResources().getDimension(id);
         if (statusBar instanceof ViewGroup) {
-            // statusBar.setOnTouchListener(new StatusBarTouchListener()); 
             /*
             mStatusBarView = LayoutInflater.from(mPluginContext)
                     .inflate(R.layout.statusbar_overlay, (ViewGroup) statusBar, false);
@@ -126,8 +100,6 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
             mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);
             mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)mNavBarViewGroup, false);
             if ( mNavBarView != null ) {
-                mControllerManager = new ControllerManager(mPluginContext, mNavBarView); 
-
                 // todo : test code : The listener should be cleared.
                 mNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
@@ -137,6 +109,9 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                         return true;
                     }
                 });
+
+                mControllerManager = new ControllerManager(mPluginContext, mNavBarView); 
+                
                 /*
                 boolean is_removed_all = false;
                 while( !is_removed_all )

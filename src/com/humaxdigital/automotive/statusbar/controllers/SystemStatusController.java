@@ -22,18 +22,18 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.ISystemCallback; 
 
 public class SystemStatusController implements BaseController {
-    enum MuteStatus { AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-    enum BLEStatus { BLE_0, BLE_1, BLE_2, BLE_3 }
-    enum BTBatteryStatus { BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
-    enum BTCallStatus { STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
+    enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
+    enum BLEStatus { NONE, BLE_0, BLE_1, BLE_2, BLE_3 }
+    enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
+    enum BTCallStatus { NONE, STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
-    enum AntennaStatus { BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
+    enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
         , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
-    enum DataStatus { DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
-    enum WifiStatus { WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
-    enum WirelessChargeStatus { WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
+    enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
+    enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
+    enum WirelessChargeStatus { NONE, WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
         , WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
-    enum ModeStatus { LOCATION_SHARING }
+    enum ModeStatus { NONE, LOCATION_SHARING }
 
     private Context mContext;
     private Resources mRes;
@@ -55,7 +55,7 @@ public class SystemStatusController implements BaseController {
     private StatusIconView mIconWireless;
     private int mWiressState;
     private StatusIconView mIconLocation;
-    private int mLocationState;
+    private ModeStatus mLocationState;
 
     private BatteryManager mBatteryManager; 
     private Intent mBatteryStatus;
@@ -121,6 +121,8 @@ public class SystemStatusController implements BaseController {
             }
         });
 
+        Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_clear, null);
+
         mIconAudio = mStatusBar.findViewById(R.id.img_status_1);
         if ( mIconAudio != null ) {
             Drawable audio_off = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_audio_off, null);
@@ -128,6 +130,7 @@ public class SystemStatusController implements BaseController {
             Drawable naviaudio_off = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_naviaudio_off, null);
             if ( (audio_off != null) && (navi_off !=null) && (naviaudio_off != null) )
             {
+                mIconAudio.setIcon(MuteStatus.NONE.ordinal(), none);
                 mIconAudio.setIcon(MuteStatus.AV_MUTE.ordinal(), audio_off);
                 mIconAudio.setIcon(MuteStatus.NAV_MUTE.ordinal(), navi_off);
                 mIconAudio.setIcon(MuteStatus.AV_NAV_MUTE.ordinal(), naviaudio_off);
@@ -144,6 +147,7 @@ public class SystemStatusController implements BaseController {
             Drawable ble2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null);
             Drawable ble3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_03, null);
             if ( ble0 != null && ble1 != null && ble2 != null && ble3 != null ) {
+                mIconBle.setIcon(BLEStatus.NONE.ordinal(), none);
                 mIconBle.setIcon(BLEStatus.BLE_0.ordinal(), ble0);
                 mIconBle.setIcon(BLEStatus.BLE_1.ordinal(), ble1);
                 mIconBle.setIcon(BLEStatus.BLE_2.ordinal(), ble2);
@@ -164,6 +168,7 @@ public class SystemStatusController implements BaseController {
             Drawable b5 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_battery_05, null);
             if ( (b0 != null) && (b1 != null) && (b2 != null) && (b3 != null) && (b4 != null) && (b5 != null) )
             {
+                mIconBattery.setIcon(BTBatteryStatus.NONE.ordinal(), none);
                 mIconBattery.setIcon(BTBatteryStatus.BT_BATTERY_0.ordinal(), b0);
                 mIconBattery.setIcon(BTBatteryStatus.BT_BATTERY_1.ordinal(), b1);
                 mIconBattery.setIcon(BTBatteryStatus.BT_BATTERY_2.ordinal(), b2);
@@ -185,6 +190,7 @@ public class SystemStatusController implements BaseController {
             Drawable bt_mute = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_bt_mute, null);
             if ( (audio != null) && (hf != null) && (hf_audio != null) && (list_down != null) && (ph_down != null) &&
                     (tmu_calling != null) && (bt_calling != null) && (bt_mute != null) ) {
+                mIconBt.setIcon(BTCallStatus.NONE.ordinal(), none);
                 mIconBt.setIcon(BTCallStatus.STREAMING_CONNECTED.ordinal(), audio);
                 mIconBt.setIcon(BTCallStatus.HANDS_FREE_CONNECTED.ordinal(), hf);
                 mIconBt.setIcon(BTCallStatus.HF_FREE_STREAMING_CONNECTED.ordinal(), hf_audio);
@@ -215,6 +221,7 @@ public class SystemStatusController implements BaseController {
             Drawable sibtno = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_no, null);
             if ( (sino != null) && (si0 != null) && (si1 != null) && (si2 != null) && (si3 != null) && (si4 != null) && (si5 != null)
                     && (sibt1 != null) && (sibt2 != null) && (sibt3 != null) && (sibt4 != null) && (sibt5 != null) && (sibtno != null) ) {
+                mIconSi.setIcon(AntennaStatus.NONE.ordinal(), none);
                 mIconSi.setIcon(AntennaStatus.BT_ANTENNA_NO.ordinal(), sino);
                 mIconSi.setIcon(AntennaStatus.BT_ANTENNA_0.ordinal(), si0);
                 mIconSi.setIcon(AntennaStatus.BT_ANTENNA_1.ordinal(), si1);
@@ -240,6 +247,7 @@ public class SystemStatusController implements BaseController {
             Drawable data_e = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e, null);
             Drawable data_e_dis = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e_dis, null);
             if ( (data_4g != null) && (data_4g_dis != null) && ( data_e != null) && (data_e_dis != null) ) {
+                mIconData.setIcon(DataStatus.NONE.ordinal(), none);
                 mIconData.setIcon(DataStatus.DATA_4G.ordinal(), data_4g);
                 mIconData.setIcon(DataStatus.DATA_4G_NO.ordinal(), data_4g_dis);
                 mIconData.setIcon(DataStatus.DATA_E.ordinal(), data_e);
@@ -255,7 +263,9 @@ public class SystemStatusController implements BaseController {
             Drawable wifi2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wifi_2, null);
             Drawable wifi3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wifi_3, null);
             Drawable wifi4 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wifi_4, null);
+            
             if ( (wifi1 != null) && (wifi2 != null) && (wifi3 != null) && (wifi4 != null) ) {
+                mIconWifi.setIcon(WifiStatus.NONE.ordinal(), none);
                 mIconWifi.setIcon(WifiStatus.WIFI_1.ordinal(), wifi1);
                 mIconWifi.setIcon(WifiStatus.WIFI_2.ordinal(), wifi2);
                 mIconWifi.setIcon(WifiStatus.WIFI_3.ordinal(), wifi3);
@@ -278,6 +288,7 @@ public class SystemStatusController implements BaseController {
             Drawable w100 = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_100, null);
             Drawable werr = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_error, null);
             if ( (w1 != null) && (w2 != null) && (w3 != null) && (w100 != null) && (werr != null) ) {
+                mIconWireless.setIcon(WirelessChargeStatus.NONE.ordinal(), none);
                 mIconWireless.setIcon(WirelessChargeStatus.WIRELESS_CHARGING_1.ordinal(), w1);
                 mIconWireless.setIcon(WirelessChargeStatus.WIRELESS_CHARGING_2.ordinal(), w2);
                 mIconWireless.setIcon(WirelessChargeStatus.WIRELESS_CHARGING_3.ordinal(), w3);
@@ -292,12 +303,19 @@ public class SystemStatusController implements BaseController {
         if ( mIconLocation != null ) {
             Drawable location = ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_location_shar, null);
             if ( location != null ) {
+                mIconLocation.setIcon(ModeStatus.NONE.ordinal(), none);
                 mIconLocation.setIcon(ModeStatus.LOCATION_SHARING.ordinal(), location);
-                // get current location state
-                mLocationState = ModeStatus.LOCATION_SHARING.ordinal();
-                mIconLocation.update(mLocationState);
+                int status = 0; 
+                try {
+                    if ( mService != null ) status = mService.getModeStatus();
+                } catch( RemoteException e ) {
+                    e.printStackTrace();
+                }
+                mLocationState = ModeStatus.values()[status]; 
+                mIconLocation.update(mLocationState.ordinal());
             }
         }
+
         updateBattery();
     }
 
@@ -363,6 +381,9 @@ public class SystemStatusController implements BaseController {
         public void onWirelessChargeStatusChanged(int status) throws RemoteException {
         }
         public void onModeStatusChanged(int status) throws RemoteException {
+            if ( mIconLocation == null ) return;
+            mLocationState = ModeStatus.values()[status]; 
+            mIconLocation.update(mLocationState.ordinal());
         }
     };
 }

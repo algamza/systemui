@@ -23,6 +23,7 @@ import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.annotation.concurrent.GuardedBy;
 
 /**
@@ -54,6 +55,14 @@ public class DataStore {
     private Boolean mAutoModeState = false;
     @GuardedBy("mHvacPowerState")
     private Boolean mHvacPowerState = false;
+    @GuardedBy("mUserId")
+    private Integer mUserId = 0;
+    @GuardedBy("mLocationShare")
+    private Boolean mLocationShare = false; 
+    @GuardedBy("mWifiLevel")
+    private Integer mWifiLevel = 0;
+    @GuardedBy("mDateTime")
+    private String mDateTime = ""; 
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -73,7 +82,106 @@ public class DataStore {
     private long mAutoModeLastSet;
     @GuardedBy("mHvacPowerState")
     private long mHvacPowerLastSet;
+    @GuardedBy("mUserId")
+    private long mUserIdLastSet;
+    @GuardedBy("mLocationShare")
+    private long mLocationShareLastSet; 
+    @GuardedBy("mWifiLevel")
+    private long mWifiLevelLastSet; 
+    @GuardedBy("mDateTime")
+    private long mDateTimeLastSet; 
 
+    public String getDateTime() {
+        synchronized (mDateTime) {
+            return mDateTime;
+        }
+    }
+
+    public void setDateTime(String date) {
+        synchronized (mDateTime) {
+            mDateTime = date;
+            mDateTimeLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateDateTimeUpdate(String date) {
+        synchronized (mDateTime) {
+            if (SystemClock.uptimeMillis() - mDateTimeLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mDateTime = date;
+        }
+        return true;
+    }
+
+    public int getWifiLevel() {
+        synchronized (mWifiLevel) {
+            return mWifiLevel;
+        }
+    }
+
+    public void setWifiLevel(int level) {
+        synchronized (mWifiLevel) {
+            mWifiLevel = level;
+            mWifiLevelLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateWifiLevelUpdate(int level) {
+        synchronized (mWifiLevel) {
+            if (SystemClock.uptimeMillis() - mWifiLevelLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mWifiLevel = level;
+        }
+        return true;
+    }
+
+    public boolean getLocationShareState() {
+        synchronized (mLocationShare) {
+            return mLocationShare;
+        }
+    }
+
+    public void setLocationShareState(boolean share) {
+        synchronized (mLocationShare) {
+            mLocationShare = share;
+            mLocationShareLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateLocationShareUpdate(boolean share) {
+        synchronized (mLocationShare) {
+            if (SystemClock.uptimeMillis() - mLocationShareLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mLocationShare = share;
+        }
+        return true;
+    }
+
+    public int getStatusUserId() {
+        synchronized (mUserId) {
+            return mUserId;
+        }
+    }
+
+    public void setStatusUserId(int userid) {
+        synchronized (mUserId) {
+            mUserId = userid;
+            mUserIdLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateStatusUserIdUpdate(int userid) {
+        synchronized (mUserId) {
+            if (SystemClock.uptimeMillis() - mUserIdLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mUserId = userid;
+        }
+        return true;
+    }
 
     public float getTemperature(int zone) {
         synchronized (mTemperature) {

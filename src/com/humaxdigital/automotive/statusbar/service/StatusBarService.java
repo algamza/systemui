@@ -8,28 +8,19 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.os.RemoteException;
 import android.content.pm.PackageManager;
 import android.os.SystemProperties;
 import android.content.IntentFilter;
-import android.provider.Settings;
 import android.content.BroadcastReceiver;
+import android.widget.Toast; 
 
-import android.os.UserHandle;
-import android.os.UserManager;
-import android.app.ActivityManager;
-import android.content.pm.UserInfo;
-import com.android.internal.util.UserIcons;
-
-import android.graphics.Bitmap;
-
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.bluetooth.BluetoothAdapter; 
+import android.bluetooth.BluetoothManager; 
+import android.bluetooth.BluetoothGatt; 
 
 import android.car.VehicleAreaSeat;
-import android.car.VehicleAreaWindow;
 import android.car.hardware.CarPropertyConfig;
 import android.car.hardware.CarPropertyValue;
 import android.car.hardware.hvac.CarHvacManager;
@@ -39,28 +30,22 @@ import android.support.car.CarConnectionCallback;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Calendar;
-import java.text.SimpleDateFormat;
-import java.text.DateFormat;
 
-import javax.annotation.concurrent.GuardedBy;
 
 public class StatusBarService extends Service {
 
     public static class SystemStatus {
-        enum MuteStatus { AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-        enum BLEStatus { BLE_0, BLE_1, BLE_2, BLE_3 }
-        enum BTBatteryStatus { BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
-        enum BTCallStatus { STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
+        enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
+        enum BLEStatus { NONE, BLE_0, BLE_1, BLE_2, BLE_3 }
+        enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
+        enum BTCallStatus { NONE, STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
             , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
-        enum AntennaStatus { BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
+        enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
             , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
-        enum DataStatus { DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
-        enum WifiStatus { WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
-        enum WirelessChargeStatus { WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
+        enum WirelessChargeStatus { NONE, WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
             , WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
-        enum ModeStatus { LOCATION_SHARING }
     }
+
     public static class ClimateStatus {
         enum SeatStatus { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
         enum ClimateModeStatus { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
@@ -96,6 +81,32 @@ public class StatusBarService extends Service {
         VehicleAreaSeat.SEAT_ROW_2_CENTER | 
         VehicleAreaSeat.SEAT_ROW_2_RIGHT;
 
+    private List<ISystemCallback> mSystemCallbacks = new ArrayList<>();
+    private List<IClimateCallback> mClimateCallbacks = new ArrayList<>();
+    private List<IStatusBarCallback> mStatusBarCallbacks = new ArrayList<>();
+    private List<IDateTimeCallback> mDateTimeCallbacks = new ArrayList<>();
+    private List<IUserProfileCallback> mUserProfileCallbacks = new ArrayList<>();
+
+    private Car mCarApiClient;
+    private CarHvacManager mHvacManager;
+    private Object mHvacManagerReady = new Object();
+
+    private Context mContext = this; 
+    private boolean mIsInitialized = false;
+
+    private BluetoothManager mBTMgr; 
+    private BluetoothAdapter mBTAdapter; 
+
+    private SystemDateTimeController mDateTimeController;
+    private SystemUserProfileController mUserProfileController;
+
+    private SystemDataController mDataController; 
+    private SystemWifiController mWifiController; 
+    private SystemLocationController mLocationController; 
+    private List<BaseController> mControllers = new ArrayList<>(); 
+
+    private DataStore mDataStore = new DataStore();
+
     private final IStatusBarService.Stub mBinder = new IStatusBarService.Stub() {
         public boolean isInitialized() throws RemoteException {
             return mIsInitialized; 
@@ -120,10 +131,16 @@ public class StatusBarService extends Service {
         public int getAntennaStatus() throws RemoteException { return 0; }
         public int getDataStatus() throws RemoteException { return 0; }
         public int getWifiStatus() throws RemoteException { 
-            return getSystemWifiStatus().ordinal(); 
+            if ( mWifiController == null ) return 0; 
+            return mWifiController.get(); 
         }
         public int getWirelessChargeStatus() throws RemoteException { return 0; }
-        public int getModeStatus() throws RemoteException { return 0; }
+
+        public int getModeStatus() throws RemoteException { 
+            if ( mLocationController == null ) return 0; 
+            return mLocationController.get(); 
+        }
+
         public void registerSystemCallback(ISystemCallback callback) throws RemoteException {
             if ( callback == null ) return;
             synchronized (mSystemCallbacks) {
@@ -163,8 +180,10 @@ public class StatusBarService extends Service {
             return getPassengerTemperature(); 
         }
         public void openClimateSetting() throws RemoteException {
-            Intent intent = new Intent(OPEN_HVAC_APP);
-            mContext.sendBroadcast(intent);
+            // todo : open hvac application 
+            //Intent intent = new Intent(OPEN_HVAC_APP);
+            //mContext.sendBroadcast(intent);
+            Toast.makeText(getApplicationContext(), "open climate application", Toast.LENGTH_LONG).show(); 
         }
         public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
             if ( callback == null ) return;
@@ -180,10 +199,12 @@ public class StatusBarService extends Service {
         }
 
         public String getDateTime() throws RemoteException { 
-            return getCurrentTime();
+            if ( mDateTimeController == null ) return null; 
+            return mDateTimeController.get();
          } 
         public void openDateTimeSetting() throws RemoteException {
             // todo : open date time setting 
+            Toast.makeText(getApplicationContext(), "open date time setting", Toast.LENGTH_LONG).show();
         } 
         public void registerDateTimeCallback(IDateTimeCallback callback) throws RemoteException {
             if ( callback == null ) return;
@@ -199,10 +220,12 @@ public class StatusBarService extends Service {
         }
 
         public BitmapParcelable getUserProfileImage() throws RemoteException { 
-            return new BitmapParcelable(getCurrentUserBitmap()); 
+            if ( mUserProfileController == null ) return null; 
+            return new BitmapParcelable(mUserProfileController.get()); 
         } 
         public void openUserProfileSetting() throws RemoteException {
             // todo : open user profile setting 
+            Toast.makeText(getApplicationContext(), "open user profile application", Toast.LENGTH_LONG).show();
         } 
         public void registerUserProfileCallback(IUserProfileCallback callback) throws RemoteException {
             if ( callback == null ) return;
@@ -218,28 +241,6 @@ public class StatusBarService extends Service {
         }
     };
 
-    private List<ISystemCallback> mSystemCallbacks = new ArrayList<>();
-    private List<IClimateCallback> mClimateCallbacks = new ArrayList<>();
-    private List<IStatusBarCallback> mStatusBarCallbacks = new ArrayList<>();
-    private List<IDateTimeCallback> mDateTimeCallbacks = new ArrayList<>();
-    private List<IUserProfileCallback> mUserProfileCallbacks = new ArrayList<>();
-
-    private Car mCarApiClient;
-    private CarHvacManager mHvacManager;
-    private Object mHvacManagerReady = new Object();
-
-    private UserManager mUserManager;
-    private ActivityManager mActivityManager;
-    private Context mContext = this; 
-    private boolean mIsInitialized = false;
-
-    private WifiManager mWifiMgr; 
-    private SystemStatus.WifiStatus mWifiStatus = SystemStatus.WifiStatus.WIFI_1; 
-
-    @GuardedBy("mCallbacks")
-    //private List<Callback> mCallbacks = new ArrayList<>();
-    private DataStore mDataStore = new DataStore();
-
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -248,22 +249,13 @@ public class StatusBarService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
-            if (SystemProperties.getBoolean(DEMO_MODE_PROPERTY, false)) {
-                IBinder binder = (new LocalHvacPropertyService()).getCarPropertyService();
-                initHvacManager(new CarHvacManager(binder, this, new Handler()));
-                return;
-            }
-
-            mCarApiClient = Car.createCar(this, mCarConnectionCallback);
-            mCarApiClient.connect();
-        } 
         
-        requestHvacRefresh();
+        createSystemManager(); 
+        connectSystemManager(); 
+        fetchSystemManager(); 
 
-        connectDateTime();
-        connectUserProfile();
-        connectSystemStatus(); 
+        connectClimate(); 
+        requestFetch();
     }
 
     @Override
@@ -282,9 +274,8 @@ public class StatusBarService extends Service {
         mDateTimeCallbacks.clear();
         mUserProfileCallbacks.clear();
 
-        if ( mContext != null ) {
-            mContext.unregisterReceiver(mDateTimeChangedReceiver);
-        }
+        // todo : unreg controllers listener
+        for ( BaseController controller : mControllers ) controller.disconnect(); 
     }
 
     @Override
@@ -292,125 +283,145 @@ public class StatusBarService extends Service {
         return START_STICKY;
     }
 
-    private void connectSystemStatus() {
-        connectWifiManager(); 
-    }
-
-    private void connectWifiManager() {
-        mWifiMgr = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
-        registerReceiver(mWifiReceiver, filter);
-    }
-
-    // todo : fetch status
-    private SystemStatus.WifiStatus getSystemWifiStatus() {
-        SystemStatus.WifiStatus status = SystemStatus.WifiStatus.WIFI_1; 
-        switch(getWifiSignalLevel()) {
-            case 0: status = SystemStatus.WifiStatus.WIFI_1; break;
-            case 1: status = SystemStatus.WifiStatus.WIFI_2; break;
-            case 2: status = SystemStatus.WifiStatus.WIFI_3; break;
-            case 3: status = SystemStatus.WifiStatus.WIFI_4; break; 
-            default: break; 
+    private void connectClimate() {
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
+            if (SystemProperties.getBoolean(DEMO_MODE_PROPERTY, false)) {
+                IBinder binder = (new LocalHvacPropertyService()).getCarPropertyService();
+                initHvacManager(new CarHvacManager(binder, this, new Handler()));
+                return;
+            }
+            mCarApiClient = Car.createCar(this, mCarConnectionCallback);
+            mCarApiClient.connect();
         }
-        mWifiStatus = status;
-        return mWifiStatus; 
     }
 
-    private int getWifiSignalLevel() {
-        if ( mWifiMgr == null ) return 0; 
-        int numberOfLevels = SystemStatus.WifiStatus.values().length;
-        WifiInfo wifiinfo = mWifiMgr.getConnectionInfo();
-        int level = WifiManager.calculateSignalLevel(wifiinfo.getRssi(), numberOfLevels);
-        return level; 
+    private void createSystemManager() {
+        mDateTimeController = new SystemDateTimeController(mContext, mDataStore); 
+        mDateTimeController.addListener(mDateTimeListener);
+        mControllers.add(mDateTimeController); 
+
+        mUserProfileController = new SystemUserProfileController(mContext, mDataStore); 
+        mUserProfileController.addListener(mUserProfileListener);
+        mControllers.add(mUserProfileController); 
+
+        /*
+        mLocationController = new SystemLocationController(mContext, mDataStore); 
+        mLocationController.addListener(mSytemLocationListener);
+        mControllers.add(mLocationController); 
+        */
+
+        mDataController = new SystemDataController(mContext, mDataStore); 
+        mDataController.addListener(mSytemDataListener);
+        mControllers.add(mDataController); 
+
+        mWifiController = new SystemWifiController(mContext, mDataStore); 
+        mWifiController.addListener(mSytemWifiListener);
+        mControllers.add(mWifiController); 
     }
 
-    private final BroadcastReceiver mWifiReceiver = new BroadcastReceiver() {
+    private void connectSystemManager() {
+        for ( BaseController controller : mControllers ) controller.connect(); 
+    }
+
+    private void fetchSystemManager() {
+        for ( BaseController controller : mControllers ) controller.fetch();
+    }
+
+    private BaseController.Listener mDateTimeListener = new BaseController.Listener<String>() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            synchronized (mSystemCallbacks) {
-                for ( ISystemCallback callback : mSystemCallbacks ) {
-                    try {
-                        callback.onWifiStatusChanged(getSystemWifiStatus().ordinal()); 
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+        public void onEvent(String date) {
+            for ( IDateTimeCallback callback : mDateTimeCallbacks ) {
+                try {
+                    callback.onDateTimeChanged(date); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
             }
         }
-    };
+    }; 
 
-    private void connectDateTime() {
-        if ( mContext == null ) return;
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_TIME_TICK);
-        filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-        filter.addAction(Intent.ACTION_TIME_CHANGED);
-        mContext.registerReceiver(mDateTimeChangedReceiver, filter);
-    }
-
-    private final BroadcastReceiver mDateTimeChangedReceiver = new BroadcastReceiver() {
+    private BaseController.Listener mUserProfileListener = new BaseController.Listener<Bitmap>() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            synchronized (mDateTimeCallbacks) {
-                for ( IDateTimeCallback callback : mDateTimeCallbacks ) {
-                    try {
-                        callback.onDateTimeChanged(getCurrentTime()); 
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+        public void onEvent(Bitmap bitmap) {
+            for ( IUserProfileCallback callback : mUserProfileCallbacks ) {
+                try {
+                    callback.onUserChanged(new BitmapParcelable(bitmap)); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
             }
         }
-    };
+    }; 
 
-    private String getCurrentTime() {
-        DateFormat df = new SimpleDateFormat("h:mm a");
-        return df.format(Calendar.getInstance().getTime());
-    }
-
-    private void connectUserProfile() {
-        if ( mContext == null ) return;
-        mUserManager = (UserManager) mContext.getSystemService(Context.USER_SERVICE); 
-        mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE); 
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_USER_REMOVED);
-        filter.addAction(Intent.ACTION_USER_ADDED);
-        filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
-        filter.addAction(Intent.ACTION_USER_SWITCHED);
-        filter.addAction(Intent.ACTION_USER_STOPPED);
-        filter.addAction(Intent.ACTION_USER_UNLOCKED);
-        mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
-    }
-
-    private final BroadcastReceiver mUserChangeReceiver = new BroadcastReceiver() {
+    private BaseController.Listener mSytemLocationListener = new BaseController.Listener<Integer>() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            synchronized (mUserProfileCallbacks) {
-                for ( IUserProfileCallback callback : mUserProfileCallbacks ) {
-                    try {
-                        callback.onUserChanged(new BitmapParcelable(getCurrentUserBitmap())); 
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+        public void onEvent(Integer status) {
+            for ( ISystemCallback callback : mSystemCallbacks ) {
+                try {
+                    callback.onModeStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
                 }
             }
         }
-    };
+    }; 
 
-    private Bitmap getCurrentUserBitmap() {
-        if ( mUserManager == null || mActivityManager == null ) return null;
-        UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
-        if ( user == null ) return null; 
-        Bitmap bm = mUserManager.getUserIcon(user.id);
-        if ( bm == null ) {
-            bm = UserIcons.convertToBitmap(UserIcons.getDefaultUserIcon(
-                mContext.getResources(), user.id, false));
+    private BaseController.Listener mSytemWifiListener = new BaseController.Listener<Integer>() {
+        @Override
+        public void onEvent(Integer status) {
+            for ( ISystemCallback callback : mSystemCallbacks ) {
+                try {
+                    callback.onWifiStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+    }; 
 
-        return bm; 
+    private BaseController.Listener mSytemDataListener = new BaseController.Listener<Integer>() {
+        @Override
+        public void onEvent(Integer status) {
+            for ( ISystemCallback callback : mSystemCallbacks ) {
+                try {
+                    callback.onDataStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }; 
+
+    private void connectBluetoothManager() {
+        mBTMgr = (BluetoothManager)getApplicationContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        mBTAdapter = mBTMgr.getAdapter(); 
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); 
+        registerReceiver(mBluetoothReceiver, filter);
+        
+        /*
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            finish();
+        }
+        */
+
+        if ( mBTAdapter == null || mBTMgr == null ) return; 
+        if ( !mBTAdapter.isEnabled() ) return;
+
     }
+
+    private void fetchBluetoothStatus() {
+
+    }
+
+    private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Todo : bluetooth 
+        }
+    };
 
     private void initHvacManager(CarHvacManager carHvacManager) {
         mHvacManager = carHvacManager;
@@ -423,8 +434,7 @@ public class StatusBarService extends Service {
         }
     }
 
-    private final CarConnectionCallback mCarConnectionCallback =
-        new CarConnectionCallback() {
+    private final CarConnectionCallback mCarConnectionCallback = new CarConnectionCallback() {
             @Override
             public void onConnected(Car car) {
                 synchronized (mHvacManagerReady) {
@@ -569,13 +579,14 @@ public class StatusBarService extends Service {
     
     private void fetchSeatWarmer(int zone) {
         if ( mHvacManager == null ) return;
-        try {
-            int level = mHvacManager.getIntProperty(
-                CarHvacManager.ID_ZONED_SEAT_TEMP, zone);
+        //try {
+            // todo : crash ( ALM #2009952 ) 
+            int level = 0;//mHvacManager.getIntProperty(CarHvacManager.ID_ZONED_SEAT_TEMP, zone);
+
             mDataStore.setSeatWarmerLevel(zone, level);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchSeatWarmer");
-        }
+        //} catch (android.car.CarNotConnectedException e) {
+        //    Log.e(TAG, "Car not connected in fetchSeatWarmer");
+        //}
     }
 
     public ClimateStatus.SeatStatus getDriverSeatWarmerLevel() {
@@ -788,7 +799,7 @@ public class StatusBarService extends Service {
         return status; 
     }
 
-    public void requestHvacRefresh() {
+    private void requestFetch() {
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... unused) {
