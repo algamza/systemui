@@ -10,9 +10,6 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 import android.os.RemoteException;
 
-import android.os.UserHandle;
-import android.os.BatteryManager; 
-
 import android.util.Log;
 
 import com.humaxdigital.automotive.statusbar.R;
@@ -57,9 +54,6 @@ public class SystemStatusController implements BaseController {
     private StatusIconView mIconLocation;
     private ModeStatus mLocationState;
 
-    private BatteryManager mBatteryManager; 
-    private Intent mBatteryStatus;
-
     private IStatusBarService mService; 
 
     public SystemStatusController(Context context, View view) {
@@ -67,8 +61,6 @@ public class SystemStatusController implements BaseController {
         mContext = context;
         if ( mContext != null ) mRes = mContext.getResources();
         mStatusBar = view;
-        initManager(mContext); 
-        
     }
 
     @Override
@@ -99,15 +91,6 @@ public class SystemStatusController implements BaseController {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if ( mContext != null ) 
-        {
-            mContext.unregisterReceiver(mBatteryReceiver);
-        }
-    }
-    
-    private void initManager(Context context) {
-        if ( context == null ) return;
-        initBattery(context); 
     }
     
     private void initView() {
@@ -315,48 +298,6 @@ public class SystemStatusController implements BaseController {
                 mIconLocation.update(mLocationState.ordinal());
             }
         }
-
-        updateBattery();
-    }
-
-    private final BroadcastReceiver mBatteryReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            /*
-            int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-            boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                                status == BatteryManager.BATTERY_STATUS_FULL;
-    
-            int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-            boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
-            boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
-            */
-            updateBattery(); 
-        }
-    };
-
-    private void initBattery(Context context) {
-        if ( context == null ) return;
-        
-        mBatteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        mBatteryStatus = context.registerReceiver(null, ifilter);
-        
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_BATTERY_LOW);
-        filter.addAction(Intent.ACTION_BATTERY_OKAY);
-        filter.addAction(Intent.ACTION_POWER_CONNECTED);
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
-        context.registerReceiverAsUser(mBatteryReceiver, UserHandle.ALL, filter, null, null);
-    }
-
-    private void updateBattery() {
-        if ( (mIconBattery == null) || (mBatteryStatus == null) ) return;
-        
-        int level = mBatteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-        int scale = mBatteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        float batteryPct = (level / (float)scale) * 100;
-        mIconBattery.update((int)(batteryPct/17)); 
     }
 
     private final ISystemCallback.Stub mSystemCallback = new ISystemCallback.Stub() {

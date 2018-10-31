@@ -97,7 +97,7 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
         }
 
         if ( navBar instanceof ViewGroup ) {
-            mNavBarViewGroup = ((ViewGroup)navBar).getChildAt(0);
+            mNavBarViewGroup = navBar; //((ViewGroup)navBar).getChildAt(0);
             mNavBarView = LayoutInflater.from(mPluginContext).inflate(R.layout.navi_overlay, (ViewGroup)mNavBarViewGroup, false);
             if ( mNavBarView != null ) {
                 // todo : test code : The listener should be cleared.

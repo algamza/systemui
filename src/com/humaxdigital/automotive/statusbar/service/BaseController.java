@@ -22,6 +22,7 @@ public class BaseController<E> {
     public void addListener(Listener listener) { 
         if ( listener != null ) mListeners.add(listener); 
     }
+    
     public void removeListener(Listener listener) { 
         if( listener != null ) mListeners.remove(listener); 
     }

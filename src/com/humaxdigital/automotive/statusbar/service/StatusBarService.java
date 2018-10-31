@@ -304,6 +304,7 @@ public class StatusBarService extends Service {
         mUserProfileController.addListener(mUserProfileListener);
         mControllers.add(mUserProfileController); 
 
+        // todo : security error, add to white list 
         /*
         mLocationController = new SystemLocationController(mContext, mDataStore); 
         mLocationController.addListener(mSytemLocationListener);
