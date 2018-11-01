@@ -33,6 +33,12 @@
                 <action android:name="com.android.systemui.action.PLUGIN_OVERLAY" />
             </intent-filter>
         </service>
+        <service android:name=".StatusBarProxyPluginImpl"
+            android:label="@string/plugin_label">
+            <intent-filter>
+                <action android:name="com.android.systemui.action.PLUGIN_STATUS_BAR_PROXY" />
+            </intent-filter>
+        </service>
         <service 
             android:name=".service.StatusBarService"
             android:exported="true"
