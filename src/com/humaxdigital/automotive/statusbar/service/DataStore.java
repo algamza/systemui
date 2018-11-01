@@ -37,8 +37,6 @@ public class DataStore {
 
     @GuardedBy("mTemperature")
     private SparseArray<Float> mTemperature = new SparseArray<Float>();
-    @GuardedBy("mTemperatureAvailable")
-    private SparseBooleanArray mTemperatureAvailable = new SparseBooleanArray();
     @GuardedBy("mFanSpeed")
     private Integer mFanSpeed = 0;
     @GuardedBy("mAirflow")
@@ -189,27 +187,19 @@ public class DataStore {
         }
     }
 
-    public void setTemperature(int zone, float temperature, boolean available) {
+    public void setTemperature(int zone, float temperature) {
         synchronized (mTemperature) {
-            synchronized (mTemperatureAvailable) {
-                Log.d("HvacDataStore", "setTemperature(" + zone + ", " + temperature + ")");
-                mTemperature.put(zone, temperature);
-                mTemperatureAvailable.put(zone, available);
-                mLastTemperatureSet.put(zone, SystemClock.uptimeMillis());
-            }
+            mTemperature.put(zone, temperature);
+            mLastTemperatureSet.put(zone, SystemClock.uptimeMillis());
         }
     }
 
-    public boolean shouldPropagateTempUpdate(int zone, float temperature, boolean available) {
+    public boolean shouldPropagateTempUpdate(int zone, float temperature) {
         synchronized (mTemperature) {
-            synchronized (mTemperatureAvailable) {
-                if (SystemClock.uptimeMillis() - mLastTemperatureSet.get(zone) < COALESCE_TIME_MS) {
-                    if (available == mTemperatureAvailable.get(zone)) {
-                        return false;
-                    }
-                }
+            if (SystemClock.uptimeMillis() - mLastTemperatureSet.get(zone) < COALESCE_TIME_MS) {
+                return false;
             }
-            setTemperature(zone, temperature, available);
+            setTemperature(zone, temperature);
         }
         return true;
     }
