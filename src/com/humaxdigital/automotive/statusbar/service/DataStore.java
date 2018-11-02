@@ -61,6 +61,10 @@ public class DataStore {
     private Integer mWifiLevel = 0;
     @GuardedBy("mDateTime")
     private String mDateTime = ""; 
+    @GuardedBy("mNetworkDataType")
+    private Integer mNetworkDataType = 0; 
+    @GuardedBy("mNetworkDataUsing")
+    private Boolean mNetworkDataUsing = false; 
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -88,6 +92,42 @@ public class DataStore {
     private long mWifiLevelLastSet; 
     @GuardedBy("mDateTime")
     private long mDateTimeLastSet; 
+    @GuardedBy("mNetworkDataType")
+    private long mNetworkDataTypeLastSet; 
+
+    public int getNetworkDataType() {
+        synchronized (mNetworkDataType) {
+            return mNetworkDataType;
+        }
+    }
+
+    public boolean getNetworkDataUsing() {
+        synchronized (mNetworkDataUsing) {
+            return mNetworkDataUsing;
+        }
+    }
+
+    public void setNetworkData(int type, boolean using) {
+        synchronized (mNetworkDataType) {
+            mNetworkDataType = type;
+            synchronized (mNetworkDataUsing) {
+                mNetworkDataUsing = using; 
+            }
+            mNetworkDataTypeLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateNetworkDataUpdate(int type, boolean using) {
+        synchronized (mNetworkDataType) {
+            if (SystemClock.uptimeMillis() - mNetworkDataTypeLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mNetworkDataUsing == using && mNetworkDataType == type) return false; 
+            mNetworkDataType = type;
+            mNetworkDataUsing = using;
+        }
+        return true;
+    }
 
     public String getDateTime() {
         synchronized (mDateTime) {

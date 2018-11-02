@@ -424,7 +424,10 @@ public class StatusBarService extends Service {
             public int getBTBatteryStatus() throws RemoteException { return 0; }
             public int getBTCallStatus() throws RemoteException { return 0; }
             public int getAntennaStatus() throws RemoteException { return 0; }
-            public int getDataStatus() throws RemoteException { return 0; }
+            public int getDataStatus() throws RemoteException {  
+                if ( mDataController == null ) return 0; 
+                return mDataController.get(); 
+            }
             public int getWifiStatus() throws RemoteException { 
                 if ( mWifiController == null ) return 0; 
                 return mWifiController.get(); 

@@ -46,7 +46,7 @@ public class SystemStatusController implements BaseController {
     private StatusIconView mIconSi;
     private int mSiState;
     private StatusIconView mIconData;
-    private int mDataState;
+    private DataStatus mDataState;
     private StatusIconView mIconWifi;
     private WifiStatus mWifiState;
     private StatusIconView mIconWireless;
@@ -235,9 +235,14 @@ public class SystemStatusController implements BaseController {
                 mIconData.setIcon(DataStatus.DATA_4G_NO.ordinal(), data_4g_dis);
                 mIconData.setIcon(DataStatus.DATA_E.ordinal(), data_e);
                 mIconData.setIcon(DataStatus.DATA_E_NO.ordinal(), data_e_dis);
-                // get current data state
-                mDataState = 3;
-                mIconData.update(mDataState);
+                int status = 0; 
+                try {
+                    if ( mService != null ) status = mService.getDataStatus(); 
+                } catch( RemoteException e ) {
+                    e.printStackTrace();
+                }
+                mDataState = DataStatus.values()[status]; 
+                mIconData.update(mDataState.ordinal());
             }
         }
         mIconWifi = mStatusBar.findViewById(R.id.img_status_7);
@@ -313,6 +318,9 @@ public class SystemStatusController implements BaseController {
         public void onAntennaStatusChanged(int stataus) throws RemoteException {
         }
         public void onDataStatusChanged(int status) throws RemoteException {
+            if ( mIconData == null ) return;
+            mDataState = DataStatus.values()[status]; 
+            mIconData.update(mDataState.ordinal());
         }
         public void onWifiStatusChanged(int status) throws RemoteException {
             if ( mIconWifi == null ) return;
