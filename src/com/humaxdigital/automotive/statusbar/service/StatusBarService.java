@@ -15,12 +15,6 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.widget.Toast; 
 
-/*
-import android.bluetooth.BluetoothAdapter; 
-import android.bluetooth.BluetoothManager; 
-import android.bluetooth.BluetoothGatt; 
-*/
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,14 +23,12 @@ public class StatusBarService extends Service {
 
     private static final String TAG = "StatusBarService";
     
-    private static final String OPEN_HVAC_APP = "android.car.intent.action.TOGGLE_HVAC_CONTROLS";
+    // todo : set intent action 
+    private static final String OPEN_HVAC_APP = "com.humaxdigital.climate.CLIMATE";
     private static final String OPEN_DATE_SETTING = "";
     private static final String OPEN_USERPROFILE_SETTING = "";
     
     private Context mContext = this; 
-    
-    //private BluetoothManager mBTMgr; 
-    //private BluetoothAdapter mBTAdapter; 
 
     private ClimateControllerManager mClimateManager; 
 
@@ -485,10 +477,11 @@ public class StatusBarService extends Service {
                 return (float)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get(); 
             }
             public void openClimateSetting() throws RemoteException {
-                // todo : open hvac application 
-                //Intent intent = new Intent(OPEN_HVAC_APP);
-                //mContext.sendBroadcast(intent);
-                Toast.makeText(getApplicationContext(), "open climate application", Toast.LENGTH_LONG).show(); 
+                if ( !OPEN_HVAC_APP.equals("") ) {
+                    //Intent intent = new Intent(OPEN_HVAC_APP);
+                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //mContext.startActivity(intent); 
+                }
             }
             public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
                 if ( callback == null ) return;
@@ -508,8 +501,10 @@ public class StatusBarService extends Service {
                 return mDateTimeController.get();
              } 
             public void openDateTimeSetting() throws RemoteException {
-                // todo : open date time setting 
-                Toast.makeText(getApplicationContext(), "open date time setting", Toast.LENGTH_LONG).show();
+                if ( !OPEN_DATE_SETTING.equals("") ) {
+                    Intent intent = new Intent(OPEN_DATE_SETTING);
+                    mContext.sendBroadcast(intent);
+                }
             } 
             public void registerDateTimeCallback(IDateTimeCallback callback) throws RemoteException {
                 if ( callback == null ) return;
@@ -529,8 +524,10 @@ public class StatusBarService extends Service {
                 return new BitmapParcelable(mUserProfileController.get()); 
             } 
             public void openUserProfileSetting() throws RemoteException {
-                // todo : open user profile setting 
-                Toast.makeText(getApplicationContext(), "open user profile application", Toast.LENGTH_LONG).show();
+                if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
+                    Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
+                    mContext.sendBroadcast(intent);
+                }
             } 
             public void registerUserProfileCallback(IUserProfileCallback callback) throws RemoteException {
                 if ( callback == null ) return;
@@ -545,36 +542,4 @@ public class StatusBarService extends Service {
                 }
             }
         };
-/*
-    private void connectBluetoothManager() {
-        mBTMgr = (BluetoothManager)getApplicationContext().getSystemService(Context.BLUETOOTH_SERVICE);
-        mBTAdapter = mBTMgr.getAdapter(); 
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); 
-        registerReceiver(mBluetoothReceiver, filter);
-        
-        
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            finish();
-        }
-        
-
-        if ( mBTAdapter == null || mBTMgr == null ) return; 
-        if ( !mBTAdapter.isEnabled() ) return;
-
-    }
-
-    private void fetchBluetoothStatus() {
-
-    }
-
-    private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Todo : bluetooth 
-        }
-    };
-    */
 }
