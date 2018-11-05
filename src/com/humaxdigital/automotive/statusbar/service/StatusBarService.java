@@ -23,8 +23,7 @@ public class StatusBarService extends Service {
 
     private static final String TAG = "StatusBarService";
     
-    // todo : set intent action 
-    private static final String OPEN_HVAC_APP = "com.humaxdigital.climate.CLIMATE";
+    private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
     private static final String OPEN_DATE_SETTING = "";
     private static final String OPEN_USERPROFILE_SETTING = "";
     
@@ -478,9 +477,9 @@ public class StatusBarService extends Service {
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {
-                    //Intent intent = new Intent(OPEN_HVAC_APP);
-                    //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //mContext.startActivity(intent); 
+                    Intent intent = new Intent(OPEN_HVAC_APP);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
                 }
             }
             public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
