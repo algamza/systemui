@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
@@ -43,8 +44,12 @@ public class SystemDataController extends BaseController<Integer> {
     @Override
     public void fetch() {
         if ( mConnectivity == null || mTelephony == null || mDataStore == null ) return;
-        boolean isAvailable = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isAvailable();
-        boolean isConnected = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+
+        final NetworkInfo netInfo = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (netInfo == null)  return;
+
+        final boolean isAvailable = netInfo.isAvailable();
+        final boolean isConnected = netInfo.isConnectedOrConnecting();
         int type = mTelephony.getNetworkType();
         // todo : Check status when wifi is connected
         if ( isAvailable && isConnected ) {
@@ -123,8 +128,12 @@ public class SystemDataController extends BaseController<Integer> {
         @Override
         public void onReceive(Context context, Intent intent) {
             if ( mConnectivity == null || mTelephony == null || mDataStore == null ) return;
-            boolean isAvailable = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isAvailable();
-            boolean isConnected = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+
+            final NetworkInfo netInfo = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if (netInfo == null)  return;
+
+            final boolean isAvailable = netInfo.isAvailable();
+            final boolean isConnected = netInfo.isConnectedOrConnecting();
             int type = mTelephony.getNetworkType();
             // todo : Check status when wifi is connected
             if ( isAvailable && isConnected ) {
@@ -156,4 +165,5 @@ public class SystemDataController extends BaseController<Integer> {
             }
         }
     };
+
 }
