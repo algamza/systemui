@@ -4,13 +4,16 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.car.hardware.hvac.CarHvacManager;
+
+import android.extension.car.CarHvacManagerEx;
 import android.support.car.CarNotConnectedException;
 
 public class ClimateAirCirculationController extends ClimateBaseController<Boolean> {
     private static final String TAG = "ClimateAirCirculationController";
     
-    public ClimateAirCirculationController(Context context, DataStore store, CarHvacManager manager) {
+    public ClimateAirCirculationController(Context context, DataStore store, CarHvacManagerEx manager) {
         super(context, store, manager);
     }
     
@@ -18,10 +21,11 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
         try {
+            Log.d("KSKIM2", "ClimateAirCirculationController : fetch"); 
             mDataStore.setAirCirculationState(
                 mManager.getBooleanProperty(
                     CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON,
-                    ClimateControllerManager.SEAT_ALL));
+                    ClimateControllerManager.HVAC_ALL));
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchAirCirculationState");
         }
@@ -30,6 +34,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public Boolean update(Boolean e) {
         if ( mDataStore == null ) return false;
+        Log.d("KSKIM2", "ClimateAirCirculationController : update e="+e); 
         if ( !mDataStore.shouldPropagateAirCirculationUpdate(e) ) return false;
         return true;
     }
@@ -37,6 +42,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public Boolean get() {
         if ( mDataStore == null ) return false;
+        Log.d("KSKIM2", "ClimateAirCirculationController : get"); 
         return mDataStore.getAirCirculationState();
     }
 
@@ -47,9 +53,10 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... unused) {
                 try {
-                    mManager.setBooleanProperty(
-                            CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON,
-                            ClimateControllerManager.SEAT_ALL, e);
+                    Log.d("KSKIM2", "ClimateAirCirculationController : set e=" + e); 
+                    mManager.setIntProperty(
+                            VehicleProperty.VENDOR_CANTX_HVAC_RECIRC,
+                            0, e?1:0);
                 } catch (android.car.CarNotConnectedException err) {
                     Log.e(TAG, "Car not connected in setAcState");
                 }

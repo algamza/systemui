@@ -3,28 +3,32 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
+import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
+import android.extension.car.CarHvacManagerEx;
+
 import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
 public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanSpeedController";
     private enum FanSpeedStatus { STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
-    private final int mZone = ClimateControllerManager.SEAT_ALL; 
+    private final int mZone = ClimateControllerManager.HVAC_ALL; 
 
     public ClimateFanSpeedController(Context context, 
-        DataStore store, CarHvacManager manager) {
+        DataStore store, CarHvacManagerEx manager) {
         super(context, store, manager);
     }
     
     @Override
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
-        try {
-            mDataStore.setFanSpeed(mManager.getIntProperty(
-                    CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, mZone));
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanSpeed");
-        }
+        //try {
+            int speed = 0;  //mManager.getIntProperty(
+                //CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
+            mDataStore.setFanSpeed(speed);
+        //} catch (android.car.CarNotConnectedException e) {
+        //    Log.e(TAG, "Car not connected in fetchFanSpeed");
+        //}
     }
 
     @Override

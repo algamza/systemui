@@ -28,7 +28,8 @@ LOCAL_STATIC_ANDROID_LIBRARIES := \
 
 LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 	android.support.car \
-	androidx.legacy_legacy-support-v4
+	androidx.legacy_legacy-support-v4 \
+	android.extension.car
 	  
 LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
 

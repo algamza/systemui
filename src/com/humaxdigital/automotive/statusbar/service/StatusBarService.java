@@ -445,7 +445,9 @@ public class StatusBarService extends Service {
      
             public float getDRTemperature() throws RemoteException { 
                 if ( mClimateManager == null ) return 0.0f; 
-                return (float)mClimateManager.getController(ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE).get(); 
+                
+                return ClimateControllerManager.tempHexToPhy((int)mClimateManager.getController(
+                    ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE).get()); 
             }
             public int getDRSeatStatus() throws RemoteException { 
                 if ( mClimateManager == null ) return 0; 
@@ -473,7 +475,8 @@ public class StatusBarService extends Service {
              }
             public float getPSTemperature() throws RemoteException { 
                 if ( mClimateManager == null ) return 0; 
-                return (float)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get(); 
+                return ClimateControllerManager.tempHexToPhy((int)mClimateManager.getController(
+                    ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get()); 
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {

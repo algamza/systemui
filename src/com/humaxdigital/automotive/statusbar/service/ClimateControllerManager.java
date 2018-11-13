@@ -8,13 +8,24 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import android.content.ServiceConnection;
+import android.content.ComponentName;
+
+import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
+import android.hardware.automotive.vehicle.V2_0.VehicleArea;
+import android.hardware.automotive.vehicle.V2_0.VehicleAreaWindow;
+import android.hardware.automotive.vehicle.V2_0.VehicleAreaSeat;
+import android.hardware.automotive.vehicle.V2_0.VehicleAreaDoor;
+
 import android.car.hardware.hvac.CarHvacManager;
-import android.car.hardware.CarPropertyConfig;
+import android.car.hardware.CarVendorExtensionManager;
 import android.car.hardware.CarPropertyValue;
-import android.car.VehicleAreaSeat;
-import android.support.car.Car;
-import android.support.car.CarNotConnectedException;
-import android.support.car.CarConnectionCallback;
+
+import android.car.Car;
+import android.car.CarNotConnectedException;
+
+import android.extension.car.CarEx;
+import android.extension.car.CarHvacManagerEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,31 +42,35 @@ public class ClimateControllerManager {
         FAN_SPEED,
         FAN_DIRECTION
     }
-    private static final String DEMO_MODE_PROPERTY = "android.car.hvac.demo";
 
-    public static final int DRIVER_ZONE_ID = 
-        VehicleAreaSeat.SEAT_ROW_1_LEFT |
-        VehicleAreaSeat.SEAT_ROW_2_LEFT | 
-        VehicleAreaSeat.SEAT_ROW_2_CENTER;
+    public static final int SEAT_DRIVER = 
+        VehicleAreaSeat.ROW_1_LEFT;
 
-    public static final int PASSENGER_ZONE_ID = 
-        VehicleAreaSeat.SEAT_ROW_1_RIGHT |
-        VehicleAreaSeat.SEAT_ROW_2_RIGHT;
+    public static final int SEAT_PASSENGER = 
+        VehicleAreaSeat.ROW_1_RIGHT;
+    
+    public static final int HVAC_LEFT = 
+        VehicleAreaSeat.ROW_1_LEFT |
+        VehicleAreaSeat.ROW_2_LEFT |
+        VehicleAreaSeat.ROW_2_CENTER;
 
-    // todo : Hardware specific value for the front seats
-    public static final int SEAT_ALL = 
-        VehicleAreaSeat.SEAT_ROW_1_LEFT |
-        VehicleAreaSeat.SEAT_ROW_1_RIGHT | 
-        VehicleAreaSeat.SEAT_ROW_2_LEFT |
-        VehicleAreaSeat.SEAT_ROW_2_CENTER | 
-        VehicleAreaSeat.SEAT_ROW_2_RIGHT;
+    public static final int HVAC_RIGHT = 
+        VehicleAreaSeat.ROW_1_RIGHT |
+        VehicleAreaSeat.ROW_2_RIGHT; 
+
+    //public static final int SEAT_ALL = 
+    //    SEAT_DRIVER | SEAT_PASSENGER; 
+
+    public static final int HVAC_ALL = 
+        HVAC_LEFT | HVAC_RIGHT; 
 
     private Context mContext; 
     private DataStore mDataStore;
     private boolean mIsInitialized = false;
 
-    private Car mCarApiClient;
-    private CarHvacManager mHvacManager;
+    private CarEx mCarApi;
+    private CarHvacManagerEx mCarHvacManagerEx;
+
     private Object mHvacManagerReady = new Object();
     
     private ClimateListener mListener; 
@@ -95,22 +110,21 @@ public class ClimateControllerManager {
     public void connect() {
         if ( mContext == null ) return; 
         if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
-            if (SystemProperties.getBoolean(DEMO_MODE_PROPERTY, false)) {
-                IBinder binder = (new LocalHvacPropertyService()).getCarPropertyService();
-                initHvacManager(new CarHvacManager(binder, mContext, new Handler()));
-                return;
-            }
-            mCarApiClient = Car.createCar(mContext, mCarConnectionCallback);
-            mCarApiClient.connect();
+            mCarApi = CarEx.createCar(mContext, mServiceConnectionListenerClient);
+            mCarApi.connect();
         }
     }
 
     public void disconnect()  {
-        if (mHvacManager != null) {
-            mHvacManager.unregisterCallback(mHardwareCallback);
+        if ( mCarHvacManagerEx != null ) {
+            try {
+                mCarHvacManagerEx.unregisterCallback(mHvacCallback);
+            } catch (CarNotConnectedException e) {
+                Log.e(TAG, "Car is not connected!", e);
+            }
         }
-        if (mCarApiClient != null) {
-            mCarApiClient.disconnect();
+        if ( mCarApi != null ) {
+            mCarApi.disconnect();
         }
     }
 
@@ -139,61 +153,65 @@ public class ClimateControllerManager {
         return mIsInitialized; 
     }
 
-    private void initHvacManager(CarHvacManager carHvacManager) {
-        mHvacManager = carHvacManager;
-        createControllers(); 
-        List<CarPropertyConfig> properties = null;
-        try {
-            properties = mHvacManager.getPropertyList();
-            mHvacManager.registerCallback(mHardwareCallback);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in HVAC");
-        }
-    }
 
     private void createControllers() {
-        mAirCirculation = new ClimateAirCirculationController(mContext, mDataStore, mHvacManager); 
+        mAirCirculation = new ClimateAirCirculationController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mAirCirculation); 
-        mDRSeat = new ClimateDRSeatController(mContext, mDataStore, mHvacManager); 
+        mDRSeat = new ClimateDRSeatController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mDRSeat); 
-        mDRTemp = new ClimateDRTempController(mContext, mDataStore, mHvacManager); 
+        mDRTemp = new ClimateDRTempController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mDRTemp); 
-        mFanDirection = new ClimateFanDirectionController(mContext, mDataStore, mHvacManager); 
+        mFanDirection = new ClimateFanDirectionController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mFanDirection); 
-        mFanSpeed = new ClimateFanSpeedController(mContext, mDataStore, mHvacManager); 
+        mFanSpeed = new ClimateFanSpeedController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mFanSpeed); 
-        mPSSeat = new ClimatePSSeatController(mContext, mDataStore, mHvacManager); 
+        mPSSeat = new ClimatePSSeatController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mPSSeat); 
-        mPSTemp = new ClimatePSTempController(mContext, mDataStore, mHvacManager); 
+        mPSTemp = new ClimatePSTempController(mContext, mDataStore, mCarHvacManagerEx); 
         mControllers.add(mPSTemp); 
     }
 
-    private final CarConnectionCallback mCarConnectionCallback = new CarConnectionCallback() {
-        @Override
-        public void onConnected(Car car) {
-            synchronized (mHvacManagerReady) {
+    private final ServiceConnection mServiceConnectionListenerClient =
+            new ServiceConnection () {
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            synchronized (this) {
                 try {
-                    initHvacManager((CarHvacManager) mCarApiClient.getCarManager(
-                            android.car.Car.HVAC_SERVICE));
-                    mHvacManagerReady.notifyAll();
+                    mCarHvacManagerEx = (CarHvacManagerEx)mCarApi.getCarManager(android.car.Car.HVAC_SERVICE);
                 } catch (CarNotConnectedException e) {
-                    Log.e(TAG, "Car not connected in onServiceConnected");
+                    Log.e(TAG, "Car is not connected!", e);
+                }
+                
+                createControllers(); 
+                
+                try {
+                    mCarHvacManagerEx.registerCallback(mHvacCallback);
+                } catch (CarNotConnectedException e) {
+                    Log.e(TAG, "Car is not connected!", e);
+                }
+
+                synchronized (mHvacManagerReady) {
+                    mHvacManagerReady.notifyAll();
                 }
             }
         }
 
-        @Override
-        public void onDisconnected(Car car) {
+        public void onServiceDisconnected(ComponentName name) {
+            synchronized (this) {
+                Log.d(TAG, "Disconnect from Car Service");
+                mCarHvacManagerEx = null;
+            }
         }
     };
 
-    private final CarHvacManager.CarHvacEventCallback mHardwareCallback =
-        new CarHvacManager.CarHvacEventCallback() {
+    private final CarHvacManagerEx.CarHvacExEventCallback mHvacCallback =
+        new CarHvacManagerEx.CarHvacExEventCallback () {
             @Override
             public void onChangeEvent(final CarPropertyValue val) {
-                Log.d(TAG, "HVAC event, id: " + val.getPropertyId());
+                int id = val.getPropertyId(); 
                 int areaId = val.getAreaId();
-                switch (val.getPropertyId()) {
+                Log.d(TAG, "HVAC event, id: " + id + ", area: " + areaId);
+                switch (id) {
+                    /*
                     case CarHvacManager.ID_ZONED_FAN_DIRECTION:
                         handleFanPositionUpdate(areaId, getValue(val));
                         break;
@@ -209,15 +227,21 @@ public class ClimateControllerManager {
                     case CarHvacManager.ID_ZONED_SEAT_TEMP:
                         handleSeatWarmerUpdate(areaId, getValue(val));
                         break;
+                        */
+                    case CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON:
+                        handleAirCirculationUpdate(getValue(val));
+                        break;
                     default:
                         if (Log.isLoggable(TAG, Log.DEBUG)) {
-                            Log.d(TAG, "Unhandled HVAC event, id: " + val.getPropertyId());
+                            Log.d(TAG, "Unhandled HVAC event, id: " + id);
                         }
                 }
             }
 
             @Override
             public void onErrorEvent(final int propertyId, final int zone) {
+                Log.w(TAG, "onErrorEvent() :  propertyId = 0x" 
+                    + Integer.toHexString(propertyId) + ", zone = 0x" + Integer.toHexString(zone));
             }
         };
 
@@ -227,7 +251,7 @@ public class ClimateControllerManager {
             protected Void doInBackground(Void... unused) {
 
                 synchronized (mHvacManagerReady) {
-                    while (mHvacManager == null) {
+                    while (mCarHvacManagerEx == null) {
                         try {
                             mHvacManagerReady.wait();
                         } catch (InterruptedException e) {
@@ -250,29 +274,30 @@ public class ClimateControllerManager {
         };
         task.execute();
     }
-
     
     private void handleTempUpdate(CarPropertyValue value) {
         if ( mDRTemp == null || mPSTemp == null ) return; 
         final int zone = value.getAreaId();
-        final float temp = (Float)value.getValue();
+        final int temp = (int)value.getValue();
         final boolean available = value.getStatus() == CarPropertyValue.STATUS_AVAILABLE;
         
-        if (zone == VehicleAreaSeat.SEAT_ROW_1_LEFT) {
+        Log.d("KSKIM2", "zone=" + zone + ", temp=" + temp + ", available=" + available); 
+
+        if (zone == VehicleAreaSeat.ROW_1_LEFT) {
             if ( mDRTemp.update(temp) ) 
                 if ( mListener != null ) 
-                    mListener.onDriverTemperatureChanged(mDRTemp.get());
+                    mListener.onDriverTemperatureChanged(tempHexToPhy(mDRTemp.get()));
         } else {
             if ( mPSTemp.update(temp) ) 
                 if ( mListener != null ) 
-                    mListener.onPassengerTemperatureChanged(mPSTemp.get());
+                    mListener.onPassengerTemperatureChanged(tempHexToPhy(mPSTemp.get()));
         }
     }
 
     private void handleSeatWarmerUpdate(int zone, int level) {
         if ( mDRSeat == null || mPSSeat == null ) return; 
         
-        if (zone == VehicleAreaSeat.SEAT_ROW_1_LEFT) {
+        if (zone == SEAT_DRIVER) {
             if ( mDRSeat.update(level) ) 
                 if ( mListener != null ) 
                     mListener.onDriverSeatStatusChanged(mDRSeat.get());
@@ -304,5 +329,14 @@ public class ClimateControllerManager {
         if ( mFanDirection.update(position) )
             if ( mListener != null ) 
                 mListener.onFanDirectionChanged(mFanDirection.get());
+    }
+
+    static public float tempHexToPhy(int hex) {
+        if ( hex < 0x01 || 
+            hex == 0xfe || 
+            hex == 0xff || 
+            hex > 0x24 ) return -1.0f; 
+        float phy = hex*0.5f + 14; 
+        return phy; 
     }
 }
