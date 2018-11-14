@@ -3,6 +3,7 @@
 
 package com.humaxdigital.automotive.statusbar;
 
+import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,10 +15,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import com.android.systemui.plugins.StatusBarProxyPlugin;
 import com.android.systemui.plugins.annotations.Requires;
@@ -31,7 +34,9 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     private Context mSysUiContext;
     private Context mPluginContext;
     private WindowManager mWindowManager;
+    private ViewGroup mNavBarWindow;
     private View mNavBarView;
+    private View mDevNavView;
     private ControllerManager mControllerManager; 
     IStatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
@@ -44,8 +49,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
 
         startStatusBarService(mPluginContext); 
 
-        mNavBarView = (ViewGroup) View.inflate(mPluginContext, R.layout.navi_overlay, null);
-
+        mNavBarWindow = (ViewGroup) View.inflate(mPluginContext, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
@@ -57,17 +61,86 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
         lp.setTitle("HmxStatusBar");
         lp.windowAnimations = 0;
 
-        mWindowManager.addView(mNavBarView, lp);
+        mWindowManager.addView(mNavBarWindow, lp);
+
+        mNavBarView = inflateNavBarView();
+        mDevNavView = inflateDevNavBarView();
 
         mControllerManager = new ControllerManager(mPluginContext, mNavBarView); 
+
+        setContentBarView(mNavBarView);
     }
 
     @Override
     public void onDestroy() {
-        if (mNavBarView != null) {
-            mWindowManager.removeViewImmediate(mNavBarView);
-            mNavBarView = null;
+        if (mNavBarWindow != null) {
+            mWindowManager.removeViewImmediate(mNavBarWindow);
+            mNavBarWindow = null;
         }
+    }
+
+    public View inflateNavBarView() {
+        final View view = View.inflate(mPluginContext, R.layout.navi_overlay, null);
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setContentBarView(mDevNavView);
+                return true;
+            }
+        });
+        return view;
+    }
+
+    public View inflateDevNavBarView() {
+        final View devNavBarView = View.inflate(mPluginContext, R.layout.dev_nav_bar, null);
+        devNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setContentBarView(mNavBarView);
+                return true;
+            }
+        });
+
+        final Button btnAppList = (Button) devNavBarView.findViewById(R.id.btnAppList);
+        btnAppList.setOnClickListener(view -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.setClassName("com.humaxdigital.automotive.dn8clauncher",
+                                "com.humaxdigital.automotive.dn8clauncher.AppListActivity");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mSysUiContext.startActivity(intent);
+        });
+
+        final Button btnGoHome = (Button) devNavBarView.findViewById(R.id.btnGoHome);
+        btnGoHome.setOnClickListener(view -> {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mSysUiContext.startActivity(intent);
+        });
+
+        final Button btnGoBack = (Button) devNavBarView.findViewById(R.id.btnGoBack);
+        btnGoBack.setOnClickListener(view -> {
+            injectKeyEvent(KeyEvent.KEYCODE_BACK);
+        });
+
+        return devNavBarView;
+    }
+
+    public void setContentBarView(View view) {
+        mNavBarWindow.removeAllViews();
+        mNavBarWindow.addView(view);
+    }
+
+    public void injectKeyEvent(int keyCode) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Instrumentation instrumentation = new Instrumentation();
+                instrumentation.sendKeyDownUpSync(keyCode);
+            }
+        }).start();
     }
 
     @Override

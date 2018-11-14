@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">statusbar</string>
     <string name="plugin_label">statusbar plugin</string>
+    <string name="apps">Apps</string>
+    <string name="home">Home</string>
+    <string name="back">Back</string>
 </resources>
