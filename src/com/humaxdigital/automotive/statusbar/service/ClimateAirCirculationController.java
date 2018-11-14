@@ -20,12 +20,12 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
-        try {
-            Log.d("KSKIM2", "ClimateAirCirculationController : fetch"); 
-            mDataStore.setAirCirculationState(
-                mManager.getBooleanProperty(
-                    CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON,
-                    ClimateControllerManager.HVAC_ALL));
+        try { 
+            boolean val = mManager.getBooleanProperty(
+                CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON,
+                ClimateControllerManager.HVAC_ALL); 
+            Log.d(TAG, "fetch="+val);
+            mDataStore.setAirCirculationState(val);
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchAirCirculationState");
         }
@@ -34,7 +34,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public Boolean update(Boolean e) {
         if ( mDataStore == null ) return false;
-        Log.d("KSKIM2", "ClimateAirCirculationController : update e="+e); 
+        Log.d(TAG, "update="+e); 
         if ( !mDataStore.shouldPropagateAirCirculationUpdate(e) ) return false;
         return true;
     }
@@ -42,8 +42,9 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public Boolean get() {
         if ( mDataStore == null ) return false;
-        Log.d("KSKIM2", "ClimateAirCirculationController : get"); 
-        return mDataStore.getAirCirculationState();
+        boolean val = mDataStore.getAirCirculationState(); 
+        Log.d(TAG, "get="+val); 
+        return val;
     }
 
     @Override
@@ -53,10 +54,8 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... unused) {
                 try {
-                    Log.d("KSKIM2", "ClimateAirCirculationController : set e=" + e); 
-                    mManager.setIntProperty(
-                            VehicleProperty.VENDOR_CANTX_HVAC_RECIRC,
-                            0, e?1:0);
+                    Log.d(TAG, "set="+e); 
+                    mManager.setIntProperty(VehicleProperty.VENDOR_CANTX_HVAC_RECIRC, 0, e?0x1:0x0);
                 } catch (android.car.CarNotConnectedException err) {
                     Log.e(TAG, "Car not connected in setAcState");
                 }

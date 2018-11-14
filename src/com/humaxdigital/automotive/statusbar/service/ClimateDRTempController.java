@@ -9,7 +9,7 @@ import android.extension.car.CarHvacManagerEx;
 import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
-public class ClimateDRTempController extends ClimateBaseController<Integer> {
+public class ClimateDRTempController extends ClimateBaseController<Float> {
     private static final String TAG = "ClimateDRTempController";
     final int mZone = ClimateControllerManager.SEAT_DRIVER; 
 
@@ -21,26 +21,31 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
     @Override
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
-        //try {
-            int value = 0x20;//mManager.getIntProperty(
-                //VehicleProperty.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
-            mDataStore.setTemperature(mZone, value);
-        //} catch (android.car.CarNotConnectedException e) {
-        //    Log.e(TAG, "Car not connected in fetchTemperature");
-        //}
+        try {
+            int value = mManager.getIntProperty(
+                VehicleProperty.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
+            float f = ClimateControllerManager.tempHexToPhy(value); 
+            Log.d(TAG, "fetch="+f+", value="+value); 
+            mDataStore.setTemperature(mZone, f);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchTemperature");
+        }
     }
 
     @Override
-    public Boolean update(Integer e) {
+    public Boolean update(Float e) {
         if ( mDataStore == null ) return false;
+        Log.d(TAG, "update="+e); 
         if ( !mDataStore.shouldPropagateTempUpdate(mZone, e) ) 
             return false;
         return true;
     }
 
     @Override
-    public Integer get() {
-        if ( mDataStore == null ) return 0;
-        return mDataStore.getTemperature(mZone); 
+    public Float get() {
+        if ( mDataStore == null ) return 0.0f;
+        float val = mDataStore.getTemperature(mZone); 
+        Log.d(TAG, "get="+val); 
+        return val; 
     }
 }

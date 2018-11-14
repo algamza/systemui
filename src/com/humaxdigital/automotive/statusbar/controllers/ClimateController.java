@@ -19,7 +19,7 @@ import com.humaxdigital.automotive.statusbar.service.IClimateCallback;
 public class ClimateController implements BaseController {
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
     private enum ClimateModeState { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
-    private enum BlowerSpeed { STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
+    private enum BlowerSpeed { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
 
     private IStatusBarService mService; 
     private Context mContext;
@@ -32,12 +32,13 @@ public class ClimateController implements BaseController {
     private ClimateView mSeatDRView;
     private SeatState mSeatDRState = SeatState.NONE;
     private ClimateView mIntakeView;
+    private ClimateView mIntakeOnOffView;
     private boolean mIntakeState = false;
     private ClimateView mClimateModeView;
     private ClimateModeState mClimateModeState = ClimateModeState.FLOOR;
     private ClimateView mBlowerView;
     private ClimateText mBlowerText;
-    private BlowerSpeed mBlowerSpeed = BlowerSpeed.STEP1;
+    private BlowerSpeed mBlowerSpeed = BlowerSpeed.STEP0;
     private ClimateView mSeatPSView;
     private SeatState mSeatPSState = SeatState.NONE;
     private ClimateText mTempPSIntText;
@@ -138,13 +139,16 @@ public class ClimateController implements BaseController {
             mSeatDRView.update(mSeatDRState.ordinal());
         }
 
+        mIntakeOnOffView = mClimate.findViewById(R.id.climate_intake_on);
         mIntakeView = mClimate.findViewById(R.id.climate_intake);
-        if ( mIntakeView != null ) {
-            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car, null);
-            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_disable, null);
-            if ( on != null && off != null ) {
-                mIntakeView.addIcon(1, on);
-                mIntakeView.addIcon(0, off);
+        if ( mIntakeView != null && mIntakeOnOffView != null) {
+            Drawable car = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car, null);
+            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null);
+            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null);
+            if ( car != null && on != null && off != null ) {
+                mIntakeView.addIcon(0, car);
+                mIntakeOnOffView.addIcon(1, on);
+                mIntakeOnOffView.addIcon(0, off);
             }
 
             try {
@@ -153,16 +157,17 @@ public class ClimateController implements BaseController {
                 e.printStackTrace();
             }
 
-            mIntakeView.update(mIntakeState ? 1 : 0);
+            mIntakeView.update(0);
+            mIntakeOnOffView.update(mIntakeState ? 1 : 0);
             mIntakeView.setListener(new ClimateView.ClickListener() {
                 @Override
                 public void onClicked(int state) {
-                    if ( state == 0 ) {
-                        mIntakeView.update(1);
+                    if ( !mIntakeState ) {
+                        mIntakeOnOffView.update(1);
                         mIntakeState = true;
                     } else {
                         mIntakeState = false;
-                        mIntakeView.update(0);
+                        mIntakeOnOffView.update(0);
                     }
                     
                     try {
@@ -199,10 +204,11 @@ public class ClimateController implements BaseController {
         mBlowerView = mClimate.findViewById(R.id.climate_blower_img);
         mBlowerText = mClimate.findViewById(R.id.climate_blower_text);
         if ( mBlowerView != null && mBlowerText != null ) {
-            Drawable img = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null);
-            if ( img != null ) {
-                mBlowerView.addIcon(0, img);
-                mBlowerView.update(0);
+            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null);
+            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_d, null);
+            if ( on != null && off != null ) {
+                mBlowerView.addIcon(0, off);
+                mBlowerView.addIcon(1, on);
             }
             
             int status = 0; 
@@ -212,7 +218,15 @@ public class ClimateController implements BaseController {
                 e.printStackTrace();
             }
             mBlowerSpeed = BlowerSpeed.values()[status]; 
-            mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()));
+
+            if ( mBlowerSpeed == BlowerSpeed.STEPOFF ) {
+                mBlowerView.update(0);
+                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+            } else {
+                mBlowerView.update(1);
+                mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()-1));
+                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+            }
         }
 
         mSeatPSView = mClimate.findViewById(R.id.climate_seat_ps);
@@ -283,9 +297,9 @@ public class ClimateController implements BaseController {
             mSeatDRView.update(mSeatDRState.ordinal());
         }
         public void onAirCirculationChanged(boolean isOn) throws RemoteException {
-            if ( mIntakeView == null ) return; 
+            if ( mIntakeView == null || mIntakeOnOffView == null ) return; 
             mIntakeState = isOn;
-            mIntakeView.update(mIntakeState ? 1:0);
+            mIntakeOnOffView.update(mIntakeState ? 1:0);
         }
         public void onFanDirectionChanged(int direction) throws RemoteException {
             if ( mClimateModeView == null ) return; 
@@ -295,7 +309,15 @@ public class ClimateController implements BaseController {
         public void onBlowerSpeedChanged(int status) throws RemoteException {
             if ( mBlowerText == null ) return;
             mBlowerSpeed = BlowerSpeed.values()[status]; 
-            mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()));
+
+            if ( mBlowerSpeed == BlowerSpeed.STEPOFF ) {
+                mBlowerView.update(0);
+                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+            } else {
+                mBlowerView.update(1);
+                mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()-1));
+                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+            }
         }
         public void onPSSeatStatusChanged(int status) throws RemoteException {
             if ( mSeatPSView == null ) return;

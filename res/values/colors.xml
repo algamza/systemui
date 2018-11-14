@@ -6,4 +6,5 @@
     <color name="colorPanelMain">#000000</color>
     <color name="colorStatusBarText">#ffffff</color>
     <color name="colorClimateText">#ffffff</color>
+    <color name="colorClimateBlowerOff">#596172</color>
 </resources>

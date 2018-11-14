@@ -3,7 +3,6 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.extension.car.CarHvacManagerEx;
 
 import android.car.hardware.hvac.CarHvacManager;
@@ -11,7 +10,7 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanSpeedController";
-    private enum FanSpeedStatus { STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
+    private enum FanSpeedStatus { STEP_OFF, STEP_0, STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
     private final int mZone = ClimateControllerManager.HVAC_ALL; 
 
     public ClimateFanSpeedController(Context context, 
@@ -22,18 +21,20 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     @Override
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
-        //try {
-            int speed = 0;  //mManager.getIntProperty(
-                //CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
+        try {
+            int speed = mManager.getIntProperty(
+                CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
+            Log.d(TAG, "fetch="+speed); 
             mDataStore.setFanSpeed(speed);
-        //} catch (android.car.CarNotConnectedException e) {
-        //    Log.e(TAG, "Car not connected in fetchFanSpeed");
-        //}
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanSpeed");
+        }
     }
 
     @Override
     public Boolean update(Integer e) {
         if ( mDataStore == null ) return false;
+        Log.d(TAG, "update="+e); 
         if ( !mDataStore.shouldPropagateFanSpeedUpdate(mZone, e) ) return false;
         return true;
     }
@@ -41,21 +42,24 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     @Override
     public Integer get() {
         if ( mDataStore == null ) return 0;
-        return convertToStatus(mDataStore.getFanSpeed()).ordinal(); 
+        int speed = mDataStore.getFanSpeed(); 
+        Log.d(TAG, "get="+speed); 
+        return convertToStatus(speed).ordinal(); 
     }
 
     private FanSpeedStatus convertToStatus(int speed) {
-        FanSpeedStatus status = FanSpeedStatus.STEP_1; 
-        // todo : change speed to status
+        FanSpeedStatus status = FanSpeedStatus.STEP_OFF; 
         switch(speed) {
-            case 1: status = FanSpeedStatus.STEP_1; break;
-            case 2: status = FanSpeedStatus.STEP_2; break;
-            case 3: status = FanSpeedStatus.STEP_3; break;
-            case 4: status = FanSpeedStatus.STEP_4; break;
-            case 5: status = FanSpeedStatus.STEP_5; break;
-            case 6: status = FanSpeedStatus.STEP_6; break;
-            case 7: status = FanSpeedStatus.STEP_7; break;
-            case 8: status = FanSpeedStatus.STEP_8; break;
+            case 0x0: status = FanSpeedStatus.STEP_OFF; break;
+            case 0x1: status = FanSpeedStatus.STEP_0; break;
+            case 0x2: status = FanSpeedStatus.STEP_1; break;
+            case 0x3: status = FanSpeedStatus.STEP_2; break;
+            case 0x4: status = FanSpeedStatus.STEP_3; break;
+            case 0x5: status = FanSpeedStatus.STEP_4; break;
+            case 0x6: status = FanSpeedStatus.STEP_5; break;
+            case 0x7: status = FanSpeedStatus.STEP_6; break;
+            case 0x8: status = FanSpeedStatus.STEP_7; break;
+            case 0x9: status = FanSpeedStatus.STEP_8; break;
             default: break;
         }
         return status;

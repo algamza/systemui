@@ -36,11 +36,13 @@ public class DataStore {
     private static final long COALESCE_TIME_MS = TimeUnit.SECONDS.toMillis(2);
 
     @GuardedBy("mTemperature")
-    private SparseArray<Integer> mTemperature = new SparseArray<Integer>();
+    private SparseArray<Float> mTemperature = new SparseArray<Float>();
     @GuardedBy("mFanSpeed")
     private Integer mFanSpeed = 0;
     @GuardedBy("mAirflow")
     private SparseIntArray mAirflow = new SparseIntArray();
+    @GuardedBy("mFanDirection")
+    private Integer mFanDirection = 0;
     @GuardedBy("mDefrosterState")
     private SparseBooleanArray mDefrosterState = new SparseBooleanArray();
     @GuardedBy("mAcState")
@@ -72,6 +74,8 @@ public class DataStore {
     private long mLastFanSpeedSet;
     @GuardedBy("mAirflow")
     private SparseLongArray mLastAirflowSet = new SparseLongArray();
+    @GuardedBy("mFanDirection")
+    private long mLastFanDirectionSet;
     @GuardedBy("mDefrosterState")
     private SparseLongArray mLastDefrosterSet = new SparseLongArray();
     @GuardedBy("mAcState")
@@ -221,20 +225,20 @@ public class DataStore {
         return true;
     }
 
-    public int getTemperature(int zone) {
+    public float getTemperature(int zone) {
         synchronized (mTemperature) {
             return mTemperature.get(zone);
         }
     }
 
-    public void setTemperature(int zone, int temperature) {
+    public void setTemperature(int zone, float temperature) {
         synchronized (mTemperature) {
             mTemperature.put(zone, temperature);
             mLastTemperatureSet.put(zone, SystemClock.uptimeMillis());
         }
     }
 
-    public boolean shouldPropagateTempUpdate(int zone, int temperature) {
+    public boolean shouldPropagateTempUpdate(int zone, float temperature) {
         synchronized (mTemperature) {
             if (SystemClock.uptimeMillis() - mLastTemperatureSet.get(zone) < COALESCE_TIME_MS) {
                 return false;
@@ -287,6 +291,29 @@ public class DataStore {
                 return false;
             }
             mFanSpeed = speed;
+        }
+        return true;
+    }
+
+    public int getFanDirection() {
+        synchronized (mFanDirection) {
+            return mFanDirection;
+        }
+    }
+
+    public void setFanDirection(int direction) {
+        synchronized (mFanDirection) {
+            mFanDirection = direction;
+            mLastFanDirectionSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateFanDirectionUpdate(int direction) {
+        synchronized (mFanDirection) {
+            if (SystemClock.uptimeMillis() - mLastFanDirectionSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mFanDirection = direction;
         }
         return true;
     }

@@ -58,9 +58,6 @@ public class ClimateControllerManager {
         VehicleAreaSeat.ROW_1_RIGHT |
         VehicleAreaSeat.ROW_2_RIGHT; 
 
-    //public static final int SEAT_ALL = 
-    //    SEAT_DRIVER | SEAT_PASSENGER; 
-
     public static final int HVAC_ALL = 
         HVAC_LEFT | HVAC_RIGHT; 
 
@@ -211,23 +208,18 @@ public class ClimateControllerManager {
                 int areaId = val.getAreaId();
                 Log.d(TAG, "HVAC event, id: " + id + ", area: " + areaId);
                 switch (id) {
-                    /*
-                    case CarHvacManager.ID_ZONED_FAN_DIRECTION:
+                    case VehicleProperty.VENDOR_CANRX_HVAC_MODE_DISPLAY:
                         handleFanPositionUpdate(areaId, getValue(val));
                         break;
                     case CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT:
                         handleFanSpeedUpdate(areaId, getValue(val));
                         break;
-                    case CarHvacManager.ID_ZONED_TEMP_SETPOINT:
-                        handleTempUpdate(val);
+                    case VehicleProperty.VENDOR_CANRX_HVAC_TEMPERATURE_F:
+                        handleTempUpdate(areaId, getValue(val));
                         break;
-                    case CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON:
-                        handleAirCirculationUpdate(getValue(val));
-                        break;
-                    case CarHvacManager.ID_ZONED_SEAT_TEMP:
+                    case VehicleProperty.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
                         handleSeatWarmerUpdate(areaId, getValue(val));
                         break;
-                        */
                     case CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
                         break;
@@ -275,22 +267,17 @@ public class ClimateControllerManager {
         task.execute();
     }
     
-    private void handleTempUpdate(CarPropertyValue value) {
+    private void handleTempUpdate(int zone, int temp) {
         if ( mDRTemp == null || mPSTemp == null ) return; 
-        final int zone = value.getAreaId();
-        final int temp = (int)value.getValue();
-        final boolean available = value.getStatus() == CarPropertyValue.STATUS_AVAILABLE;
-        
-        Log.d("KSKIM2", "zone=" + zone + ", temp=" + temp + ", available=" + available); 
 
-        if (zone == VehicleAreaSeat.ROW_1_LEFT) {
-            if ( mDRTemp.update(temp) ) 
+        if (zone == SEAT_DRIVER) {
+            if ( mDRTemp.update(tempHexToPhy(temp)) ) 
                 if ( mListener != null ) 
-                    mListener.onDriverTemperatureChanged(tempHexToPhy(mDRTemp.get()));
+                    mListener.onDriverTemperatureChanged(mDRTemp.get());
         } else {
-            if ( mPSTemp.update(temp) ) 
+            if ( mPSTemp.update(tempHexToPhy(temp)) ) 
                 if ( mListener != null ) 
-                    mListener.onPassengerTemperatureChanged(tempHexToPhy(mPSTemp.get()));
+                    mListener.onPassengerTemperatureChanged(mPSTemp.get());
         }
     }
 
@@ -326,6 +313,7 @@ public class ClimateControllerManager {
 
     private void handleFanPositionUpdate(int zone, int position) {
         if ( mFanDirection == null ) return; 
+
         if ( mFanDirection.update(position) )
             if ( mListener != null ) 
                 mListener.onFanDirectionChanged(mFanDirection.get());
@@ -335,7 +323,7 @@ public class ClimateControllerManager {
         if ( hex < 0x01 || 
             hex == 0xfe || 
             hex == 0xff || 
-            hex > 0x24 ) return -1.0f; 
+            hex > 0x24 ) return 0.0f; 
         float phy = hex*0.5f + 14; 
         return phy; 
     }

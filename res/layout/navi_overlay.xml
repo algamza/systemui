@@ -246,7 +246,21 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="25"/>
+                        android:layout_weight="15"/>
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="8">
+                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                            android:id="@+id/climate_intake_on"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|center_horizontal" />
+                    </FrameLayout>
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="2"/>
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
