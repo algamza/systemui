@@ -5,7 +5,6 @@ import android.util.Log;
 
 import android.extension.car.CarHvacManagerEx;
 
-import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
 public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
@@ -23,7 +22,7 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
         if ( mManager == null || mDataStore == null ) return;
         try {
             int speed = mManager.getIntProperty(
-                CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
+                CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
             Log.d(TAG, "fetch="+speed); 
             mDataStore.setFanSpeed(speed);
         } catch (android.car.CarNotConnectedException e) {

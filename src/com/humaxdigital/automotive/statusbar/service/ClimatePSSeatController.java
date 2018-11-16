@@ -3,10 +3,8 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.extension.car.CarHvacManagerEx;
 
-import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
 public class ClimatePSSeatController extends ClimateBaseController<Integer> {
@@ -23,7 +21,7 @@ public class ClimatePSSeatController extends ClimateBaseController<Integer> {
     public void fetch() {
         if ( mManager == null || mDataStore == null ) return;
         try {
-            int level = mManager.getIntProperty(VehicleProperty.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS, mZone);
+            int level = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS, mZone);
             Log.d(TAG, "fetch="+level); 
             mDataStore.setSeatWarmerLevel(mZone, level);
         } catch (android.car.CarNotConnectedException e) {

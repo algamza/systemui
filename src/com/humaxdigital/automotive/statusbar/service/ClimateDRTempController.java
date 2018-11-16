@@ -3,10 +3,8 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.extension.car.CarHvacManagerEx;
 
-import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
 public class ClimateDRTempController extends ClimateBaseController<Float> {
@@ -23,7 +21,7 @@ public class ClimateDRTempController extends ClimateBaseController<Float> {
         if ( mManager == null || mDataStore == null ) return;
         try {
             int value = mManager.getIntProperty(
-                VehicleProperty.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
             float f = ClimateControllerManager.tempHexToPhy(value); 
             Log.d(TAG, "fetch="+f+", value="+value); 
             mDataStore.setTemperature(mZone, f);

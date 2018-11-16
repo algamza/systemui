@@ -11,16 +11,15 @@ import android.util.Log;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.hardware.automotive.vehicle.V2_0.VehicleArea;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaWindow;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaSeat;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaDoor;
 
-import android.car.hardware.hvac.CarHvacManager;
 import android.car.hardware.CarVendorExtensionManager;
 import android.car.hardware.CarPropertyValue;
 
+import android.car.hardware.hvac.CarHvacManager;
 import android.car.Car;
 import android.car.CarNotConnectedException;
 
@@ -114,11 +113,11 @@ public class ClimateControllerManager {
 
     public void disconnect()  {
         if ( mCarHvacManagerEx != null ) {
-            try {
+            //try {
                 mCarHvacManagerEx.unregisterCallback(mHvacCallback);
-            } catch (CarNotConnectedException e) {
-                Log.e(TAG, "Car is not connected!", e);
-            }
+            //} catch (CarNotConnectedException e) {
+            //    Log.e(TAG, "Car is not connected!", e);
+            //}
         }
         if ( mCarApi != null ) {
             mCarApi.disconnect();
@@ -200,27 +199,27 @@ public class ClimateControllerManager {
         }
     };
 
-    private final CarHvacManagerEx.CarHvacExEventCallback mHvacCallback =
-        new CarHvacManagerEx.CarHvacExEventCallback () {
+    private final CarHvacManager.CarHvacEventCallback mHvacCallback =
+        new CarHvacManager.CarHvacEventCallback () {
             @Override
             public void onChangeEvent(final CarPropertyValue val) {
                 int id = val.getPropertyId(); 
                 int areaId = val.getAreaId();
                 Log.d(TAG, "HVAC event, id: " + id + ", area: " + areaId);
                 switch (id) {
-                    case VehicleProperty.VENDOR_CANRX_HVAC_MODE_DISPLAY:
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
                         handleFanPositionUpdate(areaId, getValue(val));
                         break;
-                    case CarHvacManager.ID_ZONED_FAN_SPEED_SETPOINT:
+                    case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
                         handleFanSpeedUpdate(areaId, getValue(val));
                         break;
-                    case VehicleProperty.VENDOR_CANRX_HVAC_TEMPERATURE_F:
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F:
                         handleTempUpdate(areaId, getValue(val));
                         break;
-                    case VehicleProperty.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
                         handleSeatWarmerUpdate(areaId, getValue(val));
                         break;
-                    case CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON:
+                    case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
                         break;
                     default:

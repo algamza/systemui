@@ -3,10 +3,8 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
 import android.extension.car.CarHvacManagerEx;
 
-import android.car.hardware.hvac.CarHvacManager;
 import android.support.car.CarNotConnectedException;
 
 public class ClimateFanDirectionController extends ClimateBaseController<Integer> {
@@ -24,7 +22,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         if ( mManager == null || mDataStore == null ) return;
         try {
             int val = mManager.getIntProperty(
-                VehicleProperty.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
             Log.d(TAG, "fetch="+val);
             mDataStore.setFanDirection(val);
         } catch (android.car.CarNotConnectedException e) {

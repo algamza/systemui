@@ -4,9 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import android.hardware.automotive.vehicle.V2_0.VehicleProperty;
-import android.car.hardware.hvac.CarHvacManager;
-
 import android.extension.car.CarHvacManagerEx;
 import android.support.car.CarNotConnectedException;
 
@@ -22,7 +19,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
         if ( mManager == null || mDataStore == null ) return;
         try { 
             boolean val = mManager.getBooleanProperty(
-                CarHvacManager.ID_ZONED_AIR_RECIRCULATION_ON,
+                CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON,
                 ClimateControllerManager.HVAC_ALL); 
             Log.d(TAG, "fetch="+val);
             mDataStore.setAirCirculationState(val);
@@ -55,7 +52,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
             protected Void doInBackground(Void... unused) {
                 try {
                     Log.d(TAG, "set="+e); 
-                    mManager.setIntProperty(VehicleProperty.VENDOR_CANTX_HVAC_RECIRC, 0, e?0x1:0x0);
+                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_RECIRC, 0, e?0x1:0x0);
                 } catch (android.car.CarNotConnectedException err) {
                     Log.e(TAG, "Car not connected in setAcState");
                 }
