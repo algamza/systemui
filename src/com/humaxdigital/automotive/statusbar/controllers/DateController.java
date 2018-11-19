@@ -45,10 +45,6 @@ public class DateController implements BaseController {
         }
     }
 
-    @Override
-    public void update() {
-    }
-
     private void initView() {
         if ( mParentView == null || mService == null ) return;
         mParentView.setOnClickListener(new View.OnClickListener() {

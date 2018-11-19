@@ -48,10 +48,6 @@ public class UserProfileController implements BaseController {
         }
     }
 
-    @Override
-    public void update() {
-    }
-
     private void initView() {
         if ( mParentView == null ) return;
         mParentView.setOnClickListener(new View.OnClickListener() {

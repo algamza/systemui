@@ -74,11 +74,6 @@ public class ClimateController implements BaseController {
         }
     }
 
-    @Override
-    public void update() {
-
-    }
-
     private void openClimateSetting() {
         if ( mService == null ) return; 
         try {

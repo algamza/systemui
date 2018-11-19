@@ -215,13 +215,6 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
                 mControllerManager.init(mStatusBarService); 
             });
         }
-
-        @Override
-        public void onUpdated() throws RemoteException {
-            updateUIController(() -> {
-                mControllerManager.update(); 
-            }); 
-        }
     };
 
     private void updateUIController(Runnable r) {

@@ -1,217 +1,326 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPanelMain"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/colorPanelMain"
     >
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/co_bg_title_bar"
-        />
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/co_bg_title_bar"
+    />
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="1920">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="287"
         android:orientation="horizontal"
-        android:weightSum="1920">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="287"
-            android:orientation="horizontal"
-            android:weightSum="287">
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="32" />
-            <FrameLayout
-                android:id="@+id/layout_userprofile"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="70">
-                <com.humaxdigital.automotive.statusbar.ui.UserProfileView
-                    android:id="@+id/img_useprofile"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:layout_gravity="center_vertical|center_horizontal" />
-            </FrameLayout>
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="21" />
-            <LinearLayout
-                android:id="@+id/layout_date"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="164"
-                android:weightSum="164"
-                android:orientation="horizontal">
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="100"
-                    android:weightSum="90"
-                    android:orientation="vertical" >
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="6"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="84">
-                        <com.humaxdigital.automotive.statusbar.ui.DateView
-                            android:id="@+id/text_date_time"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="@dimen/text_date"
-                            android:layout_gravity="center_vertical|right"
-                            android:textColor="@color/colorStatusBarText"/>
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0"/>
-                </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="58"
-                    android:weightSum="90"
-                    android:orientation="vertical" >
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="12"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="78">
-                        <com.humaxdigital.automotive.statusbar.ui.DateView
-                            android:id="@+id/text_date_noon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="@dimen/text_date_noon"
-                            android:layout_gravity="center_vertical|left"
-                            android:textColor="@color/colorStatusBarText"/>
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0"/>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
+        android:weightSum="287">
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="282" />
-
-        <LinearLayout
-            android:id="@+id/layout_climate"
+            android:layout_weight="32" />
+        <FrameLayout
+            android:id="@+id/layout_userprofile"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="779"
-            android:weightSum="779"
+            android:layout_weight="70">
+            <com.humaxdigital.automotive.statusbar.ui.UserProfileView
+                android:id="@+id/img_useprofile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:layout_gravity="center_vertical|center_horizontal" />
+        </FrameLayout>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="21" />
+        <LinearLayout
+            android:id="@+id/layout_date"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="164"
+            android:weightSum="164"
             android:orientation="horizontal">
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="119"
-                android:weightSum="119"
-                android:orientation="horizontal">
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="68"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="2" />
-                    <!--<android:layout_weight="21">-->
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="88">
-                        <!--android:layout_weight="52">-->
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
-                            android:id="@+id/climate_temp_dr_int"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="right|center_vertical"
-                            android:textSize="@dimen/text_climate_temp_int"
-                            android:textColor="@color/colorClimateText"
-                            android:includeFontPadding="false"
-                            />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0" />
-                </LinearLayout>
+                android:layout_weight="100"
+                android:weightSum="90"
+                android:orientation="vertical" >
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="3"/>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="33"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="14"/>
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="6"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="84">
+                    <com.humaxdigital.automotive.statusbar.ui.DateView
+                        android:id="@+id/text_date_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/text_date"
+                        android:layout_gravity="center_vertical|right"
+                        android:textColor="@color/colorStatusBarText"/>
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0"/>
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="58"
+                android:weightSum="90"
+                android:orientation="vertical" >
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="12"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="78">
+                    <com.humaxdigital.automotive.statusbar.ui.DateView
+                        android:id="@+id/text_date_noon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/text_date_noon"
+                        android:layout_gravity="center_vertical|left"
+                        android:textColor="@color/colorStatusBarText"/>
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="282" />
+
+    <LinearLayout
+        android:id="@+id/layout_climate"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="779"
+        android:weightSum="779"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="119"
+            android:weightSum="119"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="68"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="2" />
+                <!--<android:layout_weight="21">-->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="88">
+                    <!--android:layout_weight="52">-->
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                        android:id="@+id/climate_temp_dr_int"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:textSize="@dimen/text_climate_temp_int"
+                        android:textColor="@color/colorClimateText"
+                        android:includeFontPadding="false"
+                        />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0" />
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="33"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="14"/>
+                <!--<android:layout_weight="36">-->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="76" >
                     <!--<android:layout_weight="36">-->
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="76" >
-                        <!--<android:layout_weight="36">-->
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
-                            android:id="@+id/climate_temp_dr_dec"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="left|center_vertical"
-                            android:textSize="@dimen/text_climate_temp_dec"
-                            android:textColor="@color/colorClimateText"
-                            />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0"/>
-                </LinearLayout>
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                        android:id="@+id/climate_temp_dr_dec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:textSize="@dimen/text_climate_temp_dec"
+                        android:textColor="@color/colorClimateText"
+                        />
+                </FrameLayout>
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0"/>
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="15"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="541"
+            android:weightSum="541"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="94"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="25"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="50">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                        android:id="@+id/climate_seat_dr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal" />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="15"/>
             </LinearLayout>
-
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="22"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="94"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="15"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="8">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                        android:id="@+id/climate_intake_on"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal" />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="2"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="50">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                        android:id="@+id/climate_intake"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|center_vertical" />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="15"/>
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="22"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="94"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="25"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="50">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                        android:id="@+id/climate_mode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal" />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="15"/>
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="23"/>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="541"
-                android:weightSum="541"
+                android:layout_weight="77"
+                android:weightSum="77"
                 android:orientation="horizontal">
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="94"
+                    android:layout_weight="37"
                     android:weightSum="90"
                     android:orientation="vertical">
                     <FrameLayout
@@ -223,50 +332,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="50">
                         <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                            android:id="@+id/climate_seat_dr"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal" />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="15"/>
-                </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="22"/>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="94"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="15"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="8">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                            android:id="@+id/climate_intake_on"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal" />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="2"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="50">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                            android:id="@+id/climate_intake"
+                            android:id="@+id/climate_blower_img"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal|center_vertical" />
@@ -276,184 +342,12 @@
                         android:layout_height="0dp"
                         android:layout_weight="15"/>
                 </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="22"/>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="94"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="25"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="50">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                            android:id="@+id/climate_mode"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal" />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="15"/>
-                </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="23"/>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="77"
-                    android:weightSum="77"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="37"
-                        android:weightSum="90"
-                        android:orientation="vertical">
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="25"/>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="50">
-                            <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                                android:id="@+id/climate_blower_img"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center_horizontal|center_vertical" />
-                        </FrameLayout>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="15"/>
-                    </LinearLayout>
-
-                    <FrameLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="7" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="33"
-                        android:weightSum="90"
-                        android:orientation="vertical">
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="6"/>
-                        <!--<android:layout_weight="25">-->
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="84">
-                            <!--<android:layout_weight="50">-->
-                            <com.humaxdigital.automotive.statusbar.ui.ClimateText
-                                android:id="@+id/climate_blower_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="left|center_vertical"
-                                android:textColor="@color/colorClimateText"
-                                android:textSize="@dimen/text_climate_wind"/>
-                        </FrameLayout>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="0"/>
-                    </LinearLayout>
-                </LinearLayout>
 
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="21"/>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="94"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="25"/>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="50">
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateView
-                            android:id="@+id/climate_seat_ps"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal" />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="15"/>
-                </LinearLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="119"
-                android:weightSum="119"
-                android:orientation="horizontal">
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="15"/>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="68"
-                    android:weightSum="90"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="2" />
-                    <!--<android:layout_weight="21">-->
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="88">
-                        <!--<android:layout_weight="52">-->
-                        <com.humaxdigital.automotive.statusbar.ui.ClimateText
-                            android:id="@+id/climate_temp_ps_int"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="right|center_vertical"
-                            android:textSize="@dimen/text_climate_temp_int"
-                            android:textColor="@color/colorClimateText"
-                            android:includeFontPadding="false"
-                            />
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="0" />
-                </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="3"/>
+                    android:layout_weight="7" />
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -463,21 +357,20 @@
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="14"/>
-                    <!--<android:layout_weight="36">-->
+                        android:layout_weight="6"/>
+                    <!--<android:layout_weight="25">-->
                     <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="76" >
-                        <!--<android:layout_weight="34">-->
+                        android:layout_weight="84">
+                        <!--<android:layout_weight="50">-->
                         <com.humaxdigital.automotive.statusbar.ui.ClimateText
-                            android:id="@+id/climate_temp_ps_dec"
+                            android:id="@+id/climate_blower_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="left|center_vertical"
-                            android:textSize="@dimen/text_climate_temp_dec"
                             android:textColor="@color/colorClimateText"
-                            />
+                            android:textSize="@dimen/text_climate_wind"/>
                     </FrameLayout>
                     <FrameLayout
                         android:layout_width="match_parent"
@@ -485,156 +378,236 @@
                         android:layout_weight="0"/>
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="59" />
-
-        <LinearLayout
-            android:id="@+id/layout_system"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="513"
-            android:orientation="vertical"
-            android:weightSum="90">
             <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="27">
-            </FrameLayout>
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="21"/>
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="36"
-                android:weightSum="513"
-                android:orientation="horizontal">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="94"
+                android:weightSum="90"
+                android:orientation="vertical">
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="25"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="50">
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateView
+                        android:id="@+id/climate_seat_ps"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal" />
                 </FrameLayout>
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="15"/>
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="119"
+            android:weightSum="119"
+            android:orientation="horizontal">
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="15"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="68"
+                android:weightSum="90"
+                android:orientation="vertical">
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="2" />
+                <!--<android:layout_weight="21">-->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="88">
+                    <!--<android:layout_weight="52">-->
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                        android:id="@+id/climate_temp_ps_int"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right|center_vertical"
+                        android:textSize="@dimen/text_climate_temp_int"
+                        android:textColor="@color/colorClimateText"
+                        android:includeFontPadding="false"
+                        />
                 </FrameLayout>
                 <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_6"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_7"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_8"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="51">
-                    <com.humaxdigital.automotive.statusbar.ui.StatusIconView
-                        android:id="@+id/img_status_9"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </FrameLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="6" />
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0" />
             </LinearLayout>
             <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="27">
-            </FrameLayout>
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="33"
+                android:weightSum="90"
+                android:orientation="vertical">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="14"/>
+                <!--<android:layout_weight="36">-->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="76" >
+                    <!--<android:layout_weight="34">-->
+                    <com.humaxdigital.automotive.statusbar.ui.ClimateText
+                        android:id="@+id/climate_temp_ps_dec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:textSize="@dimen/text_climate_temp_dec"
+                        android:textColor="@color/colorClimateText"
+                        />
+                </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0"/>
+            </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="59" />
+
+    <LinearLayout
+        android:id="@+id/layout_system"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="513"
+        android:orientation="vertical"
+        android:weightSum="90">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="27">
+        </FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="36"
+            android:weightSum="513"
+            android:orientation="horizontal">
+            <FrameLayout
+                android:id="@+id/system_menu_8"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_7"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_6"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_5"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_4"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+            <FrameLayout
+                android:id="@+id/system_menu_0"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="51">
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+        </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="27">
+        </FrameLayout>
+    </LinearLayout>
+
+</LinearLayout>
 
 </FrameLayout>

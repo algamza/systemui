@@ -39,10 +39,4 @@ public class ControllerManager {
             controller.deinit(); 
         }
     }
-
-    public void update() {
-        for ( BaseController controller : mControllers ) {
-            controller.update(); 
-        }
-    }
 }

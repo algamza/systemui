@@ -203,13 +203,6 @@ public class StatusBarOverlayPlugin implements OverlayPlugin {
                 mControllerManager.init(mStatusBarService); 
             });
         }
-
-        @Override
-        public void onUpdated() throws RemoteException {
-            updateUIController(() -> {
-                mControllerManager.update(); 
-            }); 
-        }
     };
 
     private void updateUIController(Runnable r) {

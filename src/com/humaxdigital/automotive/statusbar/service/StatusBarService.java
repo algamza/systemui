@@ -410,7 +410,9 @@ public class StatusBarService extends Service {
                 }
             }
     
-            public int getMuteStatus() throws RemoteException { return 0; }
+            public int getMuteStatus() throws RemoteException { 
+                return 0; 
+            }
             public int getBLEStatus() throws RemoteException { return 0; }
             public int getBTBatteryStatus() throws RemoteException { return 0; }
             public int getBTCallStatus() throws RemoteException { return 0; }
