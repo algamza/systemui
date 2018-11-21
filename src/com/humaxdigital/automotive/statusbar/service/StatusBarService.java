@@ -13,10 +13,11 @@ import android.content.pm.PackageManager;
 import android.os.SystemProperties;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
-import android.widget.Toast; 
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.humaxdigital.automotive.statusbar.service.CarExtensionClient.CarExClientListener;
 
 
 public class StatusBarService extends Service {
@@ -28,9 +29,9 @@ public class StatusBarService extends Service {
     private static final String OPEN_USERPROFILE_SETTING = "";
     
     private Context mContext = this; 
-
-    private ClimateControllerManager mClimateManager; 
-
+    
+    private CarExtensionClient mCarExClient; 
+    private ClimateControllerManager mClimateManager;
     private SystemDateTimeController mDateTimeController;
     private SystemUserProfileController mUserProfileController;
 
@@ -64,22 +65,15 @@ public class StatusBarService extends Service {
         super.onCreate();
         
         createSystemManager(); 
-        connectSystemManager(); 
-        fetchSystemManager(); 
-
-        mClimateManager = new ClimateControllerManager(mContext, mDataStore); 
-        if ( mClimateManager != null ) {
-            mClimateManager.registerListener(mClimateManagerListener); 
-            mClimateManager.connect();
-            mClimateManager.fetch(); 
-        }
+        createClimateManager();
+        createCarExClient(); 
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if ( mClimateManager != null ) mClimateManager.disconnect(); 
+        if ( mCarExClient != null ) mCarExClient.disconnect(); 
 
         mSystemCallbacks.clear(); 
         mClimateCallbacks.clear(); 
@@ -99,7 +93,6 @@ public class StatusBarService extends Service {
         if ( mUserProfileController != null )  mUserProfileController.removeListener(mSystemDataListener);
 
         for ( BaseController controller : mControllers ) controller.disconnect();
-            
     }
 
     @Override
@@ -107,7 +100,21 @@ public class StatusBarService extends Service {
         return START_STICKY;
     }
 
+    private void createCarExClient() {
+        if ( mContext == null ) return; 
+        mCarExClient = new CarExtensionClient(mContext)
+            .registerListener(mCarExClientListener)
+            .connect(); 
+    }
+
+    private void createClimateManager() {
+        if ( mContext == null || mDataStore == null ) return; 
+        mClimateManager = new ClimateControllerManager(mContext, mDataStore)
+            .registerListener(mClimateManagerListener); 
+    }
+
     private void createSystemManager() {
+        if ( mContext == null || mDataStore == null ) return; 
         mDateTimeController = new SystemDateTimeController(mContext, mDataStore); 
         mDateTimeController.addListener(mDateTimeListener);
         mControllers.add(mDateTimeController); 
@@ -116,13 +123,10 @@ public class StatusBarService extends Service {
         mUserProfileController.addListener(mUserProfileListener);
         mControllers.add(mUserProfileController); 
 
-        // todo : security error, add to white list 
-        /*
         mLocationController = new SystemLocationController(mContext, mDataStore); 
         mLocationController.addListener(mSystemLocationListener);
         mControllers.add(mLocationController); 
-        */
-
+        
         mDataController = new SystemDataController(mContext, mDataStore); 
         mDataController.addListener(mSystemDataListener);
         mControllers.add(mDataController); 
@@ -154,15 +158,27 @@ public class StatusBarService extends Service {
         mWirelessChargeController = new SystemWirelessChargeController(mContext, mDataStore); 
         mWirelessChargeController.addListener(mSystemWirelessChargeListener);
         mControllers.add(mWirelessChargeController); 
-    }
 
-    private void connectSystemManager() {
         for ( BaseController controller : mControllers ) controller.connect(); 
     }
 
     private void fetchSystemManager() {
         for ( BaseController controller : mControllers ) controller.fetch();
     }
+
+    private CarExtensionClient.CarExClientListener mCarExClientListener = 
+        new CarExtensionClient.CarExClientListener() {
+        @Override
+        public void onConnected() {
+            fetchSystemManager(); 
+            if ( mClimateManager != null || mCarExClient != null)
+                mClimateManager.fetch(mCarExClient.getHvacManagerEx());
+        }
+
+        @Override
+        public void onDisconnected() {
+        }
+    }; 
     
     private BaseController.Listener mDateTimeListener = new BaseController.Listener<String>() {
         @Override
@@ -411,12 +427,25 @@ public class StatusBarService extends Service {
             }
     
             public int getMuteStatus() throws RemoteException { 
-                return 0; 
+                if ( mMuteController == null ) return 0; 
+                return mMuteController.get(); 
             }
-            public int getBLEStatus() throws RemoteException { return 0; }
-            public int getBTBatteryStatus() throws RemoteException { return 0; }
-            public int getBTCallStatus() throws RemoteException { return 0; }
-            public int getAntennaStatus() throws RemoteException { return 0; }
+            public int getBLEStatus() throws RemoteException { 
+                if ( mBLEController == null ) return 0; 
+                return mBLEController.get(); 
+            }
+            public int getBTBatteryStatus() throws RemoteException { 
+                if ( mBTBatteryController == null ) return 0; 
+                return mBTBatteryController.get(); 
+             }
+            public int getBTCallStatus() throws RemoteException { 
+                if ( mBTCallController == null ) return 0; 
+                return mBTCallController.get(); 
+            }
+            public int getAntennaStatus() throws RemoteException { 
+                if ( mAntennaController == null ) return 0; 
+                return mAntennaController.get(); 
+            }
             public int getDataStatus() throws RemoteException {  
                 if ( mDataController == null ) return 0; 
                 return mDataController.get(); 
@@ -425,7 +454,10 @@ public class StatusBarService extends Service {
                 if ( mWifiController == null ) return 0; 
                 return mWifiController.get(); 
             }
-            public int getWirelessChargeStatus() throws RemoteException { return 0; }
+            public int getWirelessChargeStatus() throws RemoteException { 
+                if ( mWirelessChargeController == null ) return 0; 
+                return mWirelessChargeController.get(); 
+            }
     
             public int getModeStatus() throws RemoteException { 
                 if ( mLocationController == null ) return 0; 

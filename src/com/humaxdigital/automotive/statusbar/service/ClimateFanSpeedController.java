@@ -12,13 +12,13 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     private enum FanSpeedStatus { STEP_OFF, STEP_0, STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
     private final int mZone = ClimateControllerManager.HVAC_ALL; 
 
-    public ClimateFanSpeedController(Context context, 
-        DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimateFanSpeedController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager); 
         if ( mManager == null || mDataStore == null ) return;
         try {
             int speed = mManager.getIntProperty(

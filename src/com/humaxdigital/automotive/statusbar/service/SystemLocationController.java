@@ -3,14 +3,16 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.os.Bundle;
 
+/*
 import android.location.LocationManager;
 import android.location.LocationListener; 
 import android.location.LocationProvider; 
 import android.location.Location;
+*/
 
 public class SystemLocationController extends BaseController<Integer> {
     enum LocationStatus { NONE, LOCATION_SHARING }
-    private LocationManager mManager; 
+    //private LocationManager mManager; 
 
     public SystemLocationController(Context context, DataStore store) {
         super(context, store);
@@ -19,31 +21,40 @@ public class SystemLocationController extends BaseController<Integer> {
     @Override
     public void connect() {
         if ( mContext == null ) return;
+        /*
         mManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
         mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+        */
     }
 
     @Override
     public void disconnect() {
+        /*
         if ( mManager != null ) mManager.removeUpdates(mLocationListener); 
+        */
     }
 
     @Override
     public void fetch() {
+        /*
         if ( mManager == null || mDataStore == null ) return; 
         mDataStore.setLocationShareState(mManager.isLocationEnabled()); 
+        */
     }
 
     @Override
     public Integer get() {
+        /*
         if ( mDataStore == null ) return 0; 
         if ( mDataStore.getLocationShareState() ) {
             return convertToStatus(1).ordinal(); 
         } else {
             return convertToStatus(0).ordinal(); 
         }
+        */
+        return 0; 
     }
-
+/*
     private LocationListener mLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {}
         public void onProviderEnabled(String provider) {}
@@ -81,4 +92,5 @@ public class SystemLocationController extends BaseController<Integer> {
         }
         return status; 
     }
+    */
 }

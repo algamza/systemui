@@ -1,15 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
-import android.content.pm.PackageManager;
-import android.os.SystemProperties;
-import android.os.IBinder;
-import android.os.Handler;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
-
-import android.content.ServiceConnection;
-import android.content.ComponentName;
 
 import android.hardware.automotive.vehicle.V2_0.VehicleArea;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaWindow;
@@ -19,13 +11,12 @@ import android.hardware.automotive.vehicle.V2_0.VehicleAreaDoor;
 import android.car.hardware.CarVendorExtensionManager;
 import android.car.hardware.CarPropertyValue;
 
-import android.car.hardware.hvac.CarHvacManager;
-import android.car.Car;
 import android.car.CarNotConnectedException;
+import android.car.hardware.hvac.CarHvacManager;
 
-import android.extension.car.CarEx;
 import android.extension.car.CarHvacManagerEx;
 
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,10 +55,8 @@ public class ClimateControllerManager {
     private DataStore mDataStore;
     private boolean mIsInitialized = false;
 
-    private CarEx mCarApi;
+    //private CarEx mCarApi;
     private CarHvacManagerEx mCarHvacManagerEx;
-
-    private Object mHvacManagerReady = new Object();
     
     private ClimateListener mListener; 
 
@@ -101,35 +90,43 @@ public class ClimateControllerManager {
         if ( context == null || store == null ) return;
         mContext = context; 
         mDataStore = store; 
+
+        createControllers(); 
     }
 
-    public void connect() {
-        if ( mContext == null ) return; 
-        if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
-            mCarApi = CarEx.createCar(mContext, mServiceConnectionListenerClient);
-            mCarApi.connect();
-        }
-    }
-
-    public void disconnect()  {
-        if ( mCarHvacManagerEx != null ) {
-            //try {
-                mCarHvacManagerEx.unregisterCallback(mHvacCallback);
-            //} catch (CarNotConnectedException e) {
-            //    Log.e(TAG, "Car is not connected!", e);
-            //}
-        }
-        if ( mCarApi != null ) {
-            mCarApi.disconnect();
-        }
-    }
-
-    public void fetch() {
-        requestFetch(); 
-    }
-
-    public void registerListener(ClimateListener listener) {
+    public ClimateControllerManager registerListener(ClimateListener listener) {
         mListener = listener; 
+        return this; 
+    }
+
+    public void unRegisterListener() {
+        mListener = null; 
+    }
+
+    public void fetch(CarHvacManagerEx manager) {
+        if ( manager == null ) return;
+        mCarHvacManagerEx = manager; 
+        try {
+            mCarHvacManagerEx.registerCallback(mHvacCallback);
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "CarHvacManagerEx is fail to register callback!", e);
+        }
+        
+        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... unused) {
+                for ( ClimateBaseController controller : mControllers ) 
+                    controller.fetch(mCarHvacManagerEx); 
+                return null; 
+            }
+
+            @Override
+            protected void onPostExecute(Void unused) {
+                if ( mListener != null ) mListener.onInitialized();
+                mIsInitialized = true;
+            }
+        };
+        task.execute(); 
     }
 
     public ClimateBaseController getController(ControllerType type) {
@@ -149,55 +146,22 @@ public class ClimateControllerManager {
         return mIsInitialized; 
     }
 
-
     private void createControllers() {
-        mAirCirculation = new ClimateAirCirculationController(mContext, mDataStore, mCarHvacManagerEx); 
+        mAirCirculation = new ClimateAirCirculationController(mContext, mDataStore); 
         mControllers.add(mAirCirculation); 
-        mDRSeat = new ClimateDRSeatController(mContext, mDataStore, mCarHvacManagerEx); 
+        mDRSeat = new ClimateDRSeatController(mContext, mDataStore); 
         mControllers.add(mDRSeat); 
-        mDRTemp = new ClimateDRTempController(mContext, mDataStore, mCarHvacManagerEx); 
+        mDRTemp = new ClimateDRTempController(mContext, mDataStore); 
         mControllers.add(mDRTemp); 
-        mFanDirection = new ClimateFanDirectionController(mContext, mDataStore, mCarHvacManagerEx); 
+        mFanDirection = new ClimateFanDirectionController(mContext, mDataStore); 
         mControllers.add(mFanDirection); 
-        mFanSpeed = new ClimateFanSpeedController(mContext, mDataStore, mCarHvacManagerEx); 
+        mFanSpeed = new ClimateFanSpeedController(mContext, mDataStore); 
         mControllers.add(mFanSpeed); 
-        mPSSeat = new ClimatePSSeatController(mContext, mDataStore, mCarHvacManagerEx); 
+        mPSSeat = new ClimatePSSeatController(mContext, mDataStore); 
         mControllers.add(mPSSeat); 
-        mPSTemp = new ClimatePSTempController(mContext, mDataStore, mCarHvacManagerEx); 
+        mPSTemp = new ClimatePSTempController(mContext, mDataStore); 
         mControllers.add(mPSTemp); 
     }
-
-    private final ServiceConnection mServiceConnectionListenerClient =
-            new ServiceConnection () {
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            synchronized (this) {
-                try {
-                    mCarHvacManagerEx = (CarHvacManagerEx)mCarApi.getCarManager(android.car.Car.HVAC_SERVICE);
-                } catch (CarNotConnectedException e) {
-                    Log.e(TAG, "Car is not connected!", e);
-                }
-                
-                createControllers(); 
-                
-                try {
-                    mCarHvacManagerEx.registerCallback(mHvacCallback);
-                } catch (CarNotConnectedException e) {
-                    Log.e(TAG, "Car is not connected!", e);
-                }
-
-                synchronized (mHvacManagerReady) {
-                    mHvacManagerReady.notifyAll();
-                }
-            }
-        }
-
-        public void onServiceDisconnected(ComponentName name) {
-            synchronized (this) {
-                Log.d(TAG, "Disconnect from Car Service");
-                mCarHvacManagerEx = null;
-            }
-        }
-    };
 
     private final CarHvacManager.CarHvacEventCallback mHvacCallback =
         new CarHvacManager.CarHvacEventCallback () {
@@ -235,36 +199,6 @@ public class ClimateControllerManager {
                     + Integer.toHexString(propertyId) + ", zone = 0x" + Integer.toHexString(zone));
             }
         };
-
-    private void requestFetch() {
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... unused) {
-
-                synchronized (mHvacManagerReady) {
-                    while (mCarHvacManagerEx == null) {
-                        try {
-                            mHvacManagerReady.wait();
-                        } catch (InterruptedException e) {
-                            // We got interrupted so we might be shutting down.
-                            return null;
-                        }
-                    }
-                }
-
-                for ( ClimateBaseController controller : mControllers ) controller.fetch(); 
-                
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void unused) {
-                if ( mListener != null ) mListener.onInitialized();
-                mIsInitialized = true;
-            }
-        };
-        task.execute();
-    }
     
     private void handleTempUpdate(int zone, int temp) {
         if ( mDRTemp == null || mPSTemp == null ) return; 

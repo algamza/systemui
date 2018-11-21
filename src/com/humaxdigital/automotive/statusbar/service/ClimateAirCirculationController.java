@@ -10,12 +10,13 @@ import android.support.car.CarNotConnectedException;
 public class ClimateAirCirculationController extends ClimateBaseController<Boolean> {
     private static final String TAG = "ClimateAirCirculationController";
     
-    public ClimateAirCirculationController(Context context, DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimateAirCirculationController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager); 
         if ( mManager == null || mDataStore == null ) return;
         try { 
             boolean val = mManager.getBooleanProperty(

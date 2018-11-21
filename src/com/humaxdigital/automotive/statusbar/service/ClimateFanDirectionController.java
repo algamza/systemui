@@ -12,13 +12,13 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
     private enum FanDirectionStatus { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
     private final int mZone = 0; 
 
-    public ClimateFanDirectionController(Context context, 
-        DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimateFanDirectionController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager); 
         if ( mManager == null || mDataStore == null ) return;
         try {
             int val = mManager.getIntProperty(

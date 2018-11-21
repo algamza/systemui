@@ -12,13 +12,13 @@ public class ClimatePSTempController extends ClimateBaseController<Float> {
 
     final int mZone = ClimateControllerManager.SEAT_PASSENGER; 
 
-    public ClimatePSTempController(Context context, 
-        DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimatePSTempController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager); 
         if ( mManager == null || mDataStore == null ) return;
         try {
             int value = mManager.getIntProperty(

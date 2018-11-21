@@ -11,13 +11,13 @@ public class ClimateDRTempController extends ClimateBaseController<Float> {
     private static final String TAG = "ClimateDRTempController";
     final int mZone = ClimateControllerManager.SEAT_DRIVER; 
 
-    public ClimateDRTempController(Context context, 
-        DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimateDRTempController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager);
         if ( mManager == null || mDataStore == null ) return;
         try {
             int value = mManager.getIntProperty(

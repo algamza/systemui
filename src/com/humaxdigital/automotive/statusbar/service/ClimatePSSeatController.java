@@ -12,13 +12,13 @@ public class ClimatePSSeatController extends ClimateBaseController<Integer> {
     enum SeatStatus { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
     final int mZone = ClimateControllerManager.SEAT_PASSENGER; 
 
-    public ClimatePSSeatController(Context context, 
-        DataStore store, CarHvacManagerEx manager) {
-        super(context, store, manager);
+    public ClimatePSSeatController(Context context, DataStore store) {
+        super(context, store);
     }
     
     @Override
-    public void fetch() {
+    public void fetch(CarHvacManagerEx manager) {
+        super.fetch(manager); 
         if ( mManager == null || mDataStore == null ) return;
         try {
             int level = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS, mZone);
