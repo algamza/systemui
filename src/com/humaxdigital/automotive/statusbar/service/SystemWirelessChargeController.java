@@ -7,8 +7,7 @@ import android.content.BroadcastReceiver;
 
 
 public class SystemWirelessChargeController extends BaseController<Integer> {
-    private enum WirelessChargeStatus { NONE, WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, 
-        WIRELESS_CHARGING_3, WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
+    private enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
 
     public SystemWirelessChargeController(Context context, DataStore store) {
         super(context, store);
@@ -40,11 +39,9 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         // todo : check status 
         switch(mode) {
             case 0: status = WirelessChargeStatus.NONE; break;
-            case 1: status = WirelessChargeStatus.WIRELESS_CHARGING_1; break;
-            case 2: status = WirelessChargeStatus.WIRELESS_CHARGING_2; break;
-            case 3: status = WirelessChargeStatus.WIRELESS_CHARGING_3; break;
-            case 4: status = WirelessChargeStatus.WIRELESS_CHARGE_100; break;
-            case 5: status = WirelessChargeStatus.WIRELESS_CHARGING_ERROR; break;
+            case 1: status = WirelessChargeStatus.CHARGED; break;
+            case 2: status = WirelessChargeStatus.CHARGING; break;
+            case 3: status = WirelessChargeStatus.ERROR; break;
             default: break; 
         }
         return status; 

@@ -50,14 +50,15 @@ public class SystemBTBatteryController extends BaseController<Integer> {
     public void fetch() {
         if ( mDataStore == null || mBluetoothAdapter == null ) return;
         if ( mBluetoothAdapter.isEnabled() )
-            for ( int profile : mBTDeviceProfiles ) 
-                checkDevice(Action.FETCH, profile); 
+            for ( int profile : mBTDeviceProfiles ) checkDevice(Action.FETCH, profile); 
     }
 
     @Override
     public Integer get() {
         if ( mDataStore == null ) return 0; 
-        return 0; 
+        int val = mDataStore.getBTBatterylevel(); 
+        Log.d(TAG, "get="+val); 
+        return val; 
     }
 
     private BTDevice convertToType(int devtype) {
@@ -79,12 +80,12 @@ public class SystemBTBatteryController extends BaseController<Integer> {
                     int level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
                     BTBatteryStatus status = convertToStatus(level); 
                     if ( action == Action.FETCH ) {
-                        Log.d(TAG, "fetch="+status.ordinal()); 
+                        Log.d(TAG, "fetch="+status); 
                         mDataStore.setBTBatterylevel(convertToType(_profile).ordinal(), status.ordinal()); 
                     } else if ( action == Action.UPDATE ) {
                         if ( mDataStore.shouldPropagateBTBatteryLevelUpdate(
                             convertToType(_profile).ordinal(), status.ordinal()) ) {
-                            Log.d(TAG, "update="+status.ordinal()); 
+                            Log.d(TAG, "update="+status); 
                             for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                         }
                     }

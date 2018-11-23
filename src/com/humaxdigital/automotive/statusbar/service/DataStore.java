@@ -73,6 +73,8 @@ public class DataStore {
     private Integer mBTBatteryLevel = 0; 
     @GuardedBy("mBTBatteryType")
     private Integer mBTBatteryType = 0; 
+    @GuardedBy("mBLEStatus")
+    private Integer mBLEStatus = 0; 
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -108,6 +110,8 @@ public class DataStore {
     private long mAntennaLastSet = 0; 
     @GuardedBy("mBTBatteryLevel")
     private long mBTBatteryLevelLastSet = 0; 
+    @GuardedBy("mBLEStatus")
+    private long mBLEStatusLastSet = 0; 
 
     public int getNetworkDataType() {
         synchronized (mNetworkDataType) {
@@ -161,6 +165,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mDateTimeLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mDateTime.equals(date) ) return false; 
             mDateTime = date;
         }
         return true;
@@ -184,6 +189,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mWifiLevelLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mWifiLevel == level ) return false; 
             mWifiLevel = level;
         }
         return true;
@@ -207,6 +213,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLocationShareLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mLocationShare == share ) return false; 
             mLocationShare = share;
         }
         return true;
@@ -230,6 +237,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mUserIdLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mUserId == userid ) return false; 
             mUserId = userid;
         }
         return true;
@@ -300,6 +308,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLastFanSpeedSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mFanSpeed == speed ) return false; 
             mFanSpeed = speed;
         }
         return true;
@@ -323,6 +332,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLastFanDirectionSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mFanDirection == direction ) return false; 
             mFanDirection = direction;
         }
         return true;
@@ -346,6 +356,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLastAcSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mAcState == acState ) return false; 
             mAcState = acState;
         }
         return true;
@@ -415,6 +426,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mAirCirculationLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mAirCirculationState == airCirculationState ) return false; 
             mAirCirculationState = airCirculationState;
         }
         return true;
@@ -438,6 +450,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mAutoModeLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mAcState == autoModeState ) return false; 
             mAcState = autoModeState;
         }
         return true;
@@ -461,6 +474,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mHvacPowerLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mHvacPowerState == hvacPowerState ) return false; 
             mHvacPowerState = hvacPowerState;
         }
         return true;
@@ -484,6 +498,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mAntennaLastSet < COALESCE_TIME_MS) {
                 return false;
             }
+            if ( mAntennaState == state ) return false; 
             mAntennaState = state;
         }
         return true;
@@ -519,6 +534,30 @@ public class DataStore {
             if ( mBTBatteryType == type && mBTBatteryLevel == level ) return false; 
             mBTBatteryType = type; 
             mBTBatteryLevel = level;
+        }
+        return true;
+    }
+
+    public int getBLEState() {
+        synchronized (mBLEStatus) {
+            return mBLEStatus;
+        }
+    }
+
+    public void setBLEState(int state) {
+        synchronized (mBLEStatus) {
+            mBLEStatus = state;
+            mBLEStatusLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateBLEStatusUpdate(int state) {
+        synchronized (mBLEStatus) {
+            if (SystemClock.uptimeMillis() - mBLEStatusLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mBLEStatus == state ) return false; 
+            mBLEStatus = state;
         }
         return true;
     }

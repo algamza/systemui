@@ -35,8 +35,7 @@ public class SystemStatusController implements BaseController {
         , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
     enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
     enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
-    enum WirelessChargeStatus { NONE, WIRELESS_CHARGING_1, WIRELESS_CHARGING_2, WIRELESS_CHARGING_3
-        , WIRELESS_CHARGE_100, WIRELESS_CHARGING_ERROR }
+    enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
     enum ModeStatus { NONE, LOCATION_SHARING }
 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
@@ -132,11 +131,13 @@ public class SystemStatusController implements BaseController {
 
         mWirelessCharging = new SystemView(mContext)
             .addIcon(WirelessChargeStatus.NONE.ordinal(), none)
-            .addIcon(WirelessChargeStatus.WIRELESS_CHARGING_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_1, null))
-            .addIcon(WirelessChargeStatus.WIRELESS_CHARGING_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_2, null))
-            .addIcon(WirelessChargeStatus.WIRELESS_CHARGING_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_3, null))
-            .addIcon(WirelessChargeStatus.WIRELESS_CHARGE_100.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_100, null))
-            .addIcon(WirelessChargeStatus.WIRELESS_CHARGING_ERROR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_error, null))
+            .addIconAnimation(WirelessChargeStatus.CHARGING.ordinal(), new ArrayList<Drawable>() {{
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_1, null));
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_2, null));
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_3, null));
+            }})
+            .addIcon(WirelessChargeStatus.CHARGED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_100, null))
+            .addIcon(WirelessChargeStatus.ERROR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wireless_charging_error, null))
             .inflate(); 
         mSystemViews.add(mWirelessCharging);
 

@@ -56,7 +56,7 @@ public class SystemAntennaController extends BaseController<Integer> {
             // todo : check tmu antenna 
         }
 
-        Log.d(TAG, "fetch="+status.ordinal()); 
+        Log.d(TAG, "fetch="+status); 
         mDataStore.setAntennaState(status.ordinal()); 
     }
 
@@ -65,7 +65,7 @@ public class SystemAntennaController extends BaseController<Integer> {
         if ( mDataStore == null ) return 0; 
         int val = mDataStore.getAntennaState(); 
         Log.d(TAG, "get="+val); 
-        return 0; 
+        return val; 
     }
 
     private AntennaStatus convertToTMUAntennaLevel(int level) {
@@ -137,7 +137,7 @@ public class SystemAntennaController extends BaseController<Integer> {
                     Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
                     int level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
                     status = convertToBTAntennaLevel(level); 
-                    Log.d(TAG, "fetch="+status.ordinal()); 
+                    Log.d(TAG, "fetch="+status); 
                     mDataStore.setAntennaState(status.ordinal()); 
                 } 
             }
@@ -161,13 +161,13 @@ public class SystemAntennaController extends BaseController<Integer> {
                     Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
                     int level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
                     status = convertToBTAntennaLevel(level); 
-                    Log.d(TAG, "update="+status.ordinal()); 
+                    Log.d(TAG, "update="+status); 
                     if ( mDataStore.shouldPropagateAntennaUpdate(status.ordinal()) ) {
                         for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                     }
                 } else if ( current >= AntennaStatus.BT_ANTENNA_NO.ordinal() && 
                         current <= AntennaStatus.BT_ANTENNA_5.ordinal() ) {
-                    Log.d(TAG, "update="+status.ordinal()); 
+                    Log.d(TAG, "update="+status); 
                     if ( mDataStore.shouldPropagateAntennaUpdate(status.ordinal()) ) {
                         for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                     }
@@ -180,7 +180,7 @@ public class SystemAntennaController extends BaseController<Integer> {
                 int current = mDataStore.getAntennaState(); 
                 if ( current >= AntennaStatus.BT_ANTENNA_NO.ordinal() &&
                     current <= AntennaStatus.BT_ANTENNA_5.ordinal() ) {
-                    Log.d(TAG, "update="+status.ordinal()); 
+                    Log.d(TAG, "update="+status); 
                     if ( mDataStore.shouldPropagateAntennaUpdate(status.ordinal()) ) {
                         for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                     }
