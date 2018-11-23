@@ -10,6 +10,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.os.RemoteException;
+import android.os.Build; 
 
 import android.util.Log;
 
@@ -23,8 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SystemStatusController implements BaseController {
+    static final String TAG = "SystemStatusController"; 
+
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-    enum BLEStatus { NONE, BLE_0, BLE_1, BLE_2, BLE_3 }
+    enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
     enum BTCallStatus { NONE, STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
@@ -55,14 +58,14 @@ public class SystemStatusController implements BaseController {
 
     private IStatusBarService mService; 
 
-    // todo : check feature avnt 
-    static final boolean FEATURE_AVNT = true;
+    static boolean FEATURE_AVNT = false;
 
     public SystemStatusController(Context context, View view) {
         if ( (view == null) || (context == null) ) return;
         mContext = context;
         if ( mContext != null ) mRes = mContext.getResources();
-        mStatusBar = view;
+        mStatusBar = view;  
+        checkProduct(); 
     }
 
     @Override
@@ -89,6 +92,21 @@ public class SystemStatusController implements BaseController {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
+    }
+
+    private void checkProduct() {
+        String model = Build.MODEL;  
+        Log.d(TAG, "model="+model);    
+        String[] array = model.split("-");
+        if ( array.length >= 2 ) {
+            if ( array[1].contains("T") ) {
+                FEATURE_AVNT = true; 
+            } else if ( array[1].contains("N") ) {
+                FEATURE_AVNT = false; 
+            } else if ( array[1].contains("L") ) {
+                FEATURE_AVNT = false;  
+            }
+        }
     }
 
     private void initView() {
@@ -186,10 +204,15 @@ public class SystemStatusController implements BaseController {
 
         mBle = new SystemView(mContext)
             .addIcon(BLEStatus.NONE.ordinal(), none)
-            .addIcon(BLEStatus.BLE_0.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_00, null))
-            .addIcon(BLEStatus.BLE_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_01, null))
-            .addIcon(BLEStatus.BLE_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null))
-            .addIcon(BLEStatus.BLE_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_03, null))
+            .addIcon(BLEStatus.BLE_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_03, null))
+            .addIconAnimation(BLEStatus.BLE_CONNECTING.ordinal(), new ArrayList<Drawable>() {{
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_00, null));
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_01, null));
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null));
+                add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_03, null));
+            }})
+            .addIcon(BLEStatus.BLE_CONNECTING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_01, null))
+            .addIcon(BLEStatus.BLE_CONNECTION_FAIL.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_error, null))
             .inflate(); 
         mSystemViews.add(mBle);
 

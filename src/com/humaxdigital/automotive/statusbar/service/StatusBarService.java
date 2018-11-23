@@ -66,6 +66,7 @@ public class StatusBarService extends Service {
         
         createSystemManager(); 
         createClimateManager();
+
         createCarExClient(); 
     }
 
@@ -160,17 +161,14 @@ public class StatusBarService extends Service {
         mControllers.add(mWirelessChargeController); 
 
         for ( BaseController controller : mControllers ) controller.connect(); 
-    }
-
-    private void fetchSystemManager() {
         for ( BaseController controller : mControllers ) controller.fetch();
     }
-
+    
     private CarExtensionClient.CarExClientListener mCarExClientListener = 
         new CarExtensionClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            fetchSystemManager(); 
+            
             if ( mClimateManager != null || mCarExClient != null)
                 mClimateManager.fetch(mCarExClient.getHvacManagerEx());
         }

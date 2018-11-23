@@ -67,6 +67,12 @@ public class DataStore {
     private Integer mNetworkDataType = 0; 
     @GuardedBy("mNetworkDataUsing")
     private Boolean mNetworkDataUsing = false; 
+    @GuardedBy("mAntennaState")
+    private Integer mAntennaState = 0; 
+    @GuardedBy("mBTBatteryLevel")
+    private Integer mBTBatteryLevel = 0; 
+    @GuardedBy("mBTBatteryType")
+    private Integer mBTBatteryType = 0; 
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -98,6 +104,10 @@ public class DataStore {
     private long mDateTimeLastSet; 
     @GuardedBy("mNetworkDataType")
     private long mNetworkDataTypeLastSet; 
+    @GuardedBy("mAntennaState")
+    private long mAntennaLastSet = 0; 
+    @GuardedBy("mBTBatteryLevel")
+    private long mBTBatteryLevelLastSet = 0; 
 
     public int getNetworkDataType() {
         synchronized (mNetworkDataType) {
@@ -452,6 +462,63 @@ public class DataStore {
                 return false;
             }
             mHvacPowerState = hvacPowerState;
+        }
+        return true;
+    }
+
+    public int getAntennaState() {
+        synchronized (mAntennaState) {
+            return mAntennaState;
+        }
+    }
+
+    public void setAntennaState(int state) {
+        synchronized (mAntennaState) {
+            mAntennaState = state;
+            mAntennaLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateAntennaUpdate(int state) {
+        synchronized (mAntennaState) {
+            if (SystemClock.uptimeMillis() - mAntennaLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            mAntennaState = state;
+        }
+        return true;
+    }
+
+    public int getBTBatterylevel() {
+        synchronized (mBTBatteryLevel) {
+            return mBTBatteryLevel;
+        }
+    }
+
+    public int getBTBatteryType() {
+        synchronized (mBTBatteryType) {
+            return mBTBatteryType;
+        }
+    }
+
+    public void setBTBatterylevel(int type, int level) {
+        synchronized ( mBTBatteryType ) {
+            mBTBatteryType = type; 
+            synchronized (mBTBatteryLevel) {
+                mBTBatteryLevel = level;
+            }
+            mBTBatteryLevelLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateBTBatteryLevelUpdate(int type, int level) {
+        synchronized (mBTBatteryLevel) {
+            if (SystemClock.uptimeMillis() - mBTBatteryLevelLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mBTBatteryType == type && mBTBatteryLevel == level ) return false; 
+            mBTBatteryType = type; 
+            mBTBatteryLevel = level;
         }
         return true;
     }

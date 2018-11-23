@@ -7,7 +7,7 @@ import android.content.BroadcastReceiver;
 
 
 public class SystemBLEController extends BaseController<Integer> {
-    private enum BLEStatus { NONE, BLE_0, BLE_1, BLE_2, BLE_3 }
+    private enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }
 
     public SystemBLEController(Context context, DataStore store) {
         super(context, store);
@@ -39,10 +39,9 @@ public class SystemBLEController extends BaseController<Integer> {
         // todo : check status 
         switch(mode) {
             case 0: status = BLEStatus.NONE; break;
-            case 1: status = BLEStatus.BLE_0; break;
-            case 2: status = BLEStatus.BLE_1; break;
-            case 3: status = BLEStatus.BLE_2; break;
-            case 4: status = BLEStatus.BLE_3; break;
+            case 1: status = BLEStatus.BLE_CONNECTED; break;
+            case 2: status = BLEStatus.BLE_CONNECTING; break;
+            case 3: status = BLEStatus.BLE_CONNECTION_FAIL; break;
             default: break; 
         }
         return status; 
