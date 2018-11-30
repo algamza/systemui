@@ -51,20 +51,33 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
     @Override
     public void set(Integer e) {
         if ( mDataStore == null || mManager == null ) return;
-        if ( !mDataStore.shouldPropagateFanDirectionUpdate(e) ) return;  
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
+        FanDirectionStatus status = FanDirectionStatus.values()[e]; 
+        if ( !mDataStore.shouldPropagateFanDirectionUpdate(convertToValue(status)) ) return;
+
+        final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
+            protected Void doInBackground(Integer... integers) {
                 try {
-                    Log.d(TAG, "set="+e); 
-                    // todo : current only du2 
-                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_MODE, 0, 0x01);
+                    Log.d(TAG, "set="+integers[0]); 
+                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_MODE, 0, integers[0]);
                 } catch (android.car.CarNotConnectedException err) {
                     Log.e(TAG, "Car not connected in setAcState");
                 }
                 return null;
             }
         }; 
-        task.execute();
+        task.execute(convertToValue(status));
+    }
+
+    private int convertToValue(FanDirectionStatus status) {
+        int value = 0x1;
+        switch(status) {
+            case FLOOR: value = 0x3; break;
+            case FACE: value = 0x1; break; 
+            case FLOOR_FACE: value = 0x2; break; 
+            case FLOOR_DEFROST: value = 0x4; break; 
+            default: break; 
+        }
+        return value; 
     }
 
     private FanDirectionStatus convertToStatus(int index) {
@@ -73,7 +86,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             case 0x3: status = FanDirectionStatus.FLOOR; break;
             case 0x1: status = FanDirectionStatus.FACE; break;
             case 0x2: status = FanDirectionStatus.FLOOR_FACE; break; 
-            case 0x8: status = FanDirectionStatus.FLOOR_DEFROST; break;
+            case 0x4: status = FanDirectionStatus.FLOOR_DEFROST; break;
             default: break; 
         }
         return status; 

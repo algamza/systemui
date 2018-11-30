@@ -49,17 +49,17 @@ public class ClimateAirConditionerController extends ClimateBaseController<Boole
     public void set(Boolean e) {
         if ( mDataStore == null || mManager == null ) return;
         mDataStore.setAirConditionerState(e);
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... unused) {
+        final AsyncTask<Boolean, Void, Void> task = new AsyncTask<Boolean, Void, Void>() {
+            protected Void doInBackground(Boolean... booleans) {
                 try {
-                    Log.d(TAG, "set="+e); 
-                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_AC, 0, e?0x1:0x0);
+                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_AC, 0, booleans[0]?0x1:0x0);
+                    Log.d(TAG, "set="+booleans[0]); 
                 } catch (android.car.CarNotConnectedException err) {
                     Log.e(TAG, "Car not connected in setAcState");
                 }
                 return null;
             }
         }; 
-        task.execute();
+        task.execute(e);
     }
 }
