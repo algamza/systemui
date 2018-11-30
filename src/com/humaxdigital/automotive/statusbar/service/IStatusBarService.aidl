@@ -28,7 +28,10 @@ interface IStatusBarService {
     int getDRSeatStatus();
     boolean getAirCirculationState();
     void setAirCirculationState(boolean state);
+    boolean getAirConditionerState();
+    void setAirConditionerState(boolean state);
     int getFanDirection();
+    void setFanDirection(int state); 
     int getBlowerSpeed();
     int getPSSeatStatus();
     float getPSTemperature();

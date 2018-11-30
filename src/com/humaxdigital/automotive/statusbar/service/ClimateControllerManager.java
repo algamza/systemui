@@ -25,6 +25,7 @@ public class ClimateControllerManager {
 
     public enum ControllerType {
         AIR_CIRCULATION, 
+        AIR_CONDITIONER,
         DRIVER_SEAT,
         DRIVER_TEMPERATURE,
         PASSENGER_SEAT,
@@ -61,6 +62,7 @@ public class ClimateControllerManager {
     private ClimateListener mListener; 
 
     private ClimateAirCirculationController mAirCirculation; 
+    private ClimateAirConditionerController mAirConditioner; 
     private ClimateDRSeatController mDRSeat; 
     private ClimateDRTempController mDRTemp; 
     private ClimateFanDirectionController mFanDirection; 
@@ -75,6 +77,7 @@ public class ClimateControllerManager {
         public void onDriverTemperatureChanged(float temp);
         public void onDriverSeatStatusChanged(int status);
         public void onAirCirculationChanged(boolean isOn);
+        public void onAirConditionerChanged(boolean isOn);
         public void onFanDirectionChanged(int direction);
         public void onFanSpeedStatusChanged(int status);
         public void onPassengerSeatStatusChanged(int status);
@@ -132,6 +135,7 @@ public class ClimateControllerManager {
     public ClimateBaseController getController(ControllerType type) {
         switch(type) {
             case AIR_CIRCULATION: return mAirCirculation;  
+            case AIR_CONDITIONER: return mAirConditioner; 
             case DRIVER_SEAT: return mDRSeat; 
             case DRIVER_TEMPERATURE: return mDRTemp; 
             case PASSENGER_SEAT: return mPSSeat; 
@@ -149,6 +153,8 @@ public class ClimateControllerManager {
     private void createControllers() {
         mAirCirculation = new ClimateAirCirculationController(mContext, mDataStore); 
         mControllers.add(mAirCirculation); 
+        mAirConditioner = new ClimateAirConditionerController(mContext, mDataStore); 
+        mControllers.add(mAirConditioner); 
         mDRSeat = new ClimateDRSeatController(mContext, mDataStore); 
         mControllers.add(mDRSeat); 
         mDRTemp = new ClimateDRTempController(mContext, mDataStore); 
@@ -185,6 +191,9 @@ public class ClimateControllerManager {
                         break;
                     case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
+                        break;
+                    case CarHvacManagerEx.ID_ZONED_AC_ON:
+                        handleAirConditionerUpdate(getValue(val));
                         break;
                     default:
                         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -234,6 +243,14 @@ public class ClimateControllerManager {
         if ( mAirCirculation.update(airCirculationState) )
             if ( mListener != null ) 
                 mListener.onAirCirculationChanged(mAirCirculation.get());
+    }
+
+    private void handleAirConditionerUpdate(boolean airConditionderState) {
+        if ( mAirConditioner == null ) return; 
+
+        if ( mAirConditioner.update(airConditionderState) )
+            if ( mListener != null ) 
+                mListener.onAirConditionerChanged(mAirConditioner.get());
     }
 
     private void handleFanSpeedUpdate(int zone, int speed) {

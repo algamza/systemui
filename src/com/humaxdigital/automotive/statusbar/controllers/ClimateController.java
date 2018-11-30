@@ -7,43 +7,56 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 import android.os.RemoteException;
+import android.widget.FrameLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.humaxdigital.automotive.statusbar.R;
 
-import com.humaxdigital.automotive.statusbar.ui.ClimateText;
-import com.humaxdigital.automotive.statusbar.ui.ClimateView;
+import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImg;
+import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextDec;
+import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextImg;
 
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IClimateCallback; 
 
 public class ClimateController implements BaseController {
+    static final String TAG = "ClimateController"; 
+    static final String PACKAGE_NAME = "com.humaxdigital.automotive.statusbar"; 
+
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum ClimateModeState { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
-    private enum BlowerSpeed { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
+    private enum FanDirectionState { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST }
+    private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
+    private enum ACState { ON, OFF };
+    private enum IntakeState { ON, OFF };
 
     private IStatusBarService mService; 
     private Context mContext;
     private Resources mRes;
     private View mClimate;
 
-    private ClimateText mTempDRIntText;
-    private ClimateText mTempDRDecText;
-    private float mTempDR = 0.0f;
-    private ClimateView mSeatDRView;
+    private ClimateMenuTextDec mTempDR;
+    private float mTempDRState = 0.0f;
+    private ClimateMenuTextDec mTempPS;
+    private float mTempPSState = 0.0f;
+
+    private ClimateMenuImg mSeatDR;
     private SeatState mSeatDRState = SeatState.NONE;
-    private ClimateView mIntakeView;
-    private ClimateView mIntakeOnOffView;
-    private boolean mIntakeState = false;
-    private ClimateView mClimateModeView;
-    private ClimateModeState mClimateModeState = ClimateModeState.FLOOR;
-    private ClimateView mBlowerView;
-    private ClimateText mBlowerText;
-    private BlowerSpeed mBlowerSpeed = BlowerSpeed.STEP0;
-    private ClimateView mSeatPSView;
+    private ClimateMenuImg mSeatPS;
     private SeatState mSeatPSState = SeatState.NONE;
-    private ClimateText mTempPSIntText;
-    private ClimateText mTempPSDecText;
-    private float mTempPS = 0.0f;
+
+    private ClimateMenuImg mIntake;
+    private IntakeState mIntakeState = IntakeState.OFF;
+    private ClimateMenuImg mAC;
+    private ACState mACState = ACState.OFF;
+    private ClimateMenuImg mFanDirection;
+    private FanDirectionState mFanDirectionState = FanDirectionState.FACE;
+
+    private ClimateMenuTextImg mFanSpeed;
+    private FanSpeedState mFanSpeedState = FanSpeedState.STEPOFF;
+
+    private final List<View> mClimateViews = new ArrayList<>();
 
 
     public ClimateController(Context context, View view) {
@@ -63,6 +76,7 @@ public class ClimateController implements BaseController {
         }
 
         initView();
+        update(); 
     }
 
     @Override
@@ -84,7 +98,7 @@ public class ClimateController implements BaseController {
     }
 
     private void initView() {
-        if ( mClimate == null ) return;
+        if ( mClimate == null || mContext == null || mService == null ) return;
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -92,236 +106,219 @@ public class ClimateController implements BaseController {
             }
         });
 
-        mTempDRIntText = mClimate.findViewById(R.id.climate_temp_dr_int);
-        mTempDRDecText = mClimate.findViewById(R.id.climate_temp_dr_dec);
-        if ( mTempDRIntText != null && mTempDRDecText != null ) {
-            try {
-                if ( mService != null ) mTempDR = mService.getDRTemperature();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
+        mTempDR = new ClimateMenuTextDec(mContext).inflate(); 
+        mSeatDR = new ClimateMenuImg(mContext)
+            .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null))
+            .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_01, null))
+            .addIcon(SeatState.COOLER2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_02, null))
+            .addIcon(SeatState.COOLER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_03, null))
+            .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_04, null))
+            .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_05, null))
+            .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_06, null))
+            .inflate(); 
+        mAC = new ClimateMenuImg(mContext)
+            .addIcon(ACState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_on, null))
+            .addIcon(ACState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_off, null))
+            .inflate();
+        mAC.setOnClickListener(mClimateACOnClick); 
+        mIntake = new ClimateMenuImg(mContext)
+            .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
+            .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
+            .inflate();
+        mIntake.setOnClickListener(mClimateIntakeOnClick); 
+        mFanSpeed = new ClimateMenuTextImg(mContext)
+            .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_d, null))
+            .addIcon(1, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null))
+            .inflate(); 
+        mFanDirection = new ClimateMenuImg(mContext)
+            .addIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null))
+            .addIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null))
+            .addIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
+            .addIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
+            .inflate();
+        mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
+        mSeatPS = new ClimateMenuImg(mContext)
+            .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_00, null))
+            .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_01, null))
+            .addIcon(SeatState.COOLER2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_02, null))
+            .addIcon(SeatState.COOLER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_03, null))
+            .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_04, null))
+            .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_05, null))
+            .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_06, null))
+            .inflate(); 
+        mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
-            updateUITemp(mTempDRIntText, mTempDRDecText, mTempDR);
-        }
+        mClimateViews.add(mTempDR);
+        mClimateViews.add(mSeatDR);
+        mClimateViews.add(mAC);
+        mClimateViews.add(mIntake);
+        mClimateViews.add(mFanSpeed);
+        mClimateViews.add(mFanDirection);
+        mClimateViews.add(mSeatPS);
+        mClimateViews.add(mTempPS);
 
-        mSeatDRView = mClimate.findViewById(R.id.climate_seat_dr);
-        if ( mSeatDRView != null ) {
-            Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null);
-            Drawable cooler1 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_01, null);
-            Drawable cooler2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_02, null);
-            Drawable cooler3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_03, null);
-            Drawable heater1 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_04, null);
-            Drawable heater2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_05, null);
-            Drawable heater3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_06, null);
-            if ( none != null && cooler1 != null && cooler2 != null &&
-                    cooler3 != null && heater1 != null && heater2 != null && heater3 != null ) {
-                mSeatDRView.addIcon(SeatState.NONE.ordinal(), none);
-                mSeatDRView.addIcon(SeatState.COOLER1.ordinal(), cooler1);
-                mSeatDRView.addIcon(SeatState.COOLER2.ordinal(), cooler2);
-                mSeatDRView.addIcon(SeatState.COOLER3.ordinal(), cooler3);
-                mSeatDRView.addIcon(SeatState.HEATER1.ordinal(), heater1);
-                mSeatDRView.addIcon(SeatState.HEATER2.ordinal(), heater2);
-                mSeatDRView.addIcon(SeatState.HEATER3.ordinal(), heater3);
-            }
-
-            int status = 0; 
-            try {
-                if ( mService != null ) status = mService.getDRSeatStatus();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-            mSeatDRState = SeatState.values()[status]; 
-            mSeatDRView.update(mSeatDRState.ordinal());
-        }
-
-        mIntakeOnOffView = mClimate.findViewById(R.id.climate_intake_on);
-        mIntakeView = mClimate.findViewById(R.id.climate_intake);
-        if ( mIntakeView != null && mIntakeOnOffView != null) {
-            Drawable car = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car, null);
-            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null);
-            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null);
-            if ( car != null && on != null && off != null ) {
-                mIntakeView.addIcon(0, car);
-                mIntakeOnOffView.addIcon(1, on);
-                mIntakeOnOffView.addIcon(0, off);
-            }
-
-            try {
-                if ( mService != null ) mIntakeState = mService.getAirCirculationState();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-
-            mIntakeView.update(0);
-            mIntakeOnOffView.update(mIntakeState ? 1 : 0);
-            mIntakeView.setListener(new ClimateView.ClickListener() {
-                @Override
-                public void onClicked(int state) {
-                    if ( !mIntakeState ) {
-                        mIntakeOnOffView.update(1);
-                        mIntakeState = true;
-                    } else {
-                        mIntakeState = false;
-                        mIntakeOnOffView.update(0);
-                    }
-                    
-                    try {
-                        if ( mService != null ) mService.setAirCirculationState(mIntakeState);
-                    } catch( RemoteException e ) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-
-        mClimateModeView = mClimate.findViewById(R.id.climate_mode);
-        if ( mClimateModeView != null ) {
-            Drawable floor = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null);
-            Drawable face = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null);
-            Drawable floor_face = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null);
-            Drawable floor_defrost = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null);
-            if ( floor != null && face != null && floor_face != null && floor_defrost != null ) {
-                mClimateModeView.addIcon(ClimateModeState.FLOOR.ordinal(), floor);
-                mClimateModeView.addIcon(ClimateModeState.FACE.ordinal(), face);
-                mClimateModeView.addIcon(ClimateModeState.FLOOR_FACE.ordinal(), floor_face);
-                mClimateModeView.addIcon(ClimateModeState.FLOOR_DEFROST.ordinal(), floor_defrost);
-                int direction = 0;
-                try {
-                    if ( mService != null ) direction = mService.getFanDirection();
-                } catch( RemoteException e ) {
-                    e.printStackTrace();
-                }
-                mClimateModeState = ClimateModeState.values()[direction];
-                mClimateModeView.update(mClimateModeState.ordinal());
-            }
-        }
-
-        mBlowerView = mClimate.findViewById(R.id.climate_blower_img);
-        mBlowerText = mClimate.findViewById(R.id.climate_blower_text);
-        if ( mBlowerView != null && mBlowerText != null ) {
-            Drawable on = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null);
-            Drawable off = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_d, null);
-            if ( on != null && off != null ) {
-                mBlowerView.addIcon(0, off);
-                mBlowerView.addIcon(1, on);
-            }
-            
-            int status = 0; 
-            try {
-                if ( mService != null ) status = mService.getBlowerSpeed();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-            mBlowerSpeed = BlowerSpeed.values()[status]; 
-
-            if ( mBlowerSpeed == BlowerSpeed.STEPOFF ) {
-                mBlowerView.update(0);
-                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
-            } else {
-                mBlowerView.update(1);
-                mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()-1));
-                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateText)); 
-            }
-        }
-
-        mSeatPSView = mClimate.findViewById(R.id.climate_seat_ps);
-        if ( mSeatPSView != null ) {
-            Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_00, null);
-            Drawable cooler1 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_01, null);
-            Drawable cooler2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_02, null);
-            Drawable cooler3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_03, null);
-            Drawable heater1 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_04, null);
-            Drawable heater2 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_05, null);
-            Drawable heater3 = ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_06, null);
-            if ( none != null && cooler1 != null && cooler2 != null &&
-                    cooler3 != null && heater1 != null && heater2 != null && heater3 != null ) {
-                mSeatPSView.addIcon(SeatState.NONE.ordinal(), none);
-                mSeatPSView.addIcon(SeatState.COOLER1.ordinal(), cooler1);
-                mSeatPSView.addIcon(SeatState.COOLER2.ordinal(), cooler2);
-                mSeatPSView.addIcon(SeatState.COOLER3.ordinal(), cooler3);
-                mSeatPSView.addIcon(SeatState.HEATER1.ordinal(), heater1);
-                mSeatPSView.addIcon(SeatState.HEATER2.ordinal(), heater2);
-                mSeatPSView.addIcon(SeatState.HEATER3.ordinal(), heater3);
-            }
-
-            int status = 0; 
-            try {
-                if ( mService != null ) status = mService.getPSSeatStatus();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-            
-            mSeatPSState = SeatState.values()[status]; 
-            mSeatPSView.update(mSeatPSState.ordinal());
-        }
-
-        mTempPSIntText = mClimate.findViewById(R.id.climate_temp_ps_int);
-        mTempPSDecText = mClimate.findViewById(R.id.climate_temp_ps_dec);
-        if ( mTempPSIntText != null && mTempPSDecText != null ) {
-            try {
-                if ( mService != null ) mTempPS = mService.getPSTemperature();
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-
-            updateUITemp(mTempPSIntText, mTempPSDecText, mTempPS);
+        for ( int i = 0; i<mClimateViews.size(); i++ ) {
+            int resid = mContext.getResources().getIdentifier("climate_menu_"+i, "id", PACKAGE_NAME);
+            if ( resid < 0 ) continue;
+            ((FrameLayout)mClimate.findViewById(resid)).addView(mClimateViews.get(i));
         }
     }
 
-    private void updateUITemp(ClimateText tempInt, ClimateText tempDec, float temp) {
+    private void update() {
+        if ( mService == null ) return; 
+
+        try {
+            mTempDRState = mService.getDRTemperature();
+            mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
+            mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
+            mIntakeState = mService.getAirCirculationState() ? IntakeState.ON:IntakeState.OFF; 
+            mFanSpeedState = FanSpeedState.values()[mService.getBlowerSpeed()]; 
+            mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
+            mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
+            mTempPSState = mService.getPSTemperature();
+        } catch( RemoteException e ) {
+            e.printStackTrace();
+        }
+
+
+        if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
+        if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
+        if ( mAC != null ) mAC.update(mACState.ordinal()); 
+        if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
+        if ( mFanSpeed != null ) {
+            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+            } else {
+                mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
+                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+            }
+        }
+        if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
+        if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
+        if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
+    }
+
+    private void updateTemp(ClimateMenuTextDec view, float temp) {
         String state = String.valueOf(temp);
         if ( state.contains(".") ) {
             String tem = state.substring(0, state.indexOf(".") );
             String dec = state.substring(state.indexOf("."), state.length());
-            tempInt.update(tem);
-            tempDec.update(dec);
-        } else {
-            tempInt.update(state);
-            tempDec.update(".0");
-        }
+            view.update(tem, dec); 
+        } else 
+            view.update(state, ".0"); 
+        
     }
+
+    private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mAC == null ) return; 
+            if ( mACState == ACState.ON ) {
+                mACState = ACState.OFF; 
+                mAC.update(mACState.ordinal());
+            } else {
+                mACState = ACState.ON; 
+                mAC.update(mACState.ordinal());
+            }
+
+            try {
+                if ( mService != null ) 
+                    mService.setAirConditionerState(mACState==ACState.ON?true:false);
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+        }
+    }; 
+
+    private final View.OnClickListener mClimateIntakeOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mIntake == null ) return; 
+            if ( mIntakeState == IntakeState.ON ) {
+                mIntakeState = IntakeState.OFF; 
+                mIntake.update(mIntakeState.ordinal());
+            } else {
+                mIntakeState = IntakeState.ON; 
+                mIntake.update(mIntakeState.ordinal());
+            }
+
+            try {
+                if ( mService != null ) 
+                    mService.setAirCirculationState(mIntakeState==IntakeState.ON?true:false);
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+        }
+    }; 
+
+    private final View.OnClickListener mClimateFanDirectionOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mFanDirection == null ) return; 
+            int next = mFanDirectionState.ordinal() + 1;
+            if ( next >= FanDirectionState.values().length ) 
+                mFanDirectionState = FanDirectionState.values()[0];
+            else 
+                mFanDirectionState = FanDirectionState.values()[next];
+
+            mFanDirection.update(mFanDirectionState.ordinal()); 
+
+            try {
+                if ( mService != null ) 
+                    mService.setFanDirection(mFanDirectionState.ordinal());
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+        }
+    }; 
 
     private final IClimateCallback.Stub mClimateCallback = new IClimateCallback.Stub() {
         public void onDRTemperatureChanged(float temp) throws RemoteException {
-            mTempDR = temp;
-            updateUITemp(mTempDRIntText, mTempDRDecText, mTempDR);
+            if ( mTempDR == null ) return; 
+            mTempDRState = temp;
+            updateTemp(mTempDR, mTempDRState); 
         }
         public void onDRSeatStatusChanged(int status) throws RemoteException {
-            if ( mSeatDRView == null ) return;
+            if ( mSeatDR == null ) return;
             mSeatDRState = SeatState.values()[status]; 
-            mSeatDRView.update(mSeatDRState.ordinal());
+            mSeatDR.update(mSeatDRState.ordinal());
         }
         public void onAirCirculationChanged(boolean isOn) throws RemoteException {
-            if ( mIntakeView == null || mIntakeOnOffView == null ) return; 
-            mIntakeState = isOn;
-            mIntakeOnOffView.update(mIntakeState ? 1:0);
+            if ( mIntake == null ) return; 
+            mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
+            mIntake.update(mIntakeState.ordinal());
+        }
+        public void onAirConditionerChanged(boolean isOn) throws RemoteException {
+            if ( mAC == null ) return; 
+            mACState = isOn?ACState.ON:ACState.OFF;
+            mAC.update(mACState.ordinal());
         }
         public void onFanDirectionChanged(int direction) throws RemoteException {
-            if ( mClimateModeView == null ) return; 
-            mClimateModeState = ClimateModeState.values()[direction];
-            mClimateModeView.update(mClimateModeState.ordinal());
+            if ( mFanDirection == null ) return; 
+            mFanDirectionState = FanDirectionState.values()[direction]; 
+            mFanDirection.update(mFanDirectionState.ordinal()); 
         }
         public void onBlowerSpeedChanged(int status) throws RemoteException {
-            if ( mBlowerText == null ) return;
-            mBlowerSpeed = BlowerSpeed.values()[status]; 
-
-            if ( mBlowerSpeed == BlowerSpeed.STEPOFF ) {
-                mBlowerView.update(0);
-                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+            if ( mFanSpeed == null ) return; 
+            mFanSpeedState = FanSpeedState.values()[status]; 
+            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
             } else {
-                mBlowerView.update(1);
-                mBlowerText.update(String.valueOf(mBlowerSpeed.ordinal()-1));
-                mBlowerText.setTextColor(mRes.getColor(R.color.colorClimateText)); 
-            }
+                mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
+                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+            }  
         }
         public void onPSSeatStatusChanged(int status) throws RemoteException {
-            if ( mSeatPSView == null ) return;
+            if ( mSeatPS == null ) return; 
             mSeatPSState = SeatState.values()[status]; 
-            mSeatPSView.update(mSeatPSState.ordinal());
+            mSeatPS.update(mSeatPSState.ordinal()); 
         }
         public void onPSTemperatureChanged(float temp) throws RemoteException {
-            mTempPS = temp;
-            updateUITemp(mTempPSIntText, mTempPSDecText, mTempPS);
+            if ( mTempPS == null ) return; 
+            mTempPSState = temp;
+            updateTemp(mTempPS, mTempPSState); 
         }
     };
 }

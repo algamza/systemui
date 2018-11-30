@@ -1,6 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import android.extension.car.CarHvacManagerEx;
@@ -9,7 +10,7 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateFanDirectionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanDirectionController";
-    private enum FanDirectionStatus { FLOOR, FACE, FLOOR_FACE, FLOOR_DEFROST }
+    private enum FanDirectionStatus { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST }
     private final int mZone = 0; 
 
     public ClimateFanDirectionController(Context context, DataStore store) {
@@ -45,6 +46,25 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         int direction = mDataStore.getFanDirection(); 
         Log.d(TAG, "get="+direction);
         return convertToStatus(direction).ordinal(); 
+    }
+
+    @Override
+    public void set(Integer e) {
+        if ( mDataStore == null || mManager == null ) return;
+        if ( !mDataStore.shouldPropagateFanDirectionUpdate(e) ) return;  
+        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            protected Void doInBackground(Void... unused) {
+                try {
+                    Log.d(TAG, "set="+e); 
+                    // todo : current only du2 
+                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_MODE, 0, 0x01);
+                } catch (android.car.CarNotConnectedException err) {
+                    Log.e(TAG, "Car not connected in setAcState");
+                }
+                return null;
+            }
+        }; 
+        task.execute();
     }
 
     private FanDirectionStatus convertToStatus(int index) {

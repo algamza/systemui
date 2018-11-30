@@ -48,10 +48,11 @@ public class SystemView extends FrameLayout {
     }
 
     public SystemView inflate() {
+        if ( mContext == null ) return null; 
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.system_menu, this, true);
         mView = (ImageView)this.findViewById(R.id.system_menu);
-        if ( mView != null ) mView.setImageDrawable(mIcons.get(mStatus));
+        if ( mView != null && mIcons.size() > 0 ) mView.setImageDrawable(mIcons.get(mStatus));
         for ( int key : mAnimationIcons.keySet() ) mAnimationIcons.get(key).setParentView(mView);
         return this;
     }
@@ -67,7 +68,7 @@ public class SystemView extends FrameLayout {
         return this;
     }
 
-    public SystemView update(int status) {
+    public void update(int status) {
         SystemViewAnimation task =  mAnimationIcons.get(mStatus);
         if ( task != null ) task.cancel();
 
@@ -78,6 +79,6 @@ public class SystemView extends FrameLayout {
             if ( ani != null ) mTimer.schedule(ani, 0, 1000);
         }
         mStatus = status;
-        return this;
+        return;
     }
 }

@@ -366,6 +366,16 @@ public class StatusBarService extends Service {
             }
 
             @Override
+            public void onAirConditionerChanged(boolean isOn) {
+                try {
+                    for ( IClimateCallback callback : mClimateCallbacks ) 
+                        callback.onAirConditionerChanged(isOn); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
             public void onFanDirectionChanged(int status) {
                 try {
                     for ( IClimateCallback callback : mClimateCallbacks ) 
@@ -492,9 +502,21 @@ public class StatusBarService extends Service {
                 if ( mClimateManager == null ) return;  
                 mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CIRCULATION).set(state); 
             }
+            public boolean getAirConditionerState() throws RemoteException { 
+                if ( mClimateManager == null ) return false; 
+                return (boolean)mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CONDITIONER).get(); 
+            }
+            public void setAirConditionerState(boolean state) throws RemoteException { 
+                if ( mClimateManager == null ) return;  
+                mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CONDITIONER).set(state); 
+            }
             public int getFanDirection() throws RemoteException {
                 if ( mClimateManager == null ) return 0; 
                 return (int)mClimateManager.getController(ClimateControllerManager.ControllerType.FAN_DIRECTION).get(); 
+            }
+            public void setFanDirection(int state) throws RemoteException { 
+                if ( mClimateManager == null ) return;  
+                mClimateManager.getController(ClimateControllerManager.ControllerType.FAN_DIRECTION).set(state); 
             }
             public int getBlowerSpeed() throws RemoteException { 
                 if ( mClimateManager == null ) return 0; 

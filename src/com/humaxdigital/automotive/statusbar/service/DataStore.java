@@ -51,6 +51,8 @@ public class DataStore {
     private SparseIntArray mSeatWarmerLevel = new SparseIntArray();
     @GuardedBy("mAirCirculationState")
     private Boolean mAirCirculationState = false;
+    @GuardedBy("mAirConditionerState")
+    private Boolean mAirConditionerState = false;
     @GuardedBy("mAutoModeState")
     private Boolean mAutoModeState = false;
     @GuardedBy("mHvacPowerState")
@@ -92,6 +94,8 @@ public class DataStore {
     private SparseLongArray mLastSeatWarmerLevel = new SparseLongArray();
     @GuardedBy("mAirCirculationState")
     private long mAirCirculationLastSet;
+    @GuardedBy("mAirConditionerState")
+    private long mAirConditionerLastSet;
     @GuardedBy("mAutoModeState")
     private long mAutoModeLastSet;
     @GuardedBy("mHvacPowerState")
@@ -428,6 +432,30 @@ public class DataStore {
             }
             if ( mAirCirculationState == airCirculationState ) return false; 
             mAirCirculationState = airCirculationState;
+        }
+        return true;
+    }
+
+    public boolean getAirConditionerState() {
+        synchronized (mAirConditionerState) {
+            return mAirConditionerState;
+        }
+    }
+
+    public void setAirConditionerState(boolean airConditionerState) {
+        synchronized (mAirConditionerState) {
+            mAirConditionerState = airConditionerState;
+            mAirConditionerLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateAirConditionerUpdate(boolean airConditionerState) {
+        synchronized (mAirCirculationState) {
+            if (SystemClock.uptimeMillis() - mAirConditionerLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mAirConditionerState == airConditionerState ) return false; 
+            mAirConditionerState = airConditionerState;
         }
         return true;
     }
