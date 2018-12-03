@@ -8,6 +8,7 @@ import android.hardware.automotive.vehicle.V2_0.VehicleAreaWindow;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaSeat;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaDoor;
 
+import android.extension.car.CarUSMManager;
 import android.car.hardware.CarVendorExtensionManager;
 import android.car.hardware.CarPropertyValue;
 
@@ -56,7 +57,7 @@ public class ClimateControllerManager {
     private DataStore mDataStore;
     private boolean mIsInitialized = false;
 
-    //private CarEx mCarApi;
+    private CarUSMManager mCarUSMManager; 
     private CarHvacManagerEx mCarHvacManagerEx;
     
     private ClimateListener mListener; 
@@ -106,11 +107,13 @@ public class ClimateControllerManager {
         mListener = null; 
     }
 
-    public void fetch(CarHvacManagerEx manager) {
-        if ( manager == null ) return;
-        mCarHvacManagerEx = manager; 
+    public void fetch(CarHvacManagerEx hvacMgr, CarUSMManager usmMgr) {
+        if ( hvacMgr == null || usmMgr == null ) return;
+        mCarHvacManagerEx = hvacMgr; 
+        mCarUSMManager = usmMgr; 
         try {
             mCarHvacManagerEx.registerCallback(mHvacCallback);
+            mCarUSMManager.registerCallback(mUSMCallback); 
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "CarHvacManagerEx is fail to register callback!", e);
         }
@@ -118,6 +121,8 @@ public class ClimateControllerManager {
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... unused) {
+                mDRTemp.fetchUSMManager(mCarUSMManager); 
+                mPSTemp.fetchUSMManager(mCarUSMManager); 
                 for ( ClimateBaseController controller : mControllers ) 
                     controller.fetch(mCarHvacManagerEx); 
                 return null; 
@@ -184,7 +189,10 @@ public class ClimateControllerManager {
                         handleFanSpeedUpdate(areaId, getValue(val));
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F:
-                        handleTempUpdate(areaId, getValue(val));
+                        handleTempUpdate(id, areaId, getValue(val));
+                        break;
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
+                        handleTempUpdate(id, areaId, getValue(val));
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
                         handleSeatWarmerUpdate(areaId, getValue(val));
@@ -195,10 +203,6 @@ public class ClimateControllerManager {
                     case CarHvacManagerEx.ID_ZONED_AC_ON:
                         handleAirConditionerUpdate(getValue(val));
                         break;
-                    default:
-                        if (Log.isLoggable(TAG, Log.DEBUG)) {
-                            Log.d(TAG, "Unhandled HVAC event, id: " + id);
-                        }
                 }
             }
 
@@ -208,18 +212,52 @@ public class ClimateControllerManager {
                     + Integer.toHexString(propertyId) + ", zone = 0x" + Integer.toHexString(zone));
             }
         };
+
+    private final CarUSMManager.CarUSMEventCallback mUSMCallback = 
+        new CarUSMManager.CarUSMEventCallback() {
+        @Override
+        public void onChangeEvent(final CarPropertyValue value) {
+            int zones = value.getAreaId();
+            switch (value.getPropertyId()) {
+                case CarUSMManager.VENDOR_CANRX_USM_TEMPRATURE_UNIT: {
+                    handleTempModeUpdate(getValue(value)); 
+                    break; 
+                }
+            }
+        }
+
+        @Override
+        public void onErrorEvent(final int propertyId, final int zone) {
+            Log.w(TAG, "onErrorEvent() :  propertyId = 0x" 
+                + Integer.toHexString(propertyId) + ", zone = 0x" + Integer.toHexString(zone));
+        }
+    }; 
     
-    private void handleTempUpdate(int zone, int temp) {
+    private void handleTempUpdate(int id, int zone, int temp) {
         if ( mDRTemp == null || mPSTemp == null ) return; 
 
         if (zone == SEAT_DRIVER) {
-            if ( mDRTemp.update(tempHexToPhy(temp)) ) 
-                if ( mListener != null ) 
-                    mListener.onDriverTemperatureChanged(mDRTemp.get());
+            if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F) && 
+                (mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.FAHRENHEIT) ) {
+                    if ( mDRTemp.update(temp) && mListener != null ) 
+                        mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
+                }
+            else if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C) && 
+                (mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.CELSIUS) ) {
+                    if ( mDRTemp.update(temp) && mListener != null ) 
+                        mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
+                } 
         } else {
-            if ( mPSTemp.update(tempHexToPhy(temp)) ) 
-                if ( mListener != null ) 
-                    mListener.onPassengerTemperatureChanged(mPSTemp.get());
+            if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F) && 
+                (mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.FAHRENHEIT) ) {
+                    if ( mPSTemp.update(temp) && mListener != null ) 
+                        mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+                }
+            else if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C) && 
+                (mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS) ) {
+                    if ( mPSTemp.update(temp) && mListener != null ) 
+                        mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
+                } 
         }
     }
 
@@ -253,6 +291,23 @@ public class ClimateControllerManager {
                 mListener.onAirConditionerChanged(mAirConditioner.get());
     }
 
+    private void handleTempModeUpdate(int mode) {
+        if ( mDRTemp == null || mPSTemp == null ) return; 
+
+        if ( mDRTemp.updateMode(mode) && mPSTemp.updateMode(mode) ) {
+            if ( mListener == null ) return; 
+            if ( mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.CELSIUS ) 
+                mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
+            else 
+                mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
+            
+            if ( mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS ) 
+                mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
+            else 
+                mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+        }
+    }
+
     private void handleFanSpeedUpdate(int zone, int speed) {
         if ( mFanSpeed == null ) return; 
 
@@ -267,14 +322,5 @@ public class ClimateControllerManager {
         if ( mFanDirection.update(position) )
             if ( mListener != null ) 
                 mListener.onFanDirectionChanged(mFanDirection.get());
-    }
-
-    static public float tempHexToPhy(int hex) {
-        if ( hex < 0x01 || 
-            hex == 0xfe || 
-            hex == 0xff || 
-            hex > 0x24 ) return 0.0f; 
-        float phy = hex*0.5f + 14; 
-        return phy; 
     }
 }

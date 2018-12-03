@@ -36,7 +36,7 @@ public class DataStore {
     private static final long COALESCE_TIME_MS = TimeUnit.SECONDS.toMillis(2);
 
     @GuardedBy("mTemperature")
-    private SparseArray<Float> mTemperature = new SparseArray<Float>();
+    private SparseArray<Integer> mTemperature = new SparseArray<Integer>();
     @GuardedBy("mFanSpeed")
     private Integer mFanSpeed = 0;
     @GuardedBy("mAirflow")
@@ -247,20 +247,20 @@ public class DataStore {
         return true;
     }
 
-    public float getTemperature(int zone) {
+    public int getTemperature(int zone) {
         synchronized (mTemperature) {
             return mTemperature.get(zone);
         }
     }
 
-    public void setTemperature(int zone, float temperature) {
+    public void setTemperature(int zone, int temperature) {
         synchronized (mTemperature) {
             mTemperature.put(zone, temperature);
             mLastTemperatureSet.put(zone, SystemClock.uptimeMillis());
         }
     }
 
-    public boolean shouldPropagateTempUpdate(int zone, float temperature) {
+    public boolean shouldPropagateTempUpdate(int zone, int temperature) {
         synchronized (mTemperature) {
             if (SystemClock.uptimeMillis() - mLastTemperatureSet.get(zone) < COALESCE_TIME_MS) {
                 return false;

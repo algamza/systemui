@@ -169,8 +169,10 @@ public class StatusBarService extends Service {
         @Override
         public void onConnected() {
             if ( mCarExClient == null ) return; 
-            if ( mClimateManager != null )mClimateManager.fetch(mCarExClient.getHvacManagerEx());
-            if ( mBLEController != null ) mBLEController.fetch(mCarExClient.getBLEManager()); 
+            if ( mClimateManager != null ) 
+                mClimateManager.fetch(mCarExClient.getHvacManagerEx(), mCarExClient.getUsmManager());
+            if ( mBLEController != null ) 
+                mBLEController.fetch(mCarExClient.getBLEManager()); 
         }
 
         @Override

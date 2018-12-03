@@ -13,11 +13,11 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="8" />
+            android:layout_weight="6" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="82">
+            android:layout_weight="84">
             <TextView
                 android:id="@+id/text_int"
                 android:layout_width="wrap_content"
@@ -46,11 +46,11 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="23"/>
+            android:layout_weight="21"/>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="67" >
+            android:layout_weight="69" >
             <TextView
                 android:id="@+id/text_dec"
                 android:layout_width="wrap_content"

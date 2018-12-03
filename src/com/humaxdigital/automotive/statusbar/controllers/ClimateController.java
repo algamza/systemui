@@ -117,7 +117,8 @@ public class ClimateController implements BaseController {
             climate = inflater.inflate(R.layout.du2_climate, null); 
          else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
             climate = inflater.inflate(R.layout.dn8c_climate, null); 
-         else return; 
+         else 
+         climate = inflater.inflate(R.layout.dn8c_climate, null); 
         
         if ( climate == null ) return; 
         ((ViewGroup)mClimate).addView(climate); 
@@ -172,7 +173,7 @@ public class ClimateController implements BaseController {
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
             mClimateViews.add(mSeatPS);
-        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+        } else {
             mClimateViews.add(mTempDR);
             mClimateViews.add(mSeatDR);
             mClimateViews.add(mAC);
