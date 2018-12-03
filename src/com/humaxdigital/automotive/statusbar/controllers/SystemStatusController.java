@@ -14,6 +14,7 @@ import android.os.Build;
 
 import android.util.Log;
 
+import com.humaxdigital.automotive.statusbar.ProductConfig;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.SystemView;
 
@@ -57,14 +58,11 @@ public class SystemStatusController implements BaseController {
 
     private IStatusBarService mService; 
 
-    static boolean FEATURE_AVNT = false;
-
     public SystemStatusController(Context context, View view) {
         if ( (view == null) || (context == null) ) return;
         mContext = context;
         if ( mContext != null ) mRes = mContext.getResources();
         mStatusBar = view;  
-        checkProduct(); 
     }
 
     @Override
@@ -93,21 +91,6 @@ public class SystemStatusController implements BaseController {
         super.finalize();
     }
 
-    private void checkProduct() {
-        String model = Build.MODEL;  
-        Log.d(TAG, "model="+model);    
-        String[] array = model.split("-");
-        if ( array.length >= 2 ) {
-            if ( array[1].contains("T") ) {
-                FEATURE_AVNT = true; 
-            } else if ( array[1].contains("N") ) {
-                FEATURE_AVNT = false; 
-            } else if ( array[1].contains("L") ) {
-                FEATURE_AVNT = false;  
-            }
-        }
-    }
-
     private void initView() {
         if ( (mStatusBar == null) || (mRes == null) ) return;
         mStatusBar.setOnClickListener(new View.OnClickListener() {
@@ -121,7 +104,7 @@ public class SystemStatusController implements BaseController {
 
         Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_clear, null);
 
-        if ( FEATURE_AVNT ) {
+        if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
             mLocationSharing = new SystemView(mContext)
                 .addIcon(ModeStatus.NONE.ordinal(), none)
                 .addIcon(ModeStatus.LOCATION_SHARING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_location_shar, null))
@@ -141,7 +124,7 @@ public class SystemStatusController implements BaseController {
             .inflate(); 
         mSystemViews.add(mWirelessCharging);
 
-        if ( !FEATURE_AVNT ) {
+        if ( ProductConfig.getFeature() != ProductConfig.FEATURE.AVNT ) {
             mWifi = new SystemView(mContext)
                 .addIcon(WifiStatus.NONE.ordinal(), none)
                 .addIcon(WifiStatus.WIFI_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_wifi_1, null))

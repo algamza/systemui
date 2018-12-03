@@ -21,6 +21,7 @@ public class ControllerManager {
 
     public ControllerManager(Context context, View panel) {
         if ( (panel == null) || (context == null) ) return;
+        
         mControllers.add(new ClimateController(context, panel.findViewById(R.id.layout_climate)));
         mControllers.add(new DateController(context, panel.findViewById(R.id.layout_date)));
         mControllers.add(new SystemStatusController(context, panel.findViewById(R.id.layout_system)));

@@ -5,15 +5,19 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.os.RemoteException;
 import android.widget.FrameLayout;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.humaxdigital.automotive.statusbar.R;
 
+import com.humaxdigital.automotive.statusbar.ProductConfig;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImg;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextDec;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextImg;
@@ -106,6 +110,18 @@ public class ClimateController implements BaseController {
             }
         });
 
+        LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if ( inflater == null ) return; 
+        View climate = null; 
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
+            climate = inflater.inflate(R.layout.du2_climate, null); 
+         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
+            climate = inflater.inflate(R.layout.dn8c_climate, null); 
+         else return; 
+        
+        if ( climate == null ) return; 
+        ((ViewGroup)mClimate).addView(climate); 
+
         mTempDR = new ClimateMenuTextDec(mContext).inflate(); 
         mSeatDR = new ClimateMenuImg(mContext)
             .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null))
@@ -148,14 +164,24 @@ public class ClimateController implements BaseController {
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
-        mClimateViews.add(mTempDR);
-        mClimateViews.add(mSeatDR);
-        mClimateViews.add(mAC);
-        mClimateViews.add(mIntake);
-        mClimateViews.add(mFanSpeed);
-        mClimateViews.add(mFanDirection);
-        mClimateViews.add(mSeatPS);
-        mClimateViews.add(mTempPS);
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+            mClimateViews.add(mSeatDR);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mSeatPS);
+        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mSeatDR);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mSeatPS);
+            mClimateViews.add(mTempPS);
+        }
 
         for ( int i = 0; i<mClimateViews.size(); i++ ) {
             int resid = mContext.getResources().getIdentifier("climate_menu_"+i, "id", PACKAGE_NAME);
