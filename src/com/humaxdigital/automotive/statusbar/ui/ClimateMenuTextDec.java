@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import android.os.Handler;
+
 import com.humaxdigital.automotive.statusbar.R;
 
 public class ClimateMenuTextDec extends LinearLayout {
@@ -13,10 +15,13 @@ public class ClimateMenuTextDec extends LinearLayout {
     private TextView mTextViewInt;
     private String mTextDec;
     private String mTextInt;
+    private Handler mHandler; 
 
     public ClimateMenuTextDec(Context context) {
         super(context);
         mContext = context;
+        if ( mContext != null ) 
+            mHandler = new Handler(mContext.getMainLooper());
     }
 
     public ClimateMenuTextDec inflate() {
@@ -29,9 +34,19 @@ public class ClimateMenuTextDec extends LinearLayout {
     }
 
     public ClimateMenuTextDec update(String textInt, String textDec) {
+        if ( mContext == null ) return this; 
+
         mTextInt = textInt;
         mTextDec = textDec;
-        textRefresh();
+        if ( mHandler != null ) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    textRefresh();
+                }
+            }); 
+        }
+        
         return this;
     }
 

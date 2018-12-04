@@ -323,4 +323,6 @@ public class ClimateControllerManager {
             if ( mListener != null ) 
                 mListener.onFanDirectionChanged(mFanDirection.get());
     }
+
+    
 }
