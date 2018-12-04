@@ -68,7 +68,6 @@ public class ClimatePSTempController extends ClimateBaseController<Integer> {
     public Integer get() {
         if ( mDataStore == null ) return 0;
         Integer val = mDataStore.getTemperature(mZone); 
-        Log.d(TAG, "get="+val); 
         return val; 
     }
 

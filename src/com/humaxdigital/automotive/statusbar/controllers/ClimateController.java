@@ -15,6 +15,8 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Log;
+
 import com.humaxdigital.automotive.statusbar.R;
 
 import com.humaxdigital.automotive.statusbar.ProductConfig;
@@ -234,7 +236,6 @@ public class ClimateController implements BaseController {
             view.update(tem, dec); 
         } else 
             view.update(state, ".0"); 
-        
     }
 
     private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 

@@ -24,7 +24,7 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
             int speed = mManager.getIntProperty(
                 CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
             Log.d(TAG, "fetch="+speed); 
-            mDataStore.setFanSpeed(speed);
+            if ( checkInvalid(speed) ) mDataStore.setFanSpeed(speed);
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchFanSpeed");
         }
@@ -34,7 +34,8 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     public Boolean update(Integer e) {
         if ( mDataStore == null ) return false;
         Log.d(TAG, "update="+e); 
-        if ( !mDataStore.shouldPropagateFanSpeedUpdate(mZone, e) ) return false;
+        if ( !checkInvalid(e) || 
+            !mDataStore.shouldPropagateFanSpeedUpdate(mZone, e) ) return false;
         return true;
     }
 
@@ -44,6 +45,11 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
         int speed = mDataStore.getFanSpeed(); 
         Log.d(TAG, "get="+speed); 
         return convertToStatus(speed).ordinal(); 
+    }
+
+    private Boolean checkInvalid(int val) {
+        if ( val >= 0x0 && val <= 0x9 ) return true; 
+        else return false; 
     }
 
     private FanSpeedStatus convertToStatus(int speed) {

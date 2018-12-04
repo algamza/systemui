@@ -9,6 +9,7 @@ public class ClimateUtils {
         Log.d(TAG, "temperatureHexToCelsius="+phy); 
         return phy; 
     }
+    
     static public float temperatureHexToFahrenheit(int hex) {
         if ( !(hex >= 0x02 && hex <= 0x24) ) return 0.0f; 
         float phy = hex*1.0f + 56; 

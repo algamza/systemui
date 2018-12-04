@@ -488,9 +488,18 @@ public class StatusBarService extends Service {
             }
      
             public float getDRTemperature() throws RemoteException { 
-                if ( mClimateManager == null ) return 0.0f; 
-                return (float)mClimateManager.getController(
-                    ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE).get(); 
+                float ret = 0.0f; 
+                if ( mClimateManager == null ) return ret; 
+                if ( ((ClimateDRTempController)mClimateManager.getController(
+                    ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE)).getCurrentTemperatureMode() == 
+                    ClimateDRTempController.MODE.CELSIUS ) {
+                    ret = ClimateUtils.temperatureHexToCelsius((int)mClimateManager.getController(
+                        ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE).get()); 
+                } else {
+                    ret = ClimateUtils.temperatureHexToFahrenheit((int)mClimateManager.getController(
+                        ClimateControllerManager.ControllerType.DRIVER_TEMPERATURE).get()); 
+                }
+                return ret; 
             }
             public int getDRSeatStatus() throws RemoteException { 
                 if ( mClimateManager == null ) return 0; 
@@ -529,9 +538,19 @@ public class StatusBarService extends Service {
                 return (int)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT).get(); 
              }
             public float getPSTemperature() throws RemoteException { 
-                if ( mClimateManager == null ) return 0; 
-                return (float)mClimateManager.getController(
-                    ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get(); 
+                float ret = 0.0f; 
+                if ( mClimateManager == null ) return 0.0f; 
+                if ( ((ClimatePSTempController)mClimateManager.getController(
+                    ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE))
+                    .getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS ) {
+                    ret = ClimateUtils.temperatureHexToCelsius((int)mClimateManager.getController(
+                        ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get()); 
+                } else {
+                    ret = ClimateUtils.temperatureHexToFahrenheit((int)mClimateManager.getController(
+                        ClimateControllerManager.ControllerType.PASSENGER_TEMPERATURE).get()); 
+                }
+                
+                return ret; 
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {
@@ -560,7 +579,8 @@ public class StatusBarService extends Service {
             public void openDateTimeSetting() throws RemoteException {
                 if ( !OPEN_DATE_SETTING.equals("") ) {
                     Intent intent = new Intent(OPEN_DATE_SETTING);
-                    mContext.sendBroadcast(intent);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
                 }
             } 
             public void registerDateTimeCallback(IDateTimeCallback callback) throws RemoteException {

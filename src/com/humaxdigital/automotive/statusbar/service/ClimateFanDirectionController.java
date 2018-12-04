@@ -25,7 +25,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             int val = mManager.getIntProperty(
                 CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
             Log.d(TAG, "fetch="+val);
-            mDataStore.setFanDirection(val);
+            if ( checkInvalid(val) ) mDataStore.setFanDirection(val);
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchFanDirection");
         }
@@ -35,7 +35,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
     public Boolean update(Integer e) {
         if ( mDataStore == null ) return false;
         Log.d(TAG, "update="+e);
-        if ( !mDataStore.shouldPropagateFanDirectionUpdate(e) ) 
+        if ( !checkInvalid(e) || !mDataStore.shouldPropagateFanDirectionUpdate(e) ) 
             return false;
         return true;
     }
@@ -66,6 +66,12 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             }
         }; 
         task.execute(convertToValue(status));
+    }
+
+    
+    private Boolean checkInvalid(int val) {
+        if ( val >= 0x1 && val <= 0x4 ) return true; 
+        else return false; 
     }
 
     private int convertToValue(FanDirectionStatus status) {

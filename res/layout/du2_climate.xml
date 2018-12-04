@@ -10,7 +10,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="56" />
+        android:layout_weight="43" />
     <FrameLayout
         android:id="@+id/climate_menu_0"
         android:layout_width="0dp"
@@ -19,7 +19,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="26" />
+        android:layout_weight="31" />
     <FrameLayout
         android:id="@+id/climate_menu_1"
         android:layout_width="0dp"
@@ -28,7 +28,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="26" />
+        android:layout_weight="31" />
     <FrameLayout
         android:id="@+id/climate_menu_2"
         android:layout_width="0dp"
@@ -37,7 +37,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="30" />
+        android:layout_weight="29" />
     <FrameLayout
         android:id="@+id/climate_menu_3"
         android:layout_width="0dp"
@@ -46,7 +46,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="24" />
+        android:layout_weight="29" />
     <FrameLayout
         android:id="@+id/climate_menu_4"
         android:layout_width="0dp"
@@ -55,7 +55,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="23" />
+        android:layout_weight="31" />
     <FrameLayout
         android:id="@+id/climate_menu_5"
         android:layout_width="0dp"
@@ -64,7 +64,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="26" />
+        android:layout_weight="31" />
     <FrameLayout
         android:id="@+id/climate_menu_6"
         android:layout_width="0dp"
@@ -73,5 +73,5 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="56" />
+        android:layout_weight="42" />
 </LinearLayout>
