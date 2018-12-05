@@ -1,7 +1,6 @@
 package com.humaxdigital.automotive.statusbar.controllers;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
@@ -11,6 +10,7 @@ import android.view.ViewGroup;
 import android.os.RemoteException;
 import android.widget.FrameLayout;
 
+import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +41,7 @@ public class ClimateController implements BaseController {
     private Context mContext;
     private Resources mRes;
     private View mClimate;
+    private Handler mHandler; 
 
     private ClimateMenuTextDec mTempDR;
     private float mTempDRState = 0.0f;
@@ -70,6 +71,7 @@ public class ClimateController implements BaseController {
         mContext = context;
         mClimate = view;
         mRes = mContext.getResources();
+        mHandler = new Handler(mContext.getMainLooper());
     }
 
     @Override
@@ -305,48 +307,95 @@ public class ClimateController implements BaseController {
         public void onDRTemperatureChanged(float temp) throws RemoteException {
             if ( mTempDR == null ) return; 
             mTempDRState = temp;
-            updateTemp(mTempDR, mTempDRState); 
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateTemp(mTempDR, mTempDRState); 
+                }
+            }); 
         }
         public void onDRSeatStatusChanged(int status) throws RemoteException {
             if ( mSeatDR == null ) return;
             mSeatDRState = SeatState.values()[status]; 
-            mSeatDR.update(mSeatDRState.ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSeatDR.update(mSeatDRState.ordinal());
+                }
+            }); 
         }
         public void onAirCirculationChanged(boolean isOn) throws RemoteException {
             if ( mIntake == null ) return; 
             mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
-            mIntake.update(mIntakeState.ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mIntake.update(mIntakeState.ordinal());
+                }
+            }); 
         }
         public void onAirConditionerChanged(boolean isOn) throws RemoteException {
             if ( mAC == null ) return; 
             mACState = isOn?ACState.ON:ACState.OFF;
-            mAC.update(mACState.ordinal());
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAC.update(mACState.ordinal());
+                }
+            });    
         }
         public void onFanDirectionChanged(int direction) throws RemoteException {
             if ( mFanDirection == null ) return; 
             mFanDirectionState = FanDirectionState.values()[direction]; 
-            mFanDirection.update(mFanDirectionState.ordinal()); 
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mFanDirection.update(mFanDirectionState.ordinal()); 
+                }
+            }); 
         }
         public void onBlowerSpeedChanged(int status) throws RemoteException {
             if ( mFanSpeed == null ) return; 
             mFanSpeedState = FanSpeedState.values()[status]; 
-            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
-            } else {
-                mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
-                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
-            }  
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                        mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                        mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+                    } else {
+                        mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
+                        mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+                    } 
+                }
+            }); 
         }
         public void onPSSeatStatusChanged(int status) throws RemoteException {
             if ( mSeatPS == null ) return; 
             mSeatPSState = SeatState.values()[status]; 
-            mSeatPS.update(mSeatPSState.ordinal()); 
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSeatPS.update(mSeatPSState.ordinal()); 
+                }
+            }); 
         }
         public void onPSTemperatureChanged(float temp) throws RemoteException {
             if ( mTempPS == null ) return; 
             mTempPSState = temp;
-            updateTemp(mTempPS, mTempPSState); 
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateTemp(mTempPS, mTempPSState); 
+                }
+            }); 
         }
     };
 }

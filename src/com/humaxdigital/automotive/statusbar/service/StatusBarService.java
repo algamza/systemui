@@ -25,7 +25,7 @@ public class StatusBarService extends Service {
     private static final String TAG = "StatusBarService";
     
     private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
-    private static final String OPEN_DATE_SETTING = "";
+    private static final String OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
     private static final String OPEN_USERPROFILE_SETTING = "";
     
     private Context mContext = this; 
@@ -603,7 +603,8 @@ public class StatusBarService extends Service {
             public void openUserProfileSetting() throws RemoteException {
                 if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
                     Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
-                    mContext.sendBroadcast(intent);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    mContext.startActivity(intent);
                 }
             } 
             public void registerUserProfileCallback(IUserProfileCallback callback) throws RemoteException {
