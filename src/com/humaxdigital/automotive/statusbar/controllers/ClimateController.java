@@ -287,6 +287,7 @@ public class ClimateController implements BaseController {
         @Override
         public void onClick(View v) {
             if ( mFanDirection == null ) return; 
+            /*
             try {
                 if ( mService != null ) {
                     if ( FanDirectionState.values()[mService.getFanDirection()] == 
@@ -297,9 +298,10 @@ public class ClimateController implements BaseController {
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
+            */
 
             int next = mFanDirectionState.ordinal() + 1;
-            if ( next >= (FanDirectionState.values().length - 1) ) 
+            if ( next >= (FanDirectionState.values().length-1) ) 
                 mFanDirectionState = FanDirectionState.values()[0];
             else 
                 mFanDirectionState = FanDirectionState.values()[next];

@@ -336,7 +336,6 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLastFanDirectionSet < COALESCE_TIME_MS) {
                 return false;
             }
-            if ( mFanDirection == direction ) return false; 
             mFanDirection = direction;
         }
         return true;

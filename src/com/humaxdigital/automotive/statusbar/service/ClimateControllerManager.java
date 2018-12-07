@@ -329,7 +329,7 @@ public class ClimateControllerManager {
         if ( mFanDirection == null ) return; 
         
         if ( mFanDirection.update(position) ) {
-            if ( !mFanDirection.isFrontDefogOn() && mListener != null )
+            if ( mListener != null )
                 mListener.onFanDirectionChanged(mFanDirection.get());
         }
                 

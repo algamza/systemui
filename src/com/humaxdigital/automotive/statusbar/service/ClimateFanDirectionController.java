@@ -73,6 +73,21 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         FanDirectionStatus status = FanDirectionStatus.values()[e]; 
         if ( !mDataStore.shouldPropagateFanDirectionUpdate(convertToValue(status)) ) return;
 
+        if ( mDataStore.getDefrosterState(mZoneFrontDef) ) {
+            final AsyncTask<Void, Void, Void> defogtask = new AsyncTask<Void, Void, Void>() {
+                protected Void doInBackground(Void... voids) {
+                    try {
+                        Log.d(TAG, "set defog="+0); 
+                        mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_DEFOG, mZoneFrontDef, 0x0);
+                    } catch (android.car.CarNotConnectedException err) {
+                        Log.e(TAG, "Car not connected in setAcState");
+                    }
+                    return null;
+                }
+            }; 
+            defogtask.execute();
+        }
+        
         final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
             protected Void doInBackground(Integer... integers) {
                 try {
