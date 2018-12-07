@@ -32,7 +32,7 @@ public class ClimateController implements BaseController {
     static final String PACKAGE_NAME = "com.humaxdigital.automotive.statusbar"; 
 
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum FanDirectionState { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST }
+    private enum FanDirectionState { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST, DEFROST }
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
@@ -156,6 +156,7 @@ public class ClimateController implements BaseController {
             .addIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null))
             .addIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
             .addIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
+            .addIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog, null))
             .inflate();
         mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         mSeatPS = new ClimateMenuImg(mContext)
@@ -286,8 +287,19 @@ public class ClimateController implements BaseController {
         @Override
         public void onClick(View v) {
             if ( mFanDirection == null ) return; 
+            try {
+                if ( mService != null ) {
+                    if ( FanDirectionState.values()[mService.getFanDirection()] == 
+                        FanDirectionState.DEFROST ) {
+                        return; 
+                    }
+                }
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+
             int next = mFanDirectionState.ordinal() + 1;
-            if ( next >= FanDirectionState.values().length ) 
+            if ( next >= (FanDirectionState.values().length - 1) ) 
                 mFanDirectionState = FanDirectionState.values()[0];
             else 
                 mFanDirectionState = FanDirectionState.values()[next];

@@ -50,6 +50,11 @@ public class ClimateControllerManager {
         VehicleAreaSeat.ROW_1_RIGHT |
         VehicleAreaSeat.ROW_2_RIGHT; 
 
+    public static final int WINDOW_FRONT = 
+        VehicleAreaWindow.FRONT_WINDSHIELD; 
+    public static final int WINDOW_REAR = 
+        VehicleAreaWindow.REAR_WINDSHIELD; 
+
     public static final int HVAC_ALL = 
         HVAC_LEFT | HVAC_RIGHT; 
 
@@ -183,7 +188,7 @@ public class ClimateControllerManager {
                 Log.d(TAG, "HVAC event, id: " + id + ", area: " + areaId);
                 switch (id) {
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
-                        handleFanPositionUpdate(areaId, getValue(val));
+                        handleFanPositionUpdate(getValue(val));
                         break;
                     case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
                         handleFanSpeedUpdate(areaId, getValue(val));
@@ -203,6 +208,10 @@ public class ClimateControllerManager {
                     case CarHvacManagerEx.ID_ZONED_AC_ON:
                         handleAirConditionerUpdate(getValue(val));
                         break;
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_DEFOG:
+                        handleDefogUpdate(areaId, getValue(val));
+                        break;
+                    default: break; 
                 }
             }
 
@@ -316,13 +325,21 @@ public class ClimateControllerManager {
                 mListener.onFanSpeedStatusChanged(mFanSpeed.get());
     }
 
-    private void handleFanPositionUpdate(int zone, int position) {
+    private void handleFanPositionUpdate(int position) {
+        if ( mFanDirection == null ) return; 
+        
+        if ( mFanDirection.update(position) ) {
+            if ( !mFanDirection.isFrontDefogOn() && mListener != null )
+                mListener.onFanDirectionChanged(mFanDirection.get());
+        }
+                
+    }
+
+    private void handleDefogUpdate(int zone, int val) {
         if ( mFanDirection == null ) return; 
 
-        if ( mFanDirection.update(position) )
+        if ( mFanDirection.updateDefog(zone, val) )
             if ( mListener != null ) 
                 mListener.onFanDirectionChanged(mFanDirection.get());
     }
-
-    
 }
