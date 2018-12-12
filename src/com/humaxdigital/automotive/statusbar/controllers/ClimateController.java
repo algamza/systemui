@@ -63,6 +63,8 @@ public class ClimateController implements BaseController {
     private ClimateMenuTextImg mFanSpeed;
     private FanSpeedState mFanSpeedState = FanSpeedState.STEPOFF;
 
+    private Boolean mIGNOn = false; 
+
     private final List<View> mClimateViews = new ArrayList<>();
 
 
@@ -110,6 +112,7 @@ public class ClimateController implements BaseController {
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if ( mIGNOn ) return; 
                 openClimateSetting(); 
             }
         });
@@ -136,20 +139,24 @@ public class ClimateController implements BaseController {
             .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_04, null))
             .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_05, null))
             .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_06, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_dis, null))
             .inflate(); 
         mAC = new ClimateMenuImg(mContext)
             .addIcon(ACState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_on, null))
             .addIcon(ACState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_off, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_dis, null))
             .inflate();
         mAC.setOnClickListener(mClimateACOnClick); 
         mIntake = new ClimateMenuImg(mContext)
             .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
             .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_dis, null))
             .inflate();
         mIntake.setOnClickListener(mClimateIntakeOnClick); 
         mFanSpeed = new ClimateMenuTextImg(mContext)
             .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_d, null))
             .addIcon(1, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_dis, null))
             .inflate(); 
         mFanDirection = new ClimateMenuImg(mContext)
             .addIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null))
@@ -157,6 +164,11 @@ public class ClimateController implements BaseController {
             .addIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
             .addIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
             .addIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog, null))
+            .addDisableIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04_dis, null))
+            .addDisableIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog_dis, null))
             .inflate();
         mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         mSeatPS = new ClimateMenuImg(mContext)
@@ -167,6 +179,7 @@ public class ClimateController implements BaseController {
             .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_04, null))
             .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_05, null))
             .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_06, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_dis, null))
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
@@ -220,10 +233,10 @@ public class ClimateController implements BaseController {
         if ( mFanSpeed != null ) {
             if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
                 mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+                mFanSpeed.updateDisable(true); 
             } else {
                 mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
-                mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+                mFanSpeed.updateDisable(false); 
             }
         }
         if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
@@ -241,10 +254,23 @@ public class ClimateController implements BaseController {
             view.update(state, ".0"); 
     }
 
+    private void updateIGOnChange(boolean on) {
+        boolean disable = on; 
+        
+        mTempDR.updateDisable(disable);
+        mSeatDR.updateDisable(disable);
+        mAC.updateDisable(disable);
+        mIntake.updateDisable(disable);
+        mFanSpeed.updateDisable(disable);
+        mFanDirection.updateDisable(disable);
+        mSeatPS.updateDisable(disable);
+        mTempPS.updateDisable(disable);
+    } 
+
     private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mAC == null ) return; 
+            if ( mAC == null || mIGNOn ) return; 
             if ( mACState == ACState.ON ) {
                 mACState = ACState.OFF; 
                 mAC.update(mACState.ordinal());
@@ -265,7 +291,7 @@ public class ClimateController implements BaseController {
     private final View.OnClickListener mClimateIntakeOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mIntake == null ) return; 
+            if ( mIntake == null || mIGNOn ) return; 
             if ( mIntakeState == IntakeState.ON ) {
                 mIntakeState = IntakeState.OFF; 
                 mIntake.update(mIntakeState.ordinal());
@@ -286,7 +312,7 @@ public class ClimateController implements BaseController {
     private final View.OnClickListener mClimateFanDirectionOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mFanDirection == null ) return; 
+            if ( mFanDirection == null || mIGNOn ) return; 
             /*
             try {
                 if ( mService != null ) {
@@ -381,10 +407,10 @@ public class ClimateController implements BaseController {
                 public void run() {
                     if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
                         mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                        mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateBlowerOff)); 
+                        mFanSpeed.updateDisable(true);
                     } else {
                         mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
-                        mFanSpeed.setTextColor(mRes.getColor(R.color.colorClimateText)); 
+                        mFanSpeed.updateDisable(false);
                     } 
                 }
             }); 
@@ -408,6 +434,18 @@ public class ClimateController implements BaseController {
                 @Override
                 public void run() {
                     updateTemp(mTempPS, mTempPSState); 
+                }
+            }); 
+        }
+
+        public void onIGNOnChanged(boolean on) throws RemoteException {
+            if ( mHandler == null ) return; 
+
+            mIGNOn = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateIGOnChange(mIGNOn); 
                 }
             }); 
         }

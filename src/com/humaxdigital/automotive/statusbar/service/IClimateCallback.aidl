@@ -9,5 +9,5 @@ oneway interface IClimateCallback {
     void onBlowerSpeedChanged(int status);
     void onPSSeatStatusChanged(int status);
     void onPSTemperatureChanged(float temp);
-
+    void onIGNOnChanged(boolean on); 
 }

@@ -13,6 +13,7 @@ public class ClimateMenuTextDec extends LinearLayout {
     private TextView mTextViewInt;
     private String mTextDec;
     private String mTextInt;
+    private Boolean mDisable = false;
 
     public ClimateMenuTextDec(Context context) {
         super(context);
@@ -35,9 +36,30 @@ public class ClimateMenuTextDec extends LinearLayout {
         return this;
     }
 
+    public ClimateMenuTextDec updateDisable(boolean disable) {
+        mDisable = disable; 
+        
+        if ( mTextViewDec == null || mTextViewInt == null ) return this; 
+
+        if ( mDisable ) {
+            mTextViewDec.setAlpha(0.2f); 
+            mTextViewInt.setAlpha(0.2f); 
+        } else {
+            mTextViewDec.setAlpha(1.0f); 
+            mTextViewInt.setAlpha(1.0f); 
+        }
+
+        return this; 
+    }
+
     private void textRefresh() {
+        if ( mDisable ) return; 
         if ( mTextViewInt != null ) mTextViewInt.setText(mTextInt);
         if ( mTextViewDec != null ) mTextViewDec.setText(mTextDec);
+    }
+
+    public Boolean isDisable() {
+        return mDisable; 
     }
 }
 

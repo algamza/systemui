@@ -18,6 +18,8 @@ public class ClimateMenuTextImg extends LinearLayout {
     private int mStatus = 0; 
     private String mText = "";
     private HashMap<Integer,Drawable> mIcons= new HashMap<>();
+    private Drawable mDisableIcon; 
+    private Boolean mDisable = false; 
 
     public ClimateMenuTextImg(Context context) {
         super(context);
@@ -38,6 +40,11 @@ public class ClimateMenuTextImg extends LinearLayout {
         return this;
     }
 
+    public ClimateMenuTextImg addDisableIcon(Drawable icon) {
+        mDisableIcon = icon; 
+        return this;
+    }
+
     public ClimateMenuTextImg update(int status, String text) {
         mText = text;
         mStatus = status; 
@@ -45,15 +52,29 @@ public class ClimateMenuTextImg extends LinearLayout {
         return this;
     }
 
-    public ClimateMenuTextImg setTextColor(int color) {
-        if ( mTextView == null ) return this;
-        mTextView.setTextColor(color);
+    public ClimateMenuTextImg updateDisable(boolean disable) {
+        mDisable = disable; 
+
+        if ( mTextView == null || mImageView == null ) return this; 
+        if ( mDisable ) {
+            if ( mDisableIcon != null ) mImageView.setImageDrawable(mDisableIcon);
+            mTextView.setAlpha(0.2f); 
+        } else {
+            mImageView.setImageDrawable(mIcons.get(mStatus));
+            mTextView.setAlpha(1.0f); 
+        }
         return this;
     }
 
     private void refresh() {
+        if ( mDisable ) return; 
+
         if ( mImageView != null && mIcons.size() > 0 ) 
             mImageView.setImageDrawable(mIcons.get(mStatus));
         if ( mTextView != null ) mTextView.setText(mText);
+    }
+
+    public Boolean isDisable() {
+        return mDisable; 
     }
 }

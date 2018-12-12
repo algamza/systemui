@@ -88,6 +88,7 @@ public class ClimateControllerManager {
         public void onFanSpeedStatusChanged(int status);
         public void onPassengerSeatStatusChanged(int status);
         public void onPassengerTemperatureChanged(float temp);
+        public void onIGNOnChanged(boolean on);
     }
     
     @SuppressWarnings("unchecked")
@@ -339,7 +340,11 @@ public class ClimateControllerManager {
         if ( mFanDirection == null ) return; 
 
         if ( mFanDirection.updateDefog(zone, val) )
-            if ( mListener != null ) 
+            if ( mListener != null )
+            {
                 mListener.onFanDirectionChanged(mFanDirection.get());
+                // test
+                mListener.onIGNOnChanged(val==0x1?true:false); 
+            } 
     }
 }

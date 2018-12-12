@@ -15,6 +15,9 @@ public class ClimateMenuImg extends LinearLayout {
     private int mStatus = 0;
     private ImageView mView;
     private HashMap<Integer,Drawable> mIcons= new HashMap<>();
+    private HashMap<Integer,Drawable> mDisableIcons= new HashMap<>();
+    private Drawable mDisableIcon; 
+    private Boolean mDisable = false; 
 
     public ClimateMenuImg(Context context) {
         super(context);
@@ -34,9 +37,36 @@ public class ClimateMenuImg extends LinearLayout {
         return this;
     }
 
+    public ClimateMenuImg addDisableIcon(int status, Drawable icon) {
+        mDisableIcons.put(status, icon);
+        return this;
+    }
+
+    public ClimateMenuImg addDisableIcon(Drawable icon) {
+        mDisableIcon = icon; 
+        return this;
+    }
+
     public ClimateMenuImg update(int status) {
         if ( mView == null || mIcons.size() <= 0 ) return this;
-        mView.setImageDrawable(mIcons.get(status));
+        if ( !mDisable ) mView.setImageDrawable(mIcons.get(status));
+        mStatus = status; 
         return this;
+    }
+
+    public ClimateMenuImg updateDisable(boolean disable) { 
+        mDisable = disable; 
+        if ( mView == null ) return this;
+        if ( disable ) {
+            if ( mDisableIcon != null ) mView.setImageDrawable(mDisableIcon);
+            else mView.setImageDrawable(mDisableIcons.get(mStatus));
+        } else {
+            mView.setImageDrawable(mIcons.get(mStatus));
+        }
+        return this;
+    }
+
+    public Boolean isDisable() {
+        return mDisable; 
     }
 }

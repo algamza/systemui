@@ -416,6 +416,16 @@ public class StatusBarService extends Service {
                     e.printStackTrace();
                 }
             }
+
+            @Override
+            public void onIGNOnChanged(boolean on) {
+                try {
+                    for ( IClimateCallback callback : mClimateCallbacks ) 
+                        callback.onIGNOnChanged(on); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
         }; 
 
         private final IStatusBarService.Stub mBinder = new IStatusBarService.Stub() {
