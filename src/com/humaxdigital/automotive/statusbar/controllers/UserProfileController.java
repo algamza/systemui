@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 
 import android.view.View;
 import android.os.RemoteException;
+import android.os.Handler;
 import android.graphics.Bitmap;
 
 import com.humaxdigital.automotive.statusbar.R;
@@ -21,11 +22,13 @@ public class UserProfileController implements BaseController {
     private View mParentView; 
     private UserProfileView mUserProfileView;
     private IStatusBarService mService; 
+    private Handler mHandler; 
 
     public UserProfileController(Context context, View view) {
         if ( context == null || view == null ) return;
         mContext = context;
         mParentView = view; 
+        mHandler = new Handler(mContext.getMainLooper());
     }
     
     @Override
@@ -85,7 +88,14 @@ public class UserProfileController implements BaseController {
 
     private final IUserProfileCallback.Stub mUserProfileCallback = new IUserProfileCallback.Stub() {
         public void onUserChanged(BitmapParcelable data) throws RemoteException {
-           if ( mUserProfileView != null ) mUserProfileView.setImageBitmap(getUserBitmap()); 
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if ( mUserProfileView != null ) 
+                        mUserProfileView.setImageBitmap(getUserBitmap()); 
+                }
+            }); 
         }
     };
 }

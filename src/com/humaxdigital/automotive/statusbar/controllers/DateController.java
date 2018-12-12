@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.View;
 import android.os.RemoteException;
 
+import android.os.Handler;
+
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.DateView;
 
@@ -16,11 +18,15 @@ public class DateController implements BaseController {
     private DateView mDateVew;
     private DateView mDateNoonView;
     private IStatusBarService mService; 
+    private String mTime; 
+
+    private Handler mHandler; 
 
     public DateController(Context context, View view) {
         if ( context == null || view == null ) return;
         mContext = context;
         mParentView = view;
+        mHandler = new Handler(mContext.getMainLooper());
     }
 
     @Override
@@ -93,7 +99,14 @@ public class DateController implements BaseController {
     private final IDateTimeCallback.Stub mDateTimeCallback = new IDateTimeCallback.Stub() {
         @Override
         public void onDateTimeChanged(String time) throws RemoteException {
-            updateClockUI(time);
+            if ( mHandler == null ) return; 
+            mTime = time; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateClockUI(mTime);
+                }
+            }); 
         }
     };
 }

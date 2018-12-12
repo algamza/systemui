@@ -8,9 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.RemoteException;
-import android.widget.FrameLayout;
-
 import android.os.Handler;
+import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,8 +153,7 @@ public class ClimateController implements BaseController {
             .inflate();
         mIntake.setOnClickListener(mClimateIntakeOnClick); 
         mFanSpeed = new ClimateMenuTextImg(mContext)
-            .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_d, null))
-            .addIcon(1, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind, null))
+            .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_n, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_dis, null))
             .inflate(); 
         mFanDirection = new ClimateMenuImg(mContext)
@@ -230,11 +228,9 @@ public class ClimateController implements BaseController {
         if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
         if ( mFanSpeed != null ) {
             if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                mFanSpeed.updateDisable(true); 
+                mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
             } else {
-                mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
-                mFanSpeed.updateDisable(false); 
+                mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
             }
         }
         if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
@@ -404,11 +400,9 @@ public class ClimateController implements BaseController {
                 @Override
                 public void run() {
                     if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                        mFanSpeed.update(0, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                        mFanSpeed.updateDisable(true);
+                        mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
                     } else {
-                        mFanSpeed.update(1, String.valueOf(mFanSpeedState.ordinal()-1));
-                        mFanSpeed.updateDisable(false);
+                        mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
                     } 
                 }
             }); 

@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.os.RemoteException;
 import android.os.Build; 
+import android.os.Handler;
 
 import android.util.Log;
 
@@ -44,6 +45,7 @@ public class SystemStatusController implements BaseController {
     private Context mContext;
     private Resources mRes;
     private View mStatusBar;
+    private Handler mHandler; 
 
     private SystemView mMute;
     private SystemView mBle;
@@ -63,6 +65,7 @@ public class SystemStatusController implements BaseController {
         mContext = context;
         if ( mContext != null ) mRes = mContext.getResources();
         mStatusBar = view;  
+        mHandler = new Handler(mContext.getMainLooper());
     }
 
     @Override
@@ -235,39 +238,94 @@ public class SystemStatusController implements BaseController {
     private final ISystemCallback.Stub mSystemCallback = new ISystemCallback.Stub() {
         public void onMuteStatusChanged(int status) throws RemoteException {
             if ( mMute == null ) return;
-            mMute.update(MuteStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mMute.update(MuteStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onBLEStatusChanged(int status) throws RemoteException {
             if ( mBle == null ) return;
-            mBle.update(BLEStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mBle.update(BLEStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onBTBatteryStatusChanged(int status) throws RemoteException {
             if ( mBtBattery == null ) return;
-            mBtBattery.update(BTBatteryStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mBtBattery.update(BTBatteryStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onBTCallStatusChanged(int status) throws RemoteException {
             if ( mBtPhone == null ) return;
-            mBtPhone.update(BTCallStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mBtPhone.update(BTCallStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onAntennaStatusChanged(int status) throws RemoteException {
             if ( mAntenna == null ) return;
-            mAntenna.update(AntennaStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAntenna.update(AntennaStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onDataStatusChanged(int status) throws RemoteException {
             if ( mPhoneData == null ) return;
-            mPhoneData.update(DataStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mPhoneData.update(DataStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onWifiStatusChanged(int status) throws RemoteException {
             if ( mWifi == null ) return;
-            mWifi.update(WifiStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWifi.update(WifiStatus.values()[status].ordinal());
+                }
+            }); 
         }
         public void onWirelessChargeStatusChanged(int status) throws RemoteException {
             if ( mWirelessCharging == null ) return;
-            mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
+                }
+            }); 
+            
         }
         public void onModeStatusChanged(int status) throws RemoteException {
             if ( mLocationSharing == null ) return;
-            mLocationSharing.update(ModeStatus.values()[status].ordinal());
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mLocationSharing.update(ModeStatus.values()[status].ordinal());
+                }
+            }); 
         }
     };
 }

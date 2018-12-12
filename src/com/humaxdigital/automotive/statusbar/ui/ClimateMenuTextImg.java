@@ -7,6 +7,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import android.util.Log; 
+
 import java.util.HashMap;
 
 import com.humaxdigital.automotive.statusbar.R;
@@ -16,10 +18,11 @@ public class ClimateMenuTextImg extends LinearLayout {
     private ImageView mImageView;
     private TextView mTextView;
     private int mStatus = 0; 
-    private String mText = "";
+    private String mText = "0";
     private HashMap<Integer,Drawable> mIcons= new HashMap<>();
     private Drawable mDisableIcon; 
     private Boolean mDisable = false; 
+    private Boolean mStateDisable = false; 
 
     public ClimateMenuTextImg(Context context) {
         super(context);
@@ -45,9 +48,10 @@ public class ClimateMenuTextImg extends LinearLayout {
         return this;
     }
 
-    public ClimateMenuTextImg update(int status, String text) {
+    public ClimateMenuTextImg update(int status, Boolean disable, String text) {
         mText = text;
         mStatus = status; 
+        mStateDisable = disable; 
         refresh();
         return this;
     }
@@ -63,15 +67,29 @@ public class ClimateMenuTextImg extends LinearLayout {
             mImageView.setImageDrawable(mIcons.get(mStatus));
             mTextView.setAlpha(1.0f); 
         }
+        refresh(); 
         return this;
     }
 
     private void refresh() {
         if ( mDisable ) return; 
 
-        if ( mImageView != null && mIcons.size() > 0 ) 
-            mImageView.setImageDrawable(mIcons.get(mStatus));
-        if ( mTextView != null ) mTextView.setText(mText);
+        Log.d("ClimateMenu", "disable="+mStateDisable+", mStatus="+mStatus); 
+        if ( mImageView != null && mIcons.size() > 0 ) {
+            if ( mStateDisable ) {
+                if ( mDisableIcon != null ) {
+                    mImageView.setImageDrawable(mDisableIcon);
+                }
+            }
+            else {
+                mImageView.setImageDrawable(mIcons.get(mStatus));
+            }
+        }
+        
+        if ( mTextView == null ) return; 
+        mTextView.setText(mText);
+        if ( mStateDisable ) mTextView.setAlpha(0.2f); 
+        else mTextView.setAlpha(1.0f); 
     }
 
     public Boolean isDisable() {
