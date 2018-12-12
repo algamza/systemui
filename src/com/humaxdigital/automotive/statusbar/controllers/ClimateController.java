@@ -184,13 +184,11 @@ public class ClimateController implements BaseController {
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-            mClimateViews.add(mSeatDR);
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
-            mClimateViews.add(mSeatPS);
         } else {
             mClimateViews.add(mTempDR);
             mClimateViews.add(mSeatDR);
