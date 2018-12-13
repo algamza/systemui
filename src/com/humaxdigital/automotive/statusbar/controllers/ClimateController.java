@@ -239,6 +239,18 @@ public class ClimateController implements BaseController {
     }
 
     private void updateTemp(ClimateMenuTextDec view, float temp) {
+        // todo : need to check temperatture range ( old and new ) 
+        // VENDOR_CANRX_HVAC_TEMPERATURE_NEW_RANGE
+        if ( temp < 17.0f ) {
+            view.update("LO", ""); 
+            return; 
+        } 
+
+        if ( temp > 27.0f ) {
+            view.update("HI", ""); 
+            return; 
+        }
+
         String state = String.valueOf(temp);
         if ( state.contains(".") ) {
             String tem = state.substring(0, state.indexOf(".") );
