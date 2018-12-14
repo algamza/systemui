@@ -12,9 +12,7 @@ import android.extension.car.CarBLEManager;
 import android.util.Log;
 public class SystemBLEController extends BaseController<Integer> {
     private static final String TAG = "SystemBLEController";
-
     private enum BLEStatus { NONE, CONNECTED, CONNECTING, CONNECTION_FAIL }
-
     private CarBLEManager mManager;
 
     public SystemBLEController(Context context, DataStore store) {
@@ -36,6 +34,7 @@ public class SystemBLEController extends BaseController<Integer> {
     }
 
     public void fetch(CarBLEManager manager) {
+        if ( manager == null ) return; 
         mManager = manager; 
         if ( mDataStore == null ) return; 
         try {
@@ -48,6 +47,7 @@ public class SystemBLEController extends BaseController<Integer> {
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
         mDataStore.setBLEState(state.ordinal());
+        
     }
 
     @Override

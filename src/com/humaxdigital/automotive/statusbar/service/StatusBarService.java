@@ -19,7 +19,6 @@ import java.util.List;
 
 import com.humaxdigital.automotive.statusbar.service.CarExtensionClient.CarExClientListener;
 
-
 public class StatusBarService extends Service {
 
     private static final String TAG = "StatusBarService";
@@ -173,6 +172,10 @@ public class StatusBarService extends Service {
                 mClimateManager.fetch(mCarExClient.getHvacManagerEx(), mCarExClient.getUsmManager());
             if ( mBLEController != null ) 
                 mBLEController.fetch(mCarExClient.getBLEManager()); 
+            if ( mLocationController != null ) 
+                mLocationController.fetch(mCarExClient.getTMSManager()); 
+            if ( mWirelessChargeController != null ) 
+                mWirelessChargeController.fetch(mCarExClient.getRemainderManager()); 
         }
 
         @Override

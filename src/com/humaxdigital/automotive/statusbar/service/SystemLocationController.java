@@ -3,16 +3,17 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.os.Bundle;
 
-/*
-import android.location.LocationManager;
-import android.location.LocationListener; 
-import android.location.LocationProvider; 
-import android.location.Location;
-*/
+import android.car.CarNotConnectedException;
+import android.car.hardware.CarPropertyValue;
+import android.extension.car.CarTMSManager;
+
+import android.util.Log; 
+import java.util.Arrays;
 
 public class SystemLocationController extends BaseController<Integer> {
+    private static final String TAG = "SystemLocationController";
     enum LocationStatus { NONE, LOCATION_SHARING }
-    //private LocationManager mManager; 
+    private CarTMSManager mManager; 
 
     public SystemLocationController(Context context, DataStore store) {
         super(context, store);
@@ -21,76 +22,80 @@ public class SystemLocationController extends BaseController<Integer> {
     @Override
     public void connect() {
         if ( mContext == null ) return;
-        /*
-        mManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
-        mManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-        */
     }
 
     @Override
     public void disconnect() {
-        /*
-        if ( mManager != null ) mManager.removeUpdates(mLocationListener); 
-        */
+
     }
 
-    @Override
-    public void fetch() {
-        /*
-        if ( mManager == null || mDataStore == null ) return; 
-        mDataStore.setLocationShareState(mManager.isLocationEnabled()); 
-        */
+    public void fetch(CarTMSManager manager) {
+        if ( manager == null ) return; 
+        mManager = manager; 
+        try {
+            mManager.registerCallback(mTMSCallback);
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!");
+        }
     }
 
     @Override
     public Integer get() {
-        /*
         if ( mDataStore == null ) return 0; 
-        if ( mDataStore.getLocationShareState() ) {
-            return convertToStatus(1).ordinal(); 
-        } else {
-            return convertToStatus(0).ordinal(); 
-        }
-        */
-        return 0; 
+        int val = mDataStore.getLocationSharingState(); 
+        Log.d(TAG, "get="+val); 
+        return val; 
     }
-/*
-    private LocationListener mLocationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {}
-        public void onProviderEnabled(String provider) {}
-        public void onProviderDisabled(String provider) {}
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            if ( mManager == null || mDataStore == null ) return; 
-            switch(status) {
-                case LocationProvider.AVAILABLE:
-                case LocationProvider.OUT_OF_SERVICE: 
-                    {
-                        boolean enable = mManager.isLocationEnabled(); 
-                        boolean shouldPropagate = mDataStore.shouldPropagateLocationShareUpdate(enable);
-                        if ( shouldPropagate ) {
-                            for ( Listener<Integer> listener : mListeners ) {
-                                if ( enable ) {
-                                    listener.onEvent(convertToStatus(1).ordinal());
-                                } else {
-                                    listener.onEvent(convertToStatus(0).ordinal());
-                                }
-                            }
-                        }
-                        break; 
-                    }
+
+    private final CarTMSManager.CarTMSEventCallback mTMSCallback = 
+        new CarTMSManager.CarTMSEventCallback() {
+            
+        @Override
+        public void onChangeEvent(final CarPropertyValue value) {
+            int zones = value.getAreaId();
+            if ( value.getPropertyId() != CarTMSManager.VENDOR_TMS_EVENT ) return; 
+           
+            int i = 0;
+            int eventId = 0;
+            int dataLength = 0;
+            byte[] fullData = {0};
+            fullData = (byte[])value.getValue();
+
+            eventId = ((fullData[0] & 0xff) << 24) | ((fullData[1] & 0xff) << 16) | ((fullData[2] & 0xff) << 8) | (fullData[3] & 0xff);
+
+            switch(eventId) {
+                case CarTMSManager.APP_TMS_RES_LOCATIONSHARING: 
+                    updateStatus(LocationStatus.LOCATION_SHARING); 
+                    break; 
+                case CarTMSManager.APP_TMS_RES_LOCATIONSHARING_CANCEL: 
+                    updateStatus(LocationStatus.NONE); 
+                    break; 
                 default: break; 
             }
         }
-    };
 
-    private LocationStatus convertToStatus(int mode) {
-        LocationStatus status = LocationStatus.NONE;
-        switch(mode) {
-            case 0: break;
-            case 1: status = LocationStatus.LOCATION_SHARING;
-            default: break;  
+        @Override
+        public void onErrorEvent(final int propertyId, final int zone) {
+            Log.w(TAG, "tms Error in TmsTestFragment :  propertyId="+propertyId+", zone=0x"+zone);
         }
-        return status; 
+    }; 
+
+    private void updateStatus(LocationStatus status) {
+        if ( mDataStore == null ) return; 
+        if ( mDataStore.shouldPropagateLocationSharingStatusUpdate(status.ordinal()) ) {
+            for ( Listener listener : mListeners ) 
+                listener.onEvent(status.ordinal());
+        }
     }
-    */
+
+    private byte[] command(int id) { 
+        byte[] data = new byte[8];
+        Arrays.fill(data, (byte)0); 
+
+        data[0] = (byte)((id >> 24) & 0x000000FF);
+        data[1] = (byte)((id >> 16) & 0x000000FF);
+        data[2] = (byte)((id >> 8) & 0x000000FF);
+        data[3] = (byte)(id & 0x000000FF);
+        return data; 
+    }
 }

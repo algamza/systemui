@@ -77,6 +77,10 @@ public class DataStore {
     private Integer mBTBatteryType = 0; 
     @GuardedBy("mBLEStatus")
     private Integer mBLEStatus = 0; 
+    @GuardedBy("mLocationSharingStatus")
+    private Integer mLocationSharingStatus = 0; 
+    @GuardedBy("mWirelessChargeStatus")
+    private Integer mWirelessChargeStatus = 0; 
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -116,6 +120,10 @@ public class DataStore {
     private long mBTBatteryLevelLastSet = 0; 
     @GuardedBy("mBLEStatus")
     private long mBLEStatusLastSet = 0; 
+    @GuardedBy("mLocationSharingStatus")
+    private long mLocationSharingStatusLastSet = 0; 
+    @GuardedBy("mWirelessChargeStatus")
+    private long mWirelessChargeStatusLastSet = 0; 
 
     public int getNetworkDataType() {
         synchronized (mNetworkDataType) {
@@ -585,6 +593,54 @@ public class DataStore {
             }
             if ( mBLEStatus == state ) return false; 
             mBLEStatus = state;
+        }
+        return true;
+    }
+
+    public int getLocationSharingState() {
+        synchronized (mLocationSharingStatus) {
+            return mLocationSharingStatus;
+        }
+    }
+
+    public void setLocationSharingState(int state) {
+        synchronized (mLocationSharingStatus) {
+            mLocationSharingStatus = state;
+            mLocationSharingStatusLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateLocationSharingStatusUpdate(int state) {
+        synchronized (mLocationSharingStatus) {
+            if (SystemClock.uptimeMillis() - mLocationSharingStatusLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mLocationSharingStatus == state ) return false; 
+            mLocationSharingStatus = state;
+        }
+        return true;
+    }
+
+    public int getWirelessChargeState() {
+        synchronized (mWirelessChargeStatus) {
+            return mWirelessChargeStatus;
+        }
+    }
+
+    public void setWirelessChargeState(int state) {
+        synchronized (mLocationSharingStatus) {
+            mWirelessChargeStatus = state;
+            mWirelessChargeStatusLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateWirelessChargeStatusUpdate(int state) {
+        synchronized (mWirelessChargeStatus) {
+            if (SystemClock.uptimeMillis() - mWirelessChargeStatusLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mWirelessChargeStatus == state ) return false; 
+            mWirelessChargeStatus = state;
         }
         return true;
     }
