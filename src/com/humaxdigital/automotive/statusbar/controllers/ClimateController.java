@@ -14,8 +14,6 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
-
 import com.humaxdigital.automotive.statusbar.R;
 
 import com.humaxdigital.automotive.statusbar.ProductConfig;
@@ -35,6 +33,7 @@ public class ClimateController implements BaseController {
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
+    private enum AirCleaning { ON, OFF }; 
 
     private IStatusBarService mService; 
     private Context mContext;
@@ -46,6 +45,7 @@ public class ClimateController implements BaseController {
     private float mTempDRState = 0.0f;
     private ClimateMenuTextDec mTempPS;
     private float mTempPSState = 0.0f;
+    private Boolean mTempOn = true; 
 
     private ClimateMenuImg mSeatDR;
     private SeatState mSeatDRState = SeatState.NONE;
@@ -226,28 +226,44 @@ public class ClimateController implements BaseController {
         if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
         if ( mAC != null ) mAC.update(mACState.ordinal()); 
         if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
-        if ( mFanSpeed != null ) {
-            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-            } else {
-                mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-            }
-        }
         if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
         if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
+        if ( mFanSpeed != null ) {
+            if ( mFanSpeedState == FanSpeedState.STEPOFF || 
+                    mFanSpeedState == FanSpeedState.STEP0) {
+                mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                updateTempOn(false); 
+            } else {
+                mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
+                updateTempOn(true); 
+            }
+        }
     }
 
-    private void updateTemp(ClimateMenuTextDec view, float temp) {
+    private void updateTempOn(boolean on) {
+        if ( mTempOn == on ) return; 
+        mTempOn = on; 
+        if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
+        if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
+    }
+
+    private void updateTemp(ClimateMenuTextDec view, float temp) { 
+        if ( mContext == null ) return; 
+
+        if ( !mTempOn ) {
+            view.update(mContext.getResources().getString(R.string.temp_off)); 
+            return; 
+        }
         // todo : need to check temperatture range ( old and new ) 
         // VENDOR_CANRX_HVAC_TEMPERATURE_NEW_RANGE
         if ( temp < 17.0f ) {
-            view.update("LO", ""); 
+            view.update(mContext.getResources().getString(R.string.temp_lo)); 
             return; 
         } 
 
         if ( temp > 27.0f ) {
-            view.update("HI", ""); 
+            view.update(mContext.getResources().getString(R.string.temp_hi)); 
             return; 
         }
 
@@ -393,6 +409,19 @@ public class ClimateController implements BaseController {
                 }
             });    
         }
+        public void onAirCleaningChanged(int status) throws RemoteException {
+            // todo : air cleaning 
+            /*
+            if ( mAC == null ) return; 
+            mACState = isOn?ACState.ON:ACState.OFF;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAC.update(mACState.ordinal());
+                }
+            });    
+            */
+        }
         public void onFanDirectionChanged(int direction) throws RemoteException {
             if ( mFanDirection == null ) return; 
             mFanDirectionState = FanDirectionState.values()[direction]; 
@@ -411,10 +440,13 @@ public class ClimateController implements BaseController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                    if ( (mFanSpeedState == FanSpeedState.STEPOFF) || 
+                        mFanSpeedState == FanSpeedState.STEP0) {
                         mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                        updateTempOn(false); 
                     } else {
                         mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
+                        updateTempOn(true); 
                     } 
                 }
             }); 

@@ -5,6 +5,7 @@ oneway interface IClimateCallback {
     void onDRSeatStatusChanged(int status);
     void onAirCirculationChanged(boolean isOn);
     void onAirConditionerChanged(boolean isOn);
+    void onAirCleaningChanged(int status);
     void onFanDirectionChanged(int direction);
     void onBlowerSpeedChanged(int status);
     void onPSSeatStatusChanged(int status);

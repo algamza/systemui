@@ -53,6 +53,8 @@ public class DataStore {
     private Boolean mAirCirculationState = false;
     @GuardedBy("mAirConditionerState")
     private Boolean mAirConditionerState = false;
+    @GuardedBy("mAirCleaningState")
+    private Integer mAirCleaningState = 0;
     @GuardedBy("mAutoModeState")
     private Boolean mAutoModeState = false;
     @GuardedBy("mHvacPowerState")
@@ -100,6 +102,8 @@ public class DataStore {
     private long mAirCirculationLastSet;
     @GuardedBy("mAirConditionerState")
     private long mAirConditionerLastSet;
+    @GuardedBy("mAirCleaningState")
+    private long mAirCleaningStateLastSet;
     @GuardedBy("mAutoModeState")
     private long mAutoModeLastSet;
     @GuardedBy("mHvacPowerState")
@@ -463,6 +467,30 @@ public class DataStore {
             }
             if ( mAirConditionerState == airConditionerState ) return false; 
             mAirConditionerState = airConditionerState;
+        }
+        return true;
+    }
+
+    public Integer getAirCleaningState() {
+        synchronized (mAirCleaningState) {
+            return mAirCleaningState;
+        }
+    }
+
+    public void setAirCleaningState(int airCleaningState) {
+        synchronized (mAirCleaningState) {
+            mAirCleaningState = airCleaningState;
+            mAirCleaningStateLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public Boolean shouldPropagateAirCleaningStateUpdate(int airCleaningState) {
+        synchronized (mAirCleaningState) {
+            if (SystemClock.uptimeMillis() - mAirCleaningStateLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mAirCleaningState == airCleaningState ) return false; 
+            mAirCleaningState = airCleaningState;
         }
         return true;
     }

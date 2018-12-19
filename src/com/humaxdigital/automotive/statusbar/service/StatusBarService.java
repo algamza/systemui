@@ -381,6 +381,16 @@ public class StatusBarService extends Service {
             }
 
             @Override
+            public void onAirCleaningChanged(int status) {
+                try {
+                    for ( IClimateCallback callback : mClimateCallbacks ) 
+                        callback.onAirCleaningChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
             public void onFanDirectionChanged(int status) {
                 try {
                     for ( IClimateCallback callback : mClimateCallbacks ) 
@@ -533,6 +543,14 @@ public class StatusBarService extends Service {
             public void setAirConditionerState(boolean state) throws RemoteException { 
                 if ( mClimateManager == null ) return;  
                 mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CONDITIONER).set(state); 
+            }
+            public int getAirCleaningState() throws RemoteException { 
+                if ( mClimateManager == null ) return 0; 
+                return (int)mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CLEANING).get(); 
+            }
+            public void setAirCleaningState(int state) throws RemoteException { 
+                if ( mClimateManager == null ) return;  
+                mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CLEANING).set(state); 
             }
             public int getFanDirection() throws RemoteException {
                 if ( mClimateManager == null ) return 0; 
