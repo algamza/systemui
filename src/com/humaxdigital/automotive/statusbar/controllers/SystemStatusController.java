@@ -138,14 +138,16 @@ public class SystemStatusController implements BaseController {
             mSystemViews.add(mWifi);
         }
 
-        mPhoneData = new SystemView(mContext)
-            .addIcon(DataStatus.NONE.ordinal(), none)
-            .addIcon(DataStatus.DATA_4G.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_4g, null))
-            .addIcon(DataStatus.DATA_4G_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_4g_dis, null))
-            .addIcon(DataStatus.DATA_E.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e, null))
-            .addIcon(DataStatus.DATA_E_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e_dis, null))
-            .inflate(); 
-        mSystemViews.add(mPhoneData);
+        if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
+            mPhoneData = new SystemView(mContext)
+                .addIcon(DataStatus.NONE.ordinal(), none)
+                .addIcon(DataStatus.DATA_4G.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_4g, null))
+                .addIcon(DataStatus.DATA_4G_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_4g_dis, null))
+                .addIcon(DataStatus.DATA_E.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e, null))
+                .addIcon(DataStatus.DATA_E_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_e_dis, null))
+                .inflate(); 
+            mSystemViews.add(mPhoneData);
+        }
 
         mAntenna = new SystemView(mContext)
             .addIcon(AntennaStatus.NONE.ordinal(), none)
