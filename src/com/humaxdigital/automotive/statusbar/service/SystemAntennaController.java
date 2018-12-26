@@ -129,6 +129,7 @@ public class SystemAntennaController extends BaseController<Integer> {
             new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                /*
                 AntennaStatus status = AntennaStatus.NONE; 
                 int current = mDataStore.getAntennaState(); 
                 if ( profile == BluetoothProfile.HEADSET_CLIENT && 
@@ -140,6 +141,7 @@ public class SystemAntennaController extends BaseController<Integer> {
                     Log.d(TAG, "fetch="+status); 
                     mDataStore.setAntennaState(status.ordinal()); 
                 } 
+                */
             }
 
             @Override
@@ -153,6 +155,7 @@ public class SystemAntennaController extends BaseController<Integer> {
             new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                /*
                 AntennaStatus status = AntennaStatus.NONE; 
                 int current = mDataStore.getAntennaState(); 
                 if ( profile == BluetoothProfile.HEADSET_CLIENT && 
@@ -172,10 +175,12 @@ public class SystemAntennaController extends BaseController<Integer> {
                         for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                     }
                 }
+                */
             }
 
             @Override
             public void onServiceDisconnected(int profile) {
+                /*
                 AntennaStatus status = AntennaStatus.NONE; 
                 int current = mDataStore.getAntennaState(); 
                 if ( current >= AntennaStatus.BT_ANTENNA_NO.ordinal() &&
@@ -185,6 +190,7 @@ public class SystemAntennaController extends BaseController<Integer> {
                         for ( Listener listener : mListeners ) listener.onEvent(status.ordinal());
                     }
                 }
+                */
             }
         }, BluetoothProfile.HEADSET_CLIENT); 
     } 

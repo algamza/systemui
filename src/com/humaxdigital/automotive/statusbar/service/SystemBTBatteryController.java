@@ -74,6 +74,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
         mBluetoothAdapter.getProfileProxy(mContext, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                /*
                 if ( proxy.getConnectedDevices().size() > 0 ) {
                     BluetoothHeadsetClient client = (BluetoothHeadsetClient)proxy;
                     Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
@@ -90,6 +91,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
                         }
                     }
                 }
+                */
             }
             @Override
             public void onServiceDisconnected(int profile) {
