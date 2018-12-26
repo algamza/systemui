@@ -186,7 +186,7 @@ public class ClimateController implements BaseController {
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
         int red_timeout = mContext.getResources().getIdentifier("climate_aircleaning_red_timeout", "integer", PACKAGE_NAME); 
-        int green_timeout = mContext.getResources().getIdentifier("climate_aircleaning_greed_timeout", "integer", PACKAGE_NAME); 
+        int green_timeout = mContext.getResources().getIdentifier("climate_aircleaning_green_timeout", "integer", PACKAGE_NAME); 
         mAirCleaning = new ClimateMenuImgTimeout(mContext)
             .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null), 0)
             .addIcon(AirCleaning.RED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_01, null), 
@@ -198,7 +198,7 @@ public class ClimateController implements BaseController {
             .inflate(); 
         mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+        if ( ProductConfig.getModel() != ProductConfig.MODEL.DU2 ) {
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
