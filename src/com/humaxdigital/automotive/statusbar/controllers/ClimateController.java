@@ -198,7 +198,7 @@ public class ClimateController implements BaseController {
             .inflate(); 
         mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
 
-        if ( ProductConfig.getModel() != ProductConfig.MODEL.DU2 ) {
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
