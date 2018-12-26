@@ -3,6 +3,7 @@
     <dimen name="text_date"> 36sp </dimen>
     <dimen name="text_date_noon"> 26sp </dimen>
     <dimen name="text_climate_temp_int">48sp</dimen>
+    <dimen name="text_climate_temp_text">42sp</dimen>
     <dimen name="text_climate_temp_dec">30sp</dimen>
     <dimen name="text_climate_wind">44sp</dimen>
 

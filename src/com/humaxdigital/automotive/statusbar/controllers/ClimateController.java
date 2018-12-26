@@ -18,6 +18,7 @@ import com.humaxdigital.automotive.statusbar.R;
 
 import com.humaxdigital.automotive.statusbar.ProductConfig;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImg;
+import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImgTimeout;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextDec;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextImg;
 
@@ -33,7 +34,7 @@ public class ClimateController implements BaseController {
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
-    private enum AirCleaning { ON, OFF }; 
+    private enum AirCleaning { ON, OFF, GREEN, RED }; 
 
     private IStatusBarService mService; 
     private Context mContext;
@@ -61,6 +62,9 @@ public class ClimateController implements BaseController {
 
     private ClimateMenuTextImg mFanSpeed;
     private FanSpeedState mFanSpeedState = FanSpeedState.STEPOFF;
+
+    private ClimateMenuImgTimeout mAirCleaning; 
+    private AirCleaning mAirCleaningState = AirCleaning.OFF; 
 
     private Boolean mIGNOn = false; 
 
@@ -181,12 +185,26 @@ public class ClimateController implements BaseController {
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
+        int red_timeout = mContext.getResources().getIdentifier("climate_aircleaning_red_timeout", "integer", PACKAGE_NAME); 
+        int green_timeout = mContext.getResources().getIdentifier("climate_aircleaning_greed_timeout", "integer", PACKAGE_NAME); 
+        mAirCleaning = new ClimateMenuImgTimeout(mContext)
+            .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null), 0)
+            .addIcon(AirCleaning.RED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_01, null), 
+                red_timeout > 0 ? mContext.getResources().getInteger(red_timeout):0)
+            .addIcon(AirCleaning.GREEN.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null), 
+                green_timeout > 0 ? mContext.getResources().getInteger(green_timeout):0)
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_dis, null))
+            .registTimeoutListener(mClimateAirCleaningImgTimeout)
+            .inflate(); 
+        mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
+
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAirCleaning);
         } else {
             mClimateViews.add(mTempDR);
             mClimateViews.add(mSeatDR);
@@ -194,6 +212,7 @@ public class ClimateController implements BaseController {
             mClimateViews.add(mIntake);
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mSeatPS);
             mClimateViews.add(mTempPS);
         }
@@ -217,6 +236,7 @@ public class ClimateController implements BaseController {
             mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
             mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
             mTempPSState = mService.getPSTemperature();
+            mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -238,6 +258,12 @@ public class ClimateController implements BaseController {
                 mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
                 updateTempOn(true); 
             }
+        }
+        if ( mAirCleaning != null ) {
+            if ( mAirCleaningState == AirCleaning.ON ) {
+                mAirCleaningState = AirCleaning.RED; 
+            }
+            mAirCleaning.update(mAirCleaningState.ordinal()); 
         }
     }
 
@@ -279,14 +305,15 @@ public class ClimateController implements BaseController {
     private void updateIGOnChange(boolean on) {
         boolean disable = on; 
         
-        mTempDR.updateDisable(disable);
-        mSeatDR.updateDisable(disable);
-        mAC.updateDisable(disable);
-        mIntake.updateDisable(disable);
-        mFanSpeed.updateDisable(disable);
-        mFanDirection.updateDisable(disable);
-        mSeatPS.updateDisable(disable);
-        mTempPS.updateDisable(disable);
+        if ( mTempDR != null ) mTempDR.updateDisable(disable);
+        if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
+        if ( mAC != null ) mAC.updateDisable(disable);
+        if ( mIntake != null ) mIntake.updateDisable(disable);
+        if ( mFanSpeed != null ) mFanSpeed.updateDisable(disable);
+        if ( mFanDirection != null ) mFanDirection.updateDisable(disable);
+        if ( mSeatPS != null ) mSeatPS.updateDisable(disable);
+        if ( mTempPS != null ) mTempPS.updateDisable(disable);
+        if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
     } 
 
     private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 
@@ -365,6 +392,61 @@ public class ClimateController implements BaseController {
         }
     }; 
 
+    private final View.OnClickListener mClimateAirCleaningOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mAirCleaning == null || mIGNOn ) return; 
+            if ( mAirCleaningState == AirCleaning.ON ||
+                mAirCleaningState == AirCleaning.RED || 
+                mAirCleaningState == AirCleaning.GREEN ) {
+                mAirCleaningState = AirCleaning.OFF; 
+                mAirCleaning.update(mAirCleaningState.ordinal());
+            } else if ( mAirCleaningState == AirCleaning.OFF ) {
+                mAirCleaningState = AirCleaning.RED; 
+                mAirCleaning.update(mAirCleaningState.ordinal());
+            }
+
+            try {
+                if ( mService != null ) {
+                    if ( mAirCleaningState == AirCleaning.RED ) {
+                        mService.setAirCleaningState(AirCleaning.ON.ordinal());
+                    } else if ( mAirCleaningState == AirCleaning.OFF ) {
+                        mService.setAirCleaningState(mAirCleaningState.ordinal());
+                    }
+                }
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+        }
+    }; 
+
+    private final ClimateMenuImgTimeout.ClimateDrawableTimout mClimateAirCleaningImgTimeout = 
+        new ClimateMenuImgTimeout.ClimateDrawableTimout() {
+        @Override
+        public void onDrawableTimout(int status) {
+            if ( mAirCleaning == null ) return; 
+            if ( status == AirCleaning.RED.ordinal() ) {
+                mAirCleaningState = AirCleaning.GREEN; 
+            } else if ( status == AirCleaning.GREEN.ordinal() ) {
+                mAirCleaningState = AirCleaning.OFF; 
+                try {
+                    if ( mService != null ) {
+                        mService.setAirCleaningState(mAirCleaningState.ordinal());
+                    }
+                } catch( RemoteException e ) {
+                    e.printStackTrace();
+                }
+            }
+            if ( mHandler == null ) return; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAirCleaning.update(mAirCleaningState.ordinal()); 
+                }
+            }); 
+        }
+    }; 
+
     private final IClimateCallback.Stub mClimateCallback = new IClimateCallback.Stub() {
         public void onDRTemperatureChanged(float temp) throws RemoteException {
             if ( mTempDR == null ) return; 
@@ -410,17 +492,15 @@ public class ClimateController implements BaseController {
             });    
         }
         public void onAirCleaningChanged(int status) throws RemoteException {
-            // todo : air cleaning 
-            /*
-            if ( mAC == null ) return; 
-            mACState = isOn?ACState.ON:ACState.OFF;
+            if ( mAirCleaning == null ) return; 
+            mAirCleaningState = AirCleaning.values()[status]; 
+            if ( mAirCleaningState == AirCleaning.ON ) mAirCleaningState = AirCleaning.RED; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAC.update(mACState.ordinal());
+                    mAirCleaning.update(mAirCleaningState.ordinal()); 
                 }
-            });    
-            */
+            }); 
         }
         public void onFanDirectionChanged(int direction) throws RemoteException {
             if ( mFanDirection == null ) return; 

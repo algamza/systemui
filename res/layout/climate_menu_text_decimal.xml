@@ -15,18 +15,18 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="4" />
+                android:layout_weight="10" />
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="86">
+                android:layout_weight="80">
                 <TextView
                     android:id="@+id/text"
                     android:text="@string/temp_off"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|center_vertical"
-                    android:textSize="@dimen/text_climate_temp_int"
+                    android:textSize="@dimen/text_climate_temp_text"
                     android:textColor="@color/colorClimateText"
                     android:includeFontPadding="false"
                     />
