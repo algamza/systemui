@@ -13,7 +13,6 @@ import android.extension.car.CarHvacManagerEx;
 import android.extension.car.CarBLEManager;
 import android.extension.car.CarTMSManager;
 import android.extension.car.CarUSMManager;
-import android.extension.car.CarRemainderManager;
 
 import android.util.Log;
 
@@ -35,7 +34,6 @@ public class CarExtensionClient {
     private CarBLEManager mCarBLEManager;
     private CarTMSManager mCarTMSManager;
     private CarUSMManager mUsmManager;
-    private CarRemainderManager mRemainderManager; 
 
     public CarExtensionClient(Context context) {
         mContext = context; 
@@ -77,10 +75,6 @@ public class CarExtensionClient {
         return mCarTMSManager;
     }
 
-    public CarRemainderManager getRemainderManager() {
-        return mRemainderManager; 
-    }
-
     private final ServiceConnection mServiceConnectionListenerClient =
             new ServiceConnection () {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -90,7 +84,6 @@ public class CarExtensionClient {
                     mCarBLEManager = (CarBLEManager) mCarEx.getCarManager(android.extension.car.CarEx.BLE_SERVICE);
                     mUsmManager = (CarUSMManager) mCarEx.getCarManager(android.extension.car.CarEx.USM_SERVICE);
                     mCarTMSManager = (CarTMSManager) mCarEx.getCarManager(android.extension.car.CarEx.TMS_SERVICE);
-                    mRemainderManager = (CarRemainderManager) mCarEx.getCarManager(android.extension.car.CarEx.REMAINDER_SERVICE);
                     if ( mListener != null ) mListener.onConnected();
                 } catch (CarNotConnectedException e) {
                     Log.e(TAG, "Car is not connected!", e);

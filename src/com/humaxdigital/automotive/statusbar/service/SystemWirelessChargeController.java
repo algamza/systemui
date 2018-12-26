@@ -7,14 +7,14 @@ import android.content.BroadcastReceiver;
 
 import android.car.CarNotConnectedException;
 import android.car.hardware.CarPropertyValue;
-import android.extension.car.CarRemainderManager;
+//import android.extension.car.CarRemainderManager;
 
 import android.util.Log;
 
 public class SystemWirelessChargeController extends BaseController<Integer> {
     private static final String TAG = "SystemWirelessChargeController";
     private enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
-    private CarRemainderManager mManager;
+    //private CarRemainderManager mManager;
 
     public SystemWirelessChargeController(Context context, DataStore store) {
         super(context, store);
@@ -29,7 +29,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
     public void disconnect() {
 
     }
-
+/*
     public void fetch(CarRemainderManager manager) {
         if ( mDataStore == null || manager == null ) return;
         mManager = manager; 
@@ -46,6 +46,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
             mDataStore.setWirelessChargeState(state.ordinal());
         }        
     }
+    */
 
     @Override
     public Integer get() {
@@ -72,7 +73,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         }
         return status; 
     }
-
+/*
     private final CarRemainderManager.CarRemainderEventCallback mRemainderCallback =
         new CarRemainderManager.CarRemainderEventCallback () {
         @Override
@@ -96,4 +97,5 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
             Log.w(TAG, "onErrorEvent():propertyId="+propertyId+", zone="+zone);
         }
     };
+    */
 }

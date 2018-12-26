@@ -174,8 +174,11 @@ public class StatusBarService extends Service {
                 mBLEController.fetch(mCarExClient.getBLEManager()); 
             if ( mLocationController != null ) 
                 mLocationController.fetch(mCarExClient.getTMSManager()); 
-            if ( mWirelessChargeController != null ) 
-                mWirelessChargeController.fetch(mCarExClient.getRemainderManager()); 
+            if ( mWirelessChargeController != null ) {
+                // TODO: need to get wireless charge
+                //mWirelessChargeController.fetch(mCarExClient.getRemainderManager()); 
+            }
+                
         }
 
         @Override
