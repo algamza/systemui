@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.Binder;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -21,12 +22,17 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.view.MotionEvent;
+import android.view.Gravity;
+
 
 import com.android.systemui.plugins.StatusBarProxyPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback; 
+
+import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 @Requires(target = StatusBarProxyPlugin.class, version = StatusBarProxyPlugin.VERSION)
 public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
@@ -35,19 +41,55 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     private Context mPluginContext;
     private WindowManager mWindowManager;
     private ViewGroup mNavBarWindow;
+    private View mStatusBarWindow; 
     private View mNavBarView;
     private View mDevNavView;
     private ControllerManager mControllerManager; 
     IStatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
+    private int mStatusBarHeight = 0; 
+    private int mTouchDownY = 0; 
+    private int mTouchUpY = 0; 
+    private Boolean mTouchValid = false; 
+    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
+        if ( pluginContext == null ) return; 
         mSysUiContext = sysuiContext;
         mPluginContext = pluginContext;
         mWindowManager = (WindowManager) mPluginContext.getSystemService(Context.WINDOW_SERVICE);
 
         startStatusBarService(mPluginContext); 
+        
+        mStatusBarWindow = (View)View.inflate(mPluginContext, R.layout.status_bar_overlay, null);
+        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
+        String package_name = mPluginContext.getPackageName(); 
+        int id_statusbar_height = mPluginContext.getResources().getIdentifier("statusbar_height", "integer",  package_name);
+        int id_down_y = mPluginContext.getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
+        int id_up_y = mPluginContext.getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = mPluginContext.getResources().getInteger(id_down_y); 
+        if ( id_up_y > 0 ) mTouchUpY = mPluginContext.getResources().getInteger(id_up_y);
+        if ( id_statusbar_height > 0 ) mStatusBarHeight = mPluginContext.getResources().getInteger(id_statusbar_height);
+
+        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            mStatusBarHeight,
+            WindowManager.LayoutParams.TYPE_STATUS_BAR,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+            PixelFormat.TRANSLUCENT);
+        slp.token = new Binder();
+        slp.gravity = Gravity.TOP;
+        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+        slp.setTitle("HmxStatusBar");
+        slp.packageName = package_name;
+        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+
+        mWindowManager.addView(mStatusBarWindow, slp);
 
         mNavBarWindow = (ViewGroup) View.inflate(mPluginContext, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
@@ -58,8 +100,8 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
                         | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
                 PixelFormat.TRANSLUCENT);
-        lp.setTitle("HmxStatusBar");
-        lp.windowAnimations = 0;
+        lp.setTitle("HmxNavigationBar");
+        lp.windowAnimations = 0; 
 
         mWindowManager.addView(mNavBarWindow, lp);
 
@@ -217,9 +259,37 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
         }
     };
 
+    private final View.OnTouchListener mStatusBarTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            int y = (int)event.getY(); 
+            switch(event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    if ( mTouchDownY > y ) mTouchValid = true; 
+                    break; 
+                }
+                case MotionEvent.ACTION_UP: {
+                    if ( mTouchValid ) {
+                        mTouchValid = false; 
+                        if ( mTouchUpY < y ) openDroplist(); 
+                    }
+                    break; 
+                }
+                default: break; 
+            }
+            return false;
+        }
+    }; 
+
     private void updateUIController(Runnable r) {
         if ( mPluginContext == null || mControllerManager == null ) return;
         Handler handler = new Handler(mPluginContext.getMainLooper()); 
         handler.post(r); 
+    }
+
+    private void openDroplist() {
+        if ( mPluginContext == null ) return; 
+        Intent intent = new Intent(OPEN_DROPLIST); 
+        mPluginContext.sendBroadcast(intent);
     }
 }

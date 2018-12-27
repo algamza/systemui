@@ -40,7 +40,6 @@ public class SystemStatusController implements BaseController {
     enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
     enum ModeStatus { NONE, LOCATION_SHARING }
 
-    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
     private final String PACKAGE_NAME = "com.humaxdigital.automotive.statusbar"; 
     private Context mContext;
     private Resources mRes;
@@ -96,14 +95,6 @@ public class SystemStatusController implements BaseController {
 
     private void initView() {
         if ( (mStatusBar == null) || (mRes == null) ) return;
-        mStatusBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // todo : remove ! is temp 
-                Intent intent = new Intent(OPEN_DROPLIST); 
-                mContext.sendBroadcast(intent);
-            }
-        });
 
         Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_clear, null);
 
