@@ -54,7 +54,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         if ( mDataStore == null || mManager == null ) return;
         FanDirectionStatus status = FanDirectionStatus.values()[e]; 
         int val = convertToValue(status); 
-        if ( !mDataStore.shouldPropagateFanDirectionUpdate(val) ) return;
+        //if ( !mDataStore.shouldPropagateFanDirectionUpdate(val) ) return;
         final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
             protected Void doInBackground(Integer... integers) {
                 try {

@@ -48,7 +48,7 @@ public class ClimateAirCirculationController extends ClimateBaseController<Boole
     @Override
     public void set(Boolean e) {
         if ( mDataStore == null || mManager == null ) return;
-        if ( !mDataStore.shouldPropagateAirCirculationUpdate(e) ) return;
+        //if ( !mDataStore.shouldPropagateAirCirculationUpdate(e) ) return;
         final AsyncTask<Boolean, Void, Void> task = new AsyncTask<Boolean, Void, Void>() {
             protected Void doInBackground(Boolean... booleans) {
                 try {

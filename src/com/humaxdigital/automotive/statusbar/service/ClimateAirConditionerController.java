@@ -48,7 +48,7 @@ public class ClimateAirConditionerController extends ClimateBaseController<Boole
     @Override
     public void set(Boolean e) {
         if ( mDataStore == null || mManager == null ) return;
-        mDataStore.setAirConditionerState(e);
+        //mDataStore.setAirConditionerState(e);
         final AsyncTask<Boolean, Void, Void> task = new AsyncTask<Boolean, Void, Void>() {
             protected Void doInBackground(Boolean... booleans) {
                 try {

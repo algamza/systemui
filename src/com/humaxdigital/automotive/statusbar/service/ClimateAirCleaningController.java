@@ -52,7 +52,7 @@ public class ClimateAirCleaningController extends ClimateBaseController<Integer>
     public void set(Integer e) {
         if ( mDataStore == null || mManager == null ) return;
 
-        mDataStore.setAirCleaningState(convertToVal(Status.values()[e]));
+        //mDataStore.setAirCleaningState(convertToVal(Status.values()[e]));
         final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
             protected Void doInBackground(Integer... Integers) {
                 try {

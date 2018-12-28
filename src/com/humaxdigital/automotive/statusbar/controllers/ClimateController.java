@@ -332,10 +332,10 @@ public class ClimateController implements BaseController {
             if ( mAC == null || mIGNOn ) return; 
             if ( mACState == ACState.ON ) {
                 mACState = ACState.OFF; 
-                mAC.update(mACState.ordinal());
+                //mAC.update(mACState.ordinal());
             } else {
                 mACState = ACState.ON; 
-                mAC.update(mACState.ordinal());
+                //mAC.update(mACState.ordinal());
             }
 
             try {
@@ -353,10 +353,10 @@ public class ClimateController implements BaseController {
             if ( mIntake == null || mIGNOn ) return; 
             if ( mIntakeState == IntakeState.ON ) {
                 mIntakeState = IntakeState.OFF; 
-                mIntake.update(mIntakeState.ordinal());
+                //mIntake.update(mIntakeState.ordinal());
             } else {
                 mIntakeState = IntakeState.ON; 
-                mIntake.update(mIntakeState.ordinal());
+                //mIntake.update(mIntakeState.ordinal());
             }
 
             try {
@@ -379,7 +379,7 @@ public class ClimateController implements BaseController {
             else 
                 mFanDirectionState = FanDirectionState.values()[next];
 
-            mFanDirection.update(mFanDirectionState.ordinal()); 
+            //mFanDirection.update(mFanDirectionState.ordinal()); 
 
             try {
                 if ( mService != null ) 
@@ -398,10 +398,10 @@ public class ClimateController implements BaseController {
                 mAirCleaningState == AirCleaning.RED || 
                 mAirCleaningState == AirCleaning.GREEN ) {
                 mAirCleaningState = AirCleaning.OFF; 
-                mAirCleaning.update(mAirCleaningState.ordinal());
+                //mAirCleaning.update(mAirCleaningState.ordinal());
             } else if ( mAirCleaningState == AirCleaning.OFF ) {
                 mAirCleaningState = AirCleaning.RED; 
-                mAirCleaning.update(mAirCleaningState.ordinal());
+                //mAirCleaning.update(mAirCleaningState.ordinal());
             }
 
             try {
@@ -427,6 +427,8 @@ public class ClimateController implements BaseController {
                 mAirCleaningState = AirCleaning.GREEN; 
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
                 mAirCleaningState = AirCleaning.OFF; 
+                // TODO: need to check CAN scenario 
+                /*
                 try {
                     if ( mService != null ) {
                         mService.setAirCleaningState(mAirCleaningState.ordinal());
@@ -434,6 +436,7 @@ public class ClimateController implements BaseController {
                 } catch( RemoteException e ) {
                     e.printStackTrace();
                 }
+                */
             }
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
