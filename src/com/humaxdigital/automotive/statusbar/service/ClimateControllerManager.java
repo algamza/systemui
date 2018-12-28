@@ -33,7 +33,8 @@ public class ClimateControllerManager {
         PASSENGER_SEAT,
         PASSENGER_TEMPERATURE,
         FAN_SPEED,
-        FAN_DIRECTION
+        FAN_DIRECTION,
+        DEFOG
     }
 
     public static final int SEAT_DRIVER = 
@@ -77,6 +78,7 @@ public class ClimateControllerManager {
     private ClimateFanSpeedController mFanSpeed; 
     private ClimatePSSeatController mPSSeat; 
     private ClimatePSTempController mPSTemp; 
+    private ClimateDefogController mDefog; 
 
     private List<ClimateBaseController> mControllers = new ArrayList<>(); 
 
@@ -91,6 +93,7 @@ public class ClimateControllerManager {
         public void onFanSpeedStatusChanged(int status);
         public void onPassengerSeatStatusChanged(int status);
         public void onPassengerTemperatureChanged(float temp);
+        public void onFrontDefogStatusChanged(int status); 
         public void onIGNOnChanged(boolean on);
     }
     
@@ -157,6 +160,7 @@ public class ClimateControllerManager {
             case PASSENGER_TEMPERATURE: return mPSTemp; 
             case FAN_SPEED: return mFanSpeed; 
             case FAN_DIRECTION: return mFanDirection; 
+            case DEFOG: return mDefog; 
         }
         return null; 
     }
@@ -184,6 +188,8 @@ public class ClimateControllerManager {
         mControllers.add(mPSSeat); 
         mPSTemp = new ClimatePSTempController(mContext, mDataStore); 
         mControllers.add(mPSTemp); 
+        mDefog = new ClimateDefogController(mContext, mDataStore); 
+        mControllers.add(mDefog); 
     }
 
     private final CarHvacManager.CarHvacEventCallback mHvacCallback =
@@ -350,15 +356,15 @@ public class ClimateControllerManager {
             if ( mListener != null )
                 mListener.onFanDirectionChanged(mFanDirection.get());
         }
-                
     }
 
     private void handleDefogUpdate(int zone, int val) {
-        if ( mFanDirection == null ) return; 
-
-        if ( mFanDirection.updateDefog(zone, val) )
+        if ( mDefog == null ) return; 
+        if ( zone != WINDOW_FRONT ) return;
+        
+        if ( mDefog.update(val) )
             if ( mListener != null ) {
-                mListener.onFanDirectionChanged(mFanDirection.get());
+                mListener.onFrontDefogStatusChanged(mDefog.get());
             } 
     }
 }

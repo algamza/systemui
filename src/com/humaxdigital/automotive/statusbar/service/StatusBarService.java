@@ -434,6 +434,16 @@ public class StatusBarService extends Service {
             }
 
             @Override
+            public void onFrontDefogStatusChanged(int status) {
+                try {
+                    for ( IClimateCallback callback : mClimateCallbacks ) 
+                        callback.onFrontDefogStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
             public void onIGNOnChanged(boolean on) {
                 try {
                     for ( IClimateCallback callback : mClimateCallbacks ) 
@@ -585,6 +595,10 @@ public class StatusBarService extends Service {
                 }
                 
                 return ret; 
+            }
+            public int getFrontDefogState() throws RemoteException { 
+                if ( mClimateManager == null ) return 0; 
+                return (int)mClimateManager.getController(ClimateControllerManager.ControllerType.DEFOG).get(); 
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {

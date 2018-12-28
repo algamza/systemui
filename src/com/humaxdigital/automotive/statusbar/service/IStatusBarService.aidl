@@ -37,6 +37,7 @@ interface IStatusBarService {
     int getBlowerSpeed();
     int getPSSeatStatus();
     float getPSTemperature();
+    int getFrontDefogState(); 
     void openClimateSetting(); 
     void registerClimateCallback(IClimateCallback callback);
     void unregisterClimateCallback(IClimateCallback callback);

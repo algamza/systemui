@@ -35,6 +35,7 @@ public class ClimateController implements BaseController {
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
     private enum AirCleaning { ON, OFF, GREEN, RED }; 
+    private enum FrontDefogState { ON, OFF }; 
 
     private IStatusBarService mService; 
     private Context mContext;
@@ -65,6 +66,8 @@ public class ClimateController implements BaseController {
 
     private ClimateMenuImgTimeout mAirCleaning; 
     private AirCleaning mAirCleaningState = AirCleaning.OFF; 
+
+    private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
     private Boolean mIGNOn = false; 
 
@@ -237,6 +240,7 @@ public class ClimateController implements BaseController {
             mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
             mTempPSState = mService.getPSTemperature();
             mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
+            mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -246,7 +250,13 @@ public class ClimateController implements BaseController {
         if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
         if ( mAC != null ) mAC.update(mACState.ordinal()); 
         if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
-        if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
+        if ( mFanDirection != null ) {
+            if ( mFrontDefogState == FrontDefogState.ON ) {
+                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
+            } else {
+                mFanDirection.update(mFanDirectionState.ordinal());
+            } 
+        }
         if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
         if ( mFanSpeed != null ) {
@@ -362,18 +372,6 @@ public class ClimateController implements BaseController {
         @Override
         public void onClick(View v) {
             if ( mFanDirection == null || mIGNOn ) return; 
-            /*
-            try {
-                if ( mService != null ) {
-                    if ( FanDirectionState.values()[mService.getFanDirection()] == 
-                        FanDirectionState.DEFROST ) {
-                        return; 
-                    }
-                }
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
-            */
 
             int next = mFanDirectionState.ordinal() + 1;
             if ( next >= (FanDirectionState.values().length-1) ) 
@@ -552,6 +550,27 @@ public class ClimateController implements BaseController {
                     updateTemp(mTempPS, mTempPSState); 
                 }
             }); 
+        }
+
+        public void onFrontDefogStatusChanged(int state) throws RemoteException {
+            mFrontDefogState = FrontDefogState.values()[state]; 
+            if ( mHandler == null ) return; 
+            if ( mFrontDefogState == FrontDefogState.ON ) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
+                    }
+                }); 
+            } else {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFanDirection.update(mFanDirectionState.ordinal()); 
+                    }
+                }); 
+            }
+
         }
 
         public void onIGNOnChanged(boolean on) throws RemoteException {
