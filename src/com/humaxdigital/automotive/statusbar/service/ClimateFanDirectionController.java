@@ -52,6 +52,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         if ( mDataStore == null ) return false; 
         if ( !mDataStore.shouldPropagateDefrosterUpdate(zone, val==0x1?true:false) ) 
             return false; 
+        /*
         if ( !mDataStore.getDefrosterState(mZoneFrontDef) ) {
             final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
                 protected Void doInBackground(Integer... integers) {
@@ -66,6 +67,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             }; 
             task.execute(mDataStore.getFanDirection());
         }
+        */
         return true;  
     }
 
@@ -87,6 +89,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         FanDirectionStatus status = FanDirectionStatus.values()[e]; 
         if ( !mDataStore.shouldPropagateFanDirectionUpdate(convertToValue(status)) ) return;
 
+        /*
         if ( mDataStore.getDefrosterState(mZoneFrontDef) ) {
             final AsyncTask<Void, Void, Void> defogtask = new AsyncTask<Void, Void, Void>() {
                 protected Void doInBackground(Void... voids) {
@@ -101,6 +104,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             }; 
             defogtask.execute();
         }
+        */
         
         final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
             protected Void doInBackground(Integer... integers) {
@@ -114,10 +118,6 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
             }
         }; 
         task.execute(convertToValue(status));
-    }
-
-    public Boolean isFrontDefogOn() {
-        return mDataStore.getDefrosterState(mZoneFrontDef); 
     }
 
     private Boolean checkInvalid(int val) {
