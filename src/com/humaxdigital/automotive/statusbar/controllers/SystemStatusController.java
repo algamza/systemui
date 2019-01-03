@@ -33,9 +33,9 @@ public class SystemStatusController implements BaseController {
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
     enum BTCallStatus { NONE, STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
-    enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
+    enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
         , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
-    enum BTAntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
+    enum BTAntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
     enum TMSAntennaStatus { NONE,  TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5 }
     enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
     enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
@@ -147,19 +147,19 @@ public class SystemStatusController implements BaseController {
 
         mAntenna = new SystemView(mContext)
             .addIcon(AntennaStatus.NONE.ordinal(), none)
-            .addIcon(AntennaStatus.BT_ANTENNA_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_no, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_0.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_00, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_01, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_02, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_03, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_4.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_04, null))
-            .addIcon(AntennaStatus.BT_ANTENNA_5.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_05, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_01, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_02, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_03, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_4.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_04, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_5.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_05, null))
-            .addIcon(AntennaStatus.TMU_ANTENNA_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_no, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_no, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_01, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_02, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_03, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_4.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_04, null))
+            .addIcon(AntennaStatus.BT_ANTENNA_5.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_sibt_05, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_NO.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_no, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_0.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_00, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_01, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_02, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_03, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_4.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_04, null))
+            .addIcon(AntennaStatus.TMU_ANTENNA_5.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_si_05, null))
             .inflate(); 
         mSystemViews.add(mAntenna);
 
@@ -241,7 +241,6 @@ public class SystemStatusController implements BaseController {
         BTAntennaStatus bt_status = BTAntennaStatus.NONE; 
         if ( bt_antenna == BTAntennaStatus.NONE.ordinal() ) bt_status = BTAntennaStatus.NONE;
         else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_NO.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_NO;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_0.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_0;
         else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_1.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_1;
         else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_2.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_2;
         else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_3.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_3;
@@ -268,7 +267,6 @@ public class SystemStatusController implements BaseController {
         switch(bt_status) {
             case NONE: status = AntennaStatus.NONE; break; 
             case BT_ANTENNA_NO: status = AntennaStatus.BT_ANTENNA_NO; break; 
-            case BT_ANTENNA_0: status = AntennaStatus.BT_ANTENNA_0; break; 
             case BT_ANTENNA_1: status = AntennaStatus.BT_ANTENNA_1; break; 
             case BT_ANTENNA_2: status = AntennaStatus.BT_ANTENNA_2; break; 
             case BT_ANTENNA_3: status = AntennaStatus.BT_ANTENNA_3; break; 

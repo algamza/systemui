@@ -6,8 +6,8 @@ import android.util.Log;
 public class SystemBTAntennaController extends BaseController<Integer> {
     private static final String TAG = "SystemBTAntennaController";
 
-    private enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, 
-        BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
+    private enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, 
+        BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
 
     private SystemBluetoothClient mBluetoothClient; 
 
@@ -49,8 +49,7 @@ public class SystemBTAntennaController extends BaseController<Integer> {
 
     private AntennaStatus convertToBTAntennaLevel(int level) {
         AntennaStatus status = AntennaStatus.BT_ANTENNA_NO; 
-        if ( level == 0 ) status = AntennaStatus.BT_ANTENNA_0; 
-        else if ( level > 0 && level <= 1 ) status = AntennaStatus.BT_ANTENNA_1; 
+        if ( level > 0 && level <= 1 ) status = AntennaStatus.BT_ANTENNA_1; 
         else if ( level > 1 && level <= 2 ) status = AntennaStatus.BT_ANTENNA_3; 
         else if ( level > 2 && level <= 3 ) status = AntennaStatus.BT_ANTENNA_4; 
         else if ( level > 3 && level <= 4 ) status = AntennaStatus.BT_ANTENNA_5; 
