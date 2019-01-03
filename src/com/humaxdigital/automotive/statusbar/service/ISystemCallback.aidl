@@ -5,7 +5,8 @@ oneway interface ISystemCallback {
         void onBLEStatusChanged(int status);
         void onBTBatteryStatusChanged(int status);
         void onBTCallStatusChanged(int status);
-        void onAntennaStatusChanged(int status);
+        void onBTAntennaStatusChanged(int status);
+        void onTMSAntennaStatusChanged(int status);
         void onDataStatusChanged(int status);
         void onWifiStatusChanged(int status);
         void onWirelessChargeStatusChanged(int status);

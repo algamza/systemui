@@ -3,13 +3,15 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.content.Context;
 import android.util.Log;
 
-public class SystemBTBatteryController extends BaseController<Integer> {
-    private static final String TAG = "SystemBTBatteryController";
-    private enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, 
-        BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
+public class SystemBTAntennaController extends BaseController<Integer> {
+    private static final String TAG = "SystemBTAntennaController";
+
+    private enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_0, 
+        BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
+
     private SystemBluetoothClient mBluetoothClient; 
 
-    public SystemBTBatteryController(Context context, DataStore store) {
+    public SystemBTAntennaController(Context context, DataStore store) {
         super(context, store);
     }
 
@@ -29,6 +31,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
 
     public void fetch(SystemBluetoothClient client) {
         if ( client == null ) return; 
+        Log.d(TAG, "fetch"); 
         mBluetoothClient = client; 
         mBluetoothClient.registerCallback(mBTCallback);
     }
@@ -36,29 +39,22 @@ public class SystemBTBatteryController extends BaseController<Integer> {
     @Override
     public Integer get() {
         boolean is_connected = mBluetoothClient.isDeviceConnected(SystemBluetoothClient.Profiles.HEADSET); 
-        int level = mBluetoothClient.getBatteryLevel(SystemBluetoothClient.Profiles.HEADSET); 
+        int level = mBluetoothClient.getAntennaLevel(SystemBluetoothClient.Profiles.HEADSET); 
         Log.d(TAG, "get:connected="+is_connected+", level="+level); 
         if ( is_connected ) 
-            return convertToStatus(level).ordinal(); 
+            return convertToBTAntennaLevel(level).ordinal(); 
         else 
-            return BTBatteryStatus.NONE.ordinal(); 
+            return AntennaStatus.NONE.ordinal(); 
     }
 
-    private BTBatteryStatus convertToStatus(int level) {
-        BTBatteryStatus status = BTBatteryStatus.NONE; 
-        if ( level == 0 ) {
-            status = BTBatteryStatus.BT_BATTERY_0; 
-        } else if ( level == 1 ) {
-            status = BTBatteryStatus.BT_BATTERY_1; 
-        } else if ( level == 2 ) {
-            status = BTBatteryStatus.BT_BATTERY_2; 
-        } else if ( level == 3 ) {
-            status = BTBatteryStatus.BT_BATTERY_3; 
-        } else if ( level == 4 ) {
-            status = BTBatteryStatus.BT_BATTERY_4; 
-        } else if ( level == 5 ) {
-            status = BTBatteryStatus.BT_BATTERY_5; 
-        } 
+    private AntennaStatus convertToBTAntennaLevel(int level) {
+        AntennaStatus status = AntennaStatus.BT_ANTENNA_NO; 
+        if ( level == 0 ) status = AntennaStatus.BT_ANTENNA_0; 
+        else if ( level > 0 && level <= 1 ) status = AntennaStatus.BT_ANTENNA_1; 
+        else if ( level > 1 && level <= 2 ) status = AntennaStatus.BT_ANTENNA_3; 
+        else if ( level > 2 && level <= 3 ) status = AntennaStatus.BT_ANTENNA_4; 
+        else if ( level > 3 && level <= 4 ) status = AntennaStatus.BT_ANTENNA_5; 
+        else if ( level > 4 ) status = AntennaStatus.BT_ANTENNA_5; 
         return status; 
     }
 
@@ -66,30 +62,30 @@ public class SystemBTBatteryController extends BaseController<Integer> {
         new SystemBluetoothClient.SystemBluetoothCallback() {
         @Override
         public void onBatteryStateChanged(SystemBluetoothClient.Profiles profile) {
-            if ( profile != SystemBluetoothClient.Profiles.HEADSET ) return; 
-            int level = mBluetoothClient.getBatteryLevel(profile); 
-            boolean is_connected = mBluetoothClient.isDeviceConnected(profile); 
-            Log.d(TAG, "onBatteryStateChanged:level="+level+", connected="+is_connected);
-            if ( is_connected ) {
-                for ( Listener listener : mListeners ) 
-                    listener.onEvent(convertToStatus(level).ordinal());
-            }
         }
         @Override
         public void onAntennaStateChanged(SystemBluetoothClient.Profiles profile) {
+            if ( profile != SystemBluetoothClient.Profiles.HEADSET ) return; 
+            int level = mBluetoothClient.getAntennaLevel(profile); 
+            boolean is_connected = mBluetoothClient.isDeviceConnected(profile); 
+            Log.d(TAG, "onAntennaStateChanged:level="+level+", connected="+is_connected);
+            if ( is_connected ) {
+                for ( Listener listener : mListeners ) 
+                    listener.onEvent(convertToBTAntennaLevel(level).ordinal());
+            }  
         }
         @Override
         public void onConnectionStateChanged(SystemBluetoothClient.Profiles profile) {
             if ( profile != SystemBluetoothClient.Profiles.HEADSET ) return; 
-            int level = mBluetoothClient.getBatteryLevel(profile); 
+            int level = mBluetoothClient.getAntennaLevel(profile); 
             boolean is_connected = mBluetoothClient.isDeviceConnected(profile); 
             Log.d(TAG, "onConnectionStateChanged:level="+level+", connected="+is_connected);
             if ( is_connected ) {
                 for ( Listener listener : mListeners ) 
-                    listener.onEvent(convertToStatus(level).ordinal());
+                    listener.onEvent(convertToBTAntennaLevel(level).ordinal());
             } else {
                 for ( Listener listener : mListeners ) 
-                    listener.onEvent(BTBatteryStatus.NONE.ordinal());
+                    listener.onEvent(AntennaStatus.NONE.ordinal());
             }
         }
         @Override
@@ -97,7 +93,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             Log.d(TAG, "onBluetoothEnableChanged:enable="+enable);
             if ( enable ) return; 
             for ( Listener listener : mListeners ) 
-                listener.onEvent(BTBatteryStatus.NONE.ordinal());
+                listener.onEvent(AntennaStatus.NONE.ordinal());
         }
     }; 
 }

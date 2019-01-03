@@ -12,6 +12,8 @@ public class SystemBTCallController extends BaseController<Integer> {
         CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, 
         TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
 
+    private SystemBluetoothClient mBluetoothClient; 
+
     public SystemBTCallController(Context context, DataStore store) {
         super(context, store);
     }
@@ -29,6 +31,10 @@ public class SystemBTCallController extends BaseController<Integer> {
     @Override
     public void fetch() {
         if ( mDataStore == null ) return;
+    }
+
+    public void fetch(SystemBluetoothClient client) {
+        mBluetoothClient = client; 
     }
 
     @Override

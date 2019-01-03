@@ -16,7 +16,8 @@ interface IStatusBarService {
     int getBLEStatus();
     int getBTBatteryStatus();
     int getBTCallStatus();
-    int getAntennaStatus();
+    int getBTAntennaStatus();
+    int getTMSAntennaStatus();
     int getDataStatus();
     int getWifiStatus();
     int getWirelessChargeStatus();

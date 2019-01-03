@@ -37,12 +37,15 @@ public class StatusBarService extends Service {
     private SystemDataController mDataController; 
     private SystemWifiController mWifiController; 
     private SystemLocationController mLocationController; 
-    private SystemAntennaController mAntennaController; 
+    private SystemBTAntennaController mBTAntennaController; 
+    private SystemTMSAntennaController mTMSAntennaController; 
     private SystemBLEController mBLEController; 
     private SystemBTBatteryController mBTBatteryController; 
     private SystemBTCallController mBTCallController; 
     private SystemMuteController mMuteController; 
     private SystemWirelessChargeController mWirelessChargeController; 
+
+    private SystemBluetoothClient mBluetoothClient; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
 
@@ -63,6 +66,9 @@ public class StatusBarService extends Service {
     public void onCreate() {
         super.onCreate();
         
+        mBluetoothClient = new SystemBluetoothClient(mContext, mDataStore); 
+        mBluetoothClient.connect();
+
         createSystemManager(); 
         createClimateManager();
 
@@ -75,6 +81,8 @@ public class StatusBarService extends Service {
 
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
 
+        if ( mBluetoothClient != null ) mBluetoothClient.disconnect();
+
         mSystemCallbacks.clear(); 
         mClimateCallbacks.clear(); 
         mStatusBarCallbacks.clear(); 
@@ -84,7 +92,8 @@ public class StatusBarService extends Service {
         if ( mDataController != null )  mDataController.removeListener(mSystemDataListener);
         if ( mWifiController != null )  mWifiController.removeListener(mSystemDataListener);
         if ( mLocationController != null )  mLocationController.removeListener(mSystemDataListener);
-        if ( mAntennaController != null )  mAntennaController.removeListener(mSystemDataListener);
+        if ( mBTAntennaController != null )  mBTAntennaController.removeListener(mSystemDataListener);
+        if ( mTMSAntennaController != null )  mTMSAntennaController.removeListener(mSystemDataListener);
         if ( mBLEController != null )  mBLEController.removeListener(mSystemDataListener);
         if ( mBTBatteryController != null )  mBTBatteryController.removeListener(mSystemDataListener);
         if ( mBTCallController != null )  mBTCallController.removeListener(mSystemDataListener);
@@ -135,9 +144,13 @@ public class StatusBarService extends Service {
         mWifiController.addListener(mSystemWifiListener);
         mControllers.add(mWifiController); 
 
-        mAntennaController = new SystemAntennaController(mContext, mDataStore); 
-        mAntennaController.addListener(mSystemAntennaListener);
-        mControllers.add(mAntennaController); 
+        mBTAntennaController = new SystemBTAntennaController(mContext, mDataStore); 
+        mBTAntennaController.addListener(mSystemBTAntennaListener);
+        mControllers.add(mBTAntennaController); 
+
+        mTMSAntennaController = new SystemTMSAntennaController(mContext, mDataStore); 
+        mTMSAntennaController.addListener(mSystemTMSAntennaListener);
+        mControllers.add(mTMSAntennaController); 
 
         mBLEController = new SystemBLEController(mContext, mDataStore); 
         mBLEController.addListener(mSystemBLEListener);
@@ -161,6 +174,10 @@ public class StatusBarService extends Service {
 
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
+
+        mBTBatteryController.fetch(mBluetoothClient); 
+        mBTAntennaController.fetch(mBluetoothClient); 
+        mBTCallController.fetch(mBluetoothClient); 
     }
     
     private CarExtensionClient.CarExClientListener mCarExClientListener = 
@@ -213,12 +230,25 @@ public class StatusBarService extends Service {
     }; 
 
 
-    private BaseController.Listener mSystemAntennaListener = new BaseController.Listener<Integer>() {
+    private BaseController.Listener mSystemBTAntennaListener = new BaseController.Listener<Integer>() {
         @Override
         public void onEvent(Integer status) {
             for ( ISystemCallback callback : mSystemCallbacks ) {
                 try {
-                    callback.onAntennaStatusChanged(status); 
+                    callback.onBTAntennaStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }; 
+
+    private BaseController.Listener mSystemTMSAntennaListener = new BaseController.Listener<Integer>() {
+        @Override
+        public void onEvent(Integer status) {
+            for ( ISystemCallback callback : mSystemCallbacks ) {
+                try {
+                    callback.onTMSAntennaStatusChanged(status); 
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -488,9 +518,13 @@ public class StatusBarService extends Service {
                 if ( mBTCallController == null ) return 0; 
                 return mBTCallController.get(); 
             }
-            public int getAntennaStatus() throws RemoteException { 
-                if ( mAntennaController == null ) return 0; 
-                return mAntennaController.get(); 
+            public int getBTAntennaStatus() throws RemoteException { 
+                if ( mBTAntennaController == null ) return 0; 
+                return mBTAntennaController.get(); 
+            }
+            public int getTMSAntennaStatus() throws RemoteException { 
+                if ( mTMSAntennaController == null ) return 0; 
+                return mTMSAntennaController.get(); 
             }
             public int getDataStatus() throws RemoteException {  
                 if ( mDataController == null ) return 0; 

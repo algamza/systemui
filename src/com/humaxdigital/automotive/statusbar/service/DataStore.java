@@ -71,12 +71,14 @@ public class DataStore {
     private Integer mNetworkDataType = 0; 
     @GuardedBy("mNetworkDataUsing")
     private Boolean mNetworkDataUsing = false; 
-    @GuardedBy("mAntennaState")
-    private Integer mAntennaState = 0; 
-    @GuardedBy("mBTBatteryLevel")
-    private Integer mBTBatteryLevel = 0; 
-    @GuardedBy("mBTBatteryType")
-    private Integer mBTBatteryType = 0; 
+    @GuardedBy("mBTDeviceConnectionState")
+    private SparseIntArray mBTDeviceConnectionState = new SparseIntArray();
+    @GuardedBy("mBTDeviceAntennaLevel")
+    private SparseIntArray mBTDeviceAntennaLevel = new SparseIntArray();
+    @GuardedBy("mBTDeviceBatteryState")
+    private SparseIntArray mBTDeviceBatteryState = new SparseIntArray();
+    @GuardedBy("mCallingState")
+    private SparseIntArray mCallingState= new SparseIntArray();
     @GuardedBy("mBLEStatus")
     private Integer mBLEStatus = 0; 
     @GuardedBy("mLocationSharingStatus")
@@ -118,10 +120,14 @@ public class DataStore {
     private long mDateTimeLastSet; 
     @GuardedBy("mNetworkDataType")
     private long mNetworkDataTypeLastSet; 
-    @GuardedBy("mAntennaState")
-    private long mAntennaLastSet = 0; 
-    @GuardedBy("mBTBatteryLevel")
-    private long mBTBatteryLevelLastSet = 0; 
+    @GuardedBy("mBTDeviceConnectionState")
+    private SparseLongArray mBTDeviceConnectionStateLastSet = new SparseLongArray();
+    @GuardedBy("mBTDeviceAntennaLevel")
+    private SparseLongArray mBTDeviceAntennaLevelLastSet = new SparseLongArray();
+    @GuardedBy("mBTDeviceBatteryState")
+    private SparseLongArray mBTDeviceBatteryStateLastSet = new SparseLongArray();
+    @GuardedBy("mCallingState")
+    private SparseLongArray mCallingStateLastSet = new SparseLongArray();
     @GuardedBy("mBLEStatus")
     private long mBLEStatusLastSet = 0; 
     @GuardedBy("mLocationSharingStatus")
@@ -543,60 +549,98 @@ public class DataStore {
         return true;
     }
 
-    public int getAntennaState() {
-        synchronized (mAntennaState) {
-            return mAntennaState;
+    public int getBTDeviceConnectionState(int profile) {
+        synchronized (mBTDeviceConnectionState) {
+            return mBTDeviceConnectionState.get(profile);
         }
     }
 
-    public void setAntennaState(int state) {
-        synchronized (mAntennaState) {
-            mAntennaState = state;
-            mAntennaLastSet = SystemClock.uptimeMillis();
+    public void setBTDeviceConnectionState(int profile, int state) {
+        synchronized (mBTDeviceConnectionState) {
+            mBTDeviceConnectionState.put(profile, state);
+            mBTDeviceConnectionStateLastSet.put(profile, SystemClock.uptimeMillis());
         }
     }
 
-    public boolean shouldPropagateAntennaUpdate(int state) {
-        synchronized (mAntennaState) {
-            if (SystemClock.uptimeMillis() - mAntennaLastSet < COALESCE_TIME_MS) {
+    public boolean shouldPropagateBTDeviceConnectionStateUpdate(int profile, int state) {
+        synchronized (mBTDeviceConnectionState) {
+            if (SystemClock.uptimeMillis() - mBTDeviceConnectionStateLastSet.get(profile) < COALESCE_TIME_MS) {
                 return false;
             }
-            if ( mAntennaState == state ) return false; 
-            mAntennaState = state;
+            if ( mBTDeviceConnectionState.get(profile) == state ) return false; 
+            mBTDeviceConnectionState.put(profile, state);
         }
         return true;
     }
 
-    public int getBTBatterylevel() {
-        synchronized (mBTBatteryLevel) {
-            return mBTBatteryLevel;
+    public int getBTDeviceAntennaLevel(int profile) {
+        synchronized (mBTDeviceAntennaLevel) {
+            return mBTDeviceAntennaLevel.get(profile);
         }
     }
 
-    public int getBTBatteryType() {
-        synchronized (mBTBatteryType) {
-            return mBTBatteryType;
+    public void setBTDeviceAntennaLevel(int profile, int state) {
+        synchronized (mBTDeviceAntennaLevel) {
+            mBTDeviceAntennaLevel.put(profile, state);
+            mBTDeviceAntennaLevelLastSet.put(profile, SystemClock.uptimeMillis());
         }
     }
 
-    public void setBTBatterylevel(int type, int level) {
-        synchronized ( mBTBatteryType ) {
-            mBTBatteryType = type; 
-            synchronized (mBTBatteryLevel) {
-                mBTBatteryLevel = level;
-            }
-            mBTBatteryLevelLastSet = SystemClock.uptimeMillis();
-        }
-    }
-
-    public boolean shouldPropagateBTBatteryLevelUpdate(int type, int level) {
-        synchronized (mBTBatteryLevel) {
-            if (SystemClock.uptimeMillis() - mBTBatteryLevelLastSet < COALESCE_TIME_MS) {
+    public boolean shouldPropagateBTDeviceAntennaLevelUpdate(int profile, int state) {
+        synchronized (mBTDeviceAntennaLevel) {
+            if (SystemClock.uptimeMillis() - mBTDeviceAntennaLevelLastSet.get(profile) < COALESCE_TIME_MS) {
                 return false;
             }
-            if ( mBTBatteryType == type && mBTBatteryLevel == level ) return false; 
-            mBTBatteryType = type; 
-            mBTBatteryLevel = level;
+            if ( mBTDeviceAntennaLevel.get(profile) == state ) return false; 
+            mBTDeviceAntennaLevel.put(profile, state);
+        }
+        return true;
+    }
+
+    public int getBTDeviceBatteryState(int profile) {
+        synchronized (mBTDeviceBatteryState) {
+            return mBTDeviceBatteryState.get(profile);
+        }
+    }
+
+    public void setBTDeviceBatteryState(int profile, int state) {
+        synchronized (mBTDeviceBatteryState) {
+            mBTDeviceBatteryState.put(profile, state);
+            mBTDeviceBatteryStateLastSet.put(profile, SystemClock.uptimeMillis());
+        }
+    }
+
+    public boolean shouldPropagateBTDeviceBatteryStateUpdate(int profile, int state) {
+        synchronized (mBTDeviceBatteryState) {
+            if (SystemClock.uptimeMillis() - mBTDeviceBatteryStateLastSet.get(profile) < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mBTDeviceBatteryState.get(profile) == state ) return false; 
+            mBTDeviceBatteryState.put(profile, state);
+        }
+        return true;
+    }
+
+    public int getCallingState(int mode) {
+        synchronized (mCallingState) {
+            return mCallingState.get(mode);
+        }
+    }
+
+    public void setCallingState(int mode, int state) {
+        synchronized (mCallingState) {
+            mCallingState.put(mode, state);
+            mCallingStateLastSet.put(mode, SystemClock.uptimeMillis());
+        }
+    }
+
+    public boolean shouldPropagateCallingStateUpdate(int mode, int state) {
+        synchronized (mCallingState) {
+            if (SystemClock.uptimeMillis() - mCallingStateLastSet.get(mode) < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mCallingState.get(mode) == state ) return false; 
+            mCallingState.put(mode, state);
         }
         return true;
     }
