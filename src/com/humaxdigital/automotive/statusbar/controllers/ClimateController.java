@@ -331,16 +331,16 @@ public class ClimateController implements BaseController {
         public void onClick(View v) {
             if ( mAC == null || mIGNOn ) return; 
             if ( mACState == ACState.ON ) {
-                mACState = ACState.OFF; 
+                //mACState = ACState.OFF; 
                 //mAC.update(mACState.ordinal());
             } else {
-                mACState = ACState.ON; 
+                //mACState = ACState.ON; 
                 //mAC.update(mACState.ordinal());
             }
 
             try {
                 if ( mService != null ) 
-                    mService.setAirConditionerState(mACState==ACState.ON?true:false);
+                    mService.setAirConditionerState(mACState==ACState.ON?false:true);
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
@@ -352,16 +352,16 @@ public class ClimateController implements BaseController {
         public void onClick(View v) {
             if ( mIntake == null || mIGNOn ) return; 
             if ( mIntakeState == IntakeState.ON ) {
-                mIntakeState = IntakeState.OFF; 
+                //mIntakeState = IntakeState.OFF; 
                 //mIntake.update(mIntakeState.ordinal());
             } else {
-                mIntakeState = IntakeState.ON; 
+                //mIntakeState = IntakeState.ON; 
                 //mIntake.update(mIntakeState.ordinal());
             }
 
             try {
                 if ( mService != null ) 
-                    mService.setAirCirculationState(mIntakeState==IntakeState.ON?true:false);
+                    mService.setAirCirculationState(mIntakeState==IntakeState.ON?false:true);
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
@@ -374,16 +374,20 @@ public class ClimateController implements BaseController {
             if ( mFanDirection == null || mIGNOn ) return; 
 
             int next = mFanDirectionState.ordinal() + 1;
-            if ( next >= (FanDirectionState.values().length-1) ) 
-                mFanDirectionState = FanDirectionState.values()[0];
-            else 
-                mFanDirectionState = FanDirectionState.values()[next];
 
+            if ( next >= (FanDirectionState.values().length-1) ) {
+                //mFanDirectionState = FanDirectionState.values()[0];
+                next = 0; 
+            }
+            else {
+                //mFanDirectionState = FanDirectionState.values()[next];
+            }
+                
             //mFanDirection.update(mFanDirectionState.ordinal()); 
 
             try {
                 if ( mService != null ) 
-                    mService.setFanDirection(mFanDirectionState.ordinal());
+                    mService.setFanDirection(next);
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
@@ -398,10 +402,10 @@ public class ClimateController implements BaseController {
                 mAirCleaningState == AirCleaning.RED || 
                 mAirCleaningState == AirCleaning.GREEN ) {
                 mAirCleaningState = AirCleaning.OFF; 
-                //mAirCleaning.update(mAirCleaningState.ordinal());
+                mAirCleaning.update(mAirCleaningState.ordinal());
             } else if ( mAirCleaningState == AirCleaning.OFF ) {
                 mAirCleaningState = AirCleaning.RED; 
-                //mAirCleaning.update(mAirCleaningState.ordinal());
+                mAirCleaning.update(mAirCleaningState.ordinal());
             }
 
             try {
