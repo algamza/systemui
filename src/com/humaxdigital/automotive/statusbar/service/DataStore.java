@@ -621,20 +621,20 @@ public class DataStore {
         return true;
     }
 
-    public int getCallingState(int mode) {
+    public int getBTCallingState(int mode) {
         synchronized (mCallingState) {
             return mCallingState.get(mode);
         }
     }
 
-    public void setCallingState(int mode, int state) {
+    public void setBTCallingState(int mode, int state) {
         synchronized (mCallingState) {
             mCallingState.put(mode, state);
             mCallingStateLastSet.put(mode, SystemClock.uptimeMillis());
         }
     }
 
-    public boolean shouldPropagateCallingStateUpdate(int mode, int state) {
+    public boolean shouldPropagateBTCallingStateUpdate(int mode, int state) {
         synchronized (mCallingState) {
             if (SystemClock.uptimeMillis() - mCallingStateLastSet.get(mode) < COALESCE_TIME_MS) {
                 return false;
