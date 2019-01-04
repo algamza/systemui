@@ -106,7 +106,7 @@ public class SystemStatusController implements BaseController {
         if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
             mLocationSharing = new SystemView(mContext)
                 .addIcon(ModeStatus.NONE.ordinal(), none)
-                .addIcon(ModeStatus.LOCATION_SHARING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_location_shar, null))
+                .addIcon(ModeStatus.LOCATION_SHARING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_location_sharing, null))
                 .inflate(); 
             mSystemViews.add(mLocationSharing);
         }
