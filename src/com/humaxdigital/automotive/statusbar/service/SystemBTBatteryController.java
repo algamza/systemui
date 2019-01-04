@@ -99,5 +99,8 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             for ( Listener listener : mListeners ) 
                 listener.onEvent(BTBatteryStatus.NONE.ordinal());
         }
+        @Override
+        public void onCallingStateChanged(SystemBluetoothClient.BluetoothState state, int value) {
+        }
     }; 
 }

@@ -48,12 +48,15 @@ public class SystemBTAntennaController extends BaseController<Integer> {
     }
 
     private AntennaStatus convertToBTAntennaLevel(int level) {
-        AntennaStatus status = AntennaStatus.BT_ANTENNA_NO; 
-        if ( level > 0 && level <= 1 ) status = AntennaStatus.BT_ANTENNA_1; 
-        else if ( level > 1 && level <= 2 ) status = AntennaStatus.BT_ANTENNA_3; 
-        else if ( level > 2 && level <= 3 ) status = AntennaStatus.BT_ANTENNA_4; 
-        else if ( level > 3 && level <= 4 ) status = AntennaStatus.BT_ANTENNA_5; 
-        else if ( level > 4 ) status = AntennaStatus.BT_ANTENNA_5; 
+        AntennaStatus status = AntennaStatus.NONE; 
+        switch(level) {
+            case 0: status = AntennaStatus.BT_ANTENNA_NO; break; 
+            case 1: status = AntennaStatus.BT_ANTENNA_1; break; 
+            case 2: status = AntennaStatus.BT_ANTENNA_2; break; 
+            case 3: status = AntennaStatus.BT_ANTENNA_3; break; 
+            case 4: status = AntennaStatus.BT_ANTENNA_4; break; 
+            case 5: status = AntennaStatus.BT_ANTENNA_5; break; 
+        }
         return status; 
     }
 
@@ -93,6 +96,9 @@ public class SystemBTAntennaController extends BaseController<Integer> {
             if ( enable ) return; 
             for ( Listener listener : mListeners ) 
                 listener.onEvent(AntennaStatus.NONE.ordinal());
+        }
+        @Override
+        public void onCallingStateChanged(SystemBluetoothClient.BluetoothState state, int value) {
         }
     }; 
 }

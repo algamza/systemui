@@ -24,10 +24,10 @@ public class SystemBluetoothClient {
         NONE,
         HANDSFREE_CONNECTED,
         STREAMING_CONNECTED,
+        HF_FREE_STREAMING_CONNECTED,
         CONTACTS_DOWNLOADING,
         CALL_HISTORY_DOWNLOADING,
         BLUETOOTH_CALLING,
-        BLUETOOTH_MIC_MUTE,
     }
 
     public interface SystemBluetoothCallback {
@@ -35,6 +35,7 @@ public class SystemBluetoothClient {
         void onAntennaStateChanged(SystemBluetoothClient.Profiles profile);
         void onConnectionStateChanged(SystemBluetoothClient.Profiles profile); 
         void onBluetoothEnableChanged(Boolean enable); 
+        void onCallingStateChanged(BluetoothState state, int value); 
     }
 
     public enum Profiles { HEADSET, A2DP_SINK }
@@ -43,6 +44,8 @@ public class SystemBluetoothClient {
     private BluetoothAdapter mBluetoothAdapter;
     private DataStore mDataStore; 
     private List<SystemBluetoothCallback> mListeners = new ArrayList<>(); 
+    private int mContactsDownloadingState = 0; 
+    private int mCallHistoryDownloadingState = 0; 
     
     private int[] mBTDeviceProfiles = { 
             BluetoothProfile.HEADSET_CLIENT, 
@@ -63,8 +66,13 @@ public class SystemBluetoothClient {
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); 
         filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); 
         filter.addAction(BluetoothHeadsetClient.ACTION_AG_EVENT); 
-        // FIXME: it is bluetooth extension action. 
+        // FIXME: it is bluetooth extension action. ( action_pbap_state ) 
         // please check. packages\apps\Bluetooth\src\com\android\bluetooth\pbapclient\PbapClientStateMachine.java 
+//      // intent.getIntExtra("state", 0);
+        // PBAP_STATE_IDLE = 0;
+        // PBAP_STATE_CONNECTING = 1;
+        // PBAP_STATE_CONNECTED = 2;
+        // PBAP_STATE_DOWNLOADING = 3;
         filter.addAction("action_pbap_state"); 
         mContext.registerReceiver(mBTReceiver, filter);
         checkAllProfileConnection(); 
@@ -144,7 +152,6 @@ public class SystemBluetoothClient {
                     switch(profile) {
                         case BluetoothProfile.HEADSET_CLIENT: {
                             if ( proxy.getConnectedDevices().size() > 0 ) {
-                                Log.d(TAG, "onServiceConnected:HEADSET_CLIENT=1"); 
                                 BluetoothHeadsetClient client = (BluetoothHeadsetClient)proxy;
                                 Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
                                 int battery_level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
@@ -154,18 +161,15 @@ public class SystemBluetoothClient {
                                 updateConectionState(Profiles.HEADSET, 1); 
                             }
                             else {
-                                Log.d(TAG, "onServiceConnected:HEADSET_CLIENT=0"); 
                                 updateConectionState(Profiles.HEADSET, 0); 
                             }
                             break; 
                         }
                         case BluetoothProfile.A2DP_SINK: {
                             if ( proxy.getConnectedDevices().size() > 0 ) {
-                                Log.d(TAG, "onServiceConnected:A2DP_SINK=1"); 
                                 updateConectionState(Profiles.A2DP_SINK, 1); 
                             }
                             else {
-                                Log.d(TAG, "onServiceConnected:A2DP_SINK=0"); 
                                 updateConectionState(Profiles.A2DP_SINK, 0); 
                             } 
                             break; 
@@ -177,11 +181,9 @@ public class SystemBluetoothClient {
                 public void onServiceDisconnected(int profile) {
                     switch(profile) {
                         case BluetoothProfile.HEADSET_CLIENT: 
-                            Log.d(TAG, "onServiceDisconnected:HEADSET_CLIENT"); 
                             updateConectionState(Profiles.HEADSET, 0); 
                             break; 
                         case BluetoothProfile.A2DP_SINK: 
-                            Log.d(TAG, "onServiceDisconnected:A2DP_SINK"); 
                             updateConectionState(Profiles.A2DP_SINK, 0); 
                             break; 
                         default: break; 
@@ -248,6 +250,21 @@ public class SystemBluetoothClient {
                 }
                 case "action_pbap_state": {
                     int state = intent.getIntExtra("state", 0);
+                    if ( mContactsDownloadingState == state ) break; 
+                    if ( state == 3 ) {
+                        Log.d(TAG, "action_pbap_state:CONTACTS_DOWNLOADING"); 
+                        if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.CONTACTS_DOWNLOADING.ordinal(), 1) ) {
+                            for ( SystemBluetoothCallback callback : mListeners ) 
+                                callback.onCallingStateChanged(BluetoothState.CONTACTS_DOWNLOADING, 1); 
+                        }
+                        mContactsDownloadingState = state; 
+                    } else if ( state == 2 ) {
+                        Log.d(TAG, "action_pbap_state:COMPLETE"); 
+                        if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.CONTACTS_DOWNLOADING.ordinal(), 0) ) {
+                            for ( SystemBluetoothCallback callback : mListeners ) 
+                                callback.onCallingStateChanged(BluetoothState.CONTACTS_DOWNLOADING, 0); 
+                        }
+                    }
                     break; 
                 }
                 default: break;

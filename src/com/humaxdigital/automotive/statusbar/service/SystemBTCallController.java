@@ -1,16 +1,10 @@
 package com.humaxdigital.automotive.statusbar.service;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.BroadcastReceiver;
-
+import android.util.Log;
 
 public class SystemBTCallController extends BaseController<Integer> {
-    private enum BTCallStatus { NONE, STREAMING_CONNECTED, 
-        HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED, 
-        CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, 
-        TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
+    private static final String TAG = "SystemBTCallController";
 
     private SystemBluetoothClient mBluetoothClient; 
 
@@ -25,39 +19,69 @@ public class SystemBTCallController extends BaseController<Integer> {
 
     @Override
     public void disconnect() {
-
+        if ( mBluetoothClient != null ) 
+            mBluetoothClient.registerCallback(mBTCallback);
     }
 
     @Override
     public void fetch() {
-        if ( mDataStore == null ) return;
     }
 
     public void fetch(SystemBluetoothClient client) {
+        if ( client == null ) return; 
         mBluetoothClient = client; 
+        mBluetoothClient.registerCallback(mBTCallback);
     }
 
     @Override
     public Integer get() {
-        if ( mDataStore == null ) return 0; 
-        return 0; 
+        int state = getCurrentState(); 
+        Log.d(TAG, "get="+state); 
+        return state; 
     }
 
-    private BTCallStatus convertToStatus(int mode) {
-        BTCallStatus status = BTCallStatus.NONE; 
-        // todo : check status 
-        switch(mode) {
-            case 0: status = BTCallStatus.NONE; break;
-            case 1: status = BTCallStatus.STREAMING_CONNECTED; break;
-            case 2: status = BTCallStatus.HANDS_FREE_CONNECTED; break;
-            case 3: status = BTCallStatus.HF_FREE_STREAMING_CONNECTED; break;
-            case 4: status = BTCallStatus.CALL_HISTORY_DOWNLOADING; break;
-            case 5: status = BTCallStatus.CONTACTS_HISTORY_DOWNLOADING; break;
-            case 6: status = BTCallStatus.TMU_CALLING; break;
-            case 7: status = BTCallStatus.BT_CALLING; break;
-            case 8: status = BTCallStatus.BT_PHONE_MIC_MUTE; break;
-            default: break; 
+    private int getCurrentState() {
+        int current = SystemBluetoothClient.BluetoothState.NONE.ordinal(); 
+        if ( mDataStore == null ) return current; 
+        for ( SystemBluetoothClient.BluetoothState state 
+            : SystemBluetoothClient.BluetoothState.values() ) {
+            if ( mDataStore.getBTCallingState(state.ordinal()) == 1 ) {
+                current = state.ordinal(); 
+                if ( state == SystemBluetoothClient.BluetoothState.STREAMING_CONNECTED ) {
+                    if ( mDataStore.getBTCallingState(
+                        SystemBluetoothClient.BluetoothState.HANDSFREE_CONNECTED.ordinal()) ==1 ) {
+                        current = SystemBluetoothClient.BluetoothState.HF_FREE_STREAMING_CONNECTED.ordinal(); 
+                    }
+                }
+            }
         }
-        return status; 
+        return current; 
     }
+
+    private SystemBluetoothClient.SystemBluetoothCallback mBTCallback = 
+        new SystemBluetoothClient.SystemBluetoothCallback() {
+        @Override
+        public void onBatteryStateChanged(SystemBluetoothClient.Profiles profile) {
+        }
+        @Override
+        public void onAntennaStateChanged(SystemBluetoothClient.Profiles profile) {
+        }
+        @Override
+        public void onConnectionStateChanged(SystemBluetoothClient.Profiles profile) {
+            for ( Listener listener : mListeners ) 
+                listener.onEvent(getCurrentState());
+        }
+        @Override
+        public void onBluetoothEnableChanged(Boolean enable) {
+            Log.d(TAG, "onBluetoothEnableChanged:enable="+enable);
+            if ( enable ) return; 
+            for ( Listener listener : mListeners ) 
+                listener.onEvent(SystemBluetoothClient.BluetoothState.NONE.ordinal());
+        }
+        @Override
+        public void onCallingStateChanged(SystemBluetoothClient.BluetoothState state, int value) {
+            for ( Listener listener : mListeners ) 
+                listener.onEvent(getCurrentState());
+        }
+    }; 
 }

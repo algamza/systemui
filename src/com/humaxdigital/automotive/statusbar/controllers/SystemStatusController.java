@@ -31,8 +31,10 @@ public class SystemStatusController implements BaseController {
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
     enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
-    enum BTCallStatus { NONE, STREAMING_CONNECTED, HANDS_FREE_CONNECTED, HF_FREE_STREAMING_CONNECTED
+    enum CallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
+    enum BTCallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
+        , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, BT_CALLING }
     enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
         , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
     enum BTAntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
@@ -51,7 +53,7 @@ public class SystemStatusController implements BaseController {
     private SystemView mMute;
     private SystemView mBle;
     private SystemView mBtBattery;
-    private SystemView mBtPhone;
+    private SystemView mPhone;
     private SystemView mAntenna;
     private SystemView mPhoneData;
     private SystemView mWirelessCharging;
@@ -61,6 +63,8 @@ public class SystemStatusController implements BaseController {
     
     private BTAntennaStatus mCurrentBTAntennaStatus = BTAntennaStatus.NONE; 
     private TMSAntennaStatus mCurrentTMSAntennaStatus = TMSAntennaStatus.NONE; 
+    private int mCurrentBTMicMuteStatus = 0; 
+    private int mCurrentTMSCallingStatus = 0; 
 
     private IStatusBarService mService; 
 
@@ -163,18 +167,18 @@ public class SystemStatusController implements BaseController {
             .inflate(); 
         mSystemViews.add(mAntenna);
 
-        mBtPhone = new SystemView(mContext)
-            .addIcon(BTCallStatus.NONE.ordinal(), none)
-            .addIcon(BTCallStatus.STREAMING_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_audio, null))
-            .addIcon(BTCallStatus.HANDS_FREE_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_hf, null))
-            .addIcon(BTCallStatus.HF_FREE_STREAMING_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_hf_audio, null))
-            .addIcon(BTCallStatus.CALL_HISTORY_DOWNLOADING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_list_down, null))
-            .addIcon(BTCallStatus.CONTACTS_HISTORY_DOWNLOADING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ph_down, null))
-            .addIcon(BTCallStatus.TMU_CALLING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_tmu_calling, null))
-            .addIcon(BTCallStatus.BT_CALLING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_bt_calling, null))
-            .addIcon(BTCallStatus.BT_PHONE_MIC_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_bt_mute, null))
+        mPhone = new SystemView(mContext)
+            .addIcon(CallStatus.NONE.ordinal(), none)
+            .addIcon(CallStatus.STREAMING_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_audio, null))
+            .addIcon(CallStatus.HANDS_FREE_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_hf, null))
+            .addIcon(CallStatus.HF_FREE_STREAMING_CONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_hf_audio, null))
+            .addIcon(CallStatus.CALL_HISTORY_DOWNLOADING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_list_down, null))
+            .addIcon(CallStatus.CONTACTS_HISTORY_DOWNLOADING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ph_down, null))
+            .addIcon(CallStatus.TMU_CALLING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_tmu_calling, null))
+            .addIcon(CallStatus.BT_CALLING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_bt_calling, null))
+            .addIcon(CallStatus.BT_PHONE_MIC_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_bt_mute, null))
             .inflate(); 
-        mSystemViews.add(mBtPhone);
+        mSystemViews.add(mPhone);
 
         mBtBattery = new SystemView(mContext)
             .addIcon(BTBatteryStatus.NONE.ordinal(), none)
@@ -222,7 +226,14 @@ public class SystemStatusController implements BaseController {
             if ( mMute != null ) mMute.update(MuteStatus.values()[mService.getMuteStatus()].ordinal());
             if ( mBle != null ) mBle.update(BLEStatus.values()[mService.getBLEStatus()].ordinal());
             if ( mBtBattery != null ) mBtBattery.update(BTBatteryStatus.values()[mService.getBTBatteryStatus()].ordinal());
-            if ( mBtPhone != null ) mBtPhone.update(BTCallStatus.values()[mService.getBTCallStatus()].ordinal());
+            if ( mPhone != null ) {
+                BTCallStatus call_state = convertToBTCallStatus(mService.getBTCallStatus()); 
+                mCurrentBTMicMuteStatus = 0; 
+                mCurrentTMSCallingStatus = 0; 
+                // TODO: get TMU Calling state
+                // TODO: get bt mic mute state
+                mPhone.update(convertToCallStatus(call_state, mCurrentTMSCallingStatus, mCurrentBTMicMuteStatus).ordinal());
+            }
             if ( mAntenna != null ) {
                 mCurrentBTAntennaStatus = convertToBTAntennaStatus(mService.getBTAntennaStatus()); 
                 mCurrentTMSAntennaStatus = convertToTMSAntennaStatus(mService.getTMSAntennaStatus()); 
@@ -235,6 +246,35 @@ public class SystemStatusController implements BaseController {
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
+    }
+
+    private CallStatus convertToCallStatus(BTCallStatus bt, int tmu_call, int mic_mute) {
+        CallStatus status = CallStatus.NONE; 
+        switch(bt) {
+            case NONE: status = CallStatus.NONE; break; 
+            case STREAMING_CONNECTED: status = CallStatus.STREAMING_CONNECTED; break; 
+            case HANDS_FREE_CONNECTED: status = CallStatus.HANDS_FREE_CONNECTED; break; 
+            case HF_FREE_STREAMING_CONNECTED: status = CallStatus.HF_FREE_STREAMING_CONNECTED; break; 
+            case CALL_HISTORY_DOWNLOADING: status = CallStatus.CALL_HISTORY_DOWNLOADING; break; 
+            case CONTACTS_HISTORY_DOWNLOADING: status = CallStatus.CONTACTS_HISTORY_DOWNLOADING; break; 
+            case BT_CALLING: status = CallStatus.BT_CALLING; break; 
+        }
+        if ( tmu_call == 1 ) status = CallStatus.TMU_CALLING; 
+        if ( mic_mute == 1 ) status = CallStatus.BT_PHONE_MIC_MUTE; 
+        
+        return status; 
+    }
+
+    private BTCallStatus convertToBTCallStatus(int status) {
+        BTCallStatus call_status = BTCallStatus.NONE; 
+        if ( status == BTCallStatus.NONE.ordinal() ) call_status = BTCallStatus.NONE; 
+        else if ( status == BTCallStatus.STREAMING_CONNECTED.ordinal() ) call_status = BTCallStatus.STREAMING_CONNECTED; 
+        else if ( status == BTCallStatus.HANDS_FREE_CONNECTED.ordinal() ) call_status = BTCallStatus.HANDS_FREE_CONNECTED; 
+        else if ( status == BTCallStatus.HF_FREE_STREAMING_CONNECTED.ordinal() ) call_status = BTCallStatus.HF_FREE_STREAMING_CONNECTED; 
+        else if ( status == BTCallStatus.CALL_HISTORY_DOWNLOADING.ordinal() ) call_status = BTCallStatus.CALL_HISTORY_DOWNLOADING; 
+        else if ( status == BTCallStatus.CONTACTS_HISTORY_DOWNLOADING.ordinal() ) call_status = BTCallStatus.CONTACTS_HISTORY_DOWNLOADING; 
+        else if ( status == BTCallStatus.BT_CALLING.ordinal() ) call_status = BTCallStatus.BT_CALLING; 
+        return call_status; 
     }
 
     private BTAntennaStatus convertToBTAntennaStatus(int bt_antenna) {
@@ -319,12 +359,13 @@ public class SystemStatusController implements BaseController {
             }); 
         }
         public void onBTCallStatusChanged(int status) throws RemoteException {
-            if ( mBtPhone == null ) return;
+            if ( mPhone == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mBtPhone.update(BTCallStatus.values()[status].ordinal());
+                    mPhone.update(convertToCallStatus(convertToBTCallStatus(status), 
+                        mCurrentTMSCallingStatus, mCurrentBTMicMuteStatus).ordinal());
                 }
             }); 
         }
