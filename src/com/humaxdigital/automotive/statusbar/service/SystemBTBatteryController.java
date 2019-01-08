@@ -46,6 +46,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
 
     private BTBatteryStatus convertToStatus(int level) {
         BTBatteryStatus status = BTBatteryStatus.NONE; 
+        // Battery Level : range (0~5)
         if ( level == 0 ) {
             status = BTBatteryStatus.BT_BATTERY_0; 
         } else if ( level == 1 ) {

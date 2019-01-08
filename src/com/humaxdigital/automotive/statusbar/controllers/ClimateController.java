@@ -432,7 +432,6 @@ public class ClimateController implements BaseController {
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
                 mAirCleaningState = AirCleaning.OFF; 
                 // TODO: need to check CAN scenario 
-                /*
                 try {
                     if ( mService != null ) {
                         mService.setAirCleaningState(mAirCleaningState.ordinal());
@@ -440,7 +439,6 @@ public class ClimateController implements BaseController {
                 } catch( RemoteException e ) {
                     e.printStackTrace();
                 }
-                */
             }
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {

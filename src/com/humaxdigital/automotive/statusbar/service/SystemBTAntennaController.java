@@ -49,6 +49,7 @@ public class SystemBTAntennaController extends BaseController<Integer> {
 
     private AntennaStatus convertToBTAntennaLevel(int level) {
         AntennaStatus status = AntennaStatus.NONE; 
+        // Signal Level : range (0~5)
         switch(level) {
             case 0: status = AntennaStatus.BT_ANTENNA_NO; break; 
             case 1: status = AntennaStatus.BT_ANTENNA_1; break; 
