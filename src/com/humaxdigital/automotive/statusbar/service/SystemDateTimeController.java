@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
+import android.util.Log;
 
 import java.util.Calendar;
+import java.util.Locale;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 
@@ -47,6 +49,7 @@ public class SystemDateTimeController extends BaseController<String> {
         @Override
         public void onReceive(Context context, Intent intent) {
             String date = getCurrentTime(); 
+            
             boolean shouldPropagate = mDataStore.shouldPropagateDateTimeUpdate(date);
             if ( shouldPropagate ) {
                 for ( Listener<String> listener : mListeners ) 
@@ -56,7 +59,7 @@ public class SystemDateTimeController extends BaseController<String> {
     };
 
     private String getCurrentTime() {
-        DateFormat df = new SimpleDateFormat("h:mm a");
+        DateFormat df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
         return df.format(Calendar.getInstance().getTime());
     }
 }
