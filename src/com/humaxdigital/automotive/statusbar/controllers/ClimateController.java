@@ -70,6 +70,7 @@ public class ClimateController implements BaseController {
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
     private Boolean mIGNOn = false; 
+    private Boolean mAirCleaningStartFromUI = false; 
 
     private final List<View> mClimateViews = new ArrayList<>();
 
@@ -398,6 +399,7 @@ public class ClimateController implements BaseController {
         @Override
         public void onClick(View v) {
             if ( mAirCleaning == null || mIGNOn ) return; 
+            /*
             if ( mAirCleaningState == AirCleaning.ON ||
                 mAirCleaningState == AirCleaning.RED || 
                 mAirCleaningState == AirCleaning.GREEN ) {
@@ -407,13 +409,16 @@ public class ClimateController implements BaseController {
                 mAirCleaningState = AirCleaning.RED; 
                 mAirCleaning.update(mAirCleaningState.ordinal());
             }
+            */
 
             try {
                 if ( mService != null ) {
-                    if ( mAirCleaningState == AirCleaning.RED ) {
+                    if ( mAirCleaningState == AirCleaning.OFF ) {
+                        mAirCleaningStartFromUI = true; 
                         mService.setAirCleaningState(AirCleaning.ON.ordinal());
-                    } else if ( mAirCleaningState == AirCleaning.OFF ) {
-                        mService.setAirCleaningState(mAirCleaningState.ordinal());
+                    } else {
+                        mAirCleaningStartFromUI = false; 
+                        mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                     }
                 }
             } catch( RemoteException e ) {
@@ -429,24 +434,27 @@ public class ClimateController implements BaseController {
             if ( mAirCleaning == null ) return; 
             if ( status == AirCleaning.RED.ordinal() ) {
                 mAirCleaningState = AirCleaning.GREEN; 
+                if ( mHandler == null ) return; 
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAirCleaning.update(mAirCleaningState.ordinal()); 
+                    }
+                }); 
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
-                mAirCleaningState = AirCleaning.OFF; 
+                //mAirCleaningState = AirCleaning.OFF; 
                 // TODO: need to check CAN scenario 
                 try {
                     if ( mService != null ) {
-                        mService.setAirCleaningState(mAirCleaningState.ordinal());
+                        if ( mAirCleaningStartFromUI ) {
+                            mAirCleaningStartFromUI = false; 
+                            mService.setAirCleaningState(AirCleaning.OFF.ordinal());
+                        }
                     }
                 } catch( RemoteException e ) {
                     e.printStackTrace();
                 }
             }
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mAirCleaning.update(mAirCleaningState.ordinal()); 
-                }
-            }); 
         }
     }; 
 
@@ -498,6 +506,7 @@ public class ClimateController implements BaseController {
             if ( mAirCleaning == null ) return; 
             mAirCleaningState = AirCleaning.values()[status]; 
             if ( mAirCleaningState == AirCleaning.ON ) mAirCleaningState = AirCleaning.RED; 
+            else if ( mAirCleaningState == AirCleaning.OFF ) mAirCleaningStartFromUI = false; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
