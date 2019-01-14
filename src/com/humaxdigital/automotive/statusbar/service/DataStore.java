@@ -85,6 +85,8 @@ public class DataStore {
     private Integer mLocationSharingStatus = 0; 
     @GuardedBy("mWirelessChargeStatus")
     private Integer mWirelessChargeStatus = 0; 
+    @GuardedBy("mAudioMuteState")
+    private SparseIntArray mAudioMuteState= new SparseIntArray();
 
     @GuardedBy("mTemperature")
     private SparseLongArray mLastTemperatureSet = new SparseLongArray();
@@ -134,6 +136,8 @@ public class DataStore {
     private long mLocationSharingStatusLastSet = 0; 
     @GuardedBy("mWirelessChargeStatus")
     private long mWirelessChargeStatusLastSet = 0; 
+    @GuardedBy("mAudioMuteState")
+    private SparseLongArray mAudioMuteStateLastSet = new SparseLongArray();
 
     public int getNetworkDataType() {
         synchronized (mNetworkDataType) {
@@ -713,6 +717,30 @@ public class DataStore {
             }
             if ( mWirelessChargeStatus == state ) return false; 
             mWirelessChargeStatus = state;
+        }
+        return true;
+    }
+
+    public int getAudioMuteState(int type) {
+        synchronized (mAudioMuteState) {
+            return mAudioMuteState.get(type);
+        }
+    }
+
+    public void setAudioMuteState(int type, int state) {
+        synchronized (mAudioMuteState) {
+            mAudioMuteState.put(type, state);
+            mAudioMuteStateLastSet.put(type, SystemClock.uptimeMillis());
+        }
+    }
+
+    public boolean shouldPropagateAudioMuteStateUpdate(int type, int state) {
+        synchronized (mAudioMuteState) {
+            if (SystemClock.uptimeMillis() - mAudioMuteStateLastSet.get(type) < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mAudioMuteState.get(type) == state ) return false; 
+            mAudioMuteState.put(type, state);
         }
         return true;
     }

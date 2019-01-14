@@ -46,6 +46,7 @@ public class StatusBarService extends Service {
     private SystemWirelessChargeController mWirelessChargeController; 
 
     private SystemBluetoothClient mBluetoothClient; 
+    private SystemAudioClient mAudioClient; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
 
@@ -69,6 +70,9 @@ public class StatusBarService extends Service {
         mBluetoothClient = new SystemBluetoothClient(mContext, mDataStore); 
         mBluetoothClient.connect();
 
+        mAudioClient = new SystemAudioClient(mContext); 
+        mAudioClient.connect(); 
+
         createSystemManager(); 
         createClimateManager();
 
@@ -80,8 +84,8 @@ public class StatusBarService extends Service {
         super.onDestroy();
 
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
-
         if ( mBluetoothClient != null ) mBluetoothClient.disconnect();
+        if ( mAudioClient != null ) mAudioClient.disconnect();
 
         mSystemCallbacks.clear(); 
         mClimateCallbacks.clear(); 
@@ -90,16 +94,16 @@ public class StatusBarService extends Service {
         mUserProfileCallbacks.clear();
 
         if ( mDataController != null )  mDataController.removeListener(mSystemDataListener);
-        if ( mWifiController != null )  mWifiController.removeListener(mSystemDataListener);
-        if ( mLocationController != null )  mLocationController.removeListener(mSystemDataListener);
-        if ( mBTAntennaController != null )  mBTAntennaController.removeListener(mSystemDataListener);
-        if ( mTMSAntennaController != null )  mTMSAntennaController.removeListener(mSystemDataListener);
-        if ( mBLEController != null )  mBLEController.removeListener(mSystemDataListener);
-        if ( mBTBatteryController != null )  mBTBatteryController.removeListener(mSystemDataListener);
-        if ( mBTCallController != null )  mBTCallController.removeListener(mSystemDataListener);
-        if ( mMuteController != null )  mMuteController.removeListener(mSystemDataListener);
-        if ( mDateTimeController != null )  mDateTimeController.removeListener(mSystemDataListener);
-        if ( mUserProfileController != null )  mUserProfileController.removeListener(mSystemDataListener);
+        if ( mWifiController != null )  mWifiController.removeListener(mSystemWifiListener);
+        if ( mLocationController != null )  mLocationController.removeListener(mSystemBLEListener);
+        if ( mBTAntennaController != null )  mBTAntennaController.removeListener(mSystemBTAntennaListener);
+        if ( mTMSAntennaController != null )  mTMSAntennaController.removeListener(mSystemTMSAntennaListener);
+        if ( mBLEController != null )  mBLEController.removeListener(mSystemBLEListener);
+        if ( mBTBatteryController != null )  mBTBatteryController.removeListener(mSystemBTBatteryListener);
+        if ( mBTCallController != null )  mBTCallController.removeListener(mSystemBTCallListener);
+        if ( mMuteController != null )  mMuteController.removeListener(mSystemMuteListener);
+        if ( mDateTimeController != null )  mDateTimeController.removeListener(mDateTimeListener);
+        if ( mUserProfileController != null )  mUserProfileController.removeListener(mUserProfileListener);
 
         for ( BaseController controller : mControllers ) controller.disconnect();
     }
@@ -178,6 +182,7 @@ public class StatusBarService extends Service {
         mBTBatteryController.fetch(mBluetoothClient); 
         mBTAntennaController.fetch(mBluetoothClient); 
         mBTCallController.fetch(mBluetoothClient); 
+        mMuteController.fetch(mAudioClient); 
     }
     
     private CarExtensionClient.CarExClientListener mCarExClientListener = 
