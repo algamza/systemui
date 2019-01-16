@@ -25,7 +25,7 @@ public class StatusBarService extends Service {
     
     private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
     private static final String OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
-    private static final String OPEN_USERPROFILE_SETTING = "";
+    private static final String OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
     
     private Context mContext = this; 
     

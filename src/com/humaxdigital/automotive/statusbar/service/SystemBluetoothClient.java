@@ -70,7 +70,7 @@ public class SystemBluetoothClient {
         filter.addAction(BluetoothA2dpSink.ACTION_CONNECTION_STATE_CHANGED); 
         // FIXME: it is bluetooth extension action. ( action_pbap_state ) 
         // please check. packages\apps\Bluetooth\src\com\android\bluetooth\pbapclient\PbapClientStateMachine.java 
-//      // intent.getIntExtra("state", 0);
+        // intent.getIntExtra("state", 0);
         // PBAP_STATE_IDLE = 0;
         // PBAP_STATE_CONNECTING = 1;
         // PBAP_STATE_CONNECTED = 2;

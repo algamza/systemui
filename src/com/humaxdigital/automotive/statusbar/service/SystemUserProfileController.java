@@ -11,8 +11,10 @@ import android.os.UserManager;
 import android.content.pm.UserInfo;
 import com.android.internal.util.UserIcons;
 import android.graphics.Bitmap;
+import android.util.Log; 
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
+    private final String TAG = "SystemUserProfileController"; 
     private UserManager mUserManager; 
     private ActivityManager mActivityManager;
 
@@ -56,6 +58,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         public void onReceive(Context context, Intent intent) {
             if ( mUserManager == null || mActivityManager == null ) return;
             int userid = getCurrentUserId(); 
+            Log.d(TAG, "user changed : id = " + userid ); 
             boolean shouldPropagate = mDataStore.shouldPropagateStatusUserIdUpdate(userid);
             if ( shouldPropagate ) {
                 for ( Listener<Bitmap> listener : mListeners ) 
@@ -79,6 +82,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         if ( mUserManager == null || mActivityManager == null ) return 0; 
         UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
         if ( user == null ) return 0; 
+        Log.d(TAG, "get current user : id = " + user.id ); 
         return user.id; 
     }
 }
