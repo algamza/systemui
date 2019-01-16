@@ -15,7 +15,6 @@
     <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
     <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION"/>
     <uses-permission android:name="android.car.permission.CAR_CONTROL_AUDIO_VOLUME"/>
-    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     
     <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -23,18 +22,23 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" 
+        android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" 
+        android:protectionLevel="signature" />
     <uses-permission android:name="com.android.systemui.permission.PLUGIN" 
         android:protectionLevel="signature" />
 
     <application>
         <service android:name=".StatusBarOverlayPlugin"
+            android:singleUser="true"
             android:label="@string/plugin_label">
             <intent-filter>
                 <action android:name="com.android.systemui.action.PLUGIN_OVERLAY" />
             </intent-filter>
         </service>
         <service android:name=".StatusBarProxyPluginImpl"
+            android:singleUser="true"
             android:label="@string/plugin_label">
             <intent-filter>
                 <action android:name="com.android.systemui.action.PLUGIN_STATUS_BAR_PROXY" />
@@ -42,6 +46,7 @@
         </service>
         <service 
             android:name=".service.StatusBarService"
+            android:singleUser="true"
             android:exported="true"
             android:process=":remote">
             <intent-filter>
