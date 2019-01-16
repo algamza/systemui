@@ -289,12 +289,8 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
 
     private void openDroplist() {
         if ( mPluginContext == null ) return; 
-
+        Log.d(TAG, "openDroplist"); 
         Intent intent = new Intent(OPEN_DROPLIST); 
-        //UserManager usermgr = (UserManager)mPluginContext.getSystemService(Context.USER_SERVICE); 
-        //int uid = 
-        //usermgr.getUserHandleForUid(uid); 
-        //mPluginContext.sendBroadcastAsUser(intent);
         mPluginContext.sendBroadcast(intent);
     }
 }

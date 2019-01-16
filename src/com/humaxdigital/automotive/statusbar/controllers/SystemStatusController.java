@@ -1,8 +1,6 @@
 package com.humaxdigital.automotive.statusbar.controllers;
 
 import android.content.BroadcastReceiver;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;

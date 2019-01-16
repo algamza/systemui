@@ -2,8 +2,6 @@ package com.humaxdigital.automotive.statusbar.controllers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 
 import android.view.View;
 import android.os.RemoteException;

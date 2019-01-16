@@ -78,11 +78,17 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         return bm; 
     }
 
-    private int getCurrentUserId() {
+    public int getCurrentUserId() {
         if ( mUserManager == null || mActivityManager == null ) return 0; 
         UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
         if ( user == null ) return 0; 
         Log.d(TAG, "get current user : id = " + user.id ); 
         return user.id; 
+    }
+
+    public UserHandle getUserHandle() {
+        if ( mActivityManager == null || mUserManager == null ) return null; 
+        UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
+        return user.getUserHandle(); 
     }
 }

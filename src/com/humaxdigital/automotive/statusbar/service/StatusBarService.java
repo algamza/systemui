@@ -641,9 +641,10 @@ public class StatusBarService extends Service {
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {
+                    if ( mUserProfileController == null ) return;
                     Intent intent = new Intent(OPEN_HVAC_APP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(intent);
+                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
                 }
             }
             public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
@@ -665,9 +666,10 @@ public class StatusBarService extends Service {
              } 
             public void openDateTimeSetting() throws RemoteException {
                 if ( !OPEN_DATE_SETTING.equals("") ) {
+                    if ( mUserProfileController == null ) return;
                     Intent intent = new Intent(OPEN_DATE_SETTING);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(intent);
+                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
                 }
             } 
             public void registerDateTimeCallback(IDateTimeCallback callback) throws RemoteException {
@@ -689,9 +691,10 @@ public class StatusBarService extends Service {
             } 
             public void openUserProfileSetting() throws RemoteException {
                 if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
+                    if ( mUserProfileController == null ) return;
                     Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(intent);
+                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
                 }
             } 
             public void registerUserProfileCallback(IUserProfileCallback callback) throws RemoteException {
