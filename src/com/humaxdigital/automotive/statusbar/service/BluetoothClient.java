@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
 
-public class SystemBluetoothClient {
-    private static final String TAG = "SystemBluetoothClient";
+public class BluetoothClient {
+    private static final String TAG = "BluetoothClient";
     public enum BluetoothState {
         NONE,
         HANDSFREE_CONNECTED,
@@ -32,9 +32,9 @@ public class SystemBluetoothClient {
     }
 
     public interface SystemBluetoothCallback {
-        void onBatteryStateChanged(SystemBluetoothClient.Profiles profile); 
-        void onAntennaStateChanged(SystemBluetoothClient.Profiles profile);
-        void onConnectionStateChanged(SystemBluetoothClient.Profiles profile); 
+        void onBatteryStateChanged(BluetoothClient.Profiles profile); 
+        void onAntennaStateChanged(BluetoothClient.Profiles profile);
+        void onConnectionStateChanged(BluetoothClient.Profiles profile); 
         void onBluetoothEnableChanged(Boolean enable); 
         void onCallingStateChanged(BluetoothState state, int value); 
     }
@@ -52,9 +52,9 @@ public class SystemBluetoothClient {
             BluetoothProfile.HEADSET_CLIENT, 
             BluetoothProfile.A2DP_SINK }; 
 
-    public SystemBluetoothClient(Context context, DataStore store) {
+    public BluetoothClient(Context context, DataStore store) {
         if ( context == null || store == null ) return; 
-        Log.d(TAG, "SystemBluetoothClient"); 
+        Log.d(TAG, "BluetoothClient"); 
         mContext = context; 
         mDataStore = store; 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -85,6 +85,12 @@ public class SystemBluetoothClient {
         if ( mContext == null ) return; 
         Log.d(TAG, "disconnect"); 
         mContext.unregisterReceiver(mBTReceiver); 
+    }
+
+    public void refresh() {
+        mContext.unregisterReceiver(mBTReceiver); 
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        connect(); 
     }
 
     public void registerCallback(SystemBluetoothCallback callback) {

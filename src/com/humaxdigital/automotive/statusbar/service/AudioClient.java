@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.List;
 import android.util.Log;
 
-public class SystemAudioClient {
-    private static final String TAG = "SystemAudioClient";
+public class AudioClient {
+    private static final String TAG = "AudioClient";
     public enum AudioType {
         AUDIO, 
         NAVIGATION,
@@ -46,9 +46,9 @@ public class SystemAudioClient {
     private Context mContext; 
     private List<SystemAudioCallback> mListeners = new ArrayList<>(); 
 
-    public SystemAudioClient(Context context) {
+    public AudioClient(Context context) {
         if ( context == null ) return; 
-        Log.d(TAG, "SystemAudioClient"); 
+        Log.d(TAG, "AudioClient"); 
         mContext = context; 
     }
 
@@ -57,7 +57,9 @@ public class SystemAudioClient {
         IntentFilter filter = new IntentFilter(); 
         filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
         mContext.registerReceiverAsUser(mAudioReceiver, UserHandle.ALL, filter, null, null);
+        
         mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE); 
+
         if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
             mCarEx = CarEx.createCar(mContext, mCarServiceConnection);
             mCarEx.connect();

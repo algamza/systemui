@@ -15,8 +15,7 @@ import android.util.Log;
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
-    private UserManager mUserManager; 
-    private ActivityManager mActivityManager;
+    private UserProfileClient mClient; 
 
     public SystemUserProfileController(Context context, DataStore store) {
         super(context, store);
@@ -25,70 +24,33 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     @Override
     public void connect() {
         if ( mContext == null ) return;
-        mUserManager = (UserManager) mContext.getSystemService(Context.USER_SERVICE); 
-        mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE); 
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_USER_REMOVED);
-        filter.addAction(Intent.ACTION_USER_ADDED);
-        filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
-        filter.addAction(Intent.ACTION_USER_SWITCHED);
-        filter.addAction(Intent.ACTION_USER_STOPPED);
-        filter.addAction(Intent.ACTION_USER_UNLOCKED);
-        mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
     }
 
     @Override
     public void disconnect() {
-        if ( mContext != null ) mContext.unregisterReceiver(mUserChangeReceiver);
     }
 
-    @Override
-    public void fetch() {
-        mDataStore.setStatusUserId(getCurrentUserId()); 
+    public void fetch(UserProfileClient client) {
+        if ( client == null ) return;
+        mClient = client; 
+        mClient.registerCallback(mUserChangeListener);
     }
 
     @Override
     public Bitmap get() {
-        return getUserBitmap(); 
+        if ( mClient == null ) return null; 
+        int id = mClient.getCurrentUserID(); 
+        Log.d(TAG, "get:id=" + id); 
+        return mClient.getUserBitmap(id);
     }
-    
-    private final BroadcastReceiver mUserChangeReceiver = new BroadcastReceiver() {
+
+    private final UserProfileClient.UserChangeListener mUserChangeListener = 
+        new UserProfileClient.UserChangeListener() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            if ( mUserManager == null || mActivityManager == null ) return;
-            int userid = getCurrentUserId(); 
-            Log.d(TAG, "user changed : id = " + userid ); 
-            boolean shouldPropagate = mDataStore.shouldPropagateStatusUserIdUpdate(userid);
-            if ( shouldPropagate ) {
-                for ( Listener<Bitmap> listener : mListeners ) 
-                    listener.onEvent(getUserBitmap());
-            }
+        public void onUserChanged(int userid) {
+            if ( mClient == null ) return;
+            for ( Listener<Bitmap> listener : mListeners ) 
+                listener.onEvent(mClient.getUserBitmap(userid));
         }
-    };
-
-    private Bitmap getUserBitmap() {
-        if ( mUserManager == null || mContext == null || mDataStore == null ) return null;
-        int userid = mDataStore.getStatusUserId(); 
-        Bitmap bm = mUserManager.getUserIcon(userid);
-        if ( bm == null ) {
-            bm = UserIcons.convertToBitmap(UserIcons.getDefaultUserIcon(
-                mContext.getResources(), userid, false));
-        }
-        return bm; 
-    }
-
-    public int getCurrentUserId() {
-        if ( mUserManager == null || mActivityManager == null ) return 0; 
-        UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
-        if ( user == null ) return 0; 
-        Log.d(TAG, "get current user : id = " + user.id ); 
-        return user.id; 
-    }
-
-    public UserHandle getUserHandle() {
-        if ( mActivityManager == null || mUserManager == null ) return null; 
-        UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
-        return user.getUserHandle(); 
-    }
+    }; 
 }

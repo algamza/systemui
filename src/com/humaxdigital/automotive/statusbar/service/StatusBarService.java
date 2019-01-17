@@ -29,7 +29,6 @@ public class StatusBarService extends Service {
     
     private Context mContext = this; 
     
-    private CarExtensionClient mCarExClient; 
     private ClimateControllerManager mClimateManager;
     private SystemDateTimeController mDateTimeController;
     private SystemUserProfileController mUserProfileController;
@@ -45,8 +44,10 @@ public class StatusBarService extends Service {
     private SystemMuteController mMuteController; 
     private SystemWirelessChargeController mWirelessChargeController; 
 
-    private SystemBluetoothClient mBluetoothClient; 
-    private SystemAudioClient mAudioClient; 
+    private CarExtensionClient mCarExClient; 
+    private BluetoothClient mBluetoothClient; 
+    private AudioClient mAudioClient; 
+    private UserProfileClient mUserClient; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
 
@@ -66,11 +67,14 @@ public class StatusBarService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        mUserClient = new UserProfileClient(mContext); 
+        mUserClient.connect(); 
         
-        mBluetoothClient = new SystemBluetoothClient(mContext, mDataStore); 
+        mBluetoothClient = new BluetoothClient(mContext, mDataStore); 
         mBluetoothClient.connect();
 
-        mAudioClient = new SystemAudioClient(mContext); 
+        mAudioClient = new AudioClient(mContext); 
         mAudioClient.connect(); 
 
         createSystemManager(); 
@@ -86,6 +90,7 @@ public class StatusBarService extends Service {
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
         if ( mBluetoothClient != null ) mBluetoothClient.disconnect();
         if ( mAudioClient != null ) mAudioClient.disconnect();
+        if ( mUserClient != null ) mUserClient.disconnect(); 
 
         mSystemCallbacks.clear(); 
         mClimateCallbacks.clear(); 
@@ -179,11 +184,22 @@ public class StatusBarService extends Service {
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
 
+        mUserClient.registerCallback(mUserChangeListener);
+
+        mUserProfileController.fetch(mUserClient); 
         mBTBatteryController.fetch(mBluetoothClient); 
         mBTAntennaController.fetch(mBluetoothClient); 
         mBTCallController.fetch(mBluetoothClient); 
         mMuteController.fetch(mAudioClient); 
     }
+
+    private final UserProfileClient.UserChangeListener mUserChangeListener = 
+        new UserProfileClient.UserChangeListener() {
+        @Override
+        public void onUserChanged(int userid) {
+            if ( mBluetoothClient != null ) mBluetoothClient.refresh();
+        }
+    }; 
     
     private CarExtensionClient.CarExClientListener mCarExClientListener = 
         new CarExtensionClient.CarExClientListener() {
@@ -200,7 +216,6 @@ public class StatusBarService extends Service {
                 // TODO: need to get wireless charge
                 //mWirelessChargeController.fetch(mCarExClient.getRemainderManager()); 
             }
-                
         }
 
         @Override
@@ -641,10 +656,10 @@ public class StatusBarService extends Service {
             }
             public void openClimateSetting() throws RemoteException {
                 if ( !OPEN_HVAC_APP.equals("") ) {
-                    if ( mUserProfileController == null ) return;
+                    if ( mUserClient == null ) return;
                     Intent intent = new Intent(OPEN_HVAC_APP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
+                    mContext.startActivityAsUser(intent, mUserClient.getUserHandle(mUserClient.getCurrentUserID()));
                 }
             }
             public void registerClimateCallback(IClimateCallback callback) throws RemoteException {
@@ -666,10 +681,10 @@ public class StatusBarService extends Service {
              } 
             public void openDateTimeSetting() throws RemoteException {
                 if ( !OPEN_DATE_SETTING.equals("") ) {
-                    if ( mUserProfileController == null ) return;
+                    if ( mUserClient == null ) return;
                     Intent intent = new Intent(OPEN_DATE_SETTING);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
+                    mContext.startActivityAsUser(intent, mUserClient.getUserHandle(mUserClient.getCurrentUserID()));
                 }
             } 
             public void registerDateTimeCallback(IDateTimeCallback callback) throws RemoteException {
@@ -691,10 +706,10 @@ public class StatusBarService extends Service {
             } 
             public void openUserProfileSetting() throws RemoteException {
                 if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
-                    if ( mUserProfileController == null ) return;
+                    if ( mUserClient == null ) return;
                     Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivityAsUser(intent, mUserProfileController.getUserHandle());
+                    mContext.startActivityAsUser(intent, mUserClient.getUserHandle(mUserClient.getCurrentUserID()));
                 }
             } 
             public void registerUserProfileCallback(IUserProfileCallback callback) throws RemoteException {

@@ -9,7 +9,7 @@ public class SystemBTAntennaController extends BaseController<Integer> {
     private enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, 
         BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
 
-    private SystemBluetoothClient mBluetoothClient; 
+    private BluetoothClient mBluetoothClient; 
 
     public SystemBTAntennaController(Context context, DataStore store) {
         super(context, store);
@@ -29,7 +29,7 @@ public class SystemBTAntennaController extends BaseController<Integer> {
     public void fetch() {
     }
 
-    public void fetch(SystemBluetoothClient client) {
+    public void fetch(BluetoothClient client) {
         if ( client == null ) return; 
         Log.d(TAG, "fetch"); 
         mBluetoothClient = client; 
@@ -38,8 +38,8 @@ public class SystemBTAntennaController extends BaseController<Integer> {
 
     @Override
     public Integer get() {
-        boolean is_connected = mBluetoothClient.isDeviceConnected(SystemBluetoothClient.Profiles.HEADSET); 
-        int level = mBluetoothClient.getAntennaLevel(SystemBluetoothClient.Profiles.HEADSET); 
+        boolean is_connected = mBluetoothClient.isDeviceConnected(BluetoothClient.Profiles.HEADSET); 
+        int level = mBluetoothClient.getAntennaLevel(BluetoothClient.Profiles.HEADSET); 
         Log.d(TAG, "get:connected="+is_connected+", level="+level); 
         if ( is_connected ) 
             return convertToBTAntennaLevel(level).ordinal(); 
@@ -61,14 +61,14 @@ public class SystemBTAntennaController extends BaseController<Integer> {
         return status; 
     }
 
-    private SystemBluetoothClient.SystemBluetoothCallback mBTCallback = 
-        new SystemBluetoothClient.SystemBluetoothCallback() {
+    private BluetoothClient.SystemBluetoothCallback mBTCallback = 
+        new BluetoothClient.SystemBluetoothCallback() {
         @Override
-        public void onBatteryStateChanged(SystemBluetoothClient.Profiles profile) {
+        public void onBatteryStateChanged(BluetoothClient.Profiles profile) {
         }
         @Override
-        public void onAntennaStateChanged(SystemBluetoothClient.Profiles profile) {
-            if ( profile != SystemBluetoothClient.Profiles.HEADSET ) return; 
+        public void onAntennaStateChanged(BluetoothClient.Profiles profile) {
+            if ( profile != BluetoothClient.Profiles.HEADSET ) return; 
             int level = mBluetoothClient.getAntennaLevel(profile); 
             boolean is_connected = mBluetoothClient.isDeviceConnected(profile); 
             Log.d(TAG, "onAntennaStateChanged:level="+level+", connected="+is_connected);
@@ -78,8 +78,8 @@ public class SystemBTAntennaController extends BaseController<Integer> {
             }  
         }
         @Override
-        public void onConnectionStateChanged(SystemBluetoothClient.Profiles profile) {
-            if ( profile != SystemBluetoothClient.Profiles.HEADSET ) return; 
+        public void onConnectionStateChanged(BluetoothClient.Profiles profile) {
+            if ( profile != BluetoothClient.Profiles.HEADSET ) return; 
             int level = mBluetoothClient.getAntennaLevel(profile); 
             boolean is_connected = mBluetoothClient.isDeviceConnected(profile); 
             Log.d(TAG, "onConnectionStateChanged:level="+level+", connected="+is_connected);
@@ -99,7 +99,7 @@ public class SystemBTAntennaController extends BaseController<Integer> {
                 listener.onEvent(AntennaStatus.NONE.ordinal());
         }
         @Override
-        public void onCallingStateChanged(SystemBluetoothClient.BluetoothState state, int value) {
+        public void onCallingStateChanged(BluetoothClient.BluetoothState state, int value) {
         }
     }; 
 }
