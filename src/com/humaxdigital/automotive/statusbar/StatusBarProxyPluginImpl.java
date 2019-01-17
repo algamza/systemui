@@ -75,7 +75,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
         WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             mStatusBarHeight,
-            WindowManager.LayoutParams.TYPE_STATUS_BAR,
+            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
