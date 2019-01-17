@@ -5,4 +5,5 @@
     <dimen name="text_climate_temp_int">63sp</dimen>
     <dimen name="text_climate_temp_dec">39.9sp</dimen>
     <dimen name="text_climate_wind">58.52sp</dimen>
+    <dimen name="system_icon_right_margin">8dp</dimen>
 </resources>

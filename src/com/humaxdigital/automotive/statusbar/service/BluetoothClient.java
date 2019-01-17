@@ -208,6 +208,7 @@ public class BluetoothClient {
 
     private void updateConectionState(Profiles profile, int state) {
         if ( mDataStore == null ) return; 
+        Log.d(TAG, "updateConectionState : profile="+profile+", state="+state); 
         if ( mDataStore.shouldPropagateBTDeviceConnectionStateUpdate(profile.ordinal(), state) ) {
             if ( profile == Profiles.HEADSET ) 
                 mDataStore.setBTCallingState(BluetoothState.HANDSFREE_CONNECTED.ordinal(), state);
@@ -241,7 +242,7 @@ public class BluetoothClient {
                 // TODO : Because of timing issue ... 
                 //case BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED: 
                 case BluetoothHeadsetClient.ACTION_CONNECTION_STATE_CHANGED: {
-                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED"); 
+                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:Headset"); 
                     // TODO: check the profile extra state 
                     /*
                     int STATE_DISCONNECTED = 0;
@@ -255,6 +256,7 @@ public class BluetoothClient {
                     break;
                 }
                 case BluetoothA2dpSink.ACTION_CONNECTION_STATE_CHANGED: {
+                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:A2DP"); 
                     int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1); 
                     if ( state == 0 || state == 2 ) 
                         checkProfileConnection(Profiles.A2DP_SINK); 

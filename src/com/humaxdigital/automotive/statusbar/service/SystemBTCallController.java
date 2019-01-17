@@ -68,6 +68,7 @@ public class SystemBTCallController extends BaseController<Integer> {
         }
         @Override
         public void onConnectionStateChanged(BluetoothClient.Profiles profile) {
+            Log.d(TAG, "onConnectionStateChanged:profile="+profile); 
             for ( Listener listener : mListeners ) 
                 listener.onEvent(getCurrentState());
         }
@@ -80,6 +81,7 @@ public class SystemBTCallController extends BaseController<Integer> {
         }
         @Override
         public void onCallingStateChanged(BluetoothClient.BluetoothState state, int value) {
+            Log.d(TAG, "onCallingStateChanged:state="+state+", value="+value); 
             for ( Listener listener : mListeners ) 
                 listener.onEvent(getCurrentState());
         }

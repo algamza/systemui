@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -108,6 +109,16 @@ public class SystemView extends FrameLayout {
             }
         }
         mStatus = status;
+        
+        if ( mStatus == 0 ) {
+            ((View)this.getParent()).setVisibility(View.GONE); 
+            //this.setVisibility(View.GONE); 
+        }
+        else {
+            ((View)this.getParent()).setVisibility(View.VISIBLE); 
+        }
+        
+
         return;
     }
 }
