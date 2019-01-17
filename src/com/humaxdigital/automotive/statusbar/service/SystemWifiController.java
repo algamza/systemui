@@ -1,5 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.UserHandle;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,7 +24,7 @@ public class SystemWifiController extends BaseController<Integer> {
         mManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
-        mContext.registerReceiver(mWifiReceiver, filter);
+        mContext.registerReceiverAsUser(mWifiReceiver, UserHandle.ALL, filter, null, null);
     }
 
     @Override

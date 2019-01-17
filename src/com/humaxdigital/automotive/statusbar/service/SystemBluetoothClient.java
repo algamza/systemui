@@ -1,6 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
 import android.os.Bundle; 
+import android.os.UserHandle;
 
 import android.content.Context;
 import android.content.Intent;
@@ -76,7 +77,7 @@ public class SystemBluetoothClient {
         // PBAP_STATE_CONNECTED = 2;
         // PBAP_STATE_DOWNLOADING = 3;
         filter.addAction("action_pbap_state"); 
-        mContext.registerReceiver(mBTReceiver, filter);
+        mContext.registerReceiverAsUser(mBTReceiver, UserHandle.ALL, filter, null, null);
         checkAllProfileConnection(); 
     }
 

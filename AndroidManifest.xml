@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.humaxdigital.automotive.statusbar">
+    package="com.humaxdigital.automotive.statusbar"
+    android:sharedUserId="android.uid.system">
 
-    <!--<uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>-->
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="25"/>
+
+    <protected-broadcast android:name="com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST" />
+    
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_USERS"/>
     <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA"/>

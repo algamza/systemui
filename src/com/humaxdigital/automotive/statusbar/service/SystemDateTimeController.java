@@ -1,5 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.UserHandle;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -25,7 +27,7 @@ public class SystemDateTimeController extends BaseController<String> {
         filter.addAction(Intent.ACTION_TIME_TICK);
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         filter.addAction(Intent.ACTION_TIME_CHANGED);
-        mContext.registerReceiver(mDateTimeChangedReceiver, filter);
+        mContext.registerReceiverAsUser(mDateTimeChangedReceiver, UserHandle.ALL, filter, null, null);
     }
 
     @Override

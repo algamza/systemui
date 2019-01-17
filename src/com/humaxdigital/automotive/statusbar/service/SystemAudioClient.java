@@ -3,6 +3,7 @@ package com.humaxdigital.automotive.statusbar.service;
 import android.os.Bundle; 
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.UserHandle;
 
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +56,7 @@ public class SystemAudioClient {
         if ( mContext == null ) return; 
         IntentFilter filter = new IntentFilter(); 
         filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
-        mContext.registerReceiver(mAudioReceiver, filter);
+        mContext.registerReceiverAsUser(mAudioReceiver, UserHandle.ALL, filter, null, null);
         mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE); 
         if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
             mCarEx = CarEx.createCar(mContext, mCarServiceConnection);

@@ -1,5 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.UserHandle;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,7 +31,7 @@ public class SystemDataController extends BaseController<Integer> {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        mContext.registerReceiver(mConnectivityListener, filter);
+        mContext.registerReceiverAsUser(mConnectivityListener, UserHandle.ALL, filter, null, null);
 
         if ( mTelephony != null ) 
             mTelephony.listen(mPhoneStateListener, PhoneStateListener.LISTEN_SERVICE_STATE);
@@ -37,6 +39,7 @@ public class SystemDataController extends BaseController<Integer> {
 
     @Override
     public void disconnect() {
+        if ( mContext != null ) mContext.unregisterReceiver(mConnectivityListener);
         if ( mTelephony != null ) 
             mTelephony.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
