@@ -16,6 +16,8 @@ import android.bluetooth.BluetoothA2dpSink;
 import android.bluetooth.BluetoothDevice; 
 
 import java.util.ArrayList;
+import java.util.HashMap; 
+import java.util.Map; 
 import java.util.List;
 import android.util.Log;
 
@@ -47,6 +49,7 @@ public class BluetoothClient {
     private List<SystemBluetoothCallback> mListeners = new ArrayList<>(); 
     private int mContactsDownloadingState = 0; 
     private int mCallHistoryDownloadingState = 0; 
+    private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
     
     private int[] mBTDeviceProfiles = { 
             BluetoothProfile.HEADSET_CLIENT, 
@@ -84,13 +87,25 @@ public class BluetoothClient {
     public void disconnect() {
         if ( mContext == null ) return; 
         Log.d(TAG, "disconnect"); 
+        for ( int key : mCurrentProxy.keySet() ) {
+            if ( mBluetoothAdapter == null ) break; 
+            mBluetoothAdapter.closeProfileProxy(key, mCurrentProxy.get(key)); 
+        }
         mContext.unregisterReceiver(mBTReceiver); 
     }
 
     public void refresh() {
-        mContext.unregisterReceiver(mBTReceiver); 
+        Log.d(TAG, "refresh");
+        //mContext.unregisterReceiver(mBTReceiver); 
+        //mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //connect(); 
+        for ( int key : mCurrentProxy.keySet() ) {
+            if ( mBluetoothAdapter == null ) break; 
+            mBluetoothAdapter.closeProfileProxy(key, mCurrentProxy.get(key)); 
+        }
+        mCurrentProxy.clear();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        connect(); 
+        checkAllProfileConnection(); 
     }
 
     public void registerCallback(SystemBluetoothCallback callback) {
@@ -160,9 +175,19 @@ public class BluetoothClient {
     }
 
     private void checkProfileConnection(Profiles profile) {
+        if ( mBluetoothAdapter == null ) return; 
+
+        int _profile = convertToProfile(profile); 
+        if ( !mCurrentProxy.isEmpty() ) {
+            BluetoothProfile _proxy = mCurrentProxy.get(_profile);
+            if ( _proxy != null ) 
+                mBluetoothAdapter.closeProfileProxy(_profile, _proxy); 
+        }
         mBluetoothAdapter.getProfileProxy(mContext, new BluetoothProfile.ServiceListener() {
             @Override
             public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                mCurrentProxy.put(profile, proxy); 
+
                 switch(profile) {
                     case BluetoothProfile.HEADSET_CLIENT: {
                         if ( proxy.getConnectedDevices().size() > 0 ) {
@@ -203,7 +228,7 @@ public class BluetoothClient {
                     default: break; 
                 }
             }
-        }, convertToProfile(profile));
+        }, _profile);
     }
 
     private void updateConectionState(Profiles profile, int state) {

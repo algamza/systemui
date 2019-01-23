@@ -34,13 +34,6 @@
         android:protectionLevel="signature" />
 
     <application>
-        <service android:name=".StatusBarOverlayPlugin"
-            android:singleUser="true"
-            android:label="@string/plugin_label">
-            <intent-filter>
-                <action android:name="com.android.systemui.action.PLUGIN_OVERLAY" />
-            </intent-filter>
-        </service>
         <service android:name=".StatusBarProxyPluginImpl"
             android:singleUser="true"
             android:label="@string/plugin_label">
