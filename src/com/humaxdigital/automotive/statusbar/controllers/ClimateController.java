@@ -444,16 +444,17 @@ public class ClimateController implements BaseController {
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
                 //mAirCleaningState = AirCleaning.OFF; 
                 // TODO: need to check CAN scenario 
-                try {
+                //try {
                     if ( mService != null ) {
                         if ( mAirCleaningStartFromUI ) {
                             mAirCleaningStartFromUI = false; 
-                            mService.setAirCleaningState(AirCleaning.OFF.ordinal());
+                            // TODO: check can scenario 
+                            //mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                         }
                     }
-                } catch( RemoteException e ) {
-                    e.printStackTrace();
-                }
+                //} catch( RemoteException e ) {
+                    //e.printStackTrace();
+                //}
             }
         }
     }; 

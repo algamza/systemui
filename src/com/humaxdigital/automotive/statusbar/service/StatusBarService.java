@@ -48,7 +48,6 @@ public class StatusBarService extends Service {
     private CarExtensionClient mCarExClient; 
     private BluetoothClient mBluetoothClient; 
     private AudioClient mAudioClient; 
-    private UserProfileClient mUserClient; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
 
@@ -68,9 +67,6 @@ public class StatusBarService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mUserClient = new UserProfileClient(mContext); 
-        mUserClient.connect(); 
         
         mBluetoothClient = new BluetoothClient(mContext, mDataStore); 
         mBluetoothClient.connect();
@@ -91,7 +87,6 @@ public class StatusBarService extends Service {
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
         if ( mBluetoothClient != null ) mBluetoothClient.disconnect();
         if ( mAudioClient != null ) mAudioClient.disconnect();
-        if ( mUserClient != null ) mUserClient.disconnect(); 
 
         mSystemCallbacks.clear(); 
         mClimateCallbacks.clear(); 
@@ -140,6 +135,7 @@ public class StatusBarService extends Service {
 
         mUserProfileController = new SystemUserProfileController(mContext, mDataStore); 
         mUserProfileController.addListener(mUserProfileListener);
+        mUserProfileController.registerUserChangeCallback(mUserChangeListener);
         mControllers.add(mUserProfileController); 
 
         mLocationController = new SystemLocationController(mContext, mDataStore); 
@@ -185,20 +181,17 @@ public class StatusBarService extends Service {
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
 
-        mUserClient.registerCallback(mUserChangeListener);
-
-        mUserProfileController.fetch(mUserClient); 
         mBTBatteryController.fetch(mBluetoothClient); 
         mBTAntennaController.fetch(mBluetoothClient); 
         mBTCallController.fetch(mBluetoothClient); 
         mMuteController.fetch(mAudioClient); 
     }
 
-    private final UserProfileClient.UserChangeListener mUserChangeListener = 
-        new UserProfileClient.UserChangeListener() {
+    private final SystemUserProfileController.UserChangeListener mUserChangeListener = 
+        new SystemUserProfileController.UserChangeListener() {
         @Override
         public void onUserChanged(int userid) {
-            if ( mBluetoothClient != null ) mBluetoothClient.refresh();
+            // TODO: 
         }
     }; 
     
