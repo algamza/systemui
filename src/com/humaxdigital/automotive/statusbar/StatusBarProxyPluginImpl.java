@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.os.Binder;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -150,7 +151,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             intent.setClassName("com.humaxdigital.automotive.dn8clauncher",
                                 "com.humaxdigital.automotive.dn8clauncher.AppListActivity");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mSysUiContext.startActivity(intent);
+            mSysUiContext.startActivityAsUser(intent, UserHandle.CURRENT);
         });
 
         final Button btnGoHome = (Button) devNavBarView.findViewById(R.id.btnGoHome);
@@ -159,7 +160,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             intent.setAction(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mSysUiContext.startActivity(intent);
+            mSysUiContext.startActivityAsUser(intent, UserHandle.CURRENT);
         });
 
         final Button btnGoBack = (Button) devNavBarView.findViewById(R.id.btnGoBack);
