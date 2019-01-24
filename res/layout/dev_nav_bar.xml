@@ -2,7 +2,8 @@
 <!-- Copyright (c) 2018 HUMAX Co., Ltd. All rights reserved. -->
 <!-- Use of this source code is governed by HUMAX license that can be found in the LICENSE file. -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.humaxdigital.automotive.statusbar.dev.DevNavigationBar
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -13,29 +14,46 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnAppList"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="@string/apps"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>   
-
-        <Button
             android:id="@+id/btnGoHome"
             android:layout_height="wrap_content"
             android:layout_width ="wrap_content"
-            android:text="@string/home"
+            android:text="Home"
             android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>   
+            android:textSize="@dimen/dev_text_size"/>
 
         <Button
             android:id="@+id/btnGoBack"
             android:layout_height="wrap_content"
             android:layout_width ="wrap_content"
-            android:text="@string/back"
+            android:text="Back"
             android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>   
+            android:textSize="@dimen/dev_text_size"/>
+
+        <Button
+            android:id="@+id/btnAppList"
+            android:layout_height="wrap_content"
+            android:layout_width ="wrap_content"
+            android:text="Apps"
+            android:layout_margin="@dimen/dev_button_margin"
+            android:textSize="@dimen/dev_text_size"/>
+
+        <Button
+            android:id="@+id/btnSettings"
+            android:layout_height="wrap_content"
+            android:layout_width ="wrap_content"
+            android:text="Settings"
+            android:layout_margin="@dimen/dev_button_margin"
+            android:textSize="@dimen/dev_text_size"/>
+
+        <CheckBox
+            android:id="@+id/chkAdbEnabled"
+            android:layout_height="wrap_content"
+            android:layout_width ="wrap_content"
+            android:text="ADB(USB)"
+            android:background="#aaaaaa"
+            android:layout_margin="@dimen/dev_button_margin"
+            android:textSize="@dimen/dev_text_size"/>
 
     </LinearLayout>
 
-</FrameLayout>
+</com.humaxdigital.automotive.statusbar.dev.DevNavigationBar>

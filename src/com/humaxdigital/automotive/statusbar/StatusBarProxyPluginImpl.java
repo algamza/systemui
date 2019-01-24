@@ -3,7 +3,6 @@
 
 package com.humaxdigital.automotive.statusbar;
 
-import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,21 +10,17 @@ import android.content.res.Configuration;
 import android.content.ServiceConnection;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.UserHandle;
-import android.os.Binder;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.view.MotionEvent;
 import android.view.Gravity;
-
 
 import com.android.systemui.plugins.StatusBarProxyPlugin;
 import com.android.systemui.plugins.annotations.Requires;
@@ -144,46 +139,12 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             }
         });
 
-        final Button btnAppList = (Button) devNavBarView.findViewById(R.id.btnAppList);
-        btnAppList.setOnClickListener(view -> {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_MAIN);
-            intent.setClassName("com.humaxdigital.automotive.dn8clauncher",
-                                "com.humaxdigital.automotive.dn8clauncher.AppListActivity");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mSysUiContext.startActivityAsUser(intent, UserHandle.CURRENT);
-        });
-
-        final Button btnGoHome = (Button) devNavBarView.findViewById(R.id.btnGoHome);
-        btnGoHome.setOnClickListener(view -> {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mSysUiContext.startActivityAsUser(intent, UserHandle.CURRENT);
-        });
-
-        final Button btnGoBack = (Button) devNavBarView.findViewById(R.id.btnGoBack);
-        btnGoBack.setOnClickListener(view -> {
-            injectKeyEvent(KeyEvent.KEYCODE_BACK);
-        });
-
         return devNavBarView;
     }
 
     public void setContentBarView(View view) {
         mNavBarWindow.removeAllViews();
         mNavBarWindow.addView(view);
-    }
-
-    public void injectKeyEvent(int keyCode) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Instrumentation instrumentation = new Instrumentation();
-                instrumentation.sendKeyDownUpSync(keyCode);
-            }
-        }).start();
     }
 
     @Override
