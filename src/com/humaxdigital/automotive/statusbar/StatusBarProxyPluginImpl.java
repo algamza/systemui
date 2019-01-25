@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -25,6 +26,8 @@ import android.view.Gravity;
 import com.android.systemui.plugins.StatusBarProxyPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
+import com.humaxdigital.automotive.statusbar.dev.DevCommandsProxy;
+import com.humaxdigital.automotive.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback; 
 
@@ -136,6 +139,20 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             public boolean onLongClick(View v) {
                 setContentBarView(mNavBarView);
                 return true;
+            }
+        });
+
+        ((DevNavigationBar)devNavBarView).setDevCommands(new DevCommandsProxy(mPluginContext) {
+            @Override
+            public Bundle invokeDevCommand(String command, Bundle args) {
+                if (mStatusBarService == null)
+                    return null;
+                try {
+                    return mStatusBarService.invokeDevCommand(command, args);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
         });
 

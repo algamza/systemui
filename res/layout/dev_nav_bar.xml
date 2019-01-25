@@ -8,51 +8,105 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:layout_width = "wrap_content"
+        android:layout_width = "match_parent"
         android:layout_height= "match_parent"
-        android:gravity="center"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnGoHome"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="Home"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>
+        <LinearLayout
+            android:layout_width = "wrap_content"
+            android:layout_height= "match_parent"
+            android:gravity="center_vertical|left"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnGoBack"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="Back"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>
+            <Button
+                android:id="@+id/btnGoHome"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Home"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
 
-        <Button
-            android:id="@+id/btnAppList"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="Apps"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>
+            <Button
+                android:id="@+id/btnGoBack"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Back"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
 
-        <Button
-            android:id="@+id/btnSettings"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="Settings"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>
+            <Button
+                android:id="@+id/btnAppList"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Apps"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
 
-        <CheckBox
-            android:id="@+id/chkAdbEnabled"
-            android:layout_height="wrap_content"
-            android:layout_width ="wrap_content"
-            android:text="ADB(USB)"
-            android:background="#aaaaaa"
-            android:layout_margin="@dimen/dev_button_margin"
-            android:textSize="@dimen/dev_text_size"/>
+            <Button
+                android:id="@+id/btnSettings"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Settings"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width = "match_parent"
+            android:layout_height= "match_parent"
+            android:gravity="center_vertical|right"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width = "wrap_content"
+                android:layout_height= "match_parent"
+                android:gravity="center_vertical|right"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtCurrentActivity"
+                    android:layout_height="wrap_content"
+                    android:layout_width ="wrap_content"
+                    android:layout_margin="1dp"
+                    android:textColor="#cccccc"
+                    android:textSize="@dimen/dev_text_size"/>
+
+                <TextView
+                    android:id="@+id/txtSavedActivity"
+                    android:layout_height="wrap_content"
+                    android:layout_width ="wrap_content"
+                    android:layout_margin="1dp"
+                    android:textColor="#aaaaaa"
+                    android:textSize="16sp"/>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Stop"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
+
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Save"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
+
+            <Button
+                android:id="@+id/btnLoad"
+                android:layout_height="wrap_content"
+                android:layout_width ="wrap_content"
+                android:text="Load"
+                android:layout_margin="@dimen/dev_button_margin"
+                android:textSize="@dimen/dev_text_size"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

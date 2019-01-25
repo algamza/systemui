@@ -1,11 +1,13 @@
  package com.humaxdigital.automotive.statusbar.service;
 
 import android.content.Context;
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.os.RemoteException;
@@ -18,6 +20,7 @@ import android.os.UserHandle;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.statusbar.dev.DevCommandsServer;
 import com.humaxdigital.automotive.statusbar.service.CarExtensionClient.CarExClientListener;
 
 public class StatusBarService extends Service {
@@ -29,7 +32,8 @@ public class StatusBarService extends Service {
     private static final String OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
     
     private Context mContext = this; 
-    
+    private DevCommandsServer mDevCommandsServer;
+
     private ClimateControllerManager mClimateManager;
     private SystemDateTimeController mDateTimeController;
     private SystemUserProfileController mUserProfileController;
@@ -67,7 +71,9 @@ public class StatusBarService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        
+
+        mDevCommandsServer = new DevCommandsServer(this);
+
         mBluetoothClient = new BluetoothClient(mContext, mDataStore); 
         mBluetoothClient.connect();
 
@@ -714,6 +720,10 @@ public class StatusBarService extends Service {
                 synchronized (mUserProfileCallbacks) {
                     mUserProfileCallbacks.remove(callback); 
                 }
+            }
+
+            public Bundle invokeDevCommand(String command, Bundle args) throws RemoteException {
+                return mDevCommandsServer.invokeDevCommand(command, args);
             }
         };
 }

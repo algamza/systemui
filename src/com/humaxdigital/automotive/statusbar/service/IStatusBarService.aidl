@@ -1,5 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.Bundle;
+
 import com.humaxdigital.automotive.statusbar.service.ISystemCallback;
 import com.humaxdigital.automotive.statusbar.service.IClimateCallback;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback;
@@ -52,4 +54,6 @@ interface IStatusBarService {
     void openUserProfileSetting(); 
     void registerUserProfileCallback(IUserProfileCallback callback);
     void unregisterUserProfileCallback(IUserProfileCallback callback);
+
+    Bundle invokeDevCommand(String command, in Bundle args);
 }
