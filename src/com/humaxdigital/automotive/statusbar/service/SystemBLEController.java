@@ -58,6 +58,25 @@ public class SystemBLEController extends BaseController<Integer> {
         return val; 
     }
 
+    public static String byteArrayToHex(byte[] paramArrayOfByte)
+    {
+        if (paramArrayOfByte == null) {
+            return "null";
+        }
+        StringBuilder localStringBuilder = new StringBuilder(paramArrayOfByte.length * 2);
+        int j = paramArrayOfByte.length;
+        int i = 0;
+        while (i < j)
+        {
+            localStringBuilder.append(String.format("%02x ", new Object[] { Byte.valueOf(paramArrayOfByte[i]) }));
+            i += 1;
+            if( (i != 0) && (i%16 == 0) ) {
+                localStringBuilder.append("\n");
+            }
+        }
+        return localStringBuilder.toString();
+    }
+
     private final CarBLEManager.CarBLEEventCallback mBLECallback = 
         new CarBLEManager.CarBLEEventCallback () {
         public void onChangeEvent(final CarPropertyValue value) {
@@ -72,18 +91,41 @@ public class SystemBLEController extends BaseController<Integer> {
                         | (data[3] & 0xff);
                     
                     Log.d(TAG, "VENDOR_BLE_EVENT="+id); 
-                    if ( id == CarBLEManager.APP_BLE_SEND_REGISTRATION_STARTED ) {
-                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTING.ordinal()) ) 
+                    
+                    if ( id == CarBLEManager.APP_BLE_SEND_CONNECTION_STATUS ) {
+
+                        int dataLength = ((data[4] & 0xff) << 24) 
+                                        | ((data[5] & 0xff) << 16) 
+                                        | ((data[6] & 0xff) << 8) 
+                                        | (data[7] & 0xff);
+                        if ( dataLength < 0 ) break; 
+                        byte[] eventData = new byte[dataLength];
+                        System.arraycopy(data, 8, eventData, 0, dataLength);
+                        
+                        Log.d(TAG, "eventdata:length="+dataLength+", data="+eventData[0]); 
+                        if ( dataLength != 1 ) break;
+                        
+                        if ( eventData[0] == 0 ) {
+                            if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
+                                for ( Listener listener : mListeners ) 
+                                    listener.onEvent(BLEStatus.NONE.ordinal());
+                            }
+                        } else if ( eventData[0] == 1 ) {
+                            if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTING.ordinal()) ) {
+                                for ( Listener listener : mListeners ) 
+                                    listener.onEvent(BLEStatus.CONNECTING.ordinal());
+                            }
+                        } else if ( eventData[0] == 2 ) {
+                            if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTED.ordinal()) ) {
+                                for ( Listener listener : mListeners ) 
+                                    listener.onEvent(BLEStatus.CONNECTED.ordinal());
+                            }
+                        }
+                    } else if ( id == CarBLEManager.APP_BLE_SEND_ERROR_FOR_CALIBRATION ) {
+                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTION_FAIL.ordinal()) ) {
                             for ( Listener listener : mListeners ) 
-                                listener.onEvent(BLEStatus.CONNECTING.ordinal());
-                    } else if ( id == CarBLEManager.APP_BLE_SEND_REGISTRATION_FINISHED ) {
-                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTED.ordinal()) ) 
-                            for ( Listener listener : mListeners ) 
-                                listener.onEvent(BLEStatus.CONNECTED.ordinal());
-                    } else if ( id == CarBLEManager.APP_BLE_SEND_ERROR_FOR_REGISTRATION ) {
-                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTION_FAIL.ordinal()) ) 
-                        for ( Listener listener : mListeners ) 
-                            listener.onEvent(BLEStatus.CONNECTION_FAIL.ordinal());
+                                listener.onEvent(BLEStatus.CONNECTION_FAIL.ordinal());
+                        }
                     }
                     break; 
                 } 

@@ -50,6 +50,7 @@
                 <action android:name="com.humaxdigital.automotive.statusbar.service.StatusBarService"></action>
             </intent-filter>
         </service>
+        <service android:name=".user.UserStatusBarService" android:exported="false" />
     </application>
 
 </manifest>

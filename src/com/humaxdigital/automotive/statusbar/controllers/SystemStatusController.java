@@ -198,7 +198,6 @@ public class SystemStatusController implements BaseController {
                 add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null));
                 add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_03, null));
             }})
-            .addIcon(BLEStatus.BLE_CONNECTING.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_01, null))
             .addIcon(BLEStatus.BLE_CONNECTION_FAIL.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_error, null))
             .inflate(); 
         mSystemViews.add(mBle);
