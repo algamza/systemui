@@ -207,7 +207,10 @@ public class StatusBarService extends Service {
         public void onConnected() {
             if ( mCarExClient == null ) return; 
             if ( mClimateManager != null ) 
-                mClimateManager.fetch(mCarExClient.getHvacManagerEx(), mCarExClient.getUsmManager());
+                mClimateManager.fetch(
+                    mCarExClient.getHvacManagerEx(), 
+                    mCarExClient.getUsmManager(),
+                    mCarExClient.getSensorManagerEx());
             if ( mBLEController != null ) 
                 mBLEController.fetch(mCarExClient.getBLEManager()); 
             if ( mLocationController != null ) 
@@ -577,6 +580,10 @@ public class StatusBarService extends Service {
                 }
             }
      
+            public int getIGNStatus() throws RemoteException { 
+                if ( mClimateManager == null ) return 0;
+                return mClimateManager.getIGNStatus();
+            }
             public float getDRTemperature() throws RemoteException { 
                 float ret = 0.0f; 
                 if ( mClimateManager == null ) return ret; 

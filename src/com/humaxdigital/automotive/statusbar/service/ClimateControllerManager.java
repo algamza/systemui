@@ -8,14 +8,17 @@ import android.hardware.automotive.vehicle.V2_0.VehicleAreaWindow;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaSeat;
 import android.hardware.automotive.vehicle.V2_0.VehicleAreaDoor;
 
-import android.extension.car.CarUSMManager;
 import android.car.hardware.CarVendorExtensionManager;
 import android.car.hardware.CarPropertyValue;
+import android.car.hardware.CarSensorEvent;
 
 import android.car.CarNotConnectedException;
 import android.car.hardware.hvac.CarHvacManager;
 
+import android.extension.car.value.CarSensorEventEx;
 import android.extension.car.CarHvacManagerEx;
+import android.extension.car.CarUSMManager;
+import android.extension.car.CarSensorManagerEx;
 
 import android.util.Log;
 import java.util.ArrayList;
@@ -66,6 +69,7 @@ public class ClimateControllerManager {
 
     private CarUSMManager mCarUSMManager; 
     private CarHvacManagerEx mCarHvacManagerEx;
+    private CarSensorManagerEx mCarSensorManagerEx;
     
     private ClimateListener mListener; 
 
@@ -81,6 +85,7 @@ public class ClimateControllerManager {
     private ClimateDefogController mDefog; 
 
     private List<ClimateBaseController> mControllers = new ArrayList<>(); 
+    private boolean mIGNOn = true; 
 
     public interface ClimateListener {
         public void onInitialized();
@@ -117,15 +122,30 @@ public class ClimateControllerManager {
 
     public void unRegisterListener() {
         mListener = null; 
+        try {
+            if ( mCarUSMManager != null ) 
+                mCarUSMManager.unregisterCallback(mUSMCallback);
+            if ( mCarHvacManagerEx != null ) 
+                mCarHvacManagerEx.unregisterCallback(mHvacCallback);
+            if ( mCarSensorManagerEx != null ) 
+                mCarSensorManagerEx.unregisterListener(mSensorChangeListener);
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "unRegisterListener is fail !", e);
+        }
     }
 
-    public void fetch(CarHvacManagerEx hvacMgr, CarUSMManager usmMgr) {
+    public void fetch(CarHvacManagerEx hvacMgr, CarUSMManager usmMgr, CarSensorManagerEx sensorMgr) {
         if ( hvacMgr == null || usmMgr == null ) return;
         mCarHvacManagerEx = hvacMgr; 
         mCarUSMManager = usmMgr; 
+        mCarSensorManagerEx = sensorMgr;
         try {
             mCarHvacManagerEx.registerCallback(mHvacCallback);
             mCarUSMManager.registerCallback(mUSMCallback); 
+            mCarSensorManagerEx.registerListener(
+                mSensorChangeListener, 
+                CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE, 
+                CarSensorManagerEx.SENSOR_RATE_NORMAL);
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "CarHvacManagerEx is fail to register callback!", e);
         }
@@ -137,6 +157,19 @@ public class ClimateControllerManager {
                 mPSTemp.fetchUSMManager(mCarUSMManager); 
                 for ( ClimateBaseController controller : mControllers ) 
                     controller.fetch(mCarHvacManagerEx); 
+                if ( mCarSensorManagerEx != null ) {
+                    try {
+                        CarSensorEvent event = mCarSensorManagerEx.getLatestSensorEvent(
+                                CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
+                        int state = event.intValues[0]; 
+                        Log.d(TAG, "fetch ign="+state);
+                        if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
+                            mIGNOn = false;
+                        } 
+                    } catch ( CarNotConnectedException e ) {
+                        Log.e(TAG, "getLatestSensorEvent is fail : ", e);
+                    }
+                }
                 return null; 
             }
 
@@ -148,6 +181,37 @@ public class ClimateControllerManager {
         };
         task.execute(); 
     }
+
+    public int getIGNStatus() {
+        Log.d(TAG, "getIGNStatus = "+mIGNOn);
+        return mIGNOn?1:0;
+    }
+
+    private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener = 
+        new CarSensorManagerEx.OnSensorChangedListenerEx() {
+        @Override
+        public void onSensorChanged(final CarSensorEvent event) {
+            switch (event.sensorType) {
+                case CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE: {
+                    if ( mListener == null ) break;
+                    int state = event.intValues[0];
+                    Log.d(TAG, "onSensorChanged="+state);
+                    if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
+                        if ( mIGNOn ) mListener.onIGNOnChanged(false);
+                        mIGNOn = false;
+                    } else if ( state == CarSensorEvent.IGNITION_STATE_ON 
+                        || state == CarSensorEvent.IGNITION_STATE_ACC ) {
+                        if ( !mIGNOn ) mListener.onIGNOnChanged(true);
+                        mIGNOn = true;
+                    }
+                    break;
+                }  
+            }
+        }
+
+        public void onSensorChanged(final CarSensorEventEx event) {
+        }
+    };
 
     public ClimateBaseController getController(ControllerType type) {
         switch(type) {
@@ -361,7 +425,7 @@ public class ClimateControllerManager {
     private void handleDefogUpdate(int zone, int val) {
         if ( mDefog == null ) return; 
         if ( zone != WINDOW_FRONT ) return;
-        
+
         if ( mDefog.update(val) )
             if ( mListener != null ) {
                 mListener.onFrontDefogStatusChanged(mDefog.get());

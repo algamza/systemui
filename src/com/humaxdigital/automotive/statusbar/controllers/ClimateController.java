@@ -69,7 +69,7 @@ public class ClimateController implements BaseController {
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
-    private Boolean mIGNOn = false; 
+    private Boolean mIGNOn = true; 
     private Boolean mAirCleaningStartFromUI = false; 
 
     private final List<View> mClimateViews = new ArrayList<>();
@@ -119,7 +119,7 @@ public class ClimateController implements BaseController {
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if ( mIGNOn ) return; 
+                if ( !mIGNOn ) return; 
                 openClimateSetting(); 
             }
         });
@@ -232,6 +232,7 @@ public class ClimateController implements BaseController {
         if ( mService == null ) return; 
 
         try {
+            mIGNOn = mService.getIGNStatus() == 1 ? true:false;
             mTempDRState = mService.getDRTemperature();
             mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
             mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
@@ -245,7 +246,6 @@ public class ClimateController implements BaseController {
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-
 
         if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
         if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
@@ -276,6 +276,7 @@ public class ClimateController implements BaseController {
             }
             mAirCleaning.update(mAirCleaningState.ordinal()); 
         }
+        updateIGOnChange(mIGNOn); 
     }
 
     private void updateTempOn(boolean on) {
@@ -314,8 +315,8 @@ public class ClimateController implements BaseController {
     }
 
     private void updateIGOnChange(boolean on) {
-        boolean disable = on; 
-        
+        mIGNOn = on; 
+        boolean disable = !mIGNOn; 
         if ( mTempDR != null ) mTempDR.updateDisable(disable);
         if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
         if ( mAC != null ) mAC.updateDisable(disable);
@@ -330,7 +331,7 @@ public class ClimateController implements BaseController {
     private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mAC == null || mIGNOn ) return; 
+            if ( mAC == null || !mIGNOn ) return; 
             if ( mACState == ACState.ON ) {
                 //mACState = ACState.OFF; 
                 //mAC.update(mACState.ordinal());
@@ -351,7 +352,7 @@ public class ClimateController implements BaseController {
     private final View.OnClickListener mClimateIntakeOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mIntake == null || mIGNOn ) return; 
+            if ( mIntake == null || !mIGNOn ) return; 
             if ( mIntakeState == IntakeState.ON ) {
                 //mIntakeState = IntakeState.OFF; 
                 //mIntake.update(mIntakeState.ordinal());
@@ -372,7 +373,7 @@ public class ClimateController implements BaseController {
     private final View.OnClickListener mClimateFanDirectionOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mFanDirection == null || mIGNOn ) return; 
+            if ( mFanDirection == null || !mIGNOn ) return; 
 
             int next = mFanDirectionState.ordinal() + 1;
 
@@ -398,7 +399,7 @@ public class ClimateController implements BaseController {
     private final View.OnClickListener mClimateAirCleaningOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mAirCleaning == null || mIGNOn ) return; 
+            if ( mAirCleaning == null || !mIGNOn ) return; 
             /*
             if ( mAirCleaningState == AirCleaning.ON ||
                 mAirCleaningState == AirCleaning.RED || 
@@ -591,11 +592,10 @@ public class ClimateController implements BaseController {
         public void onIGNOnChanged(boolean on) throws RemoteException {
             if ( mHandler == null ) return; 
 
-            mIGNOn = on; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateIGOnChange(mIGNOn); 
+                    updateIGOnChange(on); 
                 }
             }); 
         }

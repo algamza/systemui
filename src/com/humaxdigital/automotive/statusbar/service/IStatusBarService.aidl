@@ -27,6 +27,7 @@ interface IStatusBarService {
     void registerSystemCallback(ISystemCallback callback);
     void unregisterSystemCallback(ISystemCallback callback);
 
+    int getIGNStatus();
     float getDRTemperature();
     int getDRSeatStatus();
     boolean getAirCirculationState();
