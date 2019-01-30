@@ -9,12 +9,15 @@ import android.app.IActivityManager;
 import android.app.IProcessObserver;
 import android.app.TaskStackListener;
 import android.app.Instrumentation;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -41,12 +44,17 @@ public class DevNavigationBar extends FrameLayout {
     private ComponentName mTopActivity;
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
+    private TextView mStartTimeTextView;
+
+    private long mStartTime;
 
     public DevNavigationBar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
         mContext = context;
         mContentResolver = context.getContentResolver();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        mStartTime = SystemClock.uptimeMillis();
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
@@ -68,6 +76,7 @@ public class DevNavigationBar extends FrameLayout {
     protected void onFinishInflate () {
         mCurrentActivityTextView = (TextView) findViewById(R.id.txtCurrentActivity);
         mSavedActivityTextView = (TextView) findViewById(R.id.txtSavedActivity);
+        mStartTimeTextView = (TextView) findViewById(R.id.txtStartTime);
 
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
@@ -76,6 +85,8 @@ public class DevNavigationBar extends FrameLayout {
         findViewById(R.id.btnStop).setOnClickListener(view -> { stopTopActivity(); });
         findViewById(R.id.btnSave).setOnClickListener(view -> { saveCurrentActivity(); });
         findViewById(R.id.btnLoad).setOnClickListener(view -> { loadSavedActivity(); });
+
+        updateTimeText();
     }
 
     public void goHome() {
@@ -145,6 +156,16 @@ public class DevNavigationBar extends FrameLayout {
                 mSavedActivityTextView.setText(savedActivity);
             }
         }
+    }
+
+    private void updateTimeText() {
+        if (mStartTimeTextView != null) {
+            mStartTimeTextView.setText(toSecString(mStartTime));
+        }
+    }
+
+    private String toSecString(long millis) {
+        return String.format("%d.%d", millis / 1000, millis % 1000);
     }
 
     private void injectKeyEvent(int keyCode) {

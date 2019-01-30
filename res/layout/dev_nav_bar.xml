@@ -50,6 +50,23 @@
                 android:layout_margin="@dimen/dev_button_margin"
                 android:textSize="@dimen/dev_text_size"/>
 
+
+            <LinearLayout
+                android:layout_width = "wrap_content"
+                android:layout_height= "match_parent"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtStartTime"
+                    android:layout_height="wrap_content"
+                    android:layout_width ="wrap_content"
+                    android:layout_margin="1dp"
+                    android:textColor="#a0a0a0"
+                    android:textSize="16sp"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout
