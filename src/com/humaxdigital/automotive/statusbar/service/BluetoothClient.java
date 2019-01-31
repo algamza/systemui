@@ -33,12 +33,12 @@ public class BluetoothClient {
         BLUETOOTH_CALLING,
     }
 
-    public interface SystemBluetoothCallback {
-        void onBatteryStateChanged(BluetoothClient.Profiles profile); 
-        void onAntennaStateChanged(BluetoothClient.Profiles profile);
-        void onConnectionStateChanged(BluetoothClient.Profiles profile); 
-        void onBluetoothEnableChanged(Boolean enable); 
-        void onCallingStateChanged(BluetoothState state, int value); 
+    public static abstract class BluetoothCallback {
+        void onBatteryStateChanged(BluetoothClient.Profiles profile) {}
+        void onAntennaStateChanged(BluetoothClient.Profiles profile) {}
+        void onConnectionStateChanged(BluetoothClient.Profiles profile) {} 
+        void onBluetoothEnableChanged(Boolean enable) {}
+        void onCallingStateChanged(BluetoothState state, int value) {} 
     }
 
     public enum Profiles { HEADSET, A2DP_SINK }
@@ -46,7 +46,7 @@ public class BluetoothClient {
     private Context mContext; 
     private BluetoothAdapter mBluetoothAdapter;
     private DataStore mDataStore; 
-    private List<SystemBluetoothCallback> mListeners = new ArrayList<>(); 
+    private List<BluetoothCallback> mListeners = new ArrayList<>(); 
     private int mContactsDownloadingState = 0; 
     private int mCallHistoryDownloadingState = 0; 
     private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
@@ -108,12 +108,12 @@ public class BluetoothClient {
         checkAllProfileConnection(); 
     }
 
-    public void registerCallback(SystemBluetoothCallback callback) {
+    public void registerCallback(BluetoothCallback callback) {
         if ( callback == null ) return; 
         mListeners.add(callback); 
     }
 
-    public void unregisterCallback(SystemBluetoothCallback callback) {
+    public void unregisterCallback(BluetoothCallback callback) {
         if ( callback == null ) return; 
         mListeners.remove(callback);
     }
@@ -128,10 +128,31 @@ public class BluetoothClient {
 
     public BluetoothState getCurrentState() {
         BluetoothState bt_state = BluetoothState.NONE; 
+        if ( mDataStore == null ) return bt_state;
         for ( BluetoothState state : BluetoothState.values() ) {
             boolean on  = mDataStore.getBTCallingState(state.ordinal()) == 1 ? true:false; 
             if ( on ) bt_state = state;  
         }
+        if ( bt_state == BluetoothState.HANDSFREE_CONNECTED 
+            || bt_state == BluetoothState.STREAMING_CONNECTED ) {
+            if ( mDataStore.getBTCallingState(BluetoothState.HANDSFREE_CONNECTED.ordinal()) == 1 
+                && mDataStore.getBTCallingState(BluetoothState.STREAMING_CONNECTED.ordinal()) == 1 ) {
+                mDataStore.setBTCallingState(BluetoothState.HF_FREE_STREAMING_CONNECTED.ordinal(), 1);
+                bt_state = BluetoothState.HF_FREE_STREAMING_CONNECTED;
+            }
+        } else if ( bt_state == BluetoothState.HF_FREE_STREAMING_CONNECTED ) {
+            if ( mDataStore.getBTCallingState(BluetoothState.HANDSFREE_CONNECTED.ordinal()) != 1 
+                || mDataStore.getBTCallingState(BluetoothState.STREAMING_CONNECTED.ordinal()) != 1 ) {
+                mDataStore.setBTCallingState(BluetoothState.HF_FREE_STREAMING_CONNECTED.ordinal(), 0);
+                if ( mDataStore.getBTCallingState(BluetoothState.HANDSFREE_CONNECTED.ordinal()) == 1 )
+                    bt_state = BluetoothState.HANDSFREE_CONNECTED;
+                else if ( mDataStore.getBTCallingState(BluetoothState.STREAMING_CONNECTED.ordinal()) == 1 )
+                    bt_state = BluetoothState.STREAMING_CONNECTED;
+                else 
+                    bt_state = BluetoothState.NONE; 
+            }
+        }
+
         return bt_state; 
     }
 
@@ -240,7 +261,7 @@ public class BluetoothClient {
             else if ( profile == Profiles.A2DP_SINK )
                 mDataStore.setBTCallingState(BluetoothState.STREAMING_CONNECTED.ordinal(), state);
 
-            for ( SystemBluetoothCallback callback : mListeners ) 
+            for ( BluetoothCallback callback : mListeners ) 
                 callback.onConnectionStateChanged(profile);
         }
     }
@@ -256,7 +277,7 @@ public class BluetoothClient {
                         BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF); 
                     if ( state == BluetoothAdapter.STATE_OFF ) 
                         updateAllProfileConnection(0); 
-                    for ( SystemBluetoothCallback callback : mListeners ) {
+                    for ( BluetoothCallback callback : mListeners ) {
                         if ( state == BluetoothAdapter.STATE_OFF ) 
                             callback.onBluetoothEnableChanged(false);
                         else if ( state == BluetoothAdapter.STATE_ON ) 
@@ -293,14 +314,14 @@ public class BluetoothClient {
                     int battery_level = intent.getIntExtra(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL, -1);
                     if ( battery_level != -1 ) {
                         if ( mDataStore.shouldPropagateBTDeviceBatteryStateUpdate(profile.ordinal(), battery_level) ) {
-                            for ( SystemBluetoothCallback callback : mListeners ) 
+                            for ( BluetoothCallback callback : mListeners ) 
                                 callback.onBatteryStateChanged(profile);
                         }
                     }
                     int antenna_level = intent.getIntExtra(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH, -1);
                     if ( antenna_level != -1 ) {
                         if ( mDataStore.shouldPropagateBTDeviceAntennaLevelUpdate(profile.ordinal(), antenna_level) ) {
-                            for ( SystemBluetoothCallback callback : mListeners ) 
+                            for ( BluetoothCallback callback : mListeners ) 
                                 callback.onAntennaStateChanged(profile);
                         }
                     }
@@ -312,14 +333,14 @@ public class BluetoothClient {
                     if ( state == 3 ) {
                         Log.d(TAG, "action_pbap_state:CONTACTS_DOWNLOADING"); 
                         if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.CONTACTS_DOWNLOADING.ordinal(), 1) ) {
-                            for ( SystemBluetoothCallback callback : mListeners ) 
+                            for ( BluetoothCallback callback : mListeners ) 
                                 callback.onCallingStateChanged(BluetoothState.CONTACTS_DOWNLOADING, 1); 
                         }
                         mContactsDownloadingState = state; 
                     } else if ( state == 2 ) {
                         Log.d(TAG, "action_pbap_state:COMPLETE"); 
                         if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.CONTACTS_DOWNLOADING.ordinal(), 0) ) {
-                            for ( SystemBluetoothCallback callback : mListeners ) 
+                            for ( BluetoothCallback callback : mListeners ) 
                                 callback.onCallingStateChanged(BluetoothState.CONTACTS_DOWNLOADING, 0); 
                         }
                     }

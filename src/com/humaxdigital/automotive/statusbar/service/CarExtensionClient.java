@@ -14,6 +14,7 @@ import android.extension.car.CarBLEManager;
 import android.extension.car.CarTMSManager;
 import android.extension.car.CarUSMManager;
 import android.extension.car.CarSensorManagerEx;
+import android.extension.car.CarSystemManager;
 
 import android.util.Log;
 
@@ -36,6 +37,7 @@ public class CarExtensionClient {
     private CarTMSManager mCarTMSManager;
     private CarUSMManager mUsmManager;
     private CarSensorManagerEx mCarSensorManagerEx;
+    private CarSystemManager mCarSystemManager; 
 
     public CarExtensionClient(Context context) {
         mContext = context; 
@@ -81,6 +83,10 @@ public class CarExtensionClient {
         return mCarSensorManagerEx;
     }
 
+    public CarSystemManager getSystemManager() {
+        return mCarSystemManager;
+    }
+
     private final ServiceConnection mServiceConnectionListenerClient =
             new ServiceConnection () {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -91,6 +97,7 @@ public class CarExtensionClient {
                     mUsmManager = (CarUSMManager) mCarEx.getCarManager(android.extension.car.CarEx.USM_SERVICE);
                     mCarTMSManager = (CarTMSManager) mCarEx.getCarManager(android.extension.car.CarEx.TMS_SERVICE);
                     mCarSensorManagerEx = (CarSensorManagerEx) mCarEx.getCarManager(android.car.Car.SENSOR_SERVICE);
+                    mCarSystemManager = (CarSystemManager) mCarEx.getCarManager(android.extension.car.CarEx.SYSTEM_SERVICE);
                     if ( mListener != null ) mListener.onConnected();
                 } catch (CarNotConnectedException e) {
                     Log.e(TAG, "Car is not connected!", e);
@@ -106,6 +113,7 @@ public class CarExtensionClient {
                 mUsmManager = null; 
                 mCarTMSManager = null; 
                 mCarSensorManagerEx = null;
+                mCarSystemManager = null;
             }
         }
     };

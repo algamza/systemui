@@ -65,8 +65,8 @@ public class SystemMuteController extends BaseController<Integer> {
         return state; 
     }
 
-    private AudioClient.SystemAudioCallback mAudioCallback = 
-        new AudioClient.SystemAudioCallback() {
+    private AudioClient.AudioCallback mAudioCallback = 
+        new AudioClient.AudioCallback() {
         @Override
         public void onMuteChanged(AudioClient.AudioType type, boolean mute) {
             if ( mAudioClient == null ) return; 

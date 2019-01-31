@@ -31,12 +31,8 @@ public class SystemStatusController implements BaseController {
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
     enum CallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
-    enum BTCallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
-        , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, BT_CALLING }
     enum AntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5
         , TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5}
-    enum BTAntennaStatus { NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5 }
-    enum TMSAntennaStatus { NONE,  TMU_ANTENNA_NO, TMU_ANTENNA_0, TMU_ANTENNA_1, TMU_ANTENNA_2, TMU_ANTENNA_3, TMU_ANTENNA_4, TMU_ANTENNA_5 }
     enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
     enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
     enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
@@ -58,11 +54,6 @@ public class SystemStatusController implements BaseController {
     private SystemView mWifi;
     private SystemView mLocationSharing;
     private final List<SystemView> mSystemViews = new ArrayList<>();
-    
-    private BTAntennaStatus mCurrentBTAntennaStatus = BTAntennaStatus.NONE; 
-    private TMSAntennaStatus mCurrentTMSAntennaStatus = TMSAntennaStatus.NONE; 
-    private int mCurrentBTMicMuteStatus = 0; 
-    private int mCurrentTMSCallingStatus = 0; 
 
     private IStatusBarService mService; 
 
@@ -223,19 +214,8 @@ public class SystemStatusController implements BaseController {
             if ( mMute != null ) mMute.update(MuteStatus.values()[mService.getMuteStatus()].ordinal());
             if ( mBle != null ) mBle.update(BLEStatus.values()[mService.getBLEStatus()].ordinal());
             if ( mBtBattery != null ) mBtBattery.update(BTBatteryStatus.values()[mService.getBTBatteryStatus()].ordinal());
-            if ( mPhone != null ) {
-                BTCallStatus call_state = convertToBTCallStatus(mService.getBTCallStatus()); 
-                mCurrentBTMicMuteStatus = 0; 
-                mCurrentTMSCallingStatus = 0; 
-                // TODO: get TMU Calling state
-                // TODO: get bt mic mute state
-                mPhone.update(convertToCallStatus(call_state, mCurrentTMSCallingStatus, mCurrentBTMicMuteStatus).ordinal());
-            }
-            if ( mAntenna != null ) {
-                mCurrentBTAntennaStatus = convertToBTAntennaStatus(mService.getBTAntennaStatus()); 
-                mCurrentTMSAntennaStatus = convertToTMSAntennaStatus(mService.getTMSAntennaStatus()); 
-                mAntenna.update(conventToAntennaStatus(mCurrentBTAntennaStatus, mCurrentTMSAntennaStatus).ordinal());
-            }
+            if ( mPhone != null ) mPhone.update(CallStatus.values()[mService.getCallStatus()].ordinal());
+            if ( mAntenna != null ) mAntenna.update(AntennaStatus.values()[mService.getAntennaStatus()].ordinal());
             if ( mPhoneData != null ) mPhoneData.update(DataStatus.values()[mService.getDataStatus()].ordinal());
             if ( mWirelessCharging != null ) mWirelessCharging.update(WirelessChargeStatus.values()[mService.getWirelessChargeStatus()].ordinal());
             if ( mWifi != null ) mWifi.update(WifiStatus.values()[mService.getWifiStatus()].ordinal());
@@ -243,85 +223,6 @@ public class SystemStatusController implements BaseController {
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-    }
-
-    private CallStatus convertToCallStatus(BTCallStatus bt, int tmu_call, int mic_mute) {
-        CallStatus status = CallStatus.NONE; 
-        switch(bt) {
-            case NONE: status = CallStatus.NONE; break; 
-            case STREAMING_CONNECTED: status = CallStatus.STREAMING_CONNECTED; break; 
-            case HANDS_FREE_CONNECTED: status = CallStatus.HANDS_FREE_CONNECTED; break; 
-            case HF_FREE_STREAMING_CONNECTED: status = CallStatus.HF_FREE_STREAMING_CONNECTED; break; 
-            case CALL_HISTORY_DOWNLOADING: status = CallStatus.CALL_HISTORY_DOWNLOADING; break; 
-            case CONTACTS_HISTORY_DOWNLOADING: status = CallStatus.CONTACTS_HISTORY_DOWNLOADING; break; 
-            case BT_CALLING: status = CallStatus.BT_CALLING; break; 
-        }
-        if ( tmu_call == 1 ) status = CallStatus.TMU_CALLING; 
-        if ( mic_mute == 1 ) status = CallStatus.BT_PHONE_MIC_MUTE; 
-        
-        return status; 
-    }
-
-    private BTCallStatus convertToBTCallStatus(int status) {
-        BTCallStatus call_status = BTCallStatus.NONE; 
-        if ( status == BTCallStatus.NONE.ordinal() ) call_status = BTCallStatus.NONE; 
-        else if ( status == BTCallStatus.STREAMING_CONNECTED.ordinal() ) call_status = BTCallStatus.STREAMING_CONNECTED; 
-        else if ( status == BTCallStatus.HANDS_FREE_CONNECTED.ordinal() ) call_status = BTCallStatus.HANDS_FREE_CONNECTED; 
-        else if ( status == BTCallStatus.HF_FREE_STREAMING_CONNECTED.ordinal() ) call_status = BTCallStatus.HF_FREE_STREAMING_CONNECTED; 
-        else if ( status == BTCallStatus.CALL_HISTORY_DOWNLOADING.ordinal() ) call_status = BTCallStatus.CALL_HISTORY_DOWNLOADING; 
-        else if ( status == BTCallStatus.CONTACTS_HISTORY_DOWNLOADING.ordinal() ) call_status = BTCallStatus.CONTACTS_HISTORY_DOWNLOADING; 
-        else if ( status == BTCallStatus.BT_CALLING.ordinal() ) call_status = BTCallStatus.BT_CALLING; 
-        return call_status; 
-    }
-
-    private BTAntennaStatus convertToBTAntennaStatus(int bt_antenna) {
-        BTAntennaStatus bt_status = BTAntennaStatus.NONE; 
-        if ( bt_antenna == BTAntennaStatus.NONE.ordinal() ) bt_status = BTAntennaStatus.NONE;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_NO.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_NO;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_1.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_1;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_2.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_2;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_3.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_3;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_4.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_4;
-        else if ( bt_antenna == BTAntennaStatus.BT_ANTENNA_5.ordinal() ) bt_status = BTAntennaStatus.BT_ANTENNA_5;
-        return bt_status; 
-    }
-
-    private TMSAntennaStatus convertToTMSAntennaStatus(int tmu_antenna) {
-        TMSAntennaStatus tmu_status = TMSAntennaStatus.NONE; 
-        if ( tmu_antenna == TMSAntennaStatus.NONE.ordinal() ) tmu_status = TMSAntennaStatus.NONE;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_NO.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_NO;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_0.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_0;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_1.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_1;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_2.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_2;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_3.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_3;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_4.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_4;
-        else if ( tmu_antenna == TMSAntennaStatus.TMU_ANTENNA_5.ordinal() ) tmu_status = TMSAntennaStatus.TMU_ANTENNA_5;
-        return tmu_status; 
-    }
-
-    private AntennaStatus conventToAntennaStatus(BTAntennaStatus bt_status, TMSAntennaStatus tmu_status) {
-        AntennaStatus status = AntennaStatus.NONE; 
-        switch(bt_status) {
-            case NONE: status = AntennaStatus.NONE; break; 
-            case BT_ANTENNA_NO: status = AntennaStatus.BT_ANTENNA_NO; break; 
-            case BT_ANTENNA_1: status = AntennaStatus.BT_ANTENNA_1; break; 
-            case BT_ANTENNA_2: status = AntennaStatus.BT_ANTENNA_2; break; 
-            case BT_ANTENNA_3: status = AntennaStatus.BT_ANTENNA_3; break; 
-            case BT_ANTENNA_4: status = AntennaStatus.BT_ANTENNA_4; break; 
-            case BT_ANTENNA_5: status = AntennaStatus.BT_ANTENNA_5; break; 
-        }
-        if ( status != AntennaStatus.NONE ) return status; 
-        switch(tmu_status) {
-            case NONE: status = AntennaStatus.NONE; break; 
-            case TMU_ANTENNA_NO: status = AntennaStatus.TMU_ANTENNA_NO; break; 
-            case TMU_ANTENNA_0: status = AntennaStatus.TMU_ANTENNA_0; break; 
-            case TMU_ANTENNA_1: status = AntennaStatus.TMU_ANTENNA_1; break; 
-            case TMU_ANTENNA_2: status = AntennaStatus.TMU_ANTENNA_2; break; 
-            case TMU_ANTENNA_3: status = AntennaStatus.TMU_ANTENNA_3; break; 
-            case TMU_ANTENNA_4: status = AntennaStatus.TMU_ANTENNA_4; break; 
-            case TMU_ANTENNA_5: status = AntennaStatus.TMU_ANTENNA_5; break; 
-        }
-        return status; 
     }
 
     private final ISystemCallback.Stub mSystemCallback = new ISystemCallback.Stub() {
@@ -355,39 +256,23 @@ public class SystemStatusController implements BaseController {
                 }
             }); 
         }
-        public void onBTCallStatusChanged(int status) throws RemoteException {
+        public void onCallStatusChanged(int status) throws RemoteException {
             if ( mPhone == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mPhone.update(convertToCallStatus(convertToBTCallStatus(status), 
-                        mCurrentTMSCallingStatus, mCurrentBTMicMuteStatus).ordinal());
+                    mPhone.update(CallStatus.values()[status].ordinal());
                 }
             }); 
         }
-        public void onBTAntennaStatusChanged(int status) throws RemoteException {
+        public void onAntennaStatusChanged(int status) throws RemoteException {
             if ( mAntenna == null ) return;
-            if ( mHandler == null ) return; 
-            mCurrentBTAntennaStatus = convertToBTAntennaStatus(status);
-            AntennaStatus antenna = conventToAntennaStatus(mCurrentBTAntennaStatus, mCurrentTMSAntennaStatus);             
+            if ( mHandler == null ) return;             
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAntenna.update(antenna.ordinal());
-                }
-            }); 
-            
-        }
-        public void onTMSAntennaStatusChanged(int status) throws RemoteException {
-            if ( mAntenna == null ) return;
-            if ( mHandler == null ) return; 
-            mCurrentTMSAntennaStatus = convertToTMSAntennaStatus(status);
-            AntennaStatus antenna = conventToAntennaStatus(mCurrentBTAntennaStatus, mCurrentTMSAntennaStatus);   
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mAntenna.update(antenna.ordinal());
+                    mAntenna.update(AntennaStatus.values()[status].ordinal());
                 }
             }); 
             

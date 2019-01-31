@@ -7,14 +7,20 @@ import android.content.BroadcastReceiver;
 
 import android.car.CarNotConnectedException;
 import android.car.hardware.CarPropertyValue;
-//import android.extension.car.CarRemainderManager;
+import android.extension.car.CarSystemManager;
+import android.extension.car.value.CarEventValue;
 
 import android.util.Log;
 
 public class SystemWirelessChargeController extends BaseController<Integer> {
     private static final String TAG = "SystemWirelessChargeController";
     private enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
-    //private CarRemainderManager mManager;
+    private CarSystemManager mManager;
+
+    @SuppressWarnings("unchecked")
+    public static <E> E getValue(CarPropertyValue propertyValue) {
+        return (E) propertyValue.getValue();
+    }
 
     public SystemWirelessChargeController(Context context, DataStore store) {
         super(context, store);
@@ -22,31 +28,35 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
 
     @Override
     public void connect() {
+        Log.d(TAG, "connect"); 
         if ( mContext == null ) return;
     }
 
     @Override
     public void disconnect() {
-
+        Log.d(TAG, "disconnect"); 
+        try {
+            mManager.unregisterCallback(mSystemCallback);
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!");
+        }
     }
-/*
-    public void fetch(CarRemainderManager manager) {
+
+    public void fetch(CarSystemManager manager) {
         if ( mDataStore == null || manager == null ) return;
         mManager = manager; 
         int value = 0; 
         try {
-            mManager.registerCallback(mRemainderCallback);
-            value = mManager.getIntProperty(CarRemainderManager.VENDOR_CANRX_WPC_STATUS, 0); 
+            mManager.registerCallback(mSystemCallback);
+            value = mManager.getWirelessChargeStatus();
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!");
         }
-        if ( checkValid(value) ) {
-            WirelessChargeStatus state = convertToStatus(value); 
-            Log.d(TAG, "fetch="+state); 
-            mDataStore.setWirelessChargeState(state.ordinal());
-        }        
+        Log.d(TAG, "fetch="+value); 
+        if ( !checkValid(value) ) return;
+        mDataStore.setWirelessChargeState(value);   
     }
-    */
+    
 
     @Override
     public Integer get() {
@@ -63,7 +73,14 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
 
     private WirelessChargeStatus convertToStatus(int mode) {
         WirelessChargeStatus status = WirelessChargeStatus.NONE; 
-        // todo : check status 
+        /*
+        0x0:Off
+        0x1:Cellphone on the pad
+        0x2:Charging
+        0x3:Charging complete
+        0x4:Cellphone reminder
+        0x5:Charging error
+        */
         switch(mode) {
             case 0x0: status = WirelessChargeStatus.NONE; break;
             case 0x3: status = WirelessChargeStatus.CHARGED; break;
@@ -73,29 +90,34 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         }
         return status; 
     }
-/*
-    private final CarRemainderManager.CarRemainderEventCallback mRemainderCallback =
-        new CarRemainderManager.CarRemainderEventCallback () {
+
+    private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
+        new CarSystemManager.CarSystemEventCallback () {
         @Override
         public void onChangeEvent(final CarPropertyValue value) {
-            if ( mDataStore == null ) return; 
-            switch(value.getPropertyId()) {
-                case CarRemainderManager.VENDOR_CANRX_WPC_STATUS: {
-                    if ( !checkValid((int)value.getValue()) ) break; 
-                    if ( !mDataStore.shouldPropagateWirelessChargeStatusUpdate((int)value.getValue()) ) break; 
-                    for ( Listener listener : mListeners ) {
-                        listener.onEvent(convertToStatus(mDataStore.getWirelessChargeState()).ordinal());
+            int id = value.getPropertyId();
+            Log.d(TAG, "onChangeEvent:CarPropertyValue="+id); 
+            switch(id) {
+                case CarSystemManager.VENDOR_CANRX_WPC_STATUS: {
+                    int mode = getValue(value);
+                    if ( !checkValid(mode) ) break;
+                    if ( mDataStore.shouldPropagateWirelessChargeStatusUpdate(mode) ) {
+                        for ( Listener listener : mListeners ) 
+                            listener.onEvent(convertToStatus(mode).ordinal());
                     }
                     break;
-                } 
-                default: break; 
+                }
             }
         }
 
         @Override
+        public void onChangeEvent(final CarEventValue value) {
+            Log.d(TAG, "onChangeEvent:CarEventValue"); 
+        }
+
+        @Override
         public void onErrorEvent(final int propertyId, final int zone) {
-            Log.w(TAG, "onErrorEvent():propertyId="+propertyId+", zone="+zone);
+            Log.w(TAG, "Error:id="+propertyId+", zone="+zone); 
         }
     };
-    */
 }

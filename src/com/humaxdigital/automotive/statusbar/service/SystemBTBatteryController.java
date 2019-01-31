@@ -63,8 +63,8 @@ public class SystemBTBatteryController extends BaseController<Integer> {
         return status; 
     }
 
-    private BluetoothClient.SystemBluetoothCallback mBTCallback = 
-        new BluetoothClient.SystemBluetoothCallback() {
+    private final BluetoothClient.BluetoothCallback mBTCallback = 
+        new BluetoothClient.BluetoothCallback() {
         @Override
         public void onBatteryStateChanged(BluetoothClient.Profiles profile) {
             if ( profile != BluetoothClient.Profiles.HEADSET ) return; 
@@ -75,9 +75,6 @@ public class SystemBTBatteryController extends BaseController<Integer> {
                 for ( Listener listener : mListeners ) 
                     listener.onEvent(convertToStatus(level).ordinal());
             }
-        }
-        @Override
-        public void onAntennaStateChanged(BluetoothClient.Profiles profile) {
         }
         @Override
         public void onConnectionStateChanged(BluetoothClient.Profiles profile) {
@@ -99,9 +96,6 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             if ( enable ) return; 
             for ( Listener listener : mListeners ) 
                 listener.onEvent(BTBatteryStatus.NONE.ordinal());
-        }
-        @Override
-        public void onCallingStateChanged(BluetoothClient.BluetoothState state, int value) {
         }
     }; 
 }

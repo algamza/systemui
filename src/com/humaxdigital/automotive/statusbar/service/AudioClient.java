@@ -39,12 +39,12 @@ public class AudioClient {
     private AudioManager mAudioManager; 
     private Map<AudioType, Boolean> mAudioMuteState = new HashMap<>(); 
 
-    public interface SystemAudioCallback {
-        void onMuteChanged(AudioType type, boolean mute); 
+    public static abstract class AudioCallback {
+        public void onMuteChanged(AudioType type, boolean mute) {};
     }
 
     private Context mContext; 
-    private List<SystemAudioCallback> mListeners = new ArrayList<>(); 
+    private List<AudioCallback> mListeners = new ArrayList<>(); 
 
     public AudioClient(Context context) {
         if ( context == null ) return; 
@@ -78,12 +78,12 @@ public class AudioClient {
         cleanupAudioManager(); 
     }
 
-    public void registerCallback(SystemAudioCallback callback) {
+    public void registerCallback(AudioCallback callback) {
         if ( callback == null ) return; 
         mListeners.add(callback); 
     }
 
-    public void unregisterCallback(SystemAudioCallback callback) {
+    public void unregisterCallback(AudioCallback callback) {
         if ( callback == null ) return; 
         mListeners.remove(callback);
     }
@@ -117,7 +117,7 @@ public class AudioClient {
     }
 
     private void broadcastEvent(AudioType type, boolean mute) {
-        for ( SystemAudioCallback callback : mListeners ) {
+        for ( AudioCallback callback : mListeners ) {
             callback.onMuteChanged(type, mute);
         }
     }
