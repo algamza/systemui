@@ -65,6 +65,14 @@
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
+                <TextView
+                    android:id="@+id/txtUserSwitchTime"
+                    android:layout_height="wrap_content"
+                    android:layout_width ="wrap_content"
+                    android:layout_margin="1dp"
+                    android:textColor="#a0a0a0"
+                    android:textSize="16sp"/>
+
             </LinearLayout>
 
         </LinearLayout>

@@ -45,8 +45,25 @@ public class DevNavigationBar extends FrameLayout {
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
     private TextView mStartTimeTextView;
+    private TextView mUserSwitchTimeTextView;
 
     private long mStartTime;
+    private long mUserSwitchTime;
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Intent.ACTION_USER_SWITCHED)) {
+                mUserSwitchTime = SystemClock.uptimeMillis();
+            } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+                if (mUserSwitchTimeTextView != null && mUserSwitchTime != 0) {
+                    long elapsed = SystemClock.uptimeMillis() - mUserSwitchTime;
+                    mUserSwitchTimeTextView.setText(toSecString(elapsed));
+                }
+            }
+        }
+    };
 
     public DevNavigationBar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -67,6 +84,19 @@ public class DevNavigationBar extends FrameLayout {
                 mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
             }
         });
+
+        final IntentFilter userSwitchIntentFiilter = new IntentFilter();
+        userSwitchIntentFiilter.addAction(Intent.ACTION_USER_SWITCHED);
+        mContext.registerReceiverAsUser(
+                mBroadcastReceiver, UserHandle.ALL, userSwitchIntentFiilter,
+                null, null);
+
+        final IntentFilter bootCompletedIntentFiilter = new IntentFilter();
+        bootCompletedIntentFiilter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        bootCompletedIntentFiilter.setPriority(-100000);
+        mContext.registerReceiverAsUser(
+                mBroadcastReceiver, UserHandle.ALL, bootCompletedIntentFiilter,
+                android.Manifest.permission.RECEIVE_BOOT_COMPLETED, null);
     }
 
     public void setDevCommands(DevCommands devCommands) {
@@ -77,6 +107,7 @@ public class DevNavigationBar extends FrameLayout {
         mCurrentActivityTextView = (TextView) findViewById(R.id.txtCurrentActivity);
         mSavedActivityTextView = (TextView) findViewById(R.id.txtSavedActivity);
         mStartTimeTextView = (TextView) findViewById(R.id.txtStartTime);
+        mUserSwitchTimeTextView = (TextView) findViewById(R.id.txtUserSwitchTime);
 
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
