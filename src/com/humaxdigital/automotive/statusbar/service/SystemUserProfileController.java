@@ -39,7 +39,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         IntentFilter filter = new IntentFilter();
         //filter.addAction(Intent.ACTION_USER_REMOVED);
         //filter.addAction(Intent.ACTION_USER_ADDED);
-        //filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
+        filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
         filter.addAction(Intent.ACTION_USER_SWITCHED);
         //filter.addAction(Intent.ACTION_USER_STOPPED);
         //filter.addAction(Intent.ACTION_USER_UNLOCKED);
@@ -94,16 +94,30 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         @Override
         public void onReceive(Context context, Intent intent) {
             if ( mUserManager == null || mActivityManager == null ) return;
-            UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
-            if ( user == null ) return; 
-            if ( user.id == mCurrentUserID ) return;
-            Log.d(TAG, "user changed : old user = " + mCurrentUserID + ", new user = " +  user.id); 
-            mCurrentUserID = user.id; 
-            for ( UserChangeListener listener : mUserChangeListeners ) 
-                listener.onUserChanged(mCurrentUserID);
+            switch(intent.getAction()) {
+                case Intent.ACTION_USER_INFO_CHANGED: {
+                    Log.d(TAG, "ACTION_USER_INFO_CHANGED"); 
+                    UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
+                    if ( user == null ) return; 
+                    for ( Listener<Bitmap> listener : mListeners ) 
+                        listener.onEvent(getUserBitmap(user.id));
+                    break;
+                }
+                case Intent.ACTION_USER_SWITCHED: {
+                    Log.d(TAG, "ACTION_USER_SWITCHED"); 
+                    UserInfo user = mUserManager.getUserInfo(mActivityManager.getCurrentUser());
+                    if ( user == null ) return; 
+                    if ( user.id == mCurrentUserID ) return;
+                    Log.d(TAG, "user changed : old user = " + mCurrentUserID + ", new user = " +  user.id); 
+                    mCurrentUserID = user.id; 
+                    for ( UserChangeListener listener : mUserChangeListeners ) 
+                        listener.onUserChanged(mCurrentUserID);
+                    for ( Listener<Bitmap> listener : mListeners ) 
+                        listener.onEvent(getUserBitmap(mCurrentUserID));
+                    break;
+                }
+            }
 
-            for ( Listener<Bitmap> listener : mListeners ) 
-                listener.onEvent(getUserBitmap(mCurrentUserID));
         }
     };
 }
