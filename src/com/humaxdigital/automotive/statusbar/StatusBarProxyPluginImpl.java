@@ -133,7 +133,8 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     }
 
     public View inflateDevNavBarView() {
-        final View devNavBarView = View.inflate(mPluginContext, R.layout.dev_nav_bar, null);
+        final DevNavigationBar devNavBarView = (DevNavigationBar)
+                View.inflate(mPluginContext, R.layout.dev_nav_bar, null);
         devNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -142,17 +143,17 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             }
         });
 
-        ((DevNavigationBar)devNavBarView).setDevCommands(new DevCommandsProxy(mPluginContext) {
+        devNavBarView.init(new DevCommandsProxy(mPluginContext) {
             @Override
             public Bundle invokeDevCommand(String command, Bundle args) {
-                if (mStatusBarService == null)
-                    return null;
-                try {
-                    return mStatusBarService.invokeDevCommand(command, args);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+                if (mStatusBarService != null) {
+                    try {
+                        return mStatusBarService.invokeDevCommand(command, args);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 }
-                return null;
+                return new Bundle();
             }
         });
 

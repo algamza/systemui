@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -40,7 +41,7 @@ public class DevNavigationBar extends FrameLayout {
     private ActivityManager mActivityManager;
 
     private final Handler mRetrieveHandler = new Handler();
-    private final Runnable mRetrieveRunnable = this::retrieveTopActivity;
+    private final Runnable mRetrieveRunnable = this::retrievePeriodicData;
     private ComponentName mTopActivity;
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
@@ -49,6 +50,7 @@ public class DevNavigationBar extends FrameLayout {
 
     private long mStartTime;
     private long mUserSwitchTime;
+    private long mBootCompletedTime;
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -56,11 +58,10 @@ public class DevNavigationBar extends FrameLayout {
             String action = intent.getAction();
             if (action.equals(Intent.ACTION_USER_SWITCHED)) {
                 mUserSwitchTime = SystemClock.uptimeMillis();
+                mBootCompletedTime = 0;
             } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-                if (mUserSwitchTimeTextView != null && mUserSwitchTime != 0) {
-                    long elapsed = SystemClock.uptimeMillis() - mUserSwitchTime;
-                    mUserSwitchTimeTextView.setText(toSecString(elapsed));
-                }
+                mBootCompletedTime = SystemClock.uptimeMillis();
+                updateBootCompletedTimeText();
             }
         }
     };
@@ -71,17 +72,16 @@ public class DevNavigationBar extends FrameLayout {
         mContext = context;
         mContentResolver = context.getContentResolver();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
-        mStartTime = SystemClock.uptimeMillis();
+        mStartTime = mUserSwitchTime = SystemClock.uptimeMillis();
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                retrieveTopActivity();
-                updateSavedActivityText();
+                onAttached();
             }
             @Override
             public void onViewDetachedFromWindow(View v) {
-                mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
+                onDetached();
             }
         });
 
@@ -93,14 +93,10 @@ public class DevNavigationBar extends FrameLayout {
 
         final IntentFilter bootCompletedIntentFiilter = new IntentFilter();
         bootCompletedIntentFiilter.addAction(Intent.ACTION_BOOT_COMPLETED);
-        bootCompletedIntentFiilter.setPriority(-100000);
+        bootCompletedIntentFiilter.setPriority(-100000); // Same as DevBootReceiver
         mContext.registerReceiverAsUser(
                 mBroadcastReceiver, UserHandle.ALL, bootCompletedIntentFiilter,
                 android.Manifest.permission.RECEIVE_BOOT_COMPLETED, null);
-    }
-
-    public void setDevCommands(DevCommands devCommands) {
-        mDevCommands = devCommands;
     }
 
     protected void onFinishInflate () {
@@ -116,8 +112,21 @@ public class DevNavigationBar extends FrameLayout {
         findViewById(R.id.btnStop).setOnClickListener(view -> { stopTopActivity(); });
         findViewById(R.id.btnSave).setOnClickListener(view -> { saveCurrentActivity(); });
         findViewById(R.id.btnLoad).setOnClickListener(view -> { loadSavedActivity(); });
+    }
 
-        updateTimeText();
+    public void init(DevCommands devCommands) {
+        mDevCommands = devCommands;
+        resetBootCompletedTime();
+        updateStartTimeText();
+    }
+
+    public void onAttached() {
+        retrievePeriodicData();
+        updateSavedActivityText();
+    }
+
+    public void onDetached() {
+        mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
     }
 
     public void goHome() {
@@ -172,11 +181,30 @@ public class DevNavigationBar extends FrameLayout {
         }
     }
 
-    private void retrieveTopActivity() {
+    public long getBootCompletedTime() {
+        return Settings.Global.getLong(mContext.getContentResolver(),
+                "com.humaxdigital.automotive.statusbar.dev.BOOT_COMPLETED_TIME", 0);
+    }
+
+    public void resetBootCompletedTime() {
+        Settings.Global.putLong(mContext.getContentResolver(),
+                "com.humaxdigital.automotive.statusbar.dev.BOOT_COMPLETED_TIME", 0);
+    }
+
+    private void retrievePeriodicData() {
         mTopActivity = mActivityManager.getRunningTasks(1).get(0).topActivity;
         if (mCurrentActivityTextView != null) {
             mCurrentActivityTextView.setText(mTopActivity.flattenToShortString());
         }
+
+        if (mBootCompletedTime == 0 && Process.myUserHandle().equals(UserHandle.SYSTEM)) {
+            long bootCompletedTime = getBootCompletedTime();
+            if (bootCompletedTime > mUserSwitchTime) {
+                mBootCompletedTime = bootCompletedTime;
+                updateBootCompletedTimeText();
+            }
+        }
+
         mRetrieveHandler.postDelayed(mRetrieveRunnable, 1000);
     }
 
@@ -189,9 +217,16 @@ public class DevNavigationBar extends FrameLayout {
         }
     }
 
-    private void updateTimeText() {
+    private void updateStartTimeText() {
         if (mStartTimeTextView != null) {
             mStartTimeTextView.setText(toSecString(mStartTime));
+        }
+    }
+
+    private void updateBootCompletedTimeText() {
+        if (mStartTimeTextView != null) {
+            long elapsed = mBootCompletedTime - mUserSwitchTime;
+            mUserSwitchTimeTextView.setText(toSecString(elapsed));
         }
     }
 

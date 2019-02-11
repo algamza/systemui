@@ -51,6 +51,14 @@
             </intent-filter>
         </service>
         <service android:name=".user.UserStatusBarService" android:exported="false" />
+        <receiver
+            android:name=".dev.DevBootReceiver"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter android:priority="-100000">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

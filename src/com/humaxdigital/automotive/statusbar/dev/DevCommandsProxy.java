@@ -28,7 +28,7 @@ public class DevCommandsProxy implements DevCommands {
         args.putCharSequence("key", key);
         args.putCharSequence("defValue", defValue);
         Bundle ret = invokeDevCommand("getPreferenceString", args);
-        return ret.getCharSequence("return").toString();
+        return ret.getCharSequence("return", defValue).toString();
     }
 
     public void putPreferenceString(String key, String value) {
