@@ -135,7 +135,7 @@ public class ClimateControllerManager {
     }
 
     public void fetch(CarHvacManagerEx hvacMgr, CarUSMManager usmMgr, CarSensorManagerEx sensorMgr) {
-        if ( hvacMgr == null || usmMgr == null ) return;
+        if ( hvacMgr == null || usmMgr == null || sensorMgr == null ) return;
         mCarHvacManagerEx = hvacMgr; 
         mCarUSMManager = usmMgr; 
         mCarSensorManagerEx = sensorMgr;
@@ -165,7 +165,9 @@ public class ClimateControllerManager {
                         Log.d(TAG, "fetch ign="+state);
                         if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
                             mIGNOn = false;
-                        } 
+                        } else {
+                            mIGNOn = true;
+                        }
                     } catch ( CarNotConnectedException e ) {
                         Log.e(TAG, "getLatestSensorEvent is fail : ", e);
                     }
@@ -197,12 +199,16 @@ public class ClimateControllerManager {
                     int state = event.intValues[0];
                     Log.d(TAG, "onSensorChanged="+state);
                     if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
-                        if ( mIGNOn ) mListener.onIGNOnChanged(false);
-                        mIGNOn = false;
+                        if ( mIGNOn ) {
+                            mIGNOn = false;
+                            mListener.onIGNOnChanged(mIGNOn);
+                        }
                     } else if ( state == CarSensorEvent.IGNITION_STATE_ON 
                         || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                        if ( !mIGNOn ) mListener.onIGNOnChanged(true);
-                        mIGNOn = true;
+                        if ( !mIGNOn ) {
+                            mIGNOn = true;
+                            mListener.onIGNOnChanged(mIGNOn);
+                        }
                     }
                     break;
                 }  
