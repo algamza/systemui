@@ -47,7 +47,7 @@ public class SystemBLEController extends BaseController<Integer> {
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
         mDataStore.setBLEState(state.ordinal());
-        
+        cmdRequest(CarBLEManager.APP_BLE_REQ_CONNECTED_PHONE_INFO, 0, null);
     }
 
     @Override
@@ -58,23 +58,43 @@ public class SystemBLEController extends BaseController<Integer> {
         return val; 
     }
 
-    public static String byteArrayToHex(byte[] paramArrayOfByte)
+    private void cmdRequest(int eventId, int dataLength, byte[] data)
     {
-        if (paramArrayOfByte == null) {
-            return "null";
-        }
-        StringBuilder localStringBuilder = new StringBuilder(paramArrayOfByte.length * 2);
-        int j = paramArrayOfByte.length;
+        if (  dataLength < 0 ) return;
+
         int i = 0;
-        while (i < j)
-        {
-            localStringBuilder.append(String.format("%02x ", new Object[] { Byte.valueOf(paramArrayOfByte[i]) }));
-            i += 1;
-            if( (i != 0) && (i%16 == 0) ) {
-                localStringBuilder.append("\n");
-            }
+        byte[] fullData = new byte[8+dataLength];
+
+        // 0. clear
+        for(i = 0; i < fullData.length ; i++)
+            fullData[i] = 0x00;
+
+        // 1. Event ID
+        fullData[0] = (byte)((eventId >> 24) & 0x000000FF);
+        fullData[1] = (byte)((eventId >> 16) & 0x000000FF);
+        fullData[2] = (byte)((eventId >> 8) & 0x000000FF);
+        fullData[3] = (byte)(eventId & 0x000000FF);
+
+        if(dataLength > 0 || data != null) {
+            // 2. Data Length
+            fullData[4] = (byte)(((dataLength) >> 24) & 0x000000FF);
+            fullData[5] = (byte)(((dataLength) >> 16) & 0x000000FF);
+            fullData[6] = (byte)(((dataLength) >> 8) & 0x000000FF);
+            fullData[7] = (byte)((dataLength) & 0x000000FF);
+
+            // 3. Data
+            System.arraycopy(data, 0, fullData, 8, dataLength);
         }
-        return localStringBuilder.toString();
+
+        try
+        {
+            //=================
+            //setProperty : MPU -> MCU
+            //=================
+            if ( mManager != null ) mManager.setProperty(byte[].class, CarBLEManager.VENDOR_BLE_CMD, 0, fullData);
+        } catch (CarNotConnectedException e) {
+            Log.e("BLE_TEST", "Failed to set VENDOR_BLE_CMD", e);
+        }
     }
 
     private final CarBLEManager.CarBLEEventCallback mBLECallback = 
@@ -103,8 +123,7 @@ public class SystemBLEController extends BaseController<Integer> {
                         System.arraycopy(data, 8, eventData, 0, dataLength);
                         
                         Log.d(TAG, "eventdata:length="+dataLength+", data="+eventData[0]); 
-                        if ( dataLength != 1 ) break;
-                        
+
                         if ( eventData[0] == 0 ) {
                             if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
                                 for ( Listener listener : mListeners ) 
@@ -126,6 +145,23 @@ public class SystemBLEController extends BaseController<Integer> {
                             for ( Listener listener : mListeners ) 
                                 listener.onEvent(BLEStatus.CONNECTION_FAIL.ordinal());
                         }
+                    } else if ( id == CarBLEManager.APP_BLE_SEND_CONNECTED_PHONE_INFO ) {
+                        int dataLength = ((data[4] & 0xff) << 24) 
+                                        | ((data[5] & 0xff) << 16) 
+                                        | ((data[6] & 0xff) << 8) 
+                                        | (data[7] & 0xff);
+                        if ( dataLength < 0 ) break; 
+                        byte[] eventData = new byte[dataLength];
+                        System.arraycopy(data, 8, eventData, 0, dataLength);
+                        
+                        Log.d(TAG, "eventdata:length="+dataLength+", data="+eventData[0]); 
+
+                        BLEStatus state = BLEStatus.NONE;  
+                        if ((eventData[0] & 1) > 0) {
+                            state = BLEStatus.CONNECTED; 
+                        }
+                        Log.d(TAG, "fetch="+state); 
+                        mDataStore.setBLEState(state.ordinal());
                     }
                     break; 
                 } 
