@@ -221,9 +221,6 @@ public class StatusBarService extends Service {
                     mCallController.fetch(mBluetoothClient, mTMSClient, mAudioClient);
                 if ( mLocationController != null ) 
                     mLocationController.fetch(mTMSClient); 
-                if ( mDataController != null ) {
-                    mDataController.fetch(mTMSClient);
-                }
             }
             if ( mBLEController != null ) 
                 mBLEController.fetch(mCarExClient.getBLEManager()); 
