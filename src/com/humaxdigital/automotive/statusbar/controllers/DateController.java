@@ -18,7 +18,8 @@ public class DateController implements BaseController {
     private DateView mDateVew;
     private DateView mDateNoonView;
     private IStatusBarService mService; 
-    private String mTime; 
+    private String mTime = ""; 
+    private String mType = "12";
 
     private Handler mHandler; 
 
@@ -67,28 +68,39 @@ public class DateController implements BaseController {
 
         mDateVew = mParentView.findViewById(R.id.text_date_time);
         mDateNoonView = mParentView.findViewById(R.id.text_date_noon);
-
+        
         try {
-            updateClockUI(mService.getDateTime());
+            mTime = mService.getDateTime(); 
+            mType = mService.getTimeType();
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
+        
+        updateClockUI(mTime, mType);
+
     }
 
-    private void updateClockUI(String time) {
-        if ( mDateVew == null || mDateNoonView == null ) return;
+    private void updateClockUI(String time, String type) {
+        if ( mDateVew == null || mDateNoonView == null 
+            || type == null || time == null ) return;
         String date = "";
         String noon = "";
-        if ( time.contains("AM") ) {
-            date = time.substring(0, time.indexOf("AM"));
-            noon = "AM";
+
+        if ( type.equals("24") ) {
+            mDateVew.setText(time);
+            mDateNoonView.setText("");
+        } else {
+            if ( time.contains("AM") ) {
+                date = time.substring(0, time.indexOf("AM"));
+                noon = "AM";
+            }
+            else if ( time.contains("PM") ) {
+                date = time.substring(0, time.indexOf("PM"));
+                noon = "PM";
+            }
+            mDateVew.setText(date);
+            mDateNoonView.setText(noon);
         }
-        else if ( time.contains("PM") ) {
-            date = time.substring(0, time.indexOf("PM"));
-            noon = "PM";
-        }
-        mDateVew.setText(date);
-        mDateNoonView.setText(noon);
     }
 
     @Override
@@ -104,7 +116,19 @@ public class DateController implements BaseController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateClockUI(mTime);
+                    updateClockUI(mTime, mType);
+                }
+            }); 
+        }
+
+        @Override
+        public void onTimeTypeChanged(String type) throws RemoteException {
+            if ( mHandler == null ) return; 
+            mType = type; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateClockUI(mTime, mType);
                 }
             }); 
         }

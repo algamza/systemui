@@ -46,6 +46,7 @@ interface IStatusBarService {
     void unregisterClimateCallback(IClimateCallback callback);
 
     String getDateTime(); 
+    String getTimeType();
     void openDateTimeSetting(); 
     void registerDateTimeCallback(IDateTimeCallback callback);
     void unregisterDateTimeCallback(IDateTimeCallback callback);

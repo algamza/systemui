@@ -112,7 +112,10 @@ public class StatusBarService extends Service {
         if ( mBTBatteryController != null )  mBTBatteryController.removeListener(mSystemBTBatteryListener);
         if ( mCallController != null )  mCallController.removeListener(mSystemCallListener);
         if ( mMuteController != null )  mMuteController.removeListener(mSystemMuteListener);
-        if ( mDateTimeController != null )  mDateTimeController.removeListener(mDateTimeListener);
+        if ( mDateTimeController != null )  {
+            mDateTimeController.removeTimeTypeListener(mTimeTypeListener); 
+            mDateTimeController.removeListener(mDateTimeListener);
+        }
         if ( mUserProfileController != null )  mUserProfileController.removeListener(mUserProfileListener);
 
         for ( BaseController controller : mControllers ) controller.disconnect();
@@ -140,6 +143,7 @@ public class StatusBarService extends Service {
         if ( mContext == null || mDataStore == null ) return; 
         mDateTimeController = new SystemDateTimeController(mContext, mDataStore); 
         mDateTimeController.addListener(mDateTimeListener);
+        mDateTimeController.addTimeTypeListener(mTimeTypeListener); 
         mControllers.add(mDateTimeController); 
 
         mUserProfileController = new SystemUserProfileController(mContext, mDataStore); 
@@ -238,6 +242,20 @@ public class StatusBarService extends Service {
             for ( IDateTimeCallback callback : mDateTimeCallbacks ) {
                 try {
                     callback.onDateTimeChanged(date); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }; 
+
+    private SystemDateTimeController.SystemTimeTypeListener mTimeTypeListener 
+        = new SystemDateTimeController.SystemTimeTypeListener() {
+        @Override
+        public void onTimeTypeChanged(String type) {
+            for ( IDateTimeCallback callback : mDateTimeCallbacks ) {
+                try {
+                    callback.onTimeTypeChanged(type); 
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -673,7 +691,11 @@ public class StatusBarService extends Service {
             public String getDateTime() throws RemoteException { 
                 if ( mDateTimeController == null ) return null; 
                 return mDateTimeController.get();
-             } 
+            } 
+            public String getTimeType() throws RemoteException { 
+                if ( mDateTimeController == null ) return null; 
+                return mDateTimeController.getTimeType();
+            } 
             public void openDateTimeSetting() throws RemoteException {
                 if ( !OPEN_DATE_SETTING.equals("") ) {
                     Intent intent = new Intent(OPEN_DATE_SETTING);
