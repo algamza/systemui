@@ -91,6 +91,7 @@ public class TMSClient {
 
     public int getSignalLevel() {
         Log.d(TAG, "getSignalLevel="+mCurrentSignalLevel); 
+        // min = 0, max = 7
         return mCurrentSignalLevel;
     }
 
@@ -179,7 +180,9 @@ public class TMSClient {
                             for ( TMSCallback callback : mListeners ) 
                                 callback.onCallingStatusChanged(calling_status);
                         }
-
+                        
+                        // this is only call data 
+                        /*
                         DataUsingStatus data_status = DataUsingStatus.DATA_NO_PACKET; 
                         switch(requestDataPacketStatusType) {
                             case 0: data_status = DataUsingStatus.DATA_NO_PACKET; break; 
@@ -191,9 +194,9 @@ public class TMSClient {
                             for ( TMSCallback callback : mListeners ) 
                                 callback.onDataUsingChanged(data_status); 
                         }
+                        */
 
-                        Log.d(TAG, "APP_TMS_UPDATE_CALL_STATUS:call="+requestDataCallStatusType
-                            +", data="+requestDataPacketStatusType);
+                        Log.d(TAG, "APP_TMS_UPDATE_CALL_STATUS:call="+requestDataCallStatusType);
 
                         break;
                     }

@@ -105,6 +105,7 @@ public class SystemAntennaController extends BaseController<Integer> {
                     case 4: status = AntennaStatus.TMS_ANTENNA_3; break; 
                     case 5: status = AntennaStatus.TMS_ANTENNA_4; break; 
                     case 6: status = AntennaStatus.TMS_ANTENNA_5; break; 
+                    case 7: status = AntennaStatus.TMS_ANTENNA_5; break; 
                 }
             }
         }

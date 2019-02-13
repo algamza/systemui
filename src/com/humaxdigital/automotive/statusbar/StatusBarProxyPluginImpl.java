@@ -49,6 +49,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     private int mStatusBarHeight = 0; 
     private int mTouchDownY = 0; 
     private int mTouchUpY = 0; 
+    private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
 
@@ -245,13 +246,18 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             int y = (int)event.getY(); 
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    if ( mTouchDownY > y ) mTouchValid = true; 
+                    if ( mTouchDownY > y ) {
+                        mTouchValid = true; 
+                        mTouchDownValue = y; 
+                    }
                     break; 
                 }
                 case MotionEvent.ACTION_UP: {
                     if ( mTouchValid ) {
                         mTouchValid = false; 
-                        if ( mTouchUpY < y ) openDroplist(); 
+                        if ( (y - mTouchDownValue) > 10 ) {
+                            openDroplist();
+                        }
                     }
                     break; 
                 }

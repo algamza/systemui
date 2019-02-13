@@ -2,7 +2,7 @@
 <resources>    
     <integer name="climate_aircleaning_red_timeout">180000</integer>
     <integer name="climate_aircleaning_green_timeout">120000</integer>
-    <integer name="statusbar_touch_down_y">30</integer>
-    <integer name="statusbar_touch_up_y">50</integer>
-    <integer name="statusbar_height">30</integer>
+    <integer name="statusbar_touch_down_y">35</integer>
+    <integer name="statusbar_touch_up_y">45</integer>
+    <integer name="statusbar_height">35</integer>
 </resources>
