@@ -194,7 +194,7 @@ public class SystemStatusController implements BaseController {
 
         mMute = new SystemView(mContext)
             .addIcon(MuteStatus.NONE.ordinal(), none)
-            .addIcon(MuteStatus.AV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_audio_off, null))
+            .addIcon(MuteStatus.AV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_naviaudio_off, null))
             .addIcon(MuteStatus.NAV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_navi_off, null))
             .addIcon(MuteStatus.AV_NAV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_naviaudio_off, null))
             .inflate(); 
