@@ -87,6 +87,7 @@ public class BluetoothClient {
     public void disconnect() {
         if ( mContext == null ) return; 
         Log.d(TAG, "disconnect"); 
+        mListeners.clear();
         for ( int key : mCurrentProxy.keySet() ) {
             if ( mBluetoothAdapter == null ) break; 
             mBluetoothAdapter.closeProfileProxy(key, mCurrentProxy.get(key)); 
@@ -204,53 +205,56 @@ public class BluetoothClient {
             if ( _proxy != null ) 
                 mBluetoothAdapter.closeProfileProxy(_profile, _proxy); 
         }
-        mBluetoothAdapter.getProfileProxy(mContext, new BluetoothProfile.ServiceListener() {
-            @Override
-            public void onServiceConnected(int profile, BluetoothProfile proxy) {
-                mCurrentProxy.put(profile, proxy); 
 
-                switch(profile) {
-                    case BluetoothProfile.HEADSET_CLIENT: {
-                        if ( proxy.getConnectedDevices().size() > 0 ) {
-                            BluetoothHeadsetClient client = (BluetoothHeadsetClient)proxy;
-                            Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
-                            int battery_level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
-                            int antenna_level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
-                            mDataStore.setBTDeviceBatteryState(Profiles.HEADSET.ordinal(), battery_level);
-                            mDataStore.setBTDeviceAntennaLevel(Profiles.HEADSET.ordinal(), antenna_level);
-                            updateConectionState(Profiles.HEADSET, 1); 
-                        }
-                        else {
-                            updateConectionState(Profiles.HEADSET, 0); 
-                        }
-                        break; 
-                    }
-                    case BluetoothProfile.A2DP_SINK: {
-                        if ( proxy.getConnectedDevices().size() > 0 ) {
-                            updateConectionState(Profiles.A2DP_SINK, 1); 
-                        }
-                        else {
-                            updateConectionState(Profiles.A2DP_SINK, 0); 
-                        } 
-                        break; 
-                    }
-                    default: break; 
-                }
-            }
-            @Override
-            public void onServiceDisconnected(int profile) {
-                switch(profile) {
-                    case BluetoothProfile.HEADSET_CLIENT: 
-                        updateConectionState(Profiles.HEADSET, 0); 
-                        break; 
-                    case BluetoothProfile.A2DP_SINK: 
-                        updateConectionState(Profiles.A2DP_SINK, 0); 
-                        break; 
-                    default: break; 
-                }
-            }
-        }, _profile);
+        mBluetoothAdapter.getProfileProxy(mContext, mBluetoothProfileListener, _profile); 
     }
+
+    BluetoothProfile.ServiceListener mBluetoothProfileListener = new BluetoothProfile.ServiceListener() {
+        @Override
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            mCurrentProxy.put(profile, proxy); 
+
+            switch(profile) {
+                case BluetoothProfile.HEADSET_CLIENT: {
+                    if ( proxy.getConnectedDevices().size() > 0 ) {
+                        BluetoothHeadsetClient client = (BluetoothHeadsetClient)proxy;
+                        Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
+                        int battery_level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
+                        int antenna_level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
+                        mDataStore.setBTDeviceBatteryState(Profiles.HEADSET.ordinal(), battery_level);
+                        mDataStore.setBTDeviceAntennaLevel(Profiles.HEADSET.ordinal(), antenna_level);
+                        updateConectionState(Profiles.HEADSET, 1); 
+                    }
+                    else {
+                        updateConectionState(Profiles.HEADSET, 0); 
+                    }
+                    break; 
+                }
+                case BluetoothProfile.A2DP_SINK: {
+                    if ( proxy.getConnectedDevices().size() > 0 ) {
+                        updateConectionState(Profiles.A2DP_SINK, 1); 
+                    }
+                    else {
+                        updateConectionState(Profiles.A2DP_SINK, 0); 
+                    } 
+                    break; 
+                }
+                default: break; 
+            }
+        }
+        @Override
+        public void onServiceDisconnected(int profile) {
+            switch(profile) {
+                case BluetoothProfile.HEADSET_CLIENT: 
+                    updateConectionState(Profiles.HEADSET, 0); 
+                    break; 
+                case BluetoothProfile.A2DP_SINK: 
+                    updateConectionState(Profiles.A2DP_SINK, 0); 
+                    break; 
+                default: break; 
+            }
+        }
+    };
 
     private void updateConectionState(Profiles profile, int state) {
         if ( mDataStore == null ) return; 

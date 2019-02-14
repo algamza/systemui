@@ -28,6 +28,7 @@ public class SystemDataController extends BaseController<Integer> {
     @Override
     public void connect() {
         if ( mContext == null ) return;
+        Log.d(TAG, "connect");
         mConnectivity = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -41,6 +42,7 @@ public class SystemDataController extends BaseController<Integer> {
 
     @Override
     public void disconnect() {
+        Log.d(TAG, "disconnect");
         if ( mTelephony != null ) 
             mTelephony.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
@@ -48,6 +50,8 @@ public class SystemDataController extends BaseController<Integer> {
     @Override
     public void fetch() {
         if ( mConnectivity == null || mTelephony == null || mDataStore == null ) return;
+
+        Log.d(TAG, "fetch");
 
         final NetworkInfo netInfo = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         if (netInfo == null)  return;
@@ -70,6 +74,7 @@ public class SystemDataController extends BaseController<Integer> {
         if ( mDataStore == null ) return 0; 
         int type = mDataStore.getNetworkDataType(); 
         boolean using = mDataStore.getNetworkDataUsing(); 
+        Log.d(TAG, "get:type="+type+", using="+using);
         return convertToStatus(type, using).ordinal(); 
     }
 
@@ -87,6 +92,7 @@ public class SystemDataController extends BaseController<Integer> {
             case TelephonyManager.DATA_ACTIVITY_NONE: 
             default: break;
         }
+        Log.d(TAG, "usingData="+using);
         return using; 
     }
 
@@ -119,6 +125,7 @@ public class SystemDataController extends BaseController<Integer> {
             }
             default: break;
         }
+        Log.d(TAG, "convertToStatus:type="+type+", using="+using+", state="+status);
         return status; 
     }
 
@@ -126,13 +133,14 @@ public class SystemDataController extends BaseController<Integer> {
         @Override
         public void onReceive(Context context, Intent intent) {
             if ( mConnectivity == null || mTelephony == null || mDataStore == null ) return;
-
             final NetworkInfo netInfo = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if (netInfo == null)  return;
 
             final boolean isAvailable = netInfo.isAvailable();
             final boolean isConnected = netInfo.isConnectedOrConnecting();
             int type = mTelephony.getNetworkType();
+            Log.d(TAG, "onReceive=CONNECTIVITY_ACTION, available="+isAvailable
+                +", connected="+isConnected+", type"+type);
             // todo : Check status when wifi is connected
             if ( isAvailable && isConnected ) {
                 boolean using = usingData(mTelephony.getDataActivity()); 
@@ -157,6 +165,7 @@ public class SystemDataController extends BaseController<Integer> {
             int type = mTelephony.getNetworkType();
             boolean using = usingData(mTelephony.getDataActivity()); 
             boolean shouldPropagate = mDataStore.shouldPropagateNetworkDataUpdate(type, using);
+            Log.d(TAG, "onDataActivity:LISTEN_SERVICE_STATE:type="+type+", using="+using);
             if ( shouldPropagate ) {
                 for ( Listener<Integer> listener : mListeners ) 
                     listener.onEvent(convertToStatus(type, using).ordinal());

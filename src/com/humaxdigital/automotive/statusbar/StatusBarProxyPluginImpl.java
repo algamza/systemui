@@ -56,6 +56,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
         if ( pluginContext == null ) return; 
+        Log.d(TAG, "onCreate");
         mSysUiContext = sysuiContext;
         mPluginContext = pluginContext;
         mWindowManager = (WindowManager) mPluginContext.getSystemService(Context.WINDOW_SERVICE);
@@ -115,9 +116,17 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
         if (mNavBarWindow != null) {
+            mNavBarWindow.removeAllViews();
             mWindowManager.removeViewImmediate(mNavBarWindow);
             mNavBarWindow = null;
+        }
+
+        if (mStatusBarWindow != null) {
+            ((ViewGroup)mStatusBarWindow).removeAllViews();
+            mWindowManager.removeViewImmediate(mStatusBarWindow);
+            mStatusBarWindow = null;
         }
     }
 
