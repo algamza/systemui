@@ -62,6 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
+                    android:text="A:"
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
@@ -70,8 +71,28 @@
                     android:layout_height="wrap_content"
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
+                    android:text="B:"
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width = "wrap_content"
+                android:layout_height= "match_parent"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <CheckBox
+                    android:id="@+id/chkCpuUsage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#222222"
+                    android:layout_margin="@dimen/dev_button_margin"
+                    android:textSize="18sp"
+                    android:textColor="#aaaaaa"
+                    android:text="CPU Usage"
+                    android:checked="false" />
 
             </LinearLayout>
 
@@ -95,7 +116,7 @@
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
                     android:textColor="#cccccc"
-                    android:textSize="@dimen/dev_text_size"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:id="@+id/txtSavedActivity"

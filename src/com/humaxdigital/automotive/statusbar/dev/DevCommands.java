@@ -7,4 +7,5 @@ public interface DevCommands {
     void forceStopPackage(String packageName, int userId);
     String getPreferenceString(String key, String defValue);
     void putPreferenceString(String key, String value);
+    String execShellCommand(String commandLine);
 }

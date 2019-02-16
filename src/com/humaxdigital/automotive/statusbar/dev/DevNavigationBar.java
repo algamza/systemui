@@ -47,6 +47,7 @@ public class DevNavigationBar extends FrameLayout {
     private TextView mSavedActivityTextView;
     private TextView mStartTimeTextView;
     private TextView mUserSwitchTimeTextView;
+    private CheckBox mCpuUsageCheckBox;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -105,6 +106,9 @@ public class DevNavigationBar extends FrameLayout {
         mStartTimeTextView = (TextView) findViewById(R.id.txtStartTime);
         mUserSwitchTimeTextView = (TextView) findViewById(R.id.txtUserSwitchTime);
 
+        mCpuUsageCheckBox = (CheckBox) findViewById(R.id.chkCpuUsage);
+        mCpuUsageCheckBox.setOnClickListener(view -> { writeCpuUsageOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -118,6 +122,8 @@ public class DevNavigationBar extends FrameLayout {
         mDevCommands = devCommands;
         resetBootCompletedTime();
         updateStartTimeText();
+        updateCpuUsageOptions();
+        writeCpuUsageOptions();
     }
 
     public void onAttached() {
@@ -219,14 +225,14 @@ public class DevNavigationBar extends FrameLayout {
 
     private void updateStartTimeText() {
         if (mStartTimeTextView != null) {
-            mStartTimeTextView.setText(toSecString(mStartTime));
+            mStartTimeTextView.setText("A:" + toSecString(mStartTime));
         }
     }
 
     private void updateBootCompletedTimeText() {
         if (mStartTimeTextView != null) {
             long elapsed = mBootCompletedTime - mUserSwitchTime;
-            mUserSwitchTimeTextView.setText(toSecString(elapsed));
+            mUserSwitchTimeTextView.setText("B:" + toSecString(elapsed));
         }
     }
 
@@ -242,5 +248,24 @@ public class DevNavigationBar extends FrameLayout {
                 instrumentation.sendKeyDownUpSync(keyCode);
             }
         }).start();
+    }
+
+    private void updateCpuUsageOptions() {
+        final boolean checked = (Settings.Global.getInt(
+                mContext.getContentResolver(), Settings.Global.SHOW_PROCESSES, 0) != 0);
+        mCpuUsageCheckBox.setChecked(checked);
+    }
+
+    private void writeCpuUsageOptions() {
+        boolean value = mCpuUsageCheckBox.isChecked();
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.SHOW_PROCESSES, value ? 1 : 0);
+        Intent intent = new Intent(mContext, LoadAverageService.class);
+        intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        if (value) {
+            mContext.startService(intent);
+        } else {
+            mContext.stopService(intent);
+        }
     }
 }

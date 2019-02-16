@@ -38,8 +38,15 @@ public class DevCommandsProxy implements DevCommands {
         invokeDevCommand("putPreferenceString", args);
     }
 
+    public String execShellCommand(String commandLine) {
+        Bundle args = new Bundle();
+        args.putCharSequence("commandLine", commandLine);
+        Bundle ret = invokeDevCommand("execShellCommand", args);
+        return ret.getCharSequence("return", "").toString();
+    }
+
     public Bundle invokeDevCommand(String command, Bundle args) {
-        // Return null.  Subclass should override.
-        return null;
+        // Return empty bundle. Subclass should override.
+        return new Bundle();
     }
 }
