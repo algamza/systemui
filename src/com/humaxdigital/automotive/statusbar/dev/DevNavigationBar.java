@@ -48,6 +48,7 @@ public class DevNavigationBar extends FrameLayout {
     private TextView mStartTimeTextView;
     private TextView mUserSwitchTimeTextView;
     private CheckBox mCpuUsageCheckBox;
+    private CheckBox mUsbDebuggingCheckBox;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -109,6 +110,9 @@ public class DevNavigationBar extends FrameLayout {
         mCpuUsageCheckBox = (CheckBox) findViewById(R.id.chkCpuUsage);
         mCpuUsageCheckBox.setOnClickListener(view -> { writeCpuUsageOptions(); });
 
+        mUsbDebuggingCheckBox = (CheckBox) findViewById(R.id.chkUsbDebugging);
+        mUsbDebuggingCheckBox.setOnClickListener(view -> { writeUsbDebuggingOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -123,6 +127,7 @@ public class DevNavigationBar extends FrameLayout {
         resetBootCompletedTime();
         updateStartTimeText();
         updateCpuUsageOptions();
+        updateUsbDebuggingOptions();
         writeCpuUsageOptions();
     }
 
@@ -267,5 +272,17 @@ public class DevNavigationBar extends FrameLayout {
         } else {
             mContext.stopService(intent);
         }
+    }
+
+    private void updateUsbDebuggingOptions() {
+        final boolean checked = (Settings.Global.getInt(
+                mContext.getContentResolver(), Settings.Global.ADB_ENABLED, 0) != 0);
+        mUsbDebuggingCheckBox.setChecked(checked);
+    }
+
+    private void writeUsbDebuggingOptions() {
+        boolean value = mUsbDebuggingCheckBox.isChecked();
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.ADB_ENABLED, value ? 1 : 0);
     }
 }
