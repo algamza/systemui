@@ -47,7 +47,7 @@ public class SystemBLEController extends BaseController<Integer> {
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
         mDataStore.setBLEState(state.ordinal());
-        cmdRequest(CarBLEManager.APP_BLE_REQ_CONNECTED_PHONE_INFO, 0, null);
+        cmdRequest(CarBLEManager.APP_BLE_REQ_CONNECTION_STATUS, 0, null);
     }
 
     @Override
