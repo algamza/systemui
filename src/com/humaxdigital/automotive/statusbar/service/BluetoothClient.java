@@ -50,6 +50,8 @@ public class BluetoothClient {
     private int mContactsDownloadingState = 0; 
     private int mCallHistoryDownloadingState = 0; 
     private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
+    private final String CALL_STATUS = "com.humaxdigital.automotive.btphone.response_call_status"; 
+    private int mCurrentCallingState = 0; 
     
     private int[] mBTDeviceProfiles = { 
             BluetoothProfile.HEADSET_CLIENT, 
@@ -80,6 +82,7 @@ public class BluetoothClient {
         // PBAP_STATE_CONNECTED = 2;
         // PBAP_STATE_DOWNLOADING = 3;
         filter.addAction("action_pbap_state"); 
+        filter.addAction(CALL_STATUS); 
         mContext.registerReceiverAsUser(mBTReceiver, UserHandle.ALL, filter, null, null);
         checkAllProfileConnection(); 
     }
@@ -349,6 +352,30 @@ public class BluetoothClient {
                         }
                     }
                     break; 
+                }
+                case CALL_STATUS: {
+                    int state = intent.getIntExtra("status", 0);
+                    Log.d(TAG, "received:com.humaxdigital.automotive.btphone.response_call_status:state="+state); 
+                    if ( mCurrentCallingState == state ) return;
+                    mCurrentCallingState = state; 
+                    /*
+                        0 : Idle
+                        1 : Dialing
+                        2 : Calling
+                        3 : Outgoing
+                    */
+                    if ( mCurrentCallingState == 2 ) {
+                        if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.BLUETOOTH_CALLING.ordinal(), 1) ) {
+                            for ( BluetoothCallback callback : mListeners ) 
+                                callback.onCallingStateChanged(BluetoothState.BLUETOOTH_CALLING, 1); 
+                        }
+                    }
+                    else {
+                        if ( mDataStore.shouldPropagateBTCallingStateUpdate(BluetoothState.BLUETOOTH_CALLING.ordinal(), 0) ) {
+                            for ( BluetoothCallback callback : mListeners ) 
+                                callback.onCallingStateChanged(BluetoothState.BLUETOOTH_CALLING, 0); 
+                        }
+                    }
                 }
                 default: break;
             }
