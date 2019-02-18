@@ -264,7 +264,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
                 case MotionEvent.ACTION_UP: {
                     if ( mTouchValid ) {
                         mTouchValid = false; 
-                        if ( (y - mTouchDownValue) > 10 ) {
+                        if ( (y - mTouchDownValue) > 5 ) {
                             openDroplist();
                         }
                     }
