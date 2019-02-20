@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.NetworkInfo;
 
 import android.util.Log;
 
@@ -16,6 +17,7 @@ public class SystemWifiController extends BaseController<Integer> {
     private final String TAG = "SystemWifiController"; 
     private enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
     private WifiManager mManager; 
+    private boolean mConnected = false;
 
     public SystemWifiController(Context context, DataStore store) {
         super(context, store);
@@ -41,18 +43,17 @@ public class SystemWifiController extends BaseController<Integer> {
 
     @Override
     public void fetch() {
-        if ( mDataStore == null ) return;
-        int level = getWifiLevel();
-        Log.d(TAG, "fetch="+level);
-        mDataStore.setWifiLevel(level);
     }
 
     @Override
     public Integer get() {
-        if ( mDataStore == null ) return 0; 
-        int level = mDataStore.getWifiLevel();
-        Log.d(TAG, "get="+level);
-        return convertToStatus(level).ordinal(); 
+        WifiStatus status = WifiStatus.NONE; 
+        if ( mManager == null ) return status.ordinal(); 
+        if ( !mManager.isWifiEnabled() ) status.ordinal();  
+        if ( !mConnected ) status.ordinal(); 
+        status = convertToStatus(getWifiLevel()); 
+        Log.d(TAG, "get="+status);
+        return status.ordinal(); 
     }
 
     private final BroadcastReceiver mWifiReceiver = new BroadcastReceiver() {
@@ -63,36 +64,34 @@ public class SystemWifiController extends BaseController<Integer> {
                 case WifiManager.RSSI_CHANGED_ACTION: {
                     int level = getWifiLevel(); 
                     Log.d(TAG, "RSSI_CHANGED_ACTION="+level);
-                    boolean shouldPropagate = mDataStore.shouldPropagateStatusUserIdUpdate(level);
-                    if ( shouldPropagate ) {
-                        for ( Listener<Integer> listener : mListeners ) 
-                            listener.onEvent(convertToStatus(level).ordinal());
-                    }
+                    for ( Listener<Integer> listener : mListeners ) 
+                        listener.onEvent(convertToStatus(level).ordinal());
                     break;
                 }
                 case WifiManager.WIFI_STATE_CHANGED_ACTION: {
-                    if ( mManager.isWifiEnabled() ) {
-                        Log.d(TAG, "WIFI_STATE_CHANGED_ACTION=enable");
-                        int level = getWifiLevel(); 
-                        mDataStore.shouldPropagateStatusUserIdUpdate(level);
+                    int level = getWifiLevel(); 
+                    boolean enable = mManager.isWifiEnabled();
+                    Log.d(TAG, "WIFI_STATE_CHANGED_ACTION:level="+level+", enable="+enable);
+                    if ( enable ) {
                         for ( Listener<Integer> listener : mListeners ) 
                             listener.onEvent(convertToStatus(level).ordinal());
                     } else {
-                        Log.d(TAG, "WIFI_STATE_CHANGED_ACTION=disable");
                         for ( Listener<Integer> listener : mListeners ) 
                             listener.onEvent(WifiStatus.NONE.ordinal());
                     }
                     break;
                 }
                 case WifiManager.NETWORK_STATE_CHANGED_ACTION: {
-                    if ( mManager.isWifiEnabled() ) {
-                        Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION=enable");
-                        int level = getWifiLevel(); 
-                        mDataStore.shouldPropagateStatusUserIdUpdate(level);
+                    int level = getWifiLevel(); 
+                    NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO); 
+                    if ( info == null ) break;
+                    if ( info.getState() == NetworkInfo.State.CONNECTED ) mConnected = true;
+                    else mConnected = false;
+                    Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION:level="+level+", connected="+mConnected);
+                    if ( mConnected ) {
                         for ( Listener<Integer> listener : mListeners ) 
                             listener.onEvent(convertToStatus(level).ordinal());
                     } else {
-                        Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION=disable");
                         for ( Listener<Integer> listener : mListeners ) 
                             listener.onEvent(WifiStatus.NONE.ordinal());
                     }
@@ -103,14 +102,13 @@ public class SystemWifiController extends BaseController<Integer> {
     };
 
     private int getWifiLevel() {
-        if ( mManager == null ) return -1; 
-        if ( !mManager.isWifiEnabled() ) return -1; 
         int numberOfLevels = WifiStatus.values().length - 1;
         WifiInfo wifiinfo = mManager.getConnectionInfo(); 
+        // min == -100;
+        // max == -50;
         int real_level = wifiinfo.getRssi();
-        if ( real_level < 0 ) return -1; 
+        Log.d(TAG, "getWifiLevel:real_level="+real_level+", numberof="+numberOfLevels);
         int level = WifiManager.calculateSignalLevel(real_level, numberOfLevels);
-        Log.d(TAG, "getWifiLevel:real_level="+real_level+", numberof="+numberOfLevels+", level="+level);
         return level; 
     }
 
