@@ -69,13 +69,9 @@ public class SystemWifiController extends BaseController<Integer> {
                     break;
                 }
                 case WifiManager.WIFI_STATE_CHANGED_ACTION: {
-                    int level = getWifiLevel(); 
                     boolean enable = mManager.isWifiEnabled();
-                    Log.d(TAG, "WIFI_STATE_CHANGED_ACTION:level="+level+", enable="+enable);
-                    if ( enable ) {
-                        for ( Listener<Integer> listener : mListeners ) 
-                            listener.onEvent(convertToStatus(level).ordinal());
-                    } else {
+                    Log.d(TAG, "WIFI_STATE_CHANGED_ACTION:level:enable="+enable);
+                    if ( !enable ) {
                         for ( Listener<Integer> listener : mListeners ) 
                             listener.onEvent(WifiStatus.NONE.ordinal());
                     }
