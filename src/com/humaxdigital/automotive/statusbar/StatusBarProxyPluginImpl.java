@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.UserManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,8 +56,16 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
 
     @Override
     public void onCreate(Context sysuiContext, Context pluginContext) {
-        if ( pluginContext == null ) return; 
         Log.d(TAG, "onCreate");
+
+        if (pluginContext == null) return;
+
+        // Check if user isn't in unlocked, then ignore this call because it will
+        // be called again when the state changed into the unlocked.
+        // see PluginManagerImpl::onReceive() and PluginInstanceManager::loadAll().
+        if (!pluginContext.getSystemService(UserManager.class).isUserUnlocked())
+            return;
+
         mSysUiContext = sysuiContext;
         mPluginContext = pluginContext;
         mWindowManager = (WindowManager) mPluginContext.getSystemService(Context.WINDOW_SERVICE);
