@@ -195,8 +195,7 @@ public class ClimateController implements BaseController {
             .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null), 0)
             .addIcon(AirCleaning.RED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_01, null), 
                 red_timeout > 0 ? mContext.getResources().getInteger(red_timeout):0)
-            .addIcon(AirCleaning.GREEN.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null), 
-                green_timeout > 0 ? mContext.getResources().getInteger(green_timeout):0)
+            .addIcon(AirCleaning.GREEN.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null), 0)
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_dis, null))
             .registTimeoutListener(mClimateAirCleaningImgTimeout)
             .inflate(); 
