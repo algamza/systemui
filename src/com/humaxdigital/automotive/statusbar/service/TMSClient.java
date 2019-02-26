@@ -201,20 +201,26 @@ public class TMSClient {
                         break;
                     }
                     case CarTMSManager.APP_TMS_RES_LOCATIONSHARING: {
-                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
-                        if ( mCurrentLocationSharingStatus != status ) {
-                            mCurrentLocationSharingStatus = status; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onLocationSharingChanged(status); 
-                        }
+                        int result = eventData[0];
+                        if (result == 0x01) {
+                            LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
+                            if ( mCurrentLocationSharingStatus != status ) {
+                                mCurrentLocationSharingStatus = status; 
+                                for ( TMSCallback callback : mListeners ) 
+                                    callback.onLocationSharingChanged(status); 
+                            }
+                        } 
                         break;
                     }
                     case CarTMSManager.APP_TMS_RES_LOCATIONSHARING_CANCEL: {
-                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
-                        if ( mCurrentLocationSharingStatus != status ) {
-                            mCurrentLocationSharingStatus = status; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onLocationSharingChanged(status); 
+                        int result = eventData[0];
+                        if (result == 0x01) {
+                            LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
+                            if ( mCurrentLocationSharingStatus != status ) {
+                                mCurrentLocationSharingStatus = status; 
+                                for ( TMSCallback callback : mListeners ) 
+                                    callback.onLocationSharingChanged(status); 
+                            }
                         }
                         break;
                     }
