@@ -232,9 +232,11 @@ public class SystemCallController extends BaseController<Integer> {
         }
         @Override
         public void onContactsDownloadStateChanged(int state) throws RemoteException {
+            broadcastChangeEvent();
         }
         @Override
         public void onCallHistoryDownloadStateChanged(int state) throws RemoteException {
+            broadcastChangeEvent();
         }
     };
 
