@@ -172,6 +172,7 @@ public class SystemDataController extends BaseController<Integer> {
                 break;
             }
             case TelephonyManager.NETWORK_TYPE_LTE:
+            case TelephonyManager.NETWORK_TYPE_UNKNOWN:
             {
                 if ( using ) status = DataStatus.DATA_4G;
                 else status = DataStatus.DATA_4G_NO;
@@ -195,7 +196,7 @@ public class SystemDataController extends BaseController<Integer> {
             mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
             mDataType = mTelephony.getNetworkType();
             Log.d(TAG, "onReceive=CONNECTIVITY_ACTION, available="+mIsNetworkAvaliable
-                +", connected="+mIsNetworkConnected+", type"+mDataType);
+                +", connected="+mIsNetworkConnected+", type="+mDataType);
             // todo : Check status when wifi is connected
             DataStatus status = convertToStatus(mIsNetworkAvaliable 
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
