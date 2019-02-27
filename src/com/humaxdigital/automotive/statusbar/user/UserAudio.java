@@ -27,8 +27,10 @@ public class UserAudio extends IUserAudio.Stub {
         mContext = mService.getApplicationContext(); 
         if ( mContext == null ) return;
         mManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE); 
-        mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, 
-            new IntentFilter(AudioManager.MASTER_MUTE_CHANGED_ACTION), null, null);
+        IntentFilter filter = new IntentFilter(); 
+        filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
+        filter.addAction(AudioManager.MASTER_MUTE_CHANGED_ACTION);
+        mContext.registerReceiver(mReceiver,filter, null, null);
     }
 
     public void destroy() {
@@ -54,13 +56,16 @@ public class UserAudio extends IUserAudio.Stub {
     public boolean isAudioMute() throws RemoteException {
         if ( mManager == null ) return false;
         boolean mute = mManager.isMasterMute();
-        Log.d(TAG, "get="+mute);
+        Log.d(TAG, "isAudioMute="+mute);
         return mute;
     }
 
     @Override
     public boolean isBluetoothMicMute() throws RemoteException {
-        return false;
+        if ( mManager == null ) return false;
+        boolean mute = mManager.isMicrophoneMute();
+        Log.d(TAG, "isBluetoothMicMute="+mute);
+        return mute;
     }
 
     @Override
@@ -79,6 +84,18 @@ public class UserAudio extends IUserAudio.Stub {
                         boolean mute = mManager.isMasterMute();
                         for ( IUserAudioCallback callback : mListeners ) {
                             callback.onAudioMuteChanged(mute);
+                        }
+                    } catch( RemoteException e ) {
+                        Log.e(TAG, "error:"+e);
+                    }
+                    break;
+                }
+                case AudioManager.ACTION_MICROPHONE_MUTE_CHANGED: {
+                    Log.d(TAG, "ACTION_MICROPHONE_MUTE_CHANGED");
+                    try {
+                        boolean mute = mManager.isMicrophoneMute();
+                        for ( IUserAudioCallback callback : mListeners ) {
+                            callback.onBluetoothMicMuteChanged(mute);
                         }
                     } catch( RemoteException e ) {
                         Log.e(TAG, "error:"+e);
