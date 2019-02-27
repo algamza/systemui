@@ -1,23 +1,25 @@
 package com.humaxdigital.automotive.statusbar.service;
 
 import android.os.UserHandle;
+import android.os.RemoteException;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.net.NetworkInfo;
 
 import android.util.Log;
+
+import com.humaxdigital.automotive.statusbar.user.IUserWifi;
+import com.humaxdigital.automotive.statusbar.user.IUserWifiCallback;
 
 public class SystemWifiController extends BaseController<Integer> {
     private final String TAG = "SystemWifiController"; 
     private enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
-    private WifiManager mManager; 
-    private boolean mConnected = false;
+    private IUserWifi mUserWifi = null;
+    private WifiStatus mCurrentStatus = WifiStatus.NONE; 
 
     public SystemWifiController(Context context, DataStore store) {
         super(context, store);
@@ -27,82 +29,99 @@ public class SystemWifiController extends BaseController<Integer> {
     public void connect() {
         if ( mContext == null ) return;
         Log.d(TAG, "connect");
-        mManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(WifiManager.RSSI_CHANGED_ACTION);
-        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
-        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-        mContext.registerReceiverAsUser(mWifiReceiver, UserHandle.ALL, filter, null, null);
     }
 
     @Override
     public void disconnect() {
         Log.d(TAG, "disconnect");
-        if ( mContext != null ) mContext.unregisterReceiver(mWifiReceiver);
-    }
-
-    @Override
-    public void fetch() {
+        try {
+            if ( mUserWifi != null ) 
+                mUserWifi.unregistCallback(mUserWifiCallback);
+            mUserWifi = null;
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
     }
 
     @Override
     public Integer get() {
-        WifiStatus status = WifiStatus.NONE; 
-        if ( mManager == null ) return status.ordinal(); 
-        if ( !mManager.isWifiEnabled() ) status.ordinal();  
-        if ( !mConnected ) status.ordinal(); 
-        status = convertToStatus(getWifiLevel()); 
-        Log.d(TAG, "get="+status);
-        return status.ordinal(); 
+        mCurrentStatus = getCurrentState(); 
+        Log.d(TAG, "get="+mCurrentStatus); 
+        return mCurrentStatus.ordinal(); 
     }
 
-    private final BroadcastReceiver mWifiReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if ( mManager == null ) return;
-            switch(intent.getAction()) {
-                case WifiManager.RSSI_CHANGED_ACTION: {
-                    int level = getWifiLevel(); 
-                    Log.d(TAG, "RSSI_CHANGED_ACTION="+level);
-                    for ( Listener<Integer> listener : mListeners ) 
-                        listener.onEvent(convertToStatus(level).ordinal());
-                    break;
-                }
-                case WifiManager.WIFI_STATE_CHANGED_ACTION: {
-                    boolean enable = mManager.isWifiEnabled();
-                    Log.d(TAG, "WIFI_STATE_CHANGED_ACTION:level:enable="+enable);
-                    if ( !enable ) {
-                        for ( Listener<Integer> listener : mListeners ) 
-                            listener.onEvent(WifiStatus.NONE.ordinal());
-                    }
-                    break;
-                }
-                case WifiManager.NETWORK_STATE_CHANGED_ACTION: {
-                    int level = getWifiLevel(); 
-                    NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO); 
-                    if ( info == null ) break;
-                    if ( info.getState() == NetworkInfo.State.CONNECTED ) mConnected = true;
-                    else mConnected = false;
-                    Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION:level="+level+", connected="+mConnected);
-                    if ( mConnected ) {
-                        for ( Listener<Integer> listener : mListeners ) 
-                            listener.onEvent(convertToStatus(level).ordinal());
-                    } else {
-                        for ( Listener<Integer> listener : mListeners ) 
-                            listener.onEvent(WifiStatus.NONE.ordinal());
-                    }
-                    break;
-                }
+    public void fetchUserWifi(IUserWifi wifi) {
+        try {
+            if ( wifi == null ) {
+                if ( mUserWifi != null ) 
+                    mUserWifi.unregistCallback(mUserWifiCallback); 
+                mUserWifi = null;
+                return;
             }
+            mUserWifi = wifi; 
+            mUserWifi.registCallback(mUserWifiCallback); 
+            mCurrentStatus = getCurrentState();
+            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
+    }
+
+    private WifiStatus getCurrentState() {
+        WifiStatus state = WifiStatus.NONE; 
+        if ( mUserWifi == null ) return state; 
+        try {
+            boolean enable = mUserWifi.isEnabled(); 
+            if ( !enable ) return state; 
+            boolean connected = mUserWifi.isConnected(); 
+            if ( !connected ) return state;
+            int level = getWifiLevel();
+            state = convertToStatus(level);
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
+        Log.d(TAG, "getCurrentState="+state); 
+        return state; 
+    }
+
+    private void broadcastChangeEvent() {
+        WifiStatus status = getCurrentState();
+        if ( mCurrentStatus == status ) return;
+        mCurrentStatus = status;
+        for ( Listener listener : mListeners ) 
+            listener.onEvent(mCurrentStatus.ordinal());
+    }
+
+    private final IUserWifiCallback.Stub mUserWifiCallback = 
+        new IUserWifiCallback.Stub() {
+        @Override
+        public void onWifiEnableChanged(boolean enable) throws RemoteException { 
+            Log.d(TAG, "onWifiEnableChanged="+enable); 
+            if ( !enable ) broadcastChangeEvent();
+        }
+        @Override
+        public void onWifiConnectionChanged(boolean connected) throws RemoteException {
+            Log.d(TAG, "onWifiConnectionChanged="+connected); 
+            broadcastChangeEvent();
+        }
+        @Override
+        public void onWifiRssiChanged(int rssi) throws RemoteException {
+            Log.d(TAG, "onWifiRssiChanged="+rssi); 
+            broadcastChangeEvent();
         }
     };
 
     private int getWifiLevel() {
+        if ( mUserWifi == null ) return 0;
         int numberOfLevels = WifiStatus.values().length - 1;
-        WifiInfo wifiinfo = mManager.getConnectionInfo(); 
         // min == -100;
         // max == -50;
-        int real_level = wifiinfo.getRssi();
+        int real_level = 0;
+        try {
+            real_level = mUserWifi.getRssi(); 
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
         Log.d(TAG, "getWifiLevel:real_level="+real_level+", numberof="+numberOfLevels);
         int level = WifiManager.calculateSignalLevel(real_level, numberOfLevels);
         return level; 

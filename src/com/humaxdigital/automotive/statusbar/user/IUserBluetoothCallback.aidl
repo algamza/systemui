@@ -2,7 +2,8 @@ package com.humaxdigital.automotive.statusbar.user;
 
 interface IUserBluetoothCallback {
     void onBluetoothEnableChanged(int enable); 
-    void onConnectionStateChanged(int profile, int state); 
+    void onHeadsetConnectionStateChanged(int state); 
+    void onA2dpConnectionStateChanged(int state); 
     void onBatteryStateChanged(int level); 
     void onAntennaStateChanged(int level); 
     void onBluetoothCallingStateChanged(int state); 

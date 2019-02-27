@@ -1,27 +1,38 @@
  package com.humaxdigital.automotive.statusbar.service;
 
-import android.content.Context;
-import android.app.ActivityManager;
-import android.app.Service;
-import android.content.Intent;
-import android.graphics.Bitmap;
-
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
+import android.os.Handler;
+import android.os.UserHandle;
 import android.os.RemoteException;
-import android.content.pm.PackageManager;
 import android.os.SystemProperties;
+
+import android.graphics.Bitmap;
+
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
-import android.os.UserHandle;
+import android.content.pm.PackageManager;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
+
+import android.app.ActivityManager;
+import android.app.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 import com.humaxdigital.automotive.statusbar.dev.DevCommandsServer;
 import com.humaxdigital.automotive.statusbar.service.CarExtensionClient.CarExClientListener;
+
+import com.humaxdigital.automotive.statusbar.user.PerUserService;
+import com.humaxdigital.automotive.statusbar.user.IUserService;
+import com.humaxdigital.automotive.statusbar.user.IUserBluetooth;
+import com.humaxdigital.automotive.statusbar.user.IUserWifi;
+import com.humaxdigital.automotive.statusbar.user.IUserAudio;
 
 public class StatusBarService extends Service {
 
@@ -49,8 +60,6 @@ public class StatusBarService extends Service {
     private SystemWirelessChargeController mWirelessChargeController; 
 
     private CarExtensionClient mCarExClient; 
-    private BluetoothClient mBluetoothClient; 
-    private AudioClient mAudioClient; 
     private TMSClient mTMSClient; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
@@ -63,6 +72,14 @@ public class StatusBarService extends Service {
     private List<IDateTimeCallback> mDateTimeCallbacks = new ArrayList<>();
     private List<IUserProfileCallback> mUserProfileCallbacks = new ArrayList<>();
 
+    private IUserService mUserService;
+    private IUserBluetooth mUserBluetooth;
+    private IUserAudio mUserAudio;
+    private IUserWifi mUserWifi;
+    private final Object mServiceBindLock = new Object();
+    private boolean mBound = false;
+    private int mBindRetryCount = 0;
+
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -74,12 +91,6 @@ public class StatusBarService extends Service {
 
         mDevCommandsServer = new DevCommandsServer(this);
 
-        mBluetoothClient = new BluetoothClient(mContext, mDataStore); 
-        mBluetoothClient.connect();
-
-        mAudioClient = new AudioClient(mContext); 
-        mAudioClient.connect(); 
-
         mTMSClient = new TMSClient(mContext); 
         mTMSClient.connect(); 
 
@@ -87,15 +98,21 @@ public class StatusBarService extends Service {
         createClimateManager();
 
         createCarExClient(); 
+
+        bindToUserService();
+
+        registUserSwicher();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        unregistUserSwicher();
+
+        unbindToUserService();
+
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
-        if ( mBluetoothClient != null ) mBluetoothClient.disconnect();
-        if ( mAudioClient != null ) mAudioClient.disconnect();
         if ( mTMSClient != null ) mTMSClient.disconnect();
 
         mSystemCallbacks.clear(); 
@@ -148,7 +165,6 @@ public class StatusBarService extends Service {
 
         mUserProfileController = new SystemUserProfileController(mContext, mDataStore); 
         mUserProfileController.addListener(mUserProfileListener);
-        mUserProfileController.registerUserChangeCallback(mUserChangeListener);
         mControllers.add(mUserProfileController); 
 
         mLocationController = new SystemLocationController(mContext, mDataStore); 
@@ -189,18 +205,7 @@ public class StatusBarService extends Service {
 
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
-
-        mBTBatteryController.fetch(mBluetoothClient);  
-        mMuteController.fetch(mAudioClient); 
     }
-
-    private final SystemUserProfileController.UserChangeListener mUserChangeListener = 
-        new SystemUserProfileController.UserChangeListener() {
-        @Override
-        public void onUserChanged(int userid) {
-            // TODO: 
-        }
-    }; 
     
     private CarExtensionClient.CarExClientListener mCarExClientListener = 
         new CarExtensionClient.CarExClientListener() {
@@ -216,11 +221,11 @@ public class StatusBarService extends Service {
             if ( mTMSClient != null ) {
                 mTMSClient.fetch(mCarExClient.getTMSManager()); 
                 if ( mAntennaController != null ) 
-                    mAntennaController.fetch(mBluetoothClient, mTMSClient); 
+                    mAntennaController.fetchTMSClient(mTMSClient); 
                 if ( mCallController != null )    
-                    mCallController.fetch(mBluetoothClient, mTMSClient, mAudioClient);
+                    mCallController.fetchTMSClient(mTMSClient);
                 if ( mLocationController != null ) 
-                    mLocationController.fetch(mTMSClient); 
+                    mLocationController.fetchTMSClient(mTMSClient); 
             }
             if ( mBLEController != null ) 
                 mBLEController.fetch(mCarExClient.getBLEManager()); 
@@ -741,4 +746,95 @@ public class StatusBarService extends Service {
                 return mDevCommandsServer.invokeDevCommand(command, args);
             }
         };
+
+    private void registUserSwicher() {
+        Log.d(TAG, "registUserSwicher");
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_USER_SWITCHED);
+        this.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
+    }
+
+    private void unregistUserSwicher() {
+        this.unregisterReceiver(mUserChangeReceiver);
+    }
+    
+    private final BroadcastReceiver mUserChangeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            unbindToUserService();
+            bindToUserService();
+        }
+    };
+
+    private void bindToUserService() {
+        Log.d(TAG, "bindToUserService");
+        Intent intent = new Intent(this, PerUserService.class); 
+        synchronized (mServiceBindLock) {
+            mBound = true;
+            boolean result = this.bindServiceAsUser(intent, mUserServiceConnection,
+                    Context.BIND_AUTO_CREATE, UserHandle.CURRENT);
+            if ( result == false ) {
+                Log.e(TAG, "bindToUserService() failed to get valid connection");
+                unbindToUserService();
+                Handler handler = new Handler(); 
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "bind retry = " + ++mBindRetryCount);
+                        bindToUserService();
+                    }
+                }, 1000);
+            }
+        }
+    }
+
+    private void unbindToUserService() {
+        Log.d(TAG, "unbindToUserService");
+        synchronized (mServiceBindLock) {
+            if (mBound) {
+                this.unbindService(mUserServiceConnection);
+                mBound = false;
+            }
+        }
+    }
+    
+    private final ServiceConnection mUserServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            Log.d(TAG, "onServiceConnected");
+            mUserService = IUserService.Stub.asInterface(service);
+            if ( mUserService == null ) return;
+            try {
+                mUserBluetooth = mUserService.getUserBluetooth();
+                mUserWifi = mUserService.getUserWifi();
+                mUserAudio = mUserService.getUserAudio();
+
+                if ( mBTBatteryController != null ) mBTBatteryController.fetchUserBluetooth(mUserBluetooth); 
+                if ( mAntennaController != null ) mAntennaController.fetchUserBluetooth(mUserBluetooth); 
+                if ( mCallController != null ) mCallController.fetchUserBluetooth(mUserBluetooth); 
+                if ( mMuteController != null ) mMuteController.fetchUserAudio(mUserAudio); 
+                if ( mCallController != null ) mCallController.fetchUserAudio(mUserAudio); 
+                if ( mWifiController != null ) mWifiController.fetchUserWifi(mUserWifi); 
+
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            }
+            mBindRetryCount = 0;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.d(TAG, "onServiceDisconnected");
+            if ( mBTBatteryController != null ) mBTBatteryController.fetchUserBluetooth(null); 
+            if ( mAntennaController != null ) mAntennaController.fetchUserBluetooth(null); 
+            if ( mCallController != null ) mCallController.fetchUserBluetooth(null); 
+            if ( mMuteController != null ) mMuteController.fetchUserAudio(null); 
+            if ( mCallController != null ) mCallController.fetchUserAudio(null); 
+            if ( mWifiController != null ) mWifiController.fetchUserWifi(null); 
+            
+            mUserBluetooth = null;
+            mUserWifi = null;
+            mUserAudio = null;
+        }
+    };
 }

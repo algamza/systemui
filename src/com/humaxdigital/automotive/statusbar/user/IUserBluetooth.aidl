@@ -8,9 +8,9 @@ interface IUserBluetooth {
     int getBatteryLevel(); 
     int getAntennaLevel(); 
     int getBluetoothCallingState(); 
-    int getBluetoothMicMuteState(); 
     int getContactsDownloadState(); 
     int getCallHistoryDownloadState(); 
-    boolean isDeviceConnected(int profile); 
+    boolean isHeadsetDeviceConnected();
+    boolean isA2dpDeviceConnected();
     boolean isBluetoothEnabled(); 
 }

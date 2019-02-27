@@ -1,5 +1,7 @@
 package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.RemoteException;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -7,10 +9,14 @@ import android.content.BroadcastReceiver;
 
 import android.util.Log;
 
+import com.humaxdigital.automotive.statusbar.user.IUserAudio;
+import com.humaxdigital.automotive.statusbar.user.IUserAudioCallback;
+
 public class SystemMuteController extends BaseController<Integer> {
     private final String TAG = "SystemMuteController"; 
     private enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-    private AudioClient mAudioClient; 
+    private IUserAudio mUserAudio = null;
+    private MuteStatus mCurrentStatus = MuteStatus.NONE; 
 
     public SystemMuteController(Context context, DataStore store) {
         super(context, store);
@@ -26,55 +32,76 @@ public class SystemMuteController extends BaseController<Integer> {
     @Override
     public void disconnect() {
         Log.d(TAG, "disconnect"); 
-        if ( mAudioClient != null ) mAudioClient.unregisterCallback(mAudioCallback); 
+        try {
+            if ( mUserAudio != null ) 
+                mUserAudio.unregistCallback(mUserAudioCallback);
+            mUserAudio = null;
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
     }
 
-    public void fetch(AudioClient client) {
-        Log.d(TAG, "fetch"); 
-        if ( client == null ) return;
-        mAudioClient = client; 
-        mAudioClient.registerCallback(mAudioCallback); 
-        for ( AudioClient.AudioType type : AudioClient.AudioType.values() ) {
-            mDataStore.setAudioMuteState(type.ordinal(), mAudioClient.isMute(type) ? 1:0);
-        }
+    public void fetchUserAudio(IUserAudio audio) {
+        try {
+            if ( audio == null ) {
+                if ( mUserAudio != null ) 
+                    mUserAudio.unregistCallback(mUserAudioCallback); 
+                mUserAudio = null;
+                return;
+            }
+            mUserAudio = audio; 
+            mUserAudio.registCallback(mUserAudioCallback); 
+            mCurrentStatus = getCurrentState();
+            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
     }
 
     @Override
     public Integer get() {
-        MuteStatus state = getCurrentState(); 
-        Log.d(TAG, "get="+state); 
-        return state.ordinal(); 
+        mCurrentStatus = getCurrentState(); 
+        Log.d(TAG, "get="+mCurrentStatus); 
+        return mCurrentStatus.ordinal(); 
     }
 
     private MuteStatus getCurrentState() {
         MuteStatus state = MuteStatus.NONE; 
-        if ( mDataStore == null ) return state; 
-        boolean audio_is_mute = false; 
-        boolean naviation_is_mute = false; 
-        for ( AudioClient.AudioType type : AudioClient.AudioType.values() ) {
-            int current = mDataStore.getAudioMuteState(type.ordinal()); 
-            if ( current == 1 ) {
-                if ( AudioClient.AudioType.AUDIO == type ) audio_is_mute = true;    
-                else if ( AudioClient.AudioType.NAVIGATION == type ) naviation_is_mute = true;
-            } 
-        }
-        if ( audio_is_mute && naviation_is_mute ) state = MuteStatus.AV_NAV_MUTE; 
-        else if ( audio_is_mute ) state = MuteStatus.AV_MUTE; 
-        else if ( naviation_is_mute ) state = MuteStatus.NAV_MUTE; 
+        if ( mUserAudio == null ) return state; 
+        try {
+            boolean audio_is_mute = mUserAudio.isAudioMute(); 
+            boolean naviation_is_mute = mUserAudio.isNavigationMute(); 
+            if ( audio_is_mute && naviation_is_mute ) state = MuteStatus.AV_NAV_MUTE; 
+            else if ( audio_is_mute ) state = MuteStatus.AV_MUTE; 
+            else if ( naviation_is_mute ) state = MuteStatus.NAV_MUTE; 
+            else state = MuteStatus.NONE; 
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
         Log.d(TAG, "getCurrentState="+state); 
         return state; 
     }
 
-    private AudioClient.AudioCallback mAudioCallback = 
-        new AudioClient.AudioCallback() {
+    private void broadcastChangeEvent() {
+        MuteStatus status = getCurrentState();
+        if ( mCurrentStatus == status ) return;
+        mCurrentStatus = status;
+        for ( Listener listener : mListeners ) 
+            listener.onEvent(mCurrentStatus.ordinal());
+    }
+
+    private final IUserAudioCallback.Stub mUserAudioCallback = 
+        new IUserAudioCallback.Stub() {
         @Override
-        public void onMuteChanged(AudioClient.AudioType type, boolean mute) {
-            if ( mAudioClient == null ) return; 
-            if ( mDataStore.shouldPropagateAudioMuteStateUpdate(type.ordinal(), mute?1:0) ) {
-                for ( Listener listener : mListeners ) {
-                    listener.onEvent(getCurrentState().ordinal());
-                }
-            }
+        public void onAudioMuteChanged(boolean mute) throws RemoteException { 
+            broadcastChangeEvent();
         }
-    }; 
+        @Override
+        public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
+        }
+        @Override
+        public void onNavigationChanged(boolean mute) throws RemoteException {
+            broadcastChangeEvent();
+        }
+    };
 }

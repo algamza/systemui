@@ -33,7 +33,7 @@
     <uses-permission android:name="com.android.systemui.permission.PLUGIN" 
         android:protectionLevel="signature" />
 
-    <application>
+    <application android:directBootAware="true">
         <service android:name=".StatusBarProxyPluginImpl"
             android:singleUser="true"
             android:label="@string/plugin_label">
@@ -50,7 +50,7 @@
                 <action android:name="com.humaxdigital.automotive.statusbar.service.StatusBarService"></action>
             </intent-filter>
         </service>
-        <service android:name=".user.UserStatusBarService" android:exported="false" />
+        <service android:name=".user.PerUserService" android:exported="false" />
 
         <!-- for developer's view -->
         <service

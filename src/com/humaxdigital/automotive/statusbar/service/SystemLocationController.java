@@ -32,7 +32,7 @@ public class SystemLocationController extends BaseController<Integer> {
             mTMSClient.unregisterCallback(mTMSCallback);
     }
 
-    public void fetch(TMSClient tms) {
+    public void fetchTMSClient(TMSClient tms) {
         mTMSClient = tms; 
         if ( mTMSClient != null ) 
             mTMSClient.registerCallback(mTMSCallback);

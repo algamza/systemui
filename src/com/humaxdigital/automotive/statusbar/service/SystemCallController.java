@@ -1,15 +1,19 @@
 package com.humaxdigital.automotive.statusbar.service;
 
-import com.humaxdigital.automotive.statusbar.service.AudioClient.AudioType;
-
+import android.os.RemoteException;
 import android.content.Context;
 import android.util.Log;
 
+import com.humaxdigital.automotive.statusbar.user.IUserBluetooth;
+import com.humaxdigital.automotive.statusbar.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.statusbar.user.IUserAudio;
+import com.humaxdigital.automotive.statusbar.user.IUserAudioCallback;
+
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";
-    private BluetoothClient mBluetoothClient; 
-    private TMSClient mTMSClient; 
-    private AudioClient mAudioClient; 
+    private TMSClient mTMSClient = null;
+    private IUserBluetooth mUserBluetooth = null; 
+    private IUserAudio mUserAudio = null;
     private BTStatus mBTCurrentStatus = BTStatus.NONE; 
     private boolean mCurrentTMSCalling = false; 
     private boolean mCurrentBTMicMute = false;
@@ -36,29 +40,68 @@ public class SystemCallController extends BaseController<Integer> {
 
     @Override
     public void disconnect() {
-        if ( mBluetoothClient != null ) 
-            mBluetoothClient.unregisterCallback(mBTCallback);
+        try {
+            if ( mUserBluetooth != null ) 
+                mUserBluetooth.unregistCallback(mUserBluetoothCallback);
+            mUserBluetooth = null;
+            if ( mUserAudio != null ) 
+                mUserAudio.unregistCallback(mUserAudioCallback);
+            mUserAudio = null;
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
         if ( mTMSClient != null ) 
             mTMSClient.unregisterCallback(mTMSCallback);
-        if ( mAudioClient != null ) 
-            mAudioClient.unregisterCallback(mAudioCallback);
     }
 
     @Override
     public void fetch() {
     }
-
-    public void fetch(BluetoothClient bt, TMSClient tms, AudioClient audio) {
-        mBluetoothClient = bt;
-        mTMSClient = tms; 
-        mAudioClient = audio;
-
-        if ( mBluetoothClient != null ) mBluetoothClient.registerCallback(mBTCallback);
-        if ( mTMSClient != null ) mTMSClient.registerCallback(mTMSCallback); 
-        if ( mAudioClient != null ) mAudioClient.registerCallback(mAudioCallback);
+    public void fetchUserBluetooth(IUserBluetooth bt) {
+        if ( bt == null ) {
+            try {
+                if ( mUserBluetooth != null ) 
+                    mUserBluetooth.unregistCallback(mUserBluetoothCallback);
+                mUserBluetooth = null;
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            } 
+            return;
+        }
+        mUserBluetooth = bt;
+        try {
+            mUserBluetooth.registCallback(mUserBluetoothCallback);
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
 
         mCurrentStatus = getCurrentCallStatus();
-        Log.d(TAG, "fetch="+mCurrentStatus); 
+        Log.d(TAG, "fetchUserBluetooth="+mCurrentStatus); 
+    }
+
+    public void fetchUserAudio(IUserAudio audio) {
+        try {
+            if ( audio == null ) {
+                if ( mUserAudio != null ) 
+                    mUserAudio.unregistCallback(mUserAudioCallback); 
+                mUserAudio = null;
+                return;
+            }
+            mUserAudio = audio; 
+            mUserAudio.registCallback(mUserAudioCallback); 
+            mCurrentStatus = getCurrentCallStatus();
+            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
+    }
+
+    public void fetchTMSClient(TMSClient tms) {
+        mTMSClient = tms; 
+        if ( mTMSClient != null ) 
+            mTMSClient.registerCallback(mTMSCallback); 
+        mCurrentStatus = getCurrentCallStatus();
+        Log.d(TAG, "fetchTMSClient="+mCurrentStatus); 
     }
 
     @Override
@@ -70,15 +113,44 @@ public class SystemCallController extends BaseController<Integer> {
 
     private CallStatus getCurrentCallStatus() {
         CallStatus status = CallStatus.NONE; 
-        if ( mAudioClient == null || mBluetoothClient == null || mTMSClient == null ) 
+        if ( mUserAudio == null || mUserBluetooth == null || mTMSClient == null ) 
             return status;
-        boolean is_bt_mic_mute = mAudioClient.isMute(AudioType.BLUETOOTH_MIC); 
+        
+        boolean is_bt_mic_mute = false; 
+        try{
+            is_bt_mic_mute = mUserAudio.isBluetoothMicMute();
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
         if ( is_bt_mic_mute ) return CallStatus.BT_PHONE_MIC_MUTE; 
         boolean is_tms_calling = mTMSClient.getCallingStatus() == 
             TMSClient.CallingStatus.CALL_CONNECTED ? true:false;
         if ( is_tms_calling ) return CallStatus.TMS_CALLING; 
-        status = convertToCallStatus(convertToBTStatus(mBluetoothClient.getCurrentState()));
+        status = convertToCallStatus(getBluetoothState());
         return status;
+    }
+
+    private BTStatus getBluetoothState() {
+        BTStatus state = BTStatus.NONE; 
+        if ( mUserBluetooth == null ) return state;
+        try {
+            if ( mUserBluetooth.isHeadsetDeviceConnected() )
+                state = BTStatus.HANDS_FREE_CONNECTED;
+            if ( mUserBluetooth.isA2dpDeviceConnected() ) {
+                if ( state == BTStatus.HANDS_FREE_CONNECTED ) 
+                    state = BTStatus.HF_FREE_STREAMING_CONNECTED; 
+                else state = BTStatus.STREAMING_CONNECTED;
+            }
+            if ( mUserBluetooth.getContactsDownloadState() == 1 ) 
+                state = BTStatus.CONTACTS_HISTORY_DOWNLOADING;
+            if ( mUserBluetooth.getCallHistoryDownloadState() == 1 ) 
+                state = BTStatus.CALL_HISTORY_DOWNLOADING;
+            if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
+                state = BTStatus.BT_CALLING;
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
+        return state;         
     }
 
     private BTStatus convertToBTStatus(BluetoothClient.BluetoothState status) {
@@ -115,14 +187,6 @@ public class SystemCallController extends BaseController<Integer> {
             listener.onEvent(mCurrentStatus.ordinal());
     }
 
-    private final AudioClient.AudioCallback mAudioCallback = new AudioClient.AudioCallback() {
-        @Override
-        public void onMuteChanged(AudioClient.AudioType type, boolean mute) {
-            Log.d(TAG, "onConnectionChanged:type="+type); 
-            broadcastChangeEvent();
-        } 
-    }; 
-
     private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
         @Override
         public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
@@ -137,22 +201,54 @@ public class SystemCallController extends BaseController<Integer> {
         }
     }; 
 
-    private final BluetoothClient.BluetoothCallback mBTCallback = 
-        new BluetoothClient.BluetoothCallback() {
+    private final IUserBluetoothCallback.Stub mUserBluetoothCallback = 
+        new IUserBluetoothCallback.Stub() {
+        
         @Override
-        public void onConnectionStateChanged(BluetoothClient.Profiles profile) {
-            Log.d(TAG, "onConnectionStateChanged="+profile); 
-            broadcastChangeEvent();
-        }
-        @Override
-        public void onBluetoothEnableChanged(Boolean enable) {
+        public void onBluetoothEnableChanged(int enable) throws RemoteException {
             Log.d(TAG, "onBluetoothEnableChanged:enable="+enable);
-            if ( !enable ) broadcastChangeEvent();
+            if ( enable == 0 ) broadcastChangeEvent();
         }
         @Override
-        public void onCallingStateChanged(BluetoothClient.BluetoothState state, int value) {
-            Log.d(TAG, "onCallingStateChanged:state="+state+", value="+value); 
+        public void onHeadsetConnectionStateChanged(int state) throws RemoteException {
             broadcastChangeEvent();
         }
-    }; 
+        @Override
+        public void onA2dpConnectionStateChanged(int state) throws RemoteException {
+            broadcastChangeEvent();
+        }
+        @Override
+        public void onBatteryStateChanged(int level) throws RemoteException {
+        }
+        @Override
+        public void onAntennaStateChanged(int level) throws RemoteException {
+        }
+        @Override
+        public void onBluetoothCallingStateChanged(int state) throws RemoteException {
+            broadcastChangeEvent();
+        }
+        @Override
+        public void onBluetoothMicMuteStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onContactsDownloadStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onCallHistoryDownloadStateChanged(int state) throws RemoteException {
+        }
+    };
+
+    private final IUserAudioCallback.Stub mUserAudioCallback = 
+        new IUserAudioCallback.Stub() {
+        @Override
+        public void onAudioMuteChanged(boolean mute) throws RemoteException { 
+        }
+        @Override
+        public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
+            broadcastChangeEvent();
+        }
+        @Override
+        public void onNavigationChanged(boolean mute) throws RemoteException {
+        }
+    };
 }
