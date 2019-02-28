@@ -14,6 +14,10 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.provider.Settings;
+import android.extension.car.settings.CarExtraSettings;
+
+
 import com.humaxdigital.automotive.statusbar.R;
 
 import com.humaxdigital.automotive.statusbar.ProductConfig;
@@ -271,6 +275,9 @@ public class ClimateController implements BaseController {
         }
         if ( mAirCleaning != null ) {
             if ( mAirCleaningState == AirCleaning.ON ) {
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_RED);
                 mAirCleaningState = AirCleaning.RED; 
             }
             mAirCleaning.update(mAirCleaningState.ordinal()); 
@@ -434,13 +441,19 @@ public class ClimateController implements BaseController {
             if ( mAirCleaning == null ) return; 
             if ( status == AirCleaning.RED.ordinal() ) {
                 mAirCleaningState = AirCleaning.GREEN; 
+
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_GREEN);
+
                 if ( mHandler == null ) return; 
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         mAirCleaning.update(mAirCleaningState.ordinal()); 
                     }
-                }); 
+                });
+                
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
                 //mAirCleaningState = AirCleaning.OFF; 
                 // TODO: need to check CAN scenario 
@@ -506,8 +519,19 @@ public class ClimateController implements BaseController {
         public void onAirCleaningChanged(int status) throws RemoteException {
             if ( mAirCleaning == null ) return; 
             mAirCleaningState = AirCleaning.values()[status]; 
-            if ( mAirCleaningState == AirCleaning.ON ) mAirCleaningState = AirCleaning.RED; 
-            else if ( mAirCleaningState == AirCleaning.OFF ) mAirCleaningStartFromUI = false; 
+            if ( mAirCleaningState == AirCleaning.ON ) {
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_RED);
+                mAirCleaningState = AirCleaning.RED; 
+            }
+            else if ( mAirCleaningState == AirCleaning.OFF ) {
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
+                    CarExtraSettings.Global.AIR_CLEANING_STATUS_OFF);
+                mAirCleaningStartFromUI = false; 
+            }
+           
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
