@@ -63,6 +63,7 @@ public class SystemStatusController implements BaseController {
         if ( mContext != null ) mRes = mContext.getResources();
         mStatusBar = view;  
         mHandler = new Handler(mContext.getMainLooper());
+        initView();
     }
 
     @Override
@@ -73,7 +74,6 @@ public class SystemStatusController implements BaseController {
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-        initView();
         fetch(); 
     }
 

@@ -85,6 +85,7 @@ public class ClimateController implements BaseController {
         mClimate = view;
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
+        initView();
     }
 
     @Override
@@ -95,8 +96,6 @@ public class ClimateController implements BaseController {
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-
-        initView();
         update(); 
     }
 
@@ -119,7 +118,7 @@ public class ClimateController implements BaseController {
     }
 
     private void initView() {
-        if ( mClimate == null || mContext == null || mService == null ) return;
+        if ( mClimate == null || mContext == null ) return;
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -229,10 +228,15 @@ public class ClimateController implements BaseController {
             if ( resid < 0 ) continue;
             ((FrameLayout)mClimate.findViewById(resid)).addView(mClimateViews.get(i));
         }
+
+        updateTempOn(false); 
+        updateDisable(true);
     }
 
     private void update() {
         if ( mService == null ) return; 
+
+        updateDisable(false);
 
         try {
             mIGNOn = mService.getIGNStatus() == 1 ? true:false;
@@ -323,6 +327,18 @@ public class ClimateController implements BaseController {
     private void updateIGOnChange(boolean on) {
         mIGNOn = on; 
         boolean disable = !mIGNOn; 
+        if ( mTempDR != null ) mTempDR.updateDisable(disable);
+        if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
+        if ( mAC != null ) mAC.updateDisable(disable);
+        if ( mIntake != null ) mIntake.updateDisable(disable);
+        if ( mFanSpeed != null ) mFanSpeed.updateDisable(disable);
+        if ( mFanDirection != null ) mFanDirection.updateDisable(disable);
+        if ( mSeatPS != null ) mSeatPS.updateDisable(disable);
+        if ( mTempPS != null ) mTempPS.updateDisable(disable);
+        if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
+    } 
+
+    private void updateDisable(boolean disable) {
         if ( mTempDR != null ) mTempDR.updateDisable(disable);
         if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
         if ( mAC != null ) mAC.updateDisable(disable);
