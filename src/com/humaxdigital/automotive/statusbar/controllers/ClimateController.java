@@ -250,6 +250,7 @@ public class ClimateController {
             mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
             mTempPSState = mService.getPSTemperature();
             mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
+            
             mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
         } catch( RemoteException e ) {
             e.printStackTrace();
@@ -284,6 +285,10 @@ public class ClimateController {
                     CarExtraSettings.Global.AIR_CLEANING_STATUS, 
                     CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_RED);
                 mAirCleaningState = AirCleaning.RED; 
+            } else {
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                CarExtraSettings.Global.AIR_CLEANING_STATUS, 
+                CarExtraSettings.Global.AIR_CLEANING_STATUS_OFF);
             }
             mAirCleaning.update(mAirCleaningState.ordinal()); 
         }
