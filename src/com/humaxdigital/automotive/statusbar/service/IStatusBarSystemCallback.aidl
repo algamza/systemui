@@ -3,7 +3,9 @@ package com.humaxdigital.automotive.statusbar.service;
 import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
 
 oneway interface IStatusBarSystemCallback {
-    void onInitialized();
+    void onSystemInitialized();
+    void onUserProfileInitialized();
+    void onDateTimeInitialized();
     void onMuteStatusChanged(int status);
     void onBLEStatusChanged(int status);
     void onBTBatteryStatusChanged(int status);

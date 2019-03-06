@@ -37,7 +37,7 @@ public class DateController {
         mService = service; 
         try {
             mService.registerSystemCallback(mDateTimeCallback); 
-            if ( mService.isInitialized() ) initView(); 
+            if ( mService.isDateTimeInitialized() ) initView(); 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -109,7 +109,11 @@ public class DateController {
     }
 
     private final IStatusBarSystemCallback.Stub mDateTimeCallback = new IStatusBarSystemCallback.Stub() {
-        public void onInitialized() throws RemoteException {
+        public void onSystemInitialized() throws RemoteException {
+        }
+        public void onUserProfileInitialized() throws RemoteException {
+        }
+        public void onDateTimeInitialized() throws RemoteException {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {

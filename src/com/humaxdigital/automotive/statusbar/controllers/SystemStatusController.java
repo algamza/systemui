@@ -72,7 +72,7 @@ public class SystemStatusController {
         mService = service; 
         try {
             mService.registerSystemCallback(mSystemCallback); 
-            if ( mService.isInitialized() ) fetch(); 
+            if ( mService.isSystemInitialized() ) fetch(); 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -225,13 +225,17 @@ public class SystemStatusController {
     }
 
     private final IStatusBarSystemCallback.Stub mSystemCallback = new IStatusBarSystemCallback.Stub() {
-        public void onInitialized() throws RemoteException {
+        public void onSystemInitialized() throws RemoteException {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     fetch(); 
                 }
             });  
+        }
+        public void onUserProfileInitialized() throws RemoteException {
+        }
+        public void onDateTimeInitialized() throws RemoteException {
         }
         public void onMuteStatusChanged(int status) throws RemoteException {
             if ( mMute == null ) return;

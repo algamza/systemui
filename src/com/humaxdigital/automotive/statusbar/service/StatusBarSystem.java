@@ -146,7 +146,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
 
         try {
             for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onInitialized();
+                callback.onSystemInitialized();
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -203,16 +203,42 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
 
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
+
+        try {
+            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onUserProfileInitialized();
+                callback.onDateTimeInitialized();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
     
     @Override
-    public boolean isInitialized() throws RemoteException {
+    public boolean isSystemInitialized() throws RemoteException {
         boolean init = false; 
         if ( mCarExClient == null ) init = false;
         else init = true;
-        Log.d(TAG, "isInitialized="+init);
+        Log.d(TAG, "isSystemInitialized="+init);
         return init; 
     }
+    @Override
+    public boolean isUserProfileInitialized() throws RemoteException {
+        boolean init = false; 
+        if ( mUserProfileController == null ) init = false;
+        else init = true;
+        Log.d(TAG, "isUserProfileInitialized="+init);
+        return init; 
+    }
+    @Override
+    public boolean isDateTimeInitialized() throws RemoteException {
+        boolean init = false; 
+        if ( mDateTimeController == null ) init = false;
+        else init = true;
+        Log.d(TAG, "isDateTimeInitialized="+init);
+        return init; 
+    }
+
     @Override
     public int getMuteStatus() throws RemoteException { 
         if ( mMuteController == null ) return 0; 

@@ -34,7 +34,7 @@ public class UserProfileController {
         mService = service; 
         try {
             mService.registerSystemCallback(mUserProfileCallback);
-            if ( mService.isInitialized() ) initView();
+            if ( mService.isUserProfileInitialized() ) initView();
         } catch( RemoteException e ) {
             e.printStackTrace();
         } 
@@ -84,13 +84,17 @@ public class UserProfileController {
     }
 
     private final IStatusBarSystemCallback.Stub mUserProfileCallback = new IStatusBarSystemCallback.Stub() {
-        public void onInitialized() throws RemoteException {
+        public void onSystemInitialized() throws RemoteException {
+        }
+        public void onUserProfileInitialized() throws RemoteException {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     initView();
                 }
             });  
+        }
+        public void onDateTimeInitialized() throws RemoteException {
         }
         public void onMuteStatusChanged(int status) throws RemoteException {
         }

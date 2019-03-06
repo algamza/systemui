@@ -4,7 +4,9 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarSystemCallback;
 import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
 
 interface IStatusBarSystem {
-    boolean isInitialized();
+    boolean isSystemInitialized();
+    boolean isUserProfileInitialized();
+    boolean isDateTimeInitialized();
     int getMuteStatus();
     int getBLEStatus();
     int getBTBatteryStatus();
