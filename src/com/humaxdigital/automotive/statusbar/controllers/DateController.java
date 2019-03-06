@@ -9,15 +9,17 @@ import android.os.Handler;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.DateView;
 
-import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.statusbar.service.IDateTimeCallback; 
+import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystem;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystemCallback; 
 
-public class DateController implements BaseController {
+
+public class DateController {
     private View mParentView; 
     private Context mContext;
     private DateView mDateVew;
     private DateView mDateNoonView;
-    private IStatusBarService mService; 
+    private IStatusBarSystem mService; 
     private String mTime = ""; 
     private String mType = "12";
 
@@ -30,23 +32,21 @@ public class DateController implements BaseController {
         mHandler = new Handler(mContext.getMainLooper());
     }
 
-    @Override
-    public void init(IStatusBarService service) {
+    public void init(IStatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
         try {
-            mService.registerDateTimeCallback(mDateTimeCallback); 
+            mService.registerSystemCallback(mDateTimeCallback); 
+            if ( mService.isInitialized() ) initView(); 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-        initView();
     }
 
-    @Override
     public void deinit() {
         if ( mService == null ) return;
         try {
-            mService.unregisterDateTimeCallback(mDateTimeCallback); 
+            mService.unregisterSystemCallback(mDateTimeCallback); 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -108,7 +108,33 @@ public class DateController implements BaseController {
         super.finalize();
     }
 
-    private final IDateTimeCallback.Stub mDateTimeCallback = new IDateTimeCallback.Stub() {
+    private final IStatusBarSystemCallback.Stub mDateTimeCallback = new IStatusBarSystemCallback.Stub() {
+        public void onInitialized() throws RemoteException {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initView(); 
+                }
+            });  
+        }
+        public void onMuteStatusChanged(int status) throws RemoteException {
+        }
+        public void onBLEStatusChanged(int status) throws RemoteException {
+        }
+        public void onBTBatteryStatusChanged(int status) throws RemoteException {
+        }
+        public void onCallStatusChanged(int status) throws RemoteException {
+        }
+        public void onAntennaStatusChanged(int status) throws RemoteException {
+        }
+        public void onDataStatusChanged(int status) throws RemoteException {
+        }
+        public void onWifiStatusChanged(int status) throws RemoteException {
+        }
+        public void onWirelessChargeStatusChanged(int status) throws RemoteException {
+        }
+        public void onModeStatusChanged(int status) throws RemoteException {
+        }
         @Override
         public void onDateTimeChanged(String time) throws RemoteException {
             if ( mHandler == null ) return; 
@@ -131,6 +157,8 @@ public class DateController implements BaseController {
                     updateClockUI(mTime, mType);
                 }
             }); 
+        }
+        public void onUserChanged(BitmapParcelable data) throws RemoteException {
         }
     };
 }

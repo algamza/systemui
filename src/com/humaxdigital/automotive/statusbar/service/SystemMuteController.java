@@ -20,7 +20,7 @@ public class SystemMuteController extends BaseController<Integer> {
 
     public SystemMuteController(Context context, DataStore store) {
         super(context, store);
-        Log.d(TAG, "BluetoothClient"); 
+        Log.d(TAG, "SystemMuteController"); 
     }
 
     @Override
@@ -52,7 +52,7 @@ public class SystemMuteController extends BaseController<Integer> {
             mUserAudio = audio; 
             mUserAudio.registCallback(mUserAudioCallback); 
             mCurrentStatus = getCurrentState();
-            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+            Log.d(TAG, "fetchUserAudio="+mCurrentStatus); 
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 

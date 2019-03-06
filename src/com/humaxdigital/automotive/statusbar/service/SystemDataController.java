@@ -38,6 +38,7 @@ public class SystemDataController extends BaseController<Integer> {
 
     public SystemDataController(Context context, DataStore store) {
         super(context, store);
+        Log.d(TAG, "SystemDataController");
     }
 
     @Override

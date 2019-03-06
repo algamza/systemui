@@ -11,15 +11,15 @@ import android.graphics.Bitmap;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.UserProfileView;
 
-import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.statusbar.service.IUserProfileCallback; 
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystem;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystemCallback; 
 import com.humaxdigital.automotive.statusbar.service.BitmapParcelable; 
 
-public class UserProfileController implements BaseController {
+public class UserProfileController {
     private Context mContext;
     private View mParentView; 
     private UserProfileView mUserProfileView;
-    private IStatusBarService mService; 
+    private IStatusBarSystem mService; 
     private Handler mHandler; 
 
     public UserProfileController(Context context, View view) {
@@ -28,22 +28,21 @@ public class UserProfileController implements BaseController {
         mParentView = view; 
         mHandler = new Handler(mContext.getMainLooper());
     }
-    
-    @Override
-    public void init(IStatusBarService service) {
+
+    public void init(IStatusBarSystem service) {
+        if ( service == null ) return;
         mService = service; 
         try {
-            if ( mService != null ) mService.registerUserProfileCallback(mUserProfileCallback);
+            mService.registerSystemCallback(mUserProfileCallback);
+            if ( mService.isInitialized() ) initView();
         } catch( RemoteException e ) {
             e.printStackTrace();
         } 
-        initView();
     }
 
-    @Override
     public void deinit() {
         try {
-            if ( mService != null ) mService.unregisterUserProfileCallback(mUserProfileCallback);
+            if ( mService != null ) mService.unregisterSystemCallback(mUserProfileCallback);
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
@@ -84,7 +83,37 @@ public class UserProfileController implements BaseController {
         super.finalize();
     }
 
-    private final IUserProfileCallback.Stub mUserProfileCallback = new IUserProfileCallback.Stub() {
+    private final IStatusBarSystemCallback.Stub mUserProfileCallback = new IStatusBarSystemCallback.Stub() {
+        public void onInitialized() throws RemoteException {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initView();
+                }
+            });  
+        }
+        public void onMuteStatusChanged(int status) throws RemoteException {
+        }
+        public void onBLEStatusChanged(int status) throws RemoteException {
+        }
+        public void onBTBatteryStatusChanged(int status) throws RemoteException {
+        }
+        public void onCallStatusChanged(int status) throws RemoteException {
+        }
+        public void onAntennaStatusChanged(int status) throws RemoteException {
+        }
+        public void onDataStatusChanged(int status) throws RemoteException {
+        }
+        public void onWifiStatusChanged(int status) throws RemoteException {
+        }
+        public void onWirelessChargeStatusChanged(int status) throws RemoteException {
+        }
+        public void onModeStatusChanged(int status) throws RemoteException {
+        }
+        public void onDateTimeChanged(String time) throws RemoteException {
+        }
+        public void onTimeTypeChanged(String type) throws RemoteException {
+        }
         public void onUserChanged(BitmapParcelable data) throws RemoteException {
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {

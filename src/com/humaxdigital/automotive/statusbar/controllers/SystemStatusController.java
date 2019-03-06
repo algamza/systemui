@@ -13,17 +13,18 @@ import android.os.Handler;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.statusbar.ProductConfig;
+import com.humaxdigital.automotive.statusbar.util.ProductConfig;
 import com.humaxdigital.automotive.statusbar.R;
 import com.humaxdigital.automotive.statusbar.ui.SystemView;
 
-import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.statusbar.service.ISystemCallback; 
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystem;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarSystemCallback; 
+import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SystemStatusController implements BaseController {
+public class SystemStatusController {
     static final String TAG = "SystemStatusController"; 
 
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
@@ -55,7 +56,7 @@ public class SystemStatusController implements BaseController {
     private SystemView mLocationSharing;
     private final List<SystemView> mSystemViews = new ArrayList<>();
 
-    private IStatusBarService mService; 
+    private IStatusBarSystem mService; 
 
     public SystemStatusController(Context context, View view) {
         if ( (view == null) || (context == null) ) return;
@@ -66,18 +67,17 @@ public class SystemStatusController implements BaseController {
         initView();
     }
 
-    @Override
-    public void init(IStatusBarService service) {
+    public void init(IStatusBarSystem service) {
+        if ( service == null ) return;
         mService = service; 
         try {
-            if ( mService != null ) mService.registerSystemCallback(mSystemCallback); 
+            mService.registerSystemCallback(mSystemCallback); 
+            if ( mService.isInitialized() ) fetch(); 
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-        fetch(); 
     }
 
-    @Override
     public void deinit() {
         try {
             if ( mService != null ) mService.unregisterSystemCallback(mSystemCallback); 
@@ -224,7 +224,15 @@ public class SystemStatusController implements BaseController {
         }
     }
 
-    private final ISystemCallback.Stub mSystemCallback = new ISystemCallback.Stub() {
+    private final IStatusBarSystemCallback.Stub mSystemCallback = new IStatusBarSystemCallback.Stub() {
+        public void onInitialized() throws RemoteException {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    fetch(); 
+                }
+            });  
+        }
         public void onMuteStatusChanged(int status) throws RemoteException {
             if ( mMute == null ) return;
             if ( mHandler == null ) return; 
@@ -316,6 +324,12 @@ public class SystemStatusController implements BaseController {
                     mLocationSharing.update(ModeStatus.values()[status].ordinal());
                 }
             }); 
+        }
+        public void onDateTimeChanged(String time) throws RemoteException {
+        }
+        public void onTimeTypeChanged(String type) throws RemoteException {
+        }
+        public void onUserChanged(BitmapParcelable bitmap) throws RemoteException {
         }
     };
 }

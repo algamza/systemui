@@ -61,7 +61,7 @@ public class SystemWifiController extends BaseController<Integer> {
             mUserWifi = wifi; 
             mUserWifi.registCallback(mUserWifiCallback); 
             mCurrentStatus = getCurrentState();
-            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+            Log.d(TAG, "fetchUserWifi="+mCurrentStatus); 
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 

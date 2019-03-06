@@ -20,16 +20,16 @@ import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.statusbar.R;
 
-import com.humaxdigital.automotive.statusbar.ProductConfig;
+import com.humaxdigital.automotive.statusbar.util.ProductConfig;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImg;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuImgTimeout;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextDec;
 import com.humaxdigital.automotive.statusbar.ui.ClimateMenuTextImg;
 
-import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.statusbar.service.IClimateCallback; 
+import com.humaxdigital.automotive.statusbar.service.IStatusBarClimate;
+import com.humaxdigital.automotive.statusbar.service.IStatusBarClimateCallback; 
 
-public class ClimateController implements BaseController {
+public class ClimateController {
     static final String TAG = "ClimateController"; 
     static final String PACKAGE_NAME = "com.humaxdigital.automotive.statusbar"; 
 
@@ -41,7 +41,7 @@ public class ClimateController implements BaseController {
     private enum AirCleaning { ON, OFF, GREEN, RED }; 
     private enum FrontDefogState { ON, OFF }; 
 
-    private IStatusBarService mService; 
+    private IStatusBarClimate mService; 
     private Context mContext;
     private Resources mRes;
     private View mClimate;
@@ -88,18 +88,19 @@ public class ClimateController implements BaseController {
         initView();
     }
 
-    @Override
-    public void init(IStatusBarService service) {
+    public void init(IStatusBarClimate service) {
         mService = service; 
         try {
-            if ( mService != null ) mService.registerClimateCallback(mClimateCallback); 
+            if ( mService != null ) {
+                mService.registerClimateCallback(mClimateCallback); 
+                if ( mService.isInitialized() ) update(); 
+            }
+            
         } catch( RemoteException e ) {
             e.printStackTrace();
         }
-        update(); 
     }
 
-    @Override
     public void deinit() {
         try {
             if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
@@ -488,7 +489,16 @@ public class ClimateController implements BaseController {
         }
     }; 
 
-    private final IClimateCallback.Stub mClimateCallback = new IClimateCallback.Stub() {
+    private final IStatusBarClimateCallback.Stub mClimateCallback = new IStatusBarClimateCallback.Stub() {
+                
+        public void onInitialized() throws RemoteException {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    update(); 
+                }
+            }); 
+        }
         public void onDRTemperatureChanged(float temp) throws RemoteException {
             if ( mTempDR == null ) return; 
             mTempDRState = temp;

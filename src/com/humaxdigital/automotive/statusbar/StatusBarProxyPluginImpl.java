@@ -27,10 +27,11 @@ import android.view.Gravity;
 import com.android.systemui.plugins.StatusBarProxyPlugin;
 import com.android.systemui.plugins.annotations.Requires;
 
+import com.humaxdigital.automotive.statusbar.controllers.ControllerManager;
 import com.humaxdigital.automotive.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.statusbar.service.IStatusBarCallback; 
+import com.humaxdigital.automotive.statusbar.service.IStatusBarDev;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -45,7 +46,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     private View mNavBarView;
     private View mDevNavView;
     private ControllerManager mControllerManager; 
-    IStatusBarService mStatusBarService;
+    private IStatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
     private int mStatusBarHeight = 0; 
     private int mTouchDownY = 0; 
@@ -167,7 +168,8 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             public Bundle invokeDevCommand(String command, Bundle args) {
                 if (mStatusBarService != null) {
                     try {
-                        return mStatusBarService.invokeDevCommand(command, args);
+                        IStatusBarDev dev = mStatusBarService.getStatusBarDev(); 
+                        if ( dev != null ) return dev.invokeDevCommand(command, args);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -219,17 +221,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
             }
 
             mStatusBarService = IStatusBarService.Stub.asInterface(service); 
-            
-            try {
-                mStatusBarService.registerStatusBarCallback(mBinderStatusBarCallback);
-                if (mStatusBarService.isInitialized()) {
-                    updateUIController(() -> {
-                        mControllerManager.init(mStatusBarService); 
-                    });
-                }
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            mControllerManager.init(mStatusBarService); 
         }
 
         @Override
@@ -238,23 +230,7 @@ public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
                 mControllerManager.deinit();
             });
 
-            if (mStatusBarService != null) {
-                try {
-                    mStatusBarService.unregisterStatusBarCallback(mBinderStatusBarCallback);
-                    mStatusBarService = null; 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
-
-    private final IStatusBarCallback.Stub mBinderStatusBarCallback = new IStatusBarCallback.Stub() {
-        @Override
-        public void onInitialized() throws RemoteException {
-            updateUIController(() -> {
-                mControllerManager.init(mStatusBarService); 
-            });
+            mStatusBarService = null;
         }
     };
 

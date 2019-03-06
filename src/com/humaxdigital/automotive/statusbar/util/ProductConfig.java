@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.statusbar;
+package com.humaxdigital.automotive.statusbar.util;
 
 import android.os.Build; 
 import android.util.Log;

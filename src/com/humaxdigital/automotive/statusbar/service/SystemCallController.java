@@ -90,7 +90,7 @@ public class SystemCallController extends BaseController<Integer> {
             mUserAudio = audio; 
             mUserAudio.registCallback(mUserAudioCallback); 
             mCurrentStatus = getCurrentCallStatus();
-            Log.d(TAG, "fetchAudioClient="+mCurrentStatus); 
+            Log.d(TAG, "fetchUserAudio="+mCurrentStatus); 
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
@@ -151,19 +151,6 @@ public class SystemCallController extends BaseController<Integer> {
             Log.e(TAG, "error:"+e);
         } 
         return state;         
-    }
-
-    private BTStatus convertToBTStatus(BluetoothClient.BluetoothState status) {
-        BTStatus bts = BTStatus.NONE; 
-        switch(status) {
-            case HANDSFREE_CONNECTED: bts = BTStatus.HANDS_FREE_CONNECTED; break;
-            case STREAMING_CONNECTED: bts = BTStatus.STREAMING_CONNECTED; break;
-            case HF_FREE_STREAMING_CONNECTED: bts = BTStatus.HF_FREE_STREAMING_CONNECTED; break;
-            case CONTACTS_DOWNLOADING: bts = BTStatus.CONTACTS_HISTORY_DOWNLOADING; break;
-            case CALL_HISTORY_DOWNLOADING: bts = BTStatus.CALL_HISTORY_DOWNLOADING; break;
-            case BLUETOOTH_CALLING: bts = BTStatus.BT_CALLING; break;
-        }
-        return bts;
     }
 
     private CallStatus convertToCallStatus(BTStatus bts) {
