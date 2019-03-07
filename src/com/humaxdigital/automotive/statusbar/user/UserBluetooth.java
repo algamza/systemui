@@ -351,8 +351,6 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                 case CALL_STATUS: {
                     int state = intent.getIntExtra("status", 0);
                     Log.d(TAG, "received:com.humaxdigital.automotive.btphone.response_call_status:state="+state); 
-                    if ( mCurrentCallingState == state ) return;
-                    mCurrentCallingState = state; 
                     /*
                         0 : Idle
                         1 : Dialing
@@ -362,7 +360,6 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                     if ( state == 2 ) {
                         if ( mCurrentCallingState == 1 ) return;
                         mCurrentCallingState = 1; 
-
                     }
                     else {
                         if ( mCurrentCallingState == 0 ) return;
