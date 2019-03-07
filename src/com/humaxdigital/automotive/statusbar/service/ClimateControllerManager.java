@@ -163,9 +163,12 @@ public class ClimateControllerManager {
                                 CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
                         int state = event.intValues[0]; 
                         Log.d(TAG, "fetch ign="+state);
-                        if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
+                        if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
+                            || state == CarSensorEvent.IGNITION_STATE_OFF
+                            || state == CarSensorEvent.IGNITION_STATE_ACC ) {
                             mIGNOn = false;
-                        } else {
+                        } else if ( state == CarSensorEvent.IGNITION_STATE_ON
+                            || state == CarSensorEvent.IGNITION_STATE_START ) {
                             mIGNOn = true;
                         }
                     } catch ( CarNotConnectedException e ) {
@@ -198,13 +201,16 @@ public class ClimateControllerManager {
                     if ( mListener == null ) break;
                     int state = event.intValues[0];
                     Log.d(TAG, "onSensorChanged="+state);
-                    if ( state == CarSensorEvent.IGNITION_STATE_LOCK ) {
+
+                    if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
+                        || state == CarSensorEvent.IGNITION_STATE_OFF
+                        || state == CarSensorEvent.IGNITION_STATE_ACC ) {
                         if ( mIGNOn ) {
                             mIGNOn = false;
                             mListener.onIGNOnChanged(mIGNOn);
                         }
-                    } else if ( state == CarSensorEvent.IGNITION_STATE_ON 
-                        || state == CarSensorEvent.IGNITION_STATE_ACC ) {
+                    } else if ( state == CarSensorEvent.IGNITION_STATE_ON
+                        || state == CarSensorEvent.IGNITION_STATE_START ) {
                         if ( !mIGNOn ) {
                             mIGNOn = true;
                             mListener.onIGNOnChanged(mIGNOn);
