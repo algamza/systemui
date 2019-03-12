@@ -175,13 +175,15 @@ public class ClimateControllerManager {
                         Log.e(TAG, "getLatestSensorEvent is fail : ", e);
                     }
                 }
+
+                if ( mListener != null ) mListener.onInitialized();
+                mIsInitialized = true;
+
                 return null; 
             }
 
             @Override
             protected void onPostExecute(Void unused) {
-                if ( mListener != null ) mListener.onInitialized();
-                mIsInitialized = true;
             }
         };
         task.execute(); 
