@@ -3,7 +3,6 @@
 
 package com.humaxdigital.automotive.statusbar;
 
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +24,9 @@ import android.view.WindowManager;
 import android.view.MotionEvent;
 import android.view.Gravity;
 
+import com.android.systemui.plugins.StatusBarProxyPlugin;
+import com.android.systemui.plugins.annotations.Requires;
+
 import com.humaxdigital.automotive.statusbar.controllers.ControllerManager;
 import com.humaxdigital.automotive.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.statusbar.dev.DevNavigationBar;
@@ -33,9 +35,11 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarDev;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-public class StatusBarProxyPluginImpl extends Service {
+@Requires(target = StatusBarProxyPlugin.class, version = StatusBarProxyPlugin.VERSION)
+public class StatusBarProxyPluginImpl implements StatusBarProxyPlugin {
     private static final String TAG = "StatusBarProxyPluginImpl";
-    private final IBinder mBinder = new LocalBinder();
+    private Context mSysUiContext;
+    private Context mPluginContext;
     private WindowManager mWindowManager;
     private ViewGroup mNavBarWindow;
     private View mStatusBarWindow; 
@@ -51,28 +55,33 @@ public class StatusBarProxyPluginImpl extends Service {
     private Boolean mTouchValid = false; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
 
-    public class LocalBinder extends Binder {
-        StatusBarProxyPluginImpl getService() {
-            return StatusBarProxyPluginImpl.this;
-        }
-    }
-
     @Override
-    public void onCreate() {
+    public void onCreate(Context sysuiContext, Context pluginContext) {
         Log.d(TAG, "onCreate");
-        mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
-        startStatusBarService(this);
+        if (pluginContext == null) return;
+
+        // Check if user isn't in unlocked, then ignore this call because it will
+        // be called again when the state changed into the unlocked.
+        // see PluginManagerImpl::onReceive() and PluginInstanceManager::loadAll().
+        if (!pluginContext.getSystemService(UserManager.class).isUserUnlocked())
+            return;
+
+        mSysUiContext = sysuiContext;
+        mPluginContext = pluginContext;
+        mWindowManager = (WindowManager) mPluginContext.getSystemService(Context.WINDOW_SERVICE);
+
+        startStatusBarService(mPluginContext); 
         
-        mStatusBarWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
+        mStatusBarWindow = (View)View.inflate(mPluginContext, R.layout.status_bar_overlay, null);
         mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
-        String package_name = getPackageName(); 
-        int id_statusbar_height = getResources().getIdentifier("statusbar_height", "integer",  package_name);
-        int id_down_y = getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
-        int id_up_y = getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
-        if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
-        if ( id_up_y > 0 ) mTouchUpY = getResources().getInteger(id_up_y);
-        if ( id_statusbar_height > 0 ) mStatusBarHeight = getResources().getInteger(id_statusbar_height);
+        String package_name = mPluginContext.getPackageName(); 
+        int id_statusbar_height = mPluginContext.getResources().getIdentifier("statusbar_height", "integer",  package_name);
+        int id_down_y = mPluginContext.getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
+        int id_up_y = mPluginContext.getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = mPluginContext.getResources().getInteger(id_down_y); 
+        if ( id_up_y > 0 ) mTouchUpY = mPluginContext.getResources().getInteger(id_up_y);
+        if ( id_statusbar_height > 0 ) mStatusBarHeight = mPluginContext.getResources().getInteger(id_statusbar_height);
 
         WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -93,7 +102,7 @@ public class StatusBarProxyPluginImpl extends Service {
 
         mWindowManager.addView(mStatusBarWindow, slp);
 
-        mNavBarWindow = (ViewGroup) View.inflate(this, R.layout.nav_bar_window, null);
+        mNavBarWindow = (ViewGroup) View.inflate(mPluginContext, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
@@ -110,7 +119,7 @@ public class StatusBarProxyPluginImpl extends Service {
         mNavBarView = inflateNavBarView();
         mDevNavView = inflateDevNavBarView();
 
-        mControllerManager = new ControllerManager(this, mNavBarView); 
+        mControllerManager = new ControllerManager(mPluginContext, mNavBarView); 
 
         setContentBarView(mNavBarView);
     }
@@ -131,13 +140,8 @@ public class StatusBarProxyPluginImpl extends Service {
         }
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
     public View inflateNavBarView() {
-        final View view = View.inflate(this, R.layout.navi_overlay, null);
+        final View view = View.inflate(mPluginContext, R.layout.navi_overlay, null);
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -150,7 +154,7 @@ public class StatusBarProxyPluginImpl extends Service {
 
     public View inflateDevNavBarView() {
         final DevNavigationBar devNavBarView = (DevNavigationBar)
-                View.inflate(this, R.layout.dev_nav_bar, null);
+                View.inflate(mPluginContext, R.layout.dev_nav_bar, null);
         devNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -159,7 +163,7 @@ public class StatusBarProxyPluginImpl extends Service {
             }
         });
 
-        devNavBarView.init(new DevCommandsProxy(this) {
+        devNavBarView.init(new DevCommandsProxy(mPluginContext) {
             @Override
             public Bundle invokeDevCommand(String command, Bundle args) {
                 if (mStatusBarService != null) {
@@ -180,6 +184,26 @@ public class StatusBarProxyPluginImpl extends Service {
     public void setContentBarView(View view) {
         mNavBarWindow.removeAllViews();
         mNavBarWindow.addView(view);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+    }
+
+    @Override
+    public void setCollapseDesired(boolean collapseDesired) {
+        mCollapseDesired = collapseDesired;
+    }
+
+    @Override
+    public boolean holdStatusBarOpen() {
+        return false;
+    }
+
+    /* @Override */
+    public void setSystemUiVisibility(int vis, int fullscreenStackVis,
+            int dockedStackVis, int mask, Rect fullscreenStackBounds,
+            Rect dockedStackBounds) {
     }
 
     private void startStatusBarService(Context context){
@@ -238,14 +262,15 @@ public class StatusBarProxyPluginImpl extends Service {
     }; 
 
     private void updateUIController(Runnable r) {
-        if (mControllerManager == null) return;
-        Handler handler = new Handler(getMainLooper()); 
+        if ( mPluginContext == null || mControllerManager == null ) return;
+        Handler handler = new Handler(mPluginContext.getMainLooper()); 
         handler.post(r); 
     }
 
     private void openDroplist() {
+        if ( mPluginContext == null ) return; 
         Log.d(TAG, "openDroplist"); 
         Intent intent = new Intent(OPEN_DROPLIST); 
-        sendBroadcast(intent);
+        mPluginContext.sendBroadcast(intent);
     }
 }
