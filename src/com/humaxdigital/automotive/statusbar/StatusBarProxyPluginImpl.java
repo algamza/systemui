@@ -30,6 +30,7 @@ import com.humaxdigital.automotive.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarDev;
+import com.humaxdigital.automotive.statusbar.service.StatusBarService;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -132,6 +133,12 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // keep it alive.
+        return START_STICKY;
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
@@ -184,8 +191,7 @@ public class StatusBarProxyPluginImpl extends Service {
 
     private void startStatusBarService(Context context){
         if ( context == null ) return; 
-        Intent intent = new Intent().setAction("com.humaxdigital.automotive.statusbar.service.StatusBarService");
-        intent.setPackage("com.humaxdigital.automotive.statusbar"); 
+        Intent intent = new Intent(context, StatusBarService.class);
         context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE); 
     }
 

@@ -33,19 +33,17 @@
     <uses-permission android:name="com.android.systemui.permission.PLUGIN" 
         android:protectionLevel="signature" />
 
-    <application android:directBootAware="true">
+    <application
+        android:directBootAware="true"
+        android:allowBackup="false"
+        android:persistent="true">
         <service android:name=".StatusBarProxyPluginImpl"
             android:singleUser="true"
             android:label="@string/plugin_label">
         </service>
         <service 
             android:name=".service.StatusBarService"
-            android:singleUser="true"
-            android:exported="true"
-            android:process=":remote">
-            <intent-filter>
-                <action android:name="com.humaxdigital.automotive.statusbar.service.StatusBarService"></action>
-            </intent-filter>
+            android:singleUser="true">
         </service>
         <service android:name=".user.PerUserService" android:exported="false" />
 
