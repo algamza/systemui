@@ -19,7 +19,6 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     private List<IStatusBarClimateCallback> mClimateCallbacks = new ArrayList<>();
     private DataStore mDataStore = null;
     private Context mContext = null;
-    private boolean mTouchDisable = true; 
 
     public StatusBarClimate(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -52,11 +51,6 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
                 mCarExClient.getUsmManager(), 
                 mCarExClient.getSensorManagerEx());
         }
-    }
-
-    
-    public void touchDisable(boolean disable) {
-        mTouchDisable = disable; 
     }
 
     @Override
@@ -188,7 +182,6 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     }
     @Override
     public void openClimateSetting() throws RemoteException {
-        if ( mTouchDisable ) return;
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);
             Intent intent = new Intent(OPEN_HVAC_APP);
