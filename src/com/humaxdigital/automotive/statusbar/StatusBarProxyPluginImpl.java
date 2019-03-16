@@ -7,10 +7,8 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.ServiceConnection;
-import android.content.BroadcastReceiver;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -19,7 +17,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserManager;
-import android.os.UserHandle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,9 +51,6 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
-    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
-    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
-    private Boolean mIsCameraOn = false; 
 
     public class LocalBinder extends Binder {
         StatusBarProxyPluginImpl getService() {
@@ -120,16 +114,11 @@ public class StatusBarProxyPluginImpl extends Service {
         mControllerManager = new ControllerManager(this, mNavBarView); 
 
         setContentBarView(mNavBarView);
-
-        registCameraReceiver();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        
-        unregistCameraReceiver();
-
         if (mNavBarWindow != null) {
             mNavBarWindow.removeAllViews();
             mWindowManager.removeViewImmediate(mNavBarWindow);
@@ -262,32 +251,7 @@ public class StatusBarProxyPluginImpl extends Service {
 
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
-        if ( mIsCameraOn ) return;
         Intent intent = new Intent(OPEN_DROPLIST); 
         sendBroadcast(intent);
     }
-
-    private void registCameraReceiver() {
-        Log.d(TAG, "registCameraReceiver");
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CAMERA_START);
-        filter.addAction(CAMERA_STOP);
-        registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
-    }
-
-    private void unregistCameraReceiver() {
-        Log.d(TAG, "unregistCameraReceiver");
-        unregisterReceiver(mCameraEvtReceiver);
-    }
-
-    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if ( action == null ) return;
-            Log.d(TAG, "CameraEvtReceiver="+action);
-            if ( action.equals(CAMERA_START) ) mIsCameraOn = true;
-            else if ( action.equals(CAMERA_STOP) ) mIsCameraOn = false; 
-        }
-    };
 }
