@@ -2,9 +2,12 @@
 
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.UserHandle;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 
 import android.app.Service;
 
@@ -16,6 +19,9 @@ public class StatusBarService extends Service {
 
     private static final String TAG = "StatusBarService";
     
+    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
+    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
+
     private Context mContext = this; 
     private DataStore mDataStore = new DataStore();
     private CarExtensionClient mCarExClient = null;
@@ -40,16 +46,17 @@ public class StatusBarService extends Service {
             this.createStatusBarDev();
         }
         createCarExClient(); 
+        registCameraReceiver();
     }
 
     @Override
     public void onDestroy() {
+        unregistCameraReceiver();
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
         if ( mStatusBarServiceBinder != null ) {
             mStatusBarServiceBinder.destroy();
             mStatusBarServiceBinder = null;
         }
-
         super.onDestroy();
     }
 
@@ -129,4 +136,36 @@ public class StatusBarService extends Service {
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(null);
         }
     }; 
+
+    private void registCameraReceiver() {
+        Log.d(TAG, "registCameraReceiver");
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(CAMERA_START);
+        filter.addAction(CAMERA_STOP);
+        if ( mContext != null )
+            mContext.registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
+    }
+
+    private void unregistCameraReceiver() {
+        Log.d(TAG, "unregistCameraReceiver");
+        if ( mContext != null ) mContext.unregisterReceiver(mCameraEvtReceiver);
+    }
+
+    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+           
+            String action = intent.getAction();
+            if ( action == null ) return;
+            Log.d(TAG, "CameraEvtReceiver="+action);
+            if ( action.equals(CAMERA_START) ) {
+                mStatusBarClimate.touchDisable(true); 
+                mStatusBarSystem.touchDisable(true); 
+            }
+            else if ( action.equals(CAMERA_STOP) ) {
+                mStatusBarClimate.touchDisable(false); 
+                mStatusBarSystem.touchDisable(false);
+            }
+        }
+    };
 }
