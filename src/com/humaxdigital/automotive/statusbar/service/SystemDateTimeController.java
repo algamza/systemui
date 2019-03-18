@@ -68,12 +68,12 @@ public class SystemDateTimeController extends BaseController<String> {
     @Override
     public void fetch() {
         if ( mDataStore == null ) return;
-        mDataStore.setDateTime(getCurrentTime());
         if ( getTimeType().equals("12") ) {
             mCurrentTimeType = TimeType.TYPE_12; 
         } else if ( getTimeType().equals("24") ) {
             mCurrentTimeType = TimeType.TYPE_24; 
         }
+        mDataStore.setDateTime(getCurrentTime());
     }
 
     @Override
@@ -153,9 +153,13 @@ public class SystemDateTimeController extends BaseController<String> {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                Log.d(TAG, "onChange");
+                String type = getTimeType();
+                String time = getCurrentTime(); 
+                Log.d(TAG, "onChange:type="+type+", time="+time);
+                if ( mDataStore != null ) 
+                    mDataStore.shouldPropagateDateTimeUpdate(time);
                 for ( SystemTimeTypeListener listener : mTimeTypeListeners ) {
-                    listener.onTimeTypeChanged(getTimeType()); 
+                    listener.onTimeTypeChanged(type); 
                 }
             }
         };

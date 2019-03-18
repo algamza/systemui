@@ -191,7 +191,6 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mDateTimeLastSet < COALESCE_TIME_MS) {
                 return false;
             }
-            if ( mDateTime.equals(date) ) return false; 
             mDateTime = date;
         }
         return true;

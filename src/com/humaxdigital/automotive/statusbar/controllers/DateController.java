@@ -13,8 +13,11 @@ import com.humaxdigital.automotive.statusbar.service.BitmapParcelable;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarSystem;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarSystemCallback; 
 
+import android.util.Log; 
+
 
 public class DateController {
+    private static String TAG = "DateController"; 
     private View mParentView; 
     private Context mContext;
     private DateView mDateVew;
@@ -83,6 +86,7 @@ public class DateController {
     private void updateClockUI(String time, String type) {
         if ( mDateVew == null || mDateNoonView == null 
             || type == null || time == null ) return;
+        
         String date = "";
         String noon = "";
 
@@ -101,6 +105,7 @@ public class DateController {
             mDateVew.setText(date);
             mDateNoonView.setText(noon);
         }
+        Log.d(TAG, "time="+time+", type="+type+", date="+date+", noon="+noon); 
     }
 
     @Override
@@ -155,6 +160,12 @@ public class DateController {
         public void onTimeTypeChanged(String type) throws RemoteException {
             if ( mHandler == null ) return; 
             mType = type; 
+            try {
+                mTime = mService.getDateTime(); 
+            } catch( RemoteException e ) {
+                e.printStackTrace();
+            }
+            
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
