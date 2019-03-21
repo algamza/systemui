@@ -284,9 +284,16 @@ public class StatusBarProxyPluginImpl extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Bundle extras = intent.getExtras();
             if ( action == null ) return;
             Log.d(TAG, "CameraEvtReceiver="+action);
-            if ( action.equals(CAMERA_START) ) mIsCameraOn = true;
+            if ( action.equals(CAMERA_START) ) {
+                if ( extras == null ) return;
+                if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
+                    Log.d(TAG, "CameraEvtReceiver:CAM_DISPLAY_MODE=REAR_CAM_MODE");
+                    mIsCameraOn = true;
+                }
+            }
             else if ( action.equals(CAMERA_STOP) ) mIsCameraOn = false; 
         }
     };

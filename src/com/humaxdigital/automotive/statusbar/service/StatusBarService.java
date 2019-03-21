@@ -1,5 +1,6 @@
- package com.humaxdigital.automotive.statusbar.service;
+package com.humaxdigital.automotive.statusbar.service;
 
+import android.os.Bundle;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserHandle;
@@ -156,11 +157,15 @@ public class StatusBarService extends Service {
         public void onReceive(Context context, Intent intent) {
            
             String action = intent.getAction();
+            Bundle extras = intent.getExtras();
             if ( action == null ) return;
             Log.d(TAG, "CameraEvtReceiver="+action);
             if ( action.equals(CAMERA_START) ) {
-                mStatusBarClimate.touchDisable(true); 
-                mStatusBarSystem.touchDisable(true); 
+                if ( extras == null ) return;
+                if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
+                    mStatusBarClimate.touchDisable(true); 
+                    mStatusBarSystem.touchDisable(true); 
+                }
             }
             else if ( action.equals(CAMERA_STOP) ) {
                 mStatusBarClimate.touchDisable(false); 
