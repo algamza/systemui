@@ -666,7 +666,7 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mBLEStatusLastSet < COALESCE_TIME_MS) {
                 return false;
             }
-            if ( mBLEStatus == state ) return false; 
+            //if ( mBLEStatus == state ) return false; 
             mBLEStatus = state;
         }
         return true;
