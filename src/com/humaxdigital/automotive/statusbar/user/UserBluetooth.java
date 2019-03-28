@@ -150,6 +150,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
     private void disconnect() {
         if ( mContext == null ) return; 
         Log.d(TAG, "disconnect"); 
+        updateBluetootOn(false);
         for ( int key : mCurrentProxy.keySet() ) {
             if ( mBluetoothAdapter == null ) break; 
             mBluetoothAdapter.closeProfileProxy(key, mCurrentProxy.get(key)); 
@@ -198,7 +199,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                         Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
                         int battery_level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
                         int antenna_level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
-                        mCurrentAntennaLevel = battery_level; 
+                        mCurrentBatteryLevel = battery_level; 
                         mCurrentAntennaLevel = antenna_level;
                         updateConectionState(Profiles.HEADSET, 1); 
                     }
@@ -274,17 +275,16 @@ public class UserBluetooth extends IUserBluetooth.Stub {
             if ( mBluetoothAdapter == null || intent == null ) return;
             switch(intent.getAction()) {
                 case BluetoothAdapter.ACTION_STATE_CHANGED: {
-                    Log.d(TAG, "ACTION_STATE_CHANGED"); 
                     int state = intent.getIntExtra(
                         BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF); 
                     if ( state == BluetoothAdapter.STATE_OFF ) updateBluetootOn(false);
                     else if ( state == BluetoothAdapter.STATE_ON ) updateBluetootOn(true);
+                    Log.d(TAG, "ACTION_STATE_CHANGED:state="+state); 
                     break; 
                 }
                 // TODO : Because of timing issue ... 
                 //case BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED: 
                 case BluetoothHeadsetClient.ACTION_CONNECTION_STATE_CHANGED: {
-                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:Headset"); 
                     // TODO: check the profile extra state 
                     /*
                     int STATE_DISCONNECTED = 0;
@@ -293,22 +293,22 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                     int STATE_DISCONNECTING = 3;
                     */
                     int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1); 
+                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:Headset:state="+state); 
                     if ( state == 0 || state == 2 ) 
                         checkProfileConnection(Profiles.HEADSET); 
                     break;
                 }
                 case BluetoothA2dpSink.ACTION_CONNECTION_STATE_CHANGED: {
-                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:A2DP"); 
                     int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1); 
+                    Log.d(TAG, "ACTION_CONNECTION_STATE_CHANGED:A2DP:state="+state); 
                     if ( state == 0 || state == 2 ) 
                         checkProfileConnection(Profiles.A2DP_SINK); 
                     break; 
                 }
                 case BluetoothHeadsetClient.ACTION_AG_EVENT: {
-                    Log.d(TAG, "ACTION_AG_EVENT"); 
                     Profiles profile = Profiles.HEADSET; 
-                    int battery_level = intent.getIntExtra(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL, -1);
                     try {
+                        int battery_level = intent.getIntExtra(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL, -1);
                         if ( battery_level != -1 ) {
                             mCurrentBatteryLevel = battery_level; 
                             for ( IUserBluetoothCallback callback : mListeners ) 
@@ -320,6 +320,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                             for ( IUserBluetoothCallback callback : mListeners ) 
                                 callback.onAntennaStateChanged(antenna_level); 
                         }
+                        Log.d(TAG, "ACTION_AG_EVENT:battery="+battery_level+", antenna="+antenna_level); 
                     } catch(RemoteException e) {
                         Log.e(TAG, "error = " + e); 
                     }
@@ -327,16 +328,15 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                 }
                 case "action_pbap_state": {
                     int state = intent.getIntExtra("state", 0);
+                    Log.d(TAG, "action_pbap_state="+state); 
                     if ( mContactsDownloadingState == state ) break; 
                     try {
                         if ( state == 3 ) {
-                            Log.d(TAG, "action_pbap_state:CONTACTS_DOWNLOADING"); 
                             mContactsDownloadingState = state; 
                             mCurrentContactsDownloadState = 1; 
                             for ( IUserBluetoothCallback callback : mListeners ) 
                                 callback.onContactsDownloadStateChanged(mCurrentContactsDownloadState); 
                         } else if ( state == 2 ) {
-                            Log.d(TAG, "action_pbap_state:COMPLETE"); 
                             mContactsDownloadingState = state; 
                             mCurrentContactsDownloadState = 0; 
                             for ( IUserBluetoothCallback callback : mListeners ) 
