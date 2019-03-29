@@ -233,6 +233,7 @@ public class StatusBarProxyPluginImpl extends Service {
             int y = (int)event.getY(); 
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
+                    Log.d(TAG, "ACTION_DOWN:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchDownY > y ) {
                         mTouchValid = true; 
                         mTouchDownValue = y; 
@@ -240,6 +241,7 @@ public class StatusBarProxyPluginImpl extends Service {
                     break; 
                 }
                 case MotionEvent.ACTION_UP: {
+                    Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
                         mTouchValid = false; 
                         if ( (y - mTouchDownValue) > 5 ) {
@@ -270,7 +272,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private void registCameraReceiver() {
         Log.d(TAG, "registCameraReceiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(CAMERA_START);
+        filter.addAction(CAMERA_START);   
         filter.addAction(CAMERA_STOP);
         registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
     }

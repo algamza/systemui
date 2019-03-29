@@ -134,19 +134,23 @@ public class SystemCallController extends BaseController<Integer> {
         BTStatus state = BTStatus.NONE; 
         if ( mUserBluetooth == null ) return state;
         try {
-            if ( mUserBluetooth.isHeadsetDeviceConnected() )
+            boolean isHeadsetConnected = mUserBluetooth.isHeadsetDeviceConnected(); 
+            boolean isA2DPConnected = mUserBluetooth.isA2dpDeviceConnected();
+            if ( isHeadsetConnected )
                 state = BTStatus.HANDS_FREE_CONNECTED;
-            if ( mUserBluetooth.isA2dpDeviceConnected() ) {
+            if ( isA2DPConnected ) {
                 if ( state == BTStatus.HANDS_FREE_CONNECTED ) 
                     state = BTStatus.HF_FREE_STREAMING_CONNECTED; 
                 else state = BTStatus.STREAMING_CONNECTED;
             }
-            if ( mUserBluetooth.getContactsDownloadState() == 1 ) 
-                state = BTStatus.CONTACTS_HISTORY_DOWNLOADING;
-            if ( mUserBluetooth.getCallHistoryDownloadState() == 1 ) 
-                state = BTStatus.CALL_HISTORY_DOWNLOADING;
-            if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
-                state = BTStatus.BT_CALLING;
+            if ( isHeadsetConnected ) {
+                if ( mUserBluetooth.getContactsDownloadState() == 1 ) 
+                    state = BTStatus.CONTACTS_HISTORY_DOWNLOADING;
+                if ( mUserBluetooth.getCallHistoryDownloadState() == 1 ) 
+                    state = BTStatus.CALL_HISTORY_DOWNLOADING;
+                if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
+                    state = BTStatus.BT_CALLING;
+            }
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
