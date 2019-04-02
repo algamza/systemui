@@ -142,7 +142,7 @@ public class SystemDateTimeController extends BaseController<String> {
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
-            df = new SimpleDateFormat("h:mm", Locale.ENGLISH);
+            df = new SimpleDateFormat("H:mm", Locale.ENGLISH);
         } else {
             df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
         }
