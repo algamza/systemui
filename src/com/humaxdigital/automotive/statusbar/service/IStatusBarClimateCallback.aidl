@@ -13,4 +13,5 @@ oneway interface IStatusBarClimateCallback {
     void onPSTemperatureChanged(float temp);
     void onFrontDefogStatusChanged(int status); 
     void onIGNOnChanged(boolean on); 
+    void onOperateOnChanged(boolean on); 
 }

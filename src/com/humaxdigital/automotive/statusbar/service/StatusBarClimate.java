@@ -75,6 +75,13 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
         return status;
     }
     @Override
+    public boolean isOperateOn() throws RemoteException { 
+        if ( mClimateManager == null ) return false;
+        boolean on = mClimateManager.isOperateOn();
+        Log.d(TAG, "isOperateOn="+on);
+        return on;
+    }
+    @Override
     public float getDRTemperature() throws RemoteException { 
         float ret = 0.0f; 
         if ( mClimateManager == null ) return ret; 
@@ -343,6 +350,17 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
             try {
                 for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onIGNOnChanged(on); 
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onOperateOnChanged(boolean on) {
+            Log.d(TAG, "onOperateOnChanged="+on);
+            try {
+                for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onOperateOnChanged(on); 
             } catch (RemoteException e) {
                 e.printStackTrace();
             }

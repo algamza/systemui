@@ -5,6 +5,7 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarClimateCallback;
 interface IStatusBarClimate {
     boolean isInitialized();
     int getIGNStatus();
+    boolean isOperateOn(); 
     float getDRTemperature();
     int getDRSeatStatus();
     boolean getAirCirculationState();

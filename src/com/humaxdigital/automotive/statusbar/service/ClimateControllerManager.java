@@ -86,6 +86,7 @@ public class ClimateControllerManager {
 
     private List<ClimateBaseController> mControllers = new ArrayList<>(); 
     private boolean mIGNOn = true; 
+    private boolean mOperateStateOn = false; 
 
     public interface ClimateListener {
         public void onInitialized();
@@ -100,6 +101,7 @@ public class ClimateControllerManager {
         public void onPassengerTemperatureChanged(float temp);
         public void onFrontDefogStatusChanged(int status); 
         public void onIGNOnChanged(boolean on);
+        public void onOperateOnChanged(boolean on);
     }
     
     @SuppressWarnings("unchecked")
@@ -157,8 +159,8 @@ public class ClimateControllerManager {
                 mPSTemp.fetchUSMManager(mCarUSMManager); 
                 for ( ClimateBaseController controller : mControllers ) 
                     controller.fetch(mCarHvacManagerEx); 
-                if ( mCarSensorManagerEx != null ) {
-                    try {
+                try {
+                    if ( mCarSensorManagerEx != null ) {
                         CarSensorEvent event = mCarSensorManagerEx.getLatestSensorEvent(
                                 CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
                         int state = event.intValues[0]; 
@@ -171,9 +173,19 @@ public class ClimateControllerManager {
                             || state == CarSensorEvent.IGNITION_STATE_START ) {
                             mIGNOn = true;
                         }
-                    } catch ( CarNotConnectedException e ) {
-                        Log.e(TAG, "getLatestSensorEvent is fail : ", e);
                     }
+
+                    if ( mCarHvacManagerEx != null ) {
+                        int state = mCarHvacManagerEx.getIntProperty(
+                            CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS, 0); 
+                        Log.d(TAG, "fetch operate="+state);
+                        if ( state == 0x3 ) 
+                            mOperateStateOn = true;
+                        else if ( state == 0x1 || state == 0x0 || state == 0x2 ) 
+                            mOperateStateOn = false;
+                    }
+                } catch ( CarNotConnectedException e ) {
+                    Log.e(TAG, "getLatestSensorEvent is fail : ", e);
                 }
 
                 if ( mListener != null ) mListener.onInitialized();
@@ -192,6 +204,11 @@ public class ClimateControllerManager {
     public int getIGNStatus() {
         Log.d(TAG, "getIGNStatus = "+mIGNOn);
         return mIGNOn?1:0;
+    }
+
+    public boolean isOperateOn() {
+        Log.d(TAG, "isOperateOn = "+mOperateStateOn);
+        return mOperateStateOn;
     }
 
     private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener = 
@@ -304,6 +321,9 @@ public class ClimateControllerManager {
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_DEFOG:
                         handleDefogUpdate(areaId, getValue(val));
+                        break;
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS:
+                        handleOperateState(getValue(val));
                         break;
                     default: break; 
                 }
@@ -444,5 +464,19 @@ public class ClimateControllerManager {
             if ( mListener != null ) {
                 mListener.onFrontDefogStatusChanged(mDefog.get());
             } 
+    }
+
+    private void handleOperateState(int val) {
+        boolean operateOn = false; 
+        switch(val) {
+            case 0x3: operateOn = true; break;
+            case 0x0:
+            case 0x1:
+            case 0x2: operateOn = false; break;
+        }
+        Log.d(TAG, "operate state = "+val+", current state = "+mOperateStateOn); 
+        if ( mOperateStateOn == operateOn ) return;
+        mOperateStateOn = operateOn; 
+        if ( mListener != null ) mListener.onOperateOnChanged(mOperateStateOn);
     }
 }

@@ -74,6 +74,7 @@ public class ClimateController {
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
     private Boolean mIGNOn = true; 
+    private Boolean mIsOperateOn = false; 
     private Boolean mAirCleaningStartFromUI = false; 
 
     private final List<View> mClimateViews = new ArrayList<>();
@@ -123,7 +124,7 @@ public class ClimateController {
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if ( !mIGNOn ) return; 
+                if ( !mIGNOn || mIsOperateOn ) return; 
                 openClimateSetting(); 
             }
         });
@@ -241,6 +242,7 @@ public class ClimateController {
 
         try {
             mIGNOn = mService.getIGNStatus() == 1 ? true:false;
+            mIsOperateOn = mService.isOperateOn(); 
             mTempDRState = mService.getDRTemperature();
             mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
             mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
@@ -293,6 +295,7 @@ public class ClimateController {
             mAirCleaning.update(mAirCleaningState.ordinal()); 
         }
         updateIGOnChange(mIGNOn); 
+        updateOperateOnChange(mIsOperateOn); 
     }
 
     private void updateTempOn(boolean on) {
@@ -333,6 +336,22 @@ public class ClimateController {
     private void updateIGOnChange(boolean on) {
         mIGNOn = on; 
         boolean disable = !mIGNOn; 
+        if ( !disable && mIsOperateOn ) return;
+        if ( mTempDR != null ) mTempDR.updateDisable(disable);
+        if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
+        if ( mAC != null ) mAC.updateDisable(disable);
+        if ( mIntake != null ) mIntake.updateDisable(disable);
+        if ( mFanSpeed != null ) mFanSpeed.updateDisable(disable);
+        if ( mFanDirection != null ) mFanDirection.updateDisable(disable);
+        if ( mSeatPS != null ) mSeatPS.updateDisable(disable);
+        if ( mTempPS != null ) mTempPS.updateDisable(disable);
+        if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
+    } 
+
+    private void updateOperateOnChange(boolean on) {
+        mIsOperateOn = on; 
+        boolean disable = mIsOperateOn; 
+        if ( !disable && !mIGNOn ) return;
         if ( mTempDR != null ) mTempDR.updateDisable(disable);
         if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
         if ( mAC != null ) mAC.updateDisable(disable);
@@ -427,7 +446,7 @@ public class ClimateController {
     private final View.OnClickListener mClimateAirCleaningOnClick = new View.OnClickListener() { 
         @Override
         public void onClick(View v) {
-            if ( mAirCleaning == null || !mIGNOn ) return; 
+            if ( mAirCleaning == null || !mIGNOn || mIsOperateOn ) return; 
             /*
             if ( mAirCleaningState == AirCleaning.ON ||
                 mAirCleaningState == AirCleaning.RED || 
@@ -650,6 +669,17 @@ public class ClimateController {
                 @Override
                 public void run() {
                     updateIGOnChange(on); 
+                }
+            }); 
+        }
+
+        public void onOperateOnChanged(boolean on) throws RemoteException {
+            if ( mHandler == null ) return; 
+
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateOperateOnChange(on); 
                 }
             }); 
         }
