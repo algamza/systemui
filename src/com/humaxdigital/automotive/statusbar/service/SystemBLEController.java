@@ -47,7 +47,7 @@ public class SystemBLEController extends BaseController<Integer> {
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
         mDataStore.setBLEState(state.ordinal());
-        cmdRequest(CarBLEManager.APP_BLE_REQ_CONNECTION_STATUS, 0, null);
+        cmdRequest(CarBLEManager.CMD_BLE_REQ_CONNECTION_STATUS, 0, null);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class SystemBLEController extends BaseController<Integer> {
                     
                     Log.d(TAG, "VENDOR_BLE_EVENT="+id); 
                     
-                    if ( id == CarBLEManager.APP_BLE_SEND_CONNECTION_STATUS ) {
+                    if ( id == CarBLEManager.EVT_BLE_CONNECTION_STATUS ) {
 
                         int dataLength = ((data[4] & 0xff) << 24) 
                                         | ((data[5] & 0xff) << 16) 
@@ -140,12 +140,12 @@ public class SystemBLEController extends BaseController<Integer> {
                                     listener.onEvent(BLEStatus.CONNECTED.ordinal());
                             }
                         }
-                    } else if ( id == CarBLEManager.APP_BLE_SEND_ERROR_FOR_CALIBRATION ) {
+                    } else if ( id == CarBLEManager.EVT_BLE_ERROR_FOR_CALIBRATION ) {
                         if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTION_FAIL.ordinal()) ) {
                             for ( Listener listener : mListeners ) 
                                 listener.onEvent(BLEStatus.CONNECTION_FAIL.ordinal());
                         }
-                    } else if ( id == CarBLEManager.APP_BLE_SEND_CONNECTED_PHONE_INFO ) {
+                    } else if ( id == CarBLEManager.EVT_BLE_CONNECTED_PHONE_INFO ) {
                         int dataLength = ((data[4] & 0xff) << 24) 
                                         | ((data[5] & 0xff) << 16) 
                                         | ((data[6] & 0xff) << 8) 
