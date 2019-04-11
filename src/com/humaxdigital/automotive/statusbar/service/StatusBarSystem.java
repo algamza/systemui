@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
 
+import com.humaxdigital.automotive.statusbar.R; 
+import com.humaxdigital.automotive.statusbar.util.OSDPopup; 
 import com.humaxdigital.automotive.statusbar.user.PerUserService;
 import com.humaxdigital.automotive.statusbar.user.IUserService;
 import com.humaxdigital.automotive.statusbar.user.IUserBluetooth;
@@ -68,6 +70,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mContext = context; 
         mDataStore = datastore; 
 
+        
         mTMSClient = new TMSClient(mContext); 
         mTMSClient.connect(); 
 
@@ -324,7 +327,13 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openDateTimeSetting() throws RemoteException {
-        if ( mTouchDisable ) return;
+        if ( mContext == null ) return;
+
+        if ( mTouchDisable ) {
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.unavailable));
+            return;
+        }
         if ( !OPEN_DATE_SETTING.equals("") ) {
             Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
             Intent intent = new Intent(OPEN_DATE_SETTING);
@@ -340,7 +349,11 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openUserProfileSetting() throws RemoteException {
-        if ( mTouchDisable ) return;
+        if ( mTouchDisable ) {
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.unavailable));
+            return;
+        }
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
             Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
             Intent intent = new Intent(OPEN_USERPROFILE_SETTING);

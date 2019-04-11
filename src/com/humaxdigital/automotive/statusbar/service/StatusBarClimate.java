@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
 
+import com.humaxdigital.automotive.statusbar.R; 
+import com.humaxdigital.automotive.statusbar.util.OSDPopup; 
+
 public class StatusBarClimate extends IStatusBarClimate.Stub {
     private static final String TAG = "StatusBarClimate";
     private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
@@ -195,7 +198,11 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     }
     @Override
     public void openClimateSetting() throws RemoteException {
-        if ( mTouchDisable ) return;
+        if ( mTouchDisable ) {
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.unavailable));
+            return;
+        }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);
             Intent intent = new Intent(OPEN_HVAC_APP);
