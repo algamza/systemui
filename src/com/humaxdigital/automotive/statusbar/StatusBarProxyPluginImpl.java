@@ -54,9 +54,6 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
-    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
-    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
-    private Boolean mIsCameraOn = false; 
 
     public class LocalBinder extends Binder {
         StatusBarProxyPluginImpl getService() {
@@ -120,15 +117,11 @@ public class StatusBarProxyPluginImpl extends Service {
         mControllerManager = new ControllerManager(this, mNavBarView); 
 
         setContentBarView(mNavBarView);
-
-        registCameraReceiver();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        
-        unregistCameraReceiver();
 
         if (mNavBarWindow != null) {
             mNavBarWindow.removeAllViews();
@@ -264,39 +257,7 @@ public class StatusBarProxyPluginImpl extends Service {
 
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
-        if ( mIsCameraOn ) return;
         Intent intent = new Intent(OPEN_DROPLIST); 
         sendBroadcast(intent);
     }
-
-    private void registCameraReceiver() {
-        Log.d(TAG, "registCameraReceiver");
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CAMERA_START);   
-        filter.addAction(CAMERA_STOP);
-        registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
-    }
-
-    private void unregistCameraReceiver() {
-        Log.d(TAG, "unregistCameraReceiver");
-        unregisterReceiver(mCameraEvtReceiver);
-    }
-
-    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            Bundle extras = intent.getExtras();
-            if ( action == null ) return;
-            Log.d(TAG, "CameraEvtReceiver="+action);
-            if ( action.equals(CAMERA_START) ) {
-                if ( extras == null ) return;
-                if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
-                    Log.d(TAG, "CameraEvtReceiver:CAM_DISPLAY_MODE=REAR_CAM_MODE");
-                    mIsCameraOn = true;
-                }
-            }
-            else if ( action.equals(CAMERA_STOP) ) mIsCameraOn = false; 
-        }
-    };
 }

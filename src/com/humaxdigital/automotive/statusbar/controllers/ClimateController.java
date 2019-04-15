@@ -272,9 +272,8 @@ public class ClimateController {
         if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
         if ( mFanSpeed != null ) {
-            if ( mFanSpeedState == FanSpeedState.STEPOFF || 
-                    mFanSpeedState == FanSpeedState.STEP0) {
-                mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
                 updateTempOn(false); 
             } else {
                 mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
@@ -607,9 +606,8 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( (mFanSpeedState == FanSpeedState.STEPOFF) || 
-                        mFanSpeedState == FanSpeedState.STEP0) {
-                        mFanSpeed.update(0, true, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
+                        mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
                         updateTempOn(false); 
                     } else {
                         mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));

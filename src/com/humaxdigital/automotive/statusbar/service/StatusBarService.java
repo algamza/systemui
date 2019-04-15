@@ -157,10 +157,11 @@ public class StatusBarService extends Service {
         public void onReceive(Context context, Intent intent) {
            
             String action = intent.getAction();
-            Bundle extras = intent.getExtras();
+            
             if ( action == null ) return;
             Log.d(TAG, "CameraEvtReceiver="+action);
             if ( action.equals(CAMERA_START) ) {
+                Bundle extras = intent.getExtras();
                 if ( extras == null ) return;
                 if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
                     mStatusBarClimate.touchDisable(true); 
