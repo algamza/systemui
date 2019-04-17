@@ -1,7 +1,11 @@
 package com.humaxdigital.automotive.statusbar.service;
 
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.content.Context;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 import com.humaxdigital.automotive.statusbar.user.IUserBluetooth;
@@ -11,6 +15,7 @@ import com.humaxdigital.automotive.statusbar.user.IUserAudioCallback;
 
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";
+    private final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
     private TMSClient mTMSClient = null;
     private IUserBluetooth mUserBluetooth = null; 
     private IUserAudio mUserAudio = null;
@@ -18,6 +23,7 @@ public class SystemCallController extends BaseController<Integer> {
     private boolean mCurrentTMSCalling = false; 
     private boolean mCurrentBTMicMute = false;
     private CallStatus mCurrentStatus = CallStatus.NONE;
+    private boolean mCarlifeConnected = false;
 
     public enum BTStatus {
         NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
@@ -32,6 +38,11 @@ public class SystemCallController extends BaseController<Integer> {
 
     public SystemCallController(Context context, DataStore store) {
         super(context, store);
+        if ( mContext == null ) return;
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_CARLIFE_STATE);
+        mContext.registerReceiverAsUser(mBroadcastReceiver, 
+            UserHandle.ALL, filter, null, null);
     }
 
     @Override
@@ -139,9 +150,14 @@ public class SystemCallController extends BaseController<Integer> {
             if ( isHeadsetConnected )
                 state = BTStatus.HANDS_FREE_CONNECTED;
             if ( isA2DPConnected ) {
-                if ( state == BTStatus.HANDS_FREE_CONNECTED ) 
-                    state = BTStatus.HF_FREE_STREAMING_CONNECTED; 
-                else state = BTStatus.STREAMING_CONNECTED;
+                if ( state == BTStatus.HANDS_FREE_CONNECTED ) {
+                    if ( !mCarlifeConnected ) 
+                        state = BTStatus.HF_FREE_STREAMING_CONNECTED; 
+                }
+                else {
+                    if ( mCarlifeConnected ) state = BTStatus.NONE; 
+                    else state = BTStatus.STREAMING_CONNECTED;
+                }
             }
             if ( isHeadsetConnected ) {
                 if ( mUserBluetooth.getContactsDownloadState() == 1 ) 
@@ -242,6 +258,18 @@ public class SystemCallController extends BaseController<Integer> {
         }
         @Override
         public void onNavigationChanged(boolean mute) throws RemoteException {
+        }
+    };
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_CARLIFE_STATE)) {
+                mCarlifeConnected = intent.getBooleanExtra("isConnected", false);
+                Log.d(TAG, "mBroadcastReceiver:ACTION_CARLIFE_STATE="+mCarlifeConnected);
+                broadcastChangeEvent();
+            }
         }
     };
 }
