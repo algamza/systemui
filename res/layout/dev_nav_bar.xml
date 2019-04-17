@@ -75,12 +75,21 @@
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
+                <TextView
+                    android:id="@+id/txtUserSwitchTime"
+                    android:layout_height="wrap_content"
+                    android:layout_width ="wrap_content"
+                    android:layout_margin="1dp"
+                    android:text="C:"
+                    android:textColor="#a0a0a0"
+                    android:textSize="16sp"/>
+
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width = "wrap_content"
                 android:layout_height= "match_parent"
-                android:gravity="center_vertical"
+                android:gravity="top"
                 android:orientation="vertical">
 
                 <CheckBox
@@ -88,7 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#222222"
-                    android:layout_margin="2dp"
+                    android:layout_margin="5dp"
                     android:textSize="18sp"
                     android:textColor="#aaaaaa"
                     android:text="CPU Usage"
@@ -99,10 +108,29 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#222222"
-                    android:layout_margin="2dp"
+                    android:layout_margin="5dp"
                     android:textSize="18sp"
                     android:textColor="#aaaaaa"
                     android:text="USB Debugging"
+                    android:checked="false" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width = "wrap_content"
+                android:layout_height= "match_parent"
+                android:gravity="top"
+                android:orientation="vertical">
+
+                <CheckBox
+                    android:id="@+id/chkDropCache"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#222222"
+                    android:layout_margin="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#aaaaaa"
+                    android:text="Drop Cache"
                     android:checked="false" />
 
             </LinearLayout>

@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -49,6 +50,7 @@ public class DevNavigationBar extends FrameLayout {
     private TextView mUserSwitchTimeTextView;
     private CheckBox mCpuUsageCheckBox;
     private CheckBox mUsbDebuggingCheckBox;
+    private CheckBox mDropCacheCheckBox;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -113,6 +115,9 @@ public class DevNavigationBar extends FrameLayout {
         mUsbDebuggingCheckBox = (CheckBox) findViewById(R.id.chkUsbDebugging);
         mUsbDebuggingCheckBox.setOnClickListener(view -> { writeUsbDebuggingOptions(); });
 
+        mDropCacheCheckBox = (CheckBox) findViewById(R.id.chkDropCache);
+        mDropCacheCheckBox.setOnClickListener(view -> { writeDropCacheOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -129,6 +134,8 @@ public class DevNavigationBar extends FrameLayout {
         updateCpuUsageOptions();
         updateUsbDebuggingOptions();
         writeCpuUsageOptions();
+        updateDropCacheOptions();
+        writeDropCacheOptions();
     }
 
     public void onAttached() {
@@ -284,5 +291,17 @@ public class DevNavigationBar extends FrameLayout {
         boolean value = mUsbDebuggingCheckBox.isChecked();
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.ADB_ENABLED, value ? 1 : 0);
+    }
+
+    private void updateDropCacheOptions() {
+        final boolean enable = SystemProperties.getBoolean(
+                "persist.vendor.humax.dropcache.enable", true);
+        mDropCacheCheckBox.setChecked(enable);
+    }
+
+    private void writeDropCacheOptions() {
+        boolean enable = mDropCacheCheckBox.isChecked();
+        SystemProperties.set(
+                "persist.vendor.humax.dropcache.enable", (enable) ? "true" : "false");
     }
 }
