@@ -53,7 +53,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchUpY = 0; 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
-    private final int TOUCH_OFFSET = 20; 
+    private final int TOUCH_OFFSET = 16; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
