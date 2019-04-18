@@ -53,6 +53,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchUpY = 0; 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
+    private final int TOUCH_OFFSET = 20; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
@@ -226,7 +227,7 @@ public class StatusBarProxyPluginImpl extends Service {
             int y = (int)event.getY(); 
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    Log.d(TAG, "ACTION_DOWN:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    //Log.d(TAG, "ACTION_DOWN:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchDownY > y ) {
                         mTouchValid = true; 
                         mTouchDownValue = y; 
@@ -234,14 +235,24 @@ public class StatusBarProxyPluginImpl extends Service {
                     break; 
                 }
                 case MotionEvent.ACTION_UP: {
-                    Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    //Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
                         mTouchValid = false; 
-                        if ( (y - mTouchDownValue) > 5 ) {
+                        if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
                             openDroplist();
                         }
                     }
                     break; 
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    //Log.d(TAG, "ACTION_MOVE:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    if ( mTouchValid ) {
+                        if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
+                            mTouchValid = false; 
+                            openDroplist();
+                        }
+                    }
+                    break;
                 }
                 default: break; 
             }
