@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">droplist</string>
+    <string name="unavailable">This Feature is currently unavailable.</string>
+    <string name="STR_MESG_14967_ID">Link to Cluster Illumination Control</string>
+    <string name="STR_WI_FI_08_ID">Wi-Fi</string>
+    <string name="STR_MUTE_06_ID">Mute</string>
+    <string name="STR_QUIET_MODE_04_ID">Quiet Mode</string>
+    <string name="STR_BEEP_04_ID">Beep</string>
+    <string name="STR_AUTOMATIC_04_ID">Automatic</string>
+    <string name="STR_DAYLIGHT_04_ID">Daylight</string>
+    <string name="STR_NIGHT_04_ID">Night</string>
+    <string name="STR_SETUP_06_ID">Setup</string>
+    <string name="STR_THEME1_ID">Theme1</string>
+    <string name="STR_THEME2_ID">Theme2</string>
+    <string name="STR_THEME3_ID">Theme3</string>
+    <string name="STR_DISPLAY_OFF_01_ID">Display Off</string>
+    <string name="STR_BLUETOOTH_06_ID">Bluetooth</string>
+    <string name="STR_BRIGHTNESS_04_ID">Brightness</string>
+</resources>

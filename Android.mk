@@ -15,12 +15,16 @@ LOCAL_AIDL_INCLUDES := $(call all-Iaidl-files-under, src)
 
 LOCAL_USE_AAPT2 := true
 
+LOCAL_AAPT_FLAGS += -c mdpi,hdpi,xhdpi
+
 LOCAL_JAVA_LIBRARIES += \
 	android.car \
 	SystemUIPluginLib \
 
 LOCAL_STATIC_ANDROID_LIBRARIES := \
+	android-support-v4 \
 	android-support-v7-preference \
+	android-support-v7-appcompat \
 	android-support-v14-preference \
 	android-arch-lifecycle-extensions \
 	setup-wizard-lib-gingerbread-compat \
@@ -31,7 +35,7 @@ LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 	androidx.legacy_legacy-support-v4 \
 	android.extension.car
 	  
-LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res
+LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res $(LOCAL_PATH)/res-droplist $(LOCAL_PATH)/res-volumedialog $(LOCAL_PATH)/res-notificationui
 
 LOCAL_CERTIFICATE := platform
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blacklist>
+    <app name="title">com.</app>
+    <app name="title">Humax</app>
+    <app name="title">humax</app>
+    <app name="title">HUMAX</app>
+    <app name="tingban">Tingban is running</app>
+</blacklist>

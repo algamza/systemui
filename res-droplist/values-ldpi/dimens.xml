@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_size_check_illumination">30sp</dimen>
+    <dimen name="text_size_menu">32sp</dimen>
+    <dimen name="checkbox_size">60px</dimen>
+    <dimen name="progress_size">750px</dimen>
+    <dimen name="noti_width"> 1920px </dimen>
+    <dimen name="noti_height"> 72px </dimen>
+</resources>

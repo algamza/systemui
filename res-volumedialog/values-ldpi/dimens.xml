@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="volume_dialog_width"> 660px </dimen>
+    <dimen name="volume_dialog_height"> 720px </dimen>
+    
+    <dimen name="plus_icon_left_margin"> 20px </dimen>
+    <dimen name="plus_icon_top_margin"> 211px </dimen>
+    <dimen name="plus_icon_size_width"> 80px </dimen>
+    <dimen name="plus_icon_size_height"> 80px </dimen>
+
+    <dimen name="minus_icon_left_margin"> 20px </dimen>
+    <dimen name="minus_icon_top_margin"> 430px </dimen>
+    <dimen name="minus_icon_size_width"> 80px </dimen>
+    <dimen name="minus_icon_size_height"> 80px </dimen>
+    
+    <dimen name="volume_icon_area_left_margin"> 26px </dimen>
+    <dimen name="volume_icon_area_top_margin"> 308px </dimen>
+    <dimen name="volume_icon_area_size_width"> 79px </dimen>
+    <dimen name="volume_icon_area_size_height"> 31px </dimen>
+
+    <dimen name="volume_text_left_margin"> 20px </dimen> <!-- guide = 12px -->
+    <dimen name="volume_text_top_margin"> 335px </dimen> <!-- guide = 345px -->
+    <dimen name="volume_text_size"> 68px </dimen>
+
+    <dimen name="progress_left_margin"> -205px </dimen>
+    <dimen name="progress_top_margin"> 158px </dimen>
+    <dimen name="progress_shape_width"> 402px </dimen>
+    <dimen name="progress_shape_height"> 402px </dimen>
+</resources>

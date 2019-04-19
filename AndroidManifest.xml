@@ -5,10 +5,8 @@
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="25"/>
 
-    <protected-broadcast android:name="com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST" />
+    <protected-broadcast android:name="com.humaxdigital.automotive.statusbar.droplist.action.OPEN_DROPLIST" />
     
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.MANAGE_USERS"/>
     <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA"/>
     <uses-permission android:name="android.permission.DELETE_CACHE_FILES"/>
     <uses-permission android:name="android.permission.DUMP"/>
@@ -17,7 +15,6 @@
     <uses-permission android:name="android.permission.GET_PACKAGE_SIZE"/>
     <uses-permission android:name="android.permission.MASTER_CLEAR" />
     <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
-    <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION"/>
     <uses-permission android:name="android.car.permission.CAR_CONTROL_AUDIO_VOLUME"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     
@@ -32,6 +29,25 @@
         android:protectionLevel="signature" />
     <uses-permission android:name="com.android.systemui.permission.PLUGIN" 
         android:protectionLevel="signature" />
+
+    <uses-permission android:name="android.permission.MANAGE_USERS"/>
+
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
+    
+    <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <uses-permission android:name="android.permission.MANAGE_ACTIVITY_STACKS" />
+
+    <uses-permission android:name="android.car.permission.CAR_VENDOR_EXTENSION" />
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.STATUS_BAR_SERVICE" />
 
     <application
         android:directBootAware="true"
@@ -53,6 +69,38 @@
             android:singleUser="true"
             android:exported="true">
         </service>
+
+        <service android:name=".droplist.DropListUIService"
+            android:singleUser="true"
+            android:exported="false" />
+
+        <service android:name=".droplist.SystemControl"
+            android:singleUser="true"
+            android:exported="false"/>
+
+        <service android:name=".droplist.user.UserDroplistService" 
+            android:exported="false" />
+
+        <service android:name=".volumedialog.VolumeDialogService"
+            android:singleUser="true"
+            android:exported="false"/>
+
+        <service android:name=".volumedialog.VolumeControlService"
+            android:singleUser="true"
+            android:exported="false"/>
+
+        <service android:name=".notificationui.NotificationSubscriber"
+            android:singleUser="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".notificationui.NotificationUiService"
+            android:singleUser="true"
+            android:exported="false" />
+
         <receiver
             android:name=".dev.DevBootReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
@@ -61,6 +109,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        
     </application>
 
 </manifest>

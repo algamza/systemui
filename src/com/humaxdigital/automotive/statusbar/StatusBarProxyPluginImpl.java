@@ -35,6 +35,10 @@ import com.humaxdigital.automotive.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.statusbar.service.IStatusBarDev;
 import com.humaxdigital.automotive.statusbar.service.StatusBarService;
 
+import com.humaxdigital.automotive.statusbar.droplist.DropListUIService;
+import com.humaxdigital.automotive.statusbar.volumedialog.VolumeDialogService; 
+
+
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 public class StatusBarProxyPluginImpl extends Service {
@@ -54,7 +58,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
     private final int TOUCH_OFFSET = 16; 
-    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.droplist.action.OPEN_DROPLIST"; 
+    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.statusbar.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
         StatusBarProxyPluginImpl getService() {
@@ -68,6 +72,8 @@ public class StatusBarProxyPluginImpl extends Service {
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
         startStatusBarService(this);
+        startDropListService(this);
+        startVolumeDialogService(this);
         
         mStatusBarWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
         mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
@@ -198,6 +204,18 @@ public class StatusBarProxyPluginImpl extends Service {
         if ( context == null ) return; 
         Intent intent = new Intent(context, StatusBarService.class);
         context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE); 
+    }
+
+    private void startDropListService(Context context){
+        if ( context == null ) return; 
+        Intent intent = new Intent(context, DropListUIService.class);
+        context.startService(intent);
+    }
+
+    private void startVolumeDialogService(Context context){
+        if ( context == null ) return; 
+        Intent intent = new Intent(context, VolumeDialogService.class);
+        context.startService(intent);
     }
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
