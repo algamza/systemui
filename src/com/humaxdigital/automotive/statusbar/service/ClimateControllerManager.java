@@ -362,24 +362,33 @@ public class ClimateControllerManager {
         if (zone == SEAT_DRIVER) {
             if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F) && 
                 (mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.FAHRENHEIT) ) {
-                    if ( mDRTemp.update(temp) && mListener != null ) 
-                        mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
+                    if ( mDRTemp.update(temp) && mListener != null ) {
+                        if ( ClimateUtils.isValidTemperatureHex(mDRTemp.get()) ) 
+                            mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
+                    } 
                 }
             else if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C) && 
                 (mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.CELSIUS) ) {
-                    if ( mDRTemp.update(temp) && mListener != null ) 
-                        mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
+                    if ( mDRTemp.update(temp) && mListener != null ) {
+                        if ( ClimateUtils.isValidTemperatureHex(mDRTemp.get()) ) 
+                            mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
+                    }
+                       
                 } 
         } else {
             if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F) && 
                 (mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.FAHRENHEIT) ) {
-                    if ( mPSTemp.update(temp) && mListener != null ) 
-                        mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+                    if ( mPSTemp.update(temp) && mListener != null ) {
+                        if ( ClimateUtils.isValidTemperatureHex(mPSTemp.get()) ) 
+                            mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+                    }
                 }
             else if ( (id == CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C) && 
                 (mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS) ) {
-                    if ( mPSTemp.update(temp) && mListener != null ) 
-                        mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
+                    if ( mPSTemp.update(temp) && mListener != null ) {
+                        if ( ClimateUtils.isValidTemperatureHex(mPSTemp.get()) ) 
+                            mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
+                    }
                 } 
         }
     }
@@ -427,15 +436,23 @@ public class ClimateControllerManager {
 
         if ( mDRTemp.updateMode(mode) && mPSTemp.updateMode(mode) ) {
             if ( mListener == null ) return; 
-            if ( mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.CELSIUS ) 
-                mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
-            else 
-                mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
-            
-            if ( mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS ) 
-                mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
-            else 
-                mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+            if ( mDRTemp.getCurrentTemperatureMode() == ClimateDRTempController.MODE.CELSIUS ) {
+                if ( ClimateUtils.isValidTemperatureHex(mDRTemp.get()) ) 
+                    mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mDRTemp.get()));
+            }
+            else {
+                if ( ClimateUtils.isValidTemperatureHex(mDRTemp.get()) ) 
+                    mListener.onDriverTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mDRTemp.get()));
+            }
+                
+            if ( mPSTemp.getCurrentTemperatureMode() == ClimatePSTempController.MODE.CELSIUS ) {
+                if ( ClimateUtils.isValidTemperatureHex(mPSTemp.get()) ) 
+                    mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToCelsius(mPSTemp.get()));
+            }
+            else {
+                if ( ClimateUtils.isValidTemperatureHex(mPSTemp.get()) ) 
+                    mListener.onPassengerTemperatureChanged(ClimateUtils.temperatureHexToFahrenheit(mPSTemp.get()));
+            }
         }
     }
 
