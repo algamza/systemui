@@ -295,7 +295,7 @@ public class DevNavigationBar extends FrameLayout {
 
     private void updateDropCacheOptions() {
         final boolean enable = SystemProperties.getBoolean(
-                "persist.vendor.humax.dropcache.enable", true);
+                "persist.vendor.humax.dropcache.enable", false);
         mDropCacheCheckBox.setChecked(enable);
     }
 
