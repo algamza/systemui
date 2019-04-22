@@ -25,6 +25,6 @@
     <app name="SystemUiTest">com.humaxdigital.automotive.systemuitest</app>
     <app name="KaolaFM">com.humaxdigital.automotive.kaolafm</app>
     <app name="DropList">com.humaxdigital.automotive.droplist</app>
-    <app name="StatusBar">com.humaxdigital.automotive.statusbar</app>
+    <app name="StatusBar">com.humaxdigital.automotive.systemui</app>
     <app name="HomeLauncher">com.humaxdigital.automotive.dn8clauncher</app>
 </whitelist>

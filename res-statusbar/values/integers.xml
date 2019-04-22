@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>    
+    <integer name="climate_aircleaning_red_timeout">180000</integer>
+    <integer name="climate_aircleaning_green_timeout">120000</integer>
+    <integer name="statusbar_touch_down_y">35</integer>
+    <integer name="statusbar_touch_up_y">45</integer>
+    <integer name="statusbar_height">40</integer>
+</resources>

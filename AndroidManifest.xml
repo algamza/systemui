@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.humaxdigital.automotive.statusbar"
+    package="com.humaxdigital.automotive.systemui"
     android:sharedUserId="android.uid.system">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="25"/>
 
-    <protected-broadcast android:name="com.humaxdigital.automotive.statusbar.droplist.action.OPEN_DROPLIST" />
+    <protected-broadcast android:name="com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST" />
     
     <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA"/>
     <uses-permission android:name="android.permission.DELETE_CACHE_FILES"/>
@@ -53,22 +53,6 @@
         android:directBootAware="true"
         android:allowBackup="false"
         android:persistent="true">
-        <service android:name=".StatusBarProxyPluginImpl"
-            android:singleUser="true"
-            android:label="@string/plugin_label">
-        </service>
-        <service 
-            android:name=".service.StatusBarService"
-            android:singleUser="true">
-        </service>
-        <service android:name=".user.PerUserService" android:exported="false" />
-
-        <!-- for developer's view -->
-        <service
-            android:name=".dev.LoadAverageService"
-            android:singleUser="true"
-            android:exported="true">
-        </service>
 
         <service android:name=".droplist.DropListUIService"
             android:singleUser="true"
@@ -101,8 +85,28 @@
             android:singleUser="true"
             android:exported="false" />
 
+        <service android:name=".statusbar.StatusBarProxyPluginImpl"
+            android:singleUser="true"
+            android:label="@string/plugin_label">
+        </service>
+        <service 
+            android:name=".statusbar.service.StatusBarService"
+            android:singleUser="true">
+        </service>
+        <service android:name=".statusbar.user.PerUserService" android:exported="false" />
+
+        <!-- for developer's view -->
+        <service
+            android:name=".statusbar.dev.LoadAverageService"
+            android:singleUser="true"
+            android:exported="true">
+        </service>
+
+        <service android:name=".SystemUIService"
+            android:singleUser="true" />
+
         <receiver
-            android:name=".dev.DevBootReceiver"
+            android:name=".statusbar.dev.DevBootReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter android:priority="-100000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
