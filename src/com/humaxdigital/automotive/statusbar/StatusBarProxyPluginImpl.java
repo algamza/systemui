@@ -98,7 +98,7 @@ public class StatusBarProxyPluginImpl extends Service {
         slp.token = new Binder();
         slp.gravity = Gravity.TOP;
         slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        slp.setTitle("HmxStatusBar");
+        slp.setTitle("HmxSystemUI");
         slp.packageName = package_name;
         slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 

@@ -5,7 +5,7 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_PACKAGE_NAME := HmxStatusBar
+LOCAL_PACKAGE_NAME := HmxSystemUI
 
 LOCAL_PRIVATE_PLATFORM_APIS := true
 
