@@ -33,7 +33,7 @@ public class VolumeControlService extends Service {
 
     public static abstract class VolumeCallback {
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
-        public void onMuteChanged(VolumeUtil.Type type, boolean mute) {}
+        public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute) {}
     }
 
     public class LocalBinder extends Binder {
@@ -283,11 +283,13 @@ public class VolumeControlService extends Service {
         public void onMasterMuteChanged(int flags) {
             Log.d(TAG, "onMasterMuteChanged");
             int mode = getCarAudioCurrentMode(); 
+            int max = getCarAudioVolumeMax(mode); 
+            int volume = getCarAudioVolume(mode);
             boolean mute = getCurrentMute();
 
             if ( mIsSettingsActivity ) return;
             
-            broadcastEventMuteChange(mode, mute);
+            broadcastEventMuteChange(mode, max, volume, mute);
         }
     };
 
@@ -311,10 +313,10 @@ public class VolumeControlService extends Service {
         }
     }
 
-    private void broadcastEventMuteChange(int mode, boolean mute) {
-        Log.d(TAG, "broadcastEventMuteChange:mode=" + mode + ", mute=" + mute);
+    private void broadcastEventMuteChange(int mode, int max, int volume, boolean mute) {
+        Log.d(TAG, "broadcastEventMuteChange:mode=" + mode + ", max=" + max + ", volume="+volume+", mute=" + mute);
         for (VolumeCallback callback : mCallbacks) {
-            callback.onMuteChanged(VolumeUtil.convertToType(mode), mute);
+            callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
         }
     }
 

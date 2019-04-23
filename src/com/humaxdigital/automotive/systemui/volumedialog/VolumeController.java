@@ -182,11 +182,12 @@ public class VolumeController {
         }
 
         @Override
-        public void onMuteChanged(VolumeUtil.Type type, boolean mute) {
+        public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                   mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+                   if ( mImgVolume != null ) mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+                   if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, volume));
                 }
             }); 
             for ( VolumeChangeListener listener : mListener ) {
