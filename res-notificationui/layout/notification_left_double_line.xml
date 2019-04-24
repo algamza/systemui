@@ -7,7 +7,7 @@
     android:background="@color/notification_bg">
     <TextView
         android:id="@+id/title"
-        android:layout_width="@dimen/title_width"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="@dimen/notification_title_margin"
         android:layout_marginLeft="@dimen/notification_title_left_margin"
