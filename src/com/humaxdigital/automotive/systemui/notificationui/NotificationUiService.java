@@ -200,6 +200,7 @@ public class NotificationUiService extends Service {
                     if ( duration > 0 ) mCurrentShowingTimeMS = duration; 
                     else mCurrentShowingTimeMS = 0; 
                     
+                    ui.inflate();
                     if ( mCurrentNotificationUI != null ) {
                         ((ViewGroup)mPanel).addView(ui); 
                         ((ViewGroup)mPanel).removeView(mCurrentNotificationUI); 
