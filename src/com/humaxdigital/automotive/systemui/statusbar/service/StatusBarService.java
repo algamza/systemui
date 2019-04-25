@@ -166,6 +166,9 @@ public class StatusBarService extends Service {
                 if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
                     mStatusBarClimate.touchDisable(true); 
                     mStatusBarSystem.touchDisable(true); 
+                } else {
+                    mStatusBarClimate.touchDisable(false); 
+                    mStatusBarSystem.touchDisable(false); 
                 }
             }
             else if ( action.equals(CAMERA_STOP) ) {

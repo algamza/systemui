@@ -510,6 +510,8 @@ public class DropListUIService extends Service {
                     if ( extras == null ) return;
                     if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
                         mIsRearCameraOn = true;
+                    } else {
+                        mIsRearCameraOn = false;
                     }
                     break;
                 }
