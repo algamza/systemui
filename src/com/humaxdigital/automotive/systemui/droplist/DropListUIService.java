@@ -85,6 +85,10 @@ public class DropListUIService extends Service {
     private boolean mIsPowerOn = true;
     private boolean mIsRearCameraOn = false;
 
+    private int mTouchDownValue = 0;
+    private Boolean mTouchValid = false; 
+    private final int TOUCH_OFFSET = -100; 
+
     private Binder mBinder = new LocalBinder();
 
     public class LocalBinder extends Binder {
@@ -152,6 +156,7 @@ public class DropListUIService extends Service {
  
         mPanelBody = mDialog.findViewById(R.id.panel);
         mPanelBody.setTranslationY(0);
+        //mPanelBody.setOnTouchListener(mDropListTouchListener);
         mShowing = false;
 
         mControllerManager = new ControllerManager(this, mPanelBody);
@@ -323,7 +328,33 @@ public class DropListUIService extends Service {
 
         @Override
         public boolean dispatchTouchEvent(MotionEvent ev) {
-            Log.d(TAG, "dispatchTouchEvent");
+            int y = (int)ev.getY(); 
+            switch(ev.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    mTouchValid = true; 
+                    mTouchDownValue = y; 
+                    break; 
+                }
+                case MotionEvent.ACTION_UP: {
+                    if ( mTouchValid ) {
+                        mTouchValid = false; 
+                        if ( (y - mTouchDownValue) < TOUCH_OFFSET ) {
+                            closeDropList();
+                        }
+                    }
+                    break; 
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    if ( mTouchValid ) {
+                        if ( (y - mTouchDownValue) < TOUCH_OFFSET ) {
+                            mTouchValid = false; 
+                            closeDropList();
+                        }
+                    }
+                    break;
+                }
+                default: break; 
+            }
             return super.dispatchTouchEvent(ev);
         }
 
@@ -542,4 +573,5 @@ public class DropListUIService extends Service {
             mIsPowerOn = on;
         }
     };
+
 }

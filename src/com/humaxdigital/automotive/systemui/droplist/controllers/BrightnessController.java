@@ -16,6 +16,8 @@ import android.content.res.Resources;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 
+import com.humaxdigital.automotive.systemui.droplist.ProductConfig;
+
 public class BrightnessController implements BaseController {
     private final String TAG = "BrightnessController"; 
     private enum TYPE {
@@ -82,7 +84,13 @@ public class BrightnessController implements BaseController {
         mSystem.registerCallback(mBrightnessListener);
 
         mBrightnessProgress = mSystem.getBrightness();
-        mClusterChecked = mSystem.getClusterCheck();
+
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+            mClusterChecked = false; 
+        } else {
+            mClusterChecked = mSystem.getClusterCheck();
+        }
+        
         // todo : get state from system
         mClusterBrightnessProgress = 10;
         
