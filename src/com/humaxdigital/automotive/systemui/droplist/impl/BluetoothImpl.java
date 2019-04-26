@@ -84,13 +84,7 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
 
     private boolean isBluetoothOn() {
         if ( mContext == null ) return false;
-        int on = 0; 
-        try {
-            on = Settings.Global.getInt(mContext.getContentResolver(), 
-            BT_SYSTEM);
-        } catch(Settings.SettingNotFoundException e) {
-            Log.e(TAG, "error : " + e ); 
-        }
+        int on = Settings.Global.getInt(mContext.getContentResolver(), BT_SYSTEM, 1);
         Log.d(TAG, "isBluetoothOn="+on);
         return on==0?false:true;
     }
