@@ -141,7 +141,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
         // PBAP_STATE_CONNECTING = 1;
         // PBAP_STATE_CONNECTED = 2;
         // PBAP_STATE_DOWNLOADING = 3;
-        filter.addAction("action_pbap_state"); 
+        //filter.addAction("action_pbap_state"); 
         filter.addAction(CALL_STATUS); 
         mContext.registerReceiver(mBTReceiver, filter);
         checkAllProfileConnection(); 
@@ -326,6 +326,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                     }
                     break; 
                 }
+                /*
                 case "action_pbap_state": {
                     int state = intent.getIntExtra("state", 0);
                     Log.d(TAG, "action_pbap_state="+state); 
@@ -348,6 +349,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
 
                     break; 
                 }
+                */
                 case CALL_STATUS: {
                     int state = intent.getIntExtra("status", 0);
                     Log.d(TAG, "received:com.humaxdigital.automotive.btphone.response_call_status:state="+state); 

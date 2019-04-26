@@ -8,6 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import android.provider.Settings;
+import android.content.ContentResolver;
+import android.database.ContentObserver;
+import android.os.Handler;
+import android.net.Uri;
+
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetoothCallback;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio;
@@ -16,6 +22,7 @@ import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudioCallback;
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";
     private final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
+    private final String PBAP_STATE = "android.extension.car.PBAP_STATE"; 
     private TMSClient mTMSClient = null;
     private IUserBluetooth mUserBluetooth = null; 
     private IUserAudio mUserAudio = null;
@@ -24,6 +31,13 @@ public class SystemCallController extends BaseController<Integer> {
     private boolean mCurrentBTMicMute = false;
     private CallStatus mCurrentStatus = CallStatus.NONE;
     private boolean mCarlifeConnected = false;
+
+    private ContentResolver mContentResolver = null;
+    private ContentObserver mObserver = null;
+    private boolean mCurrentContactDownloading = false; 
+    private boolean mCurrentCallHistoryDownloading = false; 
+    private int mContactDownloadState = 0; 
+    private int mCallHistoryDownloadState = 0; 
 
     public enum BTStatus {
         NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
@@ -43,6 +57,7 @@ public class SystemCallController extends BaseController<Integer> {
         filter.addAction(ACTION_CARLIFE_STATE);
         mContext.registerReceiverAsUser(mBroadcastReceiver, 
             UserHandle.ALL, filter, null, null);
+        initObserver();
     }
 
     @Override
@@ -51,6 +66,7 @@ public class SystemCallController extends BaseController<Integer> {
 
     @Override
     public void disconnect() {
+        deinitObserver();
         try {
             if ( mUserBluetooth != null ) 
                 mUserBluetooth.unregistCallback(mUserBluetoothCallback);
@@ -160,9 +176,9 @@ public class SystemCallController extends BaseController<Integer> {
                 }
             }
             if ( isHeadsetConnected ) {
-                if ( mUserBluetooth.getContactsDownloadState() == 1 ) 
+                if ( mCurrentContactDownloading ) 
                     state = BTStatus.CONTACTS_HISTORY_DOWNLOADING;
-                if ( mUserBluetooth.getCallHistoryDownloadState() == 1 ) 
+                if ( mCurrentCallHistoryDownloading ) 
                     state = BTStatus.CALL_HISTORY_DOWNLOADING;
                 if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
                     state = BTStatus.BT_CALLING;
@@ -192,6 +208,45 @@ public class SystemCallController extends BaseController<Integer> {
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
             listener.onEvent(mCurrentStatus.ordinal());
+    }
+
+    private void initObserver() {
+        if ( mContext == null ) return;
+        mContentResolver = mContext.getContentResolver();
+        if ( mContentResolver == null ) return; 
+        mObserver = createObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(PBAP_STATE), 
+            false, mObserver, UserHandle.USER_CURRENT); 
+    }
+
+    private void deinitObserver() {
+        if ( mContentResolver != null && mObserver != null ) 
+            mContentResolver.unregisterContentObserver(mObserver); 
+        mObserver = null;
+        mContentResolver = null;
+    }
+
+    private ContentObserver createObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContentResolver == null ) return;
+                int state = Settings.Global.getInt(mContentResolver, PBAP_STATE, 0);
+                Log.d(TAG, "PBAP_STATE="+state);
+                if ( mContactDownloadState == state ) return;
+                if ( state == 3 ) {
+                    mContactDownloadState = state; 
+                    mCurrentContactDownloading = true;
+                    broadcastChangeEvent();
+                } else if ( state == 2 ) {
+                    mContactDownloadState = state; 
+                    mCurrentContactDownloading = false;
+                    broadcastChangeEvent();
+                }
+            }
+        };
+        return observer; 
     }
 
     private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
