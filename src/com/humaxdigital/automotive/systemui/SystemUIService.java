@@ -18,6 +18,9 @@ public class SystemUIService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
+
+        SystemUIPolicy.applyPolicies(this);
+
         startStatusBarService(this);
         startDropListService(this);
         startVolumeDialogService(this);
