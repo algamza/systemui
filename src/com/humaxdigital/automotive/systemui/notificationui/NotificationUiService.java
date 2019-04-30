@@ -259,7 +259,7 @@ public class NotificationUiService extends Service {
         lp.packageName = this.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
         lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        lp.width = (int)getResources().getDimension(R.dimen.dialog_width);
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.height = (int)getResources().getDimension(R.dimen.dialog_height);
         //lp.windowAnimations = -1;
 
