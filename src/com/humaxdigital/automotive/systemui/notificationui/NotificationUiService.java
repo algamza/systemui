@@ -254,7 +254,7 @@ public class NotificationUiService extends Service {
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        mWindow.setType(WindowManager.LayoutParams.TYPE_SYSTEM_DIALOG);
+        mWindow.setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.packageName = this.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
