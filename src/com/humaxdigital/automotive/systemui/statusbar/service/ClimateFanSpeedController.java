@@ -1,6 +1,7 @@
 package com.humaxdigital.automotive.systemui.statusbar.service;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import android.extension.car.CarHvacManagerEx;
@@ -47,6 +48,25 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
         return convertToStatus(speed).ordinal(); 
     }
 
+    @Override
+    public void set(Integer e) {
+        if ( mDataStore == null || mManager == null ) return;
+        FanSpeedStatus status = FanSpeedStatus.values()[e];
+        int val = convertToValue(status);
+        final AsyncTask<Integer, Void, Void> task = new AsyncTask<Integer, Void, Void>() {
+            protected Void doInBackground(Integer... Integers) {
+                try {
+                    mManager.setIntProperty(CarHvacManagerEx.VENDOR_CANTX_HVAC_MAIN_BLOWER, 0, Integers[0]);
+                    Log.d(TAG, "set="+Integers[0]);
+                } catch (android.car.CarNotConnectedException err) {
+                    Log.e(TAG, "Car not connected in setAcState");
+                }
+                return null;
+            }
+        };
+        task.execute(val);
+    }
+
     private Boolean checkInvalid(int val) {
         if ( val >= 0x0 && val <= 0x9 ) return true; 
         else return false; 
@@ -68,5 +88,23 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
             default: break;
         }
         return status;
+    }
+
+    private int convertToValue(FanSpeedStatus status) {
+        int val = 0x0;
+        switch(status) {
+            case STEP_OFF: val = 0x0; break;
+            case STEP_0  : val = 0x1; break;
+            case STEP_1  : val = 0x2; break;
+            case STEP_2  : val = 0x3; break;
+            case STEP_3  : val = 0x4; break;
+            case STEP_4  : val = 0x5; break;
+            case STEP_5  : val = 0x6; break;
+            case STEP_6  : val = 0x7; break;
+            case STEP_7  : val = 0x8; break;
+            case STEP_8  : val = 0x9; break;
+            default: break;
+        }
+        return val;
     }
 }

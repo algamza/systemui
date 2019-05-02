@@ -124,7 +124,15 @@ public class ClimateController {
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if ( !mIGNOn || mIsOperateOn ) return; 
+                if ( !mIGNOn || mIsOperateOn ) return;
+                if ( (mFanSpeed != null) && ( mFanSpeedState == FanSpeedState.STEPOFF ) ) {
+                    try {
+                        if ( mService != null )
+                        mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
+                    } catch( RemoteException e ) {
+                        e.printStackTrace();
+                    }
+                }
                 openClimateSetting(); 
             }
         });

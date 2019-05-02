@@ -17,6 +17,7 @@ interface IStatusBarClimate {
     int getFanDirection();
     void setFanDirection(int state);
     int getBlowerSpeed();
+    void setBlowerSpeed(int state);
     int getPSSeatStatus();
     float getPSTemperature();
     int getFrontDefogState();

@@ -167,6 +167,12 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
         return status;   
     }
     @Override
+    public void setBlowerSpeed(int state) throws RemoteException {
+        if ( mClimateManager == null ) return;
+        Log.d(TAG, "setBlowerSpeed="+state);
+        mClimateManager.getController(ClimateControllerManager.ControllerType.FAN_SPEED).set(state);
+    }
+    @Override
     public int getPSSeatStatus() throws RemoteException {
         if ( mClimateManager == null ) return 0; 
         int status = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT).get(); 
