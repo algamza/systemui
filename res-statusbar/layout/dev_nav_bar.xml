@@ -133,6 +133,17 @@
                     android:text="Drop Cache"
                     android:checked="false" />
 
+                <CheckBox
+                    android:id="@+id/chkUsbHub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#222222"
+                    android:layout_margin="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#aaaaaa"
+                    android:text="USB Hub"
+                    android:checked="false" />
+
             </LinearLayout>
 
         </LinearLayout>

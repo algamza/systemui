@@ -51,6 +51,7 @@ public class DevNavigationBar extends FrameLayout {
     private CheckBox mCpuUsageCheckBox;
     private CheckBox mUsbDebuggingCheckBox;
     private CheckBox mDropCacheCheckBox;
+    private CheckBox mUsbHubCheckBox;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -118,6 +119,9 @@ public class DevNavigationBar extends FrameLayout {
         mDropCacheCheckBox = (CheckBox) findViewById(R.id.chkDropCache);
         mDropCacheCheckBox.setOnClickListener(view -> { writeDropCacheOptions(); });
 
+        mUsbHubCheckBox = (CheckBox) findViewById(R.id.chkUsbHub);
+        mUsbHubCheckBox.setOnClickListener(view -> { writeUsbHubOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -136,6 +140,8 @@ public class DevNavigationBar extends FrameLayout {
         writeCpuUsageOptions();
         updateDropCacheOptions();
         writeDropCacheOptions();
+        updateUsbHubOptions();
+        writeUsbHubOptions();
     }
 
     public void onAttached() {
@@ -303,5 +309,17 @@ public class DevNavigationBar extends FrameLayout {
         boolean enable = mDropCacheCheckBox.isChecked();
         SystemProperties.set(
                 "persist.vendor.humax.dropcache.enable", (enable) ? "true" : "false");
+    }
+
+    private void updateUsbHubOptions() {
+        final boolean support = SystemProperties.getBoolean(
+                "persist.vendor.humax.usbhub.support", false);
+        mUsbHubCheckBox.setChecked(support);
+    }
+
+    private void writeUsbHubOptions() {
+        boolean support = mUsbHubCheckBox.isChecked();
+        SystemProperties.set(
+                "persist.vendor.humax.usbhub.support", (support) ? "true" : "false");
     }
 }
