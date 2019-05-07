@@ -82,7 +82,7 @@ public class VolumeDialogService extends Service {
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        mWindow.setType(WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY);
+        mWindow.setType(WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY);
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.packageName = this.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
