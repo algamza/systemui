@@ -567,6 +567,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             Log.d(TAG, "mUserChangeReceiver");
             unbindToUserService();
             bindToUserService();
+            if ( mDateTimeController != null ) mDateTimeController.refresh();
         }
     };
 
