@@ -211,9 +211,14 @@ public class VolumeControlService extends Service {
         return max;
     }
 
-    public void setVolume(VolumeUtil.Type type, int volume) {
+    public boolean setVolume(VolumeUtil.Type type, int volume) {
+
+        if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(VolumeUtil.convertToMode(type), volume) ) return false;
+        if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(VolumeUtil.convertToMode(type), volume) ) return false;
+
         setAudioVolume(VolumeUtil.convertToMode(type), volume); 
         Log.d(TAG, "setVolume type=" + type + ", volume=" + volume);
+        return true;
     }
 
     private void cleanupAudioManager() {

@@ -493,6 +493,12 @@ public class VolumeController {
             mCurrentVolume = PROGRESS_UI_STEP_MAX; 
             return;
         }
+
+        if ( !mController.setVolume(mCurrentVolumeType, mCurrentVolume) ) {
+            mCurrentVolume--;
+            return;
+        }
+
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -503,7 +509,7 @@ public class VolumeController {
             }
         }); 
 
-        mController.setVolume(mCurrentVolumeType, mCurrentVolume);
+        
     }
 
     private void _volumeDown() {
@@ -511,6 +517,12 @@ public class VolumeController {
             mCurrentVolume = 0; 
             return;
         }
+
+        if ( !mController.setVolume(mCurrentVolumeType, mCurrentVolume) ) {
+            mCurrentVolume++; 
+            return;
+        }
+
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -520,7 +532,7 @@ public class VolumeController {
                 }
             }
         }); 
-        mController.setVolume(mCurrentVolumeType, mCurrentVolume);
+        
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
