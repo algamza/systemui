@@ -185,8 +185,12 @@ public class BrightnessController implements BaseController {
         @Override
         public void onClusterChecked(boolean checked) {
             if ( mCheckbox == null ) return;
-            mCheckbox.setChecked(checked); 
-            mClusterChecked = checked; 
+            if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+                mClusterChecked = false; 
+            } else {
+                mCheckbox.setChecked(checked); 
+                mClusterChecked = checked; 
+            }
         }
     };
 
@@ -194,6 +198,7 @@ public class BrightnessController implements BaseController {
             new CheckBox.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
             if ( isChecked ) {
                 updateType(TYPE.CLUSTER_BRIGHTNESS, mClusterBrightnessProgress);
             }
@@ -201,6 +206,7 @@ public class BrightnessController implements BaseController {
                 updateType(TYPE.BRIGHTNESS, mBrightnessProgress);
             }
             if ( mSystem != null ) mSystem.setClusterCheck(isChecked);
+            
         }
     };
 
