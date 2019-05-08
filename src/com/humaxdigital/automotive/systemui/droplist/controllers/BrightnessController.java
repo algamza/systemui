@@ -122,6 +122,10 @@ public class BrightnessController implements BaseController {
         mCheckboxText.setText(res.getString(R.string.STR_MESG_14967_ID));
     }
 
+    public void clear() {
+        if ( mPopupView != null ) mPopupView.setVisibility(View.GONE);
+    }
+
     private void updateType(TYPE type, int progress) {
         Log.d(TAG, "updateType:type="+type+", progress="+progress);
         switch(type) {

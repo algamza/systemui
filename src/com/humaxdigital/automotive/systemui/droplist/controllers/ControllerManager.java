@@ -62,6 +62,10 @@ public class ControllerManager {
             controller.refresh(mContext);
     }
 
+    public void clear() {
+        if ( mBrightnessController != null ) mBrightnessController.clear();
+    }
+
     private void init() {
         if ( mContext == null ) return;
         Resources res = mContext.getResources();
