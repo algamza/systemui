@@ -254,15 +254,16 @@ public class NotificationUiService extends Service {
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        mWindow.setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+        mWindow.setType(WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY);
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.packageName = this.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
-        lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.gravity = Gravity.TOP | Gravity.LEFT;
+        lp.x = 0;
+        lp.y = 0;
+        lp.width = (int)getResources().getDimension(R.dimen.dialog_width);
         lp.height = (int)getResources().getDimension(R.dimen.dialog_height);
-        //lp.windowAnimations = -1;
-
+        lp.windowAnimations = -1;
         mWindow.setAttributes(lp);
         mWindow.setLayout(lp.width, lp.height);
 
