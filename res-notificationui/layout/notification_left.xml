@@ -32,6 +32,8 @@
         android:layout_height="wrap_content"
         android:includeFontPadding="false"
         android:lineSpacingExtra="@dimen/notification_body_spacing_margin"
+        android:singleLine="true"
+        android:ellipsize="end"
         android:textColor="@color/notification_text"
         android:textSize="@dimen/notification_body_text_size"/>
 </LinearLayout>

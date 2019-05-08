@@ -573,6 +573,14 @@ public class DropListUIService extends Service {
             Log.d(TAG, "onPowerChanged="+on);
             mIsPowerOn = on;
         }
+        @Override
+        public void onVRStateChanged(boolean on) {
+            Log.d(TAG, "onVRStateChanged="+on);
+            if ( !on ) return;
+            if ( mDialog != null && mDialog.isShowing() ) {
+                closeDropList();
+            }
+        }
     };
 
 }

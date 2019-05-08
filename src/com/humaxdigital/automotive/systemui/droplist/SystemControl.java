@@ -18,6 +18,11 @@ import android.content.IntentFilter;
 import android.content.Intent;
 import android.content.Context;
 
+import android.provider.Settings;
+import android.content.ContentResolver;
+import android.database.ContentObserver;
+import android.net.Uri;
+
 import com.android.internal.annotations.GuardedBy;
 
 import com.humaxdigital.automotive.systemui.droplist.impl.ModeImpl;
@@ -109,6 +114,10 @@ public class SystemControl extends Service {
     private boolean isPowerOn = true;
     private boolean mIsVolumeSettingsActivated = false; 
 
+    private ContentResolver mVRContentResolver;
+    private ContentObserver mVRObserver;
+    private final String SETTINGS_VR = "vr_shown";
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -166,6 +175,8 @@ public class SystemControl extends Service {
         registUserSwicher();
         registApplicationActionReceiver();
         bindToUserService();
+
+        initVRObserver();
     }
 
     @Override
@@ -209,6 +220,7 @@ public class SystemControl extends Service {
         public void onThemeChanged(SystemTheme theme) {}
         public void onPowerChanged(boolean on) {}
         public void onVolumeSettingsActivated(boolean on) {}
+        public void onVRStateChanged(boolean on) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -620,4 +632,28 @@ public class SystemControl extends Service {
             }
         }
     };
+
+    private ContentObserver createVRObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                int on = Settings.Global.getInt(getContentResolver(), SETTINGS_VR, 0);
+                Log.d(TAG, "onChange="+on);
+                if ( on == 1 ) {
+                    for ( SystemCallback callback : mCallbacks )
+                        callback.onVRStateChanged(true);
+                }
+            }
+        };
+        return observer; 
+    }
+
+    private void initVRObserver() {
+        mVRContentResolver = getContentResolver();
+        if ( mVRContentResolver == null ) return; 
+        mVRObserver = createVRObserver(); 
+        mVRContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(SETTINGS_VR), 
+            false, mVRObserver, UserHandle.USER_CURRENT); 
+    }
 }
