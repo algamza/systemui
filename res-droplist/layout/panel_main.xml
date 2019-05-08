@@ -316,7 +316,7 @@
             android:layout_height="0dp"
             android:layout_weight="40"
             android:background="@color/colorShadow"
-            android:alpha="0.6" />
+            android:alpha="0.9" />
     </LinearLayout>
     <FrameLayout
         android:layout_width="wrap_content"
