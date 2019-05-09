@@ -194,7 +194,7 @@ public class SystemStatusController {
 
         mMute = new SystemView(mContext)
             .addIcon(MuteStatus.NONE.ordinal(), none)
-            .addIcon(MuteStatus.AV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_naviaudio_off, null))
+            .addIcon(MuteStatus.AV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_audio_off, null))
             .addIcon(MuteStatus.NAV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_navi_off, null))
             .addIcon(MuteStatus.AV_NAV_MUTE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_naviaudio_off, null))
             .inflate(); 
@@ -210,7 +210,7 @@ public class SystemStatusController {
     private void fetch() {
         if ( mService == null ) return; 
         try {
-            if ( mMute != null ) mMute.update(MuteStatus.values()[mService.getMuteStatus()].ordinal());
+            updateMute(mService.getMuteStatus());
             if ( mBle != null ) mBle.update(BLEStatus.values()[mService.getBLEStatus()].ordinal());
             if ( mBtBattery != null ) mBtBattery.update(BTBatteryStatus.values()[mService.getBTBatteryStatus()].ordinal());
             if ( mPhone != null ) mPhone.update(CallStatus.values()[mService.getCallStatus()].ordinal());
@@ -221,6 +221,20 @@ public class SystemStatusController {
             if ( mLocationSharing != null ) mLocationSharing.update(ModeStatus.values()[mService.getModeStatus()].ordinal());
         } catch( RemoteException e ) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateMute(int state) {
+        if ( mMute == null ) return;
+        if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
+            MuteStatus mute_state = MuteStatus.values()[state]; 
+            if ( mute_state == MuteStatus.AV_MUTE ) {
+                mMute.update(MuteStatus.AV_NAV_MUTE.ordinal());
+            } else {
+                mMute.update(mute_state.ordinal());
+            }
+        } else {
+            mMute.update(MuteStatus.values()[state].ordinal());
         }
     }
 
@@ -238,12 +252,11 @@ public class SystemStatusController {
         public void onDateTimeInitialized() throws RemoteException {
         }
         public void onMuteStatusChanged(int status) throws RemoteException {
-            if ( mMute == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mMute.update(MuteStatus.values()[status].ordinal());
+                    updateMute(status);
                 }
             }); 
         }
