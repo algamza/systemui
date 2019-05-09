@@ -4,5 +4,8 @@
     <app name="title">Humax</app>
     <app name="title">humax</app>
     <app name="title">HUMAX</app>
-    <app name="tingban">Tingban is running</app>
+    <app name="is_running">is running</app>
+    <app name="is_running">正在运行</app>
+    <app name="is_running">실행 중입니다</app>
+    <app name="com.baidu.che.codriver">DuerOS</app>
 </blacklist>
