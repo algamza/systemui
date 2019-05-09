@@ -28,5 +28,4 @@
     <app name="StatusBar">com.humaxdigital.automotive.systemui</app>
     <app name="HomeLauncher">com.humaxdigital.automotive.dn8clauncher</app>
     <app name="DuerOS">com.baidu.che.codriver</app>
-    <app name="DuerOS2">che.baidu.com.codriver</app>
 </whitelist>
