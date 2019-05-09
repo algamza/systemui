@@ -3,8 +3,11 @@ package com.humaxdigital.automotive.systemui.statusbar.service;
 
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.os.Bundle;
 import android.content.Context;
 import android.content.Intent;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +19,16 @@ import com.humaxdigital.automotive.systemui.statusbar.util.OSDPopup;
 public class StatusBarClimate extends IStatusBarClimate.Stub {
     private static final String TAG = "StatusBarClimate";
     private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
-    
+    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
+    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
+
     private ClimateControllerManager mClimateManager = null;
     private CarExtensionClient mCarExClient = null; 
     private List<IStatusBarClimateCallback> mClimateCallbacks = new ArrayList<>();
     private DataStore mDataStore = null;
     private Context mContext = null;
     private boolean mTouchDisable = false; 
+    private boolean mIsRearCameraOn = false;
 
     public StatusBarClimate(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -32,10 +38,14 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
 
         mClimateManager = new ClimateControllerManager(mContext, mDataStore)
             .registerListener(mClimateManagerListener); 
+        
+        registCameraReceiver();
     }
 
     public void destroy() {
         Log.d(TAG, "destroy");
+        unregistCameraReceiver();
+        
         mContext = null;
         mDataStore = null;
         mCarExClient = null;
@@ -379,4 +389,61 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
             }
         }
     }; 
+
+    
+    /*
+    Camera Event Related Area
+    */
+    private void registCameraReceiver() {
+        Log.d(TAG, "registCameraReceiver");
+        if ( mContext == null ) return;
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(CAMERA_START);
+        filter.addAction(CAMERA_STOP);
+        mContext.registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
+    }
+
+    private void unregistCameraReceiver() {
+        Log.d(TAG, "unregistCameraReceiver");
+        if ( mContext == null ) return;
+        mContext.unregisterReceiver(mCameraEvtReceiver);
+    }
+
+    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if ( action == null ) return;
+            
+            switch(action) {
+                case CAMERA_START: {
+                    Log.d(TAG, "mCameraEvtReceiver CAMERA_START");
+                    Bundle extras = intent.getExtras();
+                    if ( extras == null ) return;
+                    try {
+                        if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
+                            for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
+                                callback.onRearCameraOn(true); 
+                        } else {
+                            for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
+                                callback.onRearCameraOn(false); 
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+                case CAMERA_STOP: {
+                    Log.d(TAG, "mCameraEvtReceiver CAMERA_STOP");
+                    try {
+                        for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
+                            callback.onRearCameraOn(false); 
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+    };
 }
