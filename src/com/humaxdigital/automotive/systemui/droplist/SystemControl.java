@@ -483,6 +483,8 @@ public class SystemControl extends Service {
         if ( !action.equals("") ) {
             Intent intent = new Intent(action);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             this.startActivityAsUser(intent, UserHandle.CURRENT);
         }
     }
