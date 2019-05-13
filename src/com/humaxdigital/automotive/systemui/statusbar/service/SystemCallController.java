@@ -182,7 +182,7 @@ public class SystemCallController extends BaseController<Integer> {
                     state = BTStatus.CALL_HISTORY_DOWNLOADING;
                 if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
                     state = BTStatus.BT_CALLING;
-            }
+            } 
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 

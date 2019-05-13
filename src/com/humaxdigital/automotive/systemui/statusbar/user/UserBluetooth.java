@@ -235,6 +235,13 @@ public class UserBluetooth extends IUserBluetooth.Stub {
             switch(profile) {
                 case HEADSET: {
                     mCurrentHeadsetConnected = state==1?true:false; 
+                    if ( !mCurrentHeadsetConnected ) {
+                        mCurrentCallingState = 0; 
+                        mCurrentBatteryLevel = 0; 
+                        mCurrentAntennaLevel = 0;
+                        mCurrentContactsDownloadState = 0;
+                        mCurrentCallHistoryDownloadState = 0;
+                    }
                     for ( IUserBluetoothCallback callback : mListeners ) 
                         callback.onHeadsetConnectionStateChanged(state); 
                     break;
@@ -359,7 +366,9 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                         2 : Calling
                         3 : Outgoing
                     */
+                    
                     if ( state == 2 ) {
+                        if ( !mCurrentHeadsetConnected ) return; 
                         if ( mCurrentCallingState == 1 ) return;
                         mCurrentCallingState = 1; 
                     }

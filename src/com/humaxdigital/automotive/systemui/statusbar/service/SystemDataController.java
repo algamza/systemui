@@ -119,7 +119,7 @@ public class SystemDataController extends BaseController<Integer> {
         mIsNetworkAvaliable = netInfo.isAvailable();
         mIsNetworkConnected = netInfo.isConnectedOrConnecting();
         mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
-        mDataType = mTelephony.getNetworkType();
+        mDataType = mTelephony.getDataNetworkType();
         mDataStatus = convertToStatus(mIsNetworkAvaliable 
             && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
 
@@ -195,7 +195,7 @@ public class SystemDataController extends BaseController<Integer> {
             mIsNetworkAvaliable = netInfo.isAvailable();
             mIsNetworkConnected = netInfo.isConnectedOrConnecting();
             mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
-            mDataType = mTelephony.getNetworkType();
+            mDataType = mTelephony.getDataNetworkType();
             Log.d(TAG, "onReceive=CONNECTIVITY_ACTION, available="+mIsNetworkAvaliable
                 +", connected="+mIsNetworkConnected+", type="+mDataType);
             // todo : Check status when wifi is connected
@@ -213,7 +213,7 @@ public class SystemDataController extends BaseController<Integer> {
         @Override
         public void onDataActivity(int direction) {
             if ( mTelephony == null ) return;
-            mDataType = mTelephony.getNetworkType();
+            mDataType = mTelephony.getDataNetworkType();
             mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
             DataStatus status = convertToStatus(mIsNetworkAvaliable 
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
