@@ -7,7 +7,6 @@ interface IUserBluetooth {
     void unregistCallback(IUserBluetoothCallback callback);
     int getBatteryLevel(); 
     int getAntennaLevel(); 
-    int getBluetoothCallingState(); 
     int getContactsDownloadState(); 
     int getCallHistoryDownloadState(); 
     boolean isHeadsetDeviceConnected();

@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
+import android.telephony.TelephonyManager;
 
 import android.provider.Settings;
 import android.content.ContentResolver;
@@ -39,6 +40,8 @@ public class SystemCallController extends BaseController<Integer> {
     private int mContactDownloadState = 0; 
     private int mCallHistoryDownloadState = 0; 
 
+    private TelephonyManager mTelephony = null;
+
     public enum BTStatus {
         NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
         HF_FREE_STREAMING_CONNECTED, CALL_HISTORY_DOWNLOADING, 
@@ -55,9 +58,11 @@ public class SystemCallController extends BaseController<Integer> {
         if ( mContext == null ) return;
         final IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_CARLIFE_STATE);
+        filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         mContext.registerReceiverAsUser(mBroadcastReceiver, 
             UserHandle.ALL, filter, null, null);
         initObserver();
+        mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -180,13 +185,26 @@ public class SystemCallController extends BaseController<Integer> {
                     state = BTStatus.CONTACTS_HISTORY_DOWNLOADING;
                 if ( mCurrentCallHistoryDownloading ) 
                     state = BTStatus.CALL_HISTORY_DOWNLOADING;
-                if ( mUserBluetooth.getBluetoothCallingState() == 1 ) 
+                if ( getCallState() == 1 ) 
                     state = BTStatus.BT_CALLING;
             } 
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
         return state;         
+    }
+
+    private int getCallState() {
+        if ( mTelephony == null ) return 0; 
+        int state = mTelephony.getCallState(); 
+        switch(state) {
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+            case TelephonyManager.CALL_STATE_RINGING: {
+                return 1; 
+            }
+            case TelephonyManager.CALL_STATE_IDLE: break; 
+        }
+        return 0; 
     }
 
     private CallStatus convertToCallStatus(BTStatus bts) {
@@ -286,10 +304,6 @@ public class SystemCallController extends BaseController<Integer> {
         public void onAntennaStateChanged(int level) throws RemoteException {
         }
         @Override
-        public void onBluetoothCallingStateChanged(int state) throws RemoteException {
-            broadcastChangeEvent();
-        }
-        @Override
         public void onBluetoothMicMuteStateChanged(int state) throws RemoteException {
         }
         @Override
@@ -320,10 +334,27 @@ public class SystemCallController extends BaseController<Integer> {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (action.equals(ACTION_CARLIFE_STATE)) {
-                mCarlifeConnected = intent.getBooleanExtra("isConnected", false);
-                Log.d(TAG, "mBroadcastReceiver:ACTION_CARLIFE_STATE="+mCarlifeConnected);
-                broadcastChangeEvent();
+            switch(action) {
+                case ACTION_CARLIFE_STATE: {
+                    mCarlifeConnected = intent.getBooleanExtra("isConnected", false);
+                    Log.d(TAG, "mBroadcastReceiver:ACTION_CARLIFE_STATE="+mCarlifeConnected);
+                    broadcastChangeEvent();
+                    break;
+                }
+                case TelephonyManager.ACTION_PHONE_STATE_CHANGED: {
+                    String phone_state = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
+                    Log.d(TAG, "ACTION_PHONE_STATE_CHANGED="+phone_state);
+                    if ( phone_state == null ) break;
+                    /*
+                    if ( phone_state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK) ) {
+                    } else if ( phone_state.equals(TelephonyManager.EXTRA_STATE_RINGING) ) {
+                    } else if ( phone_state.equals(TelephonyManager.EXTRA_STATE_IDLE) ) {
+                    } else {
+                    }
+                    */
+                    broadcastChangeEvent();
+                    break;
+                }
             }
         }
     };

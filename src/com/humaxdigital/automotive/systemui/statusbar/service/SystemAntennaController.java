@@ -188,9 +188,6 @@ public class SystemAntennaController extends BaseController<Integer> {
             broadcastChangeEvent();
         }
         @Override
-        public void onBluetoothCallingStateChanged(int state) throws RemoteException {
-        }
-        @Override
         public void onBluetoothMicMuteStateChanged(int state) throws RemoteException {
         }
         @Override
