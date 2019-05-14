@@ -102,8 +102,12 @@ public class SystemDateTimeController extends BaseController<String> {
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
             false, mObserver, UserHandle.USER_CURRENT); 
 
+        String type = getTimeType();
+        String time = getCurrentTime(); 
+        if ( mDataStore != null ) 
+            mDataStore.shouldPropagateDateTimeUpdate(time);
         for ( SystemTimeTypeListener listener : mTimeTypeListeners ) {
-            listener.onTimeTypeChanged(getTimeType()); 
+            listener.onTimeTypeChanged(type); 
         }
     }
 
@@ -122,6 +126,8 @@ public class SystemDateTimeController extends BaseController<String> {
         } else if ( type.equals("24") ) {
             mCurrentTimeType = TimeType.TYPE_24; 
         }
+
+        Log.d(TAG, "getTimeType:type="+type);
         return type;
     }
 

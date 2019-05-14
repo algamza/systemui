@@ -165,6 +165,8 @@ public class DateController {
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
+
+            Log.d(TAG, "onTimeTypeChanged:type="+type+", time="+mTime);
             
             mHandler.post(new Runnable() {
                 @Override
