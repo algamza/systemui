@@ -11,11 +11,14 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.database.ContentObserver;
 
+import android.os.Build;
+
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Date; 
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 
@@ -53,6 +56,7 @@ public class SystemDateTimeController extends BaseController<String> {
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
             false, mObserver, UserHandle.USER_CURRENT); 
+        //checkValidTime();
     }
 
     @Override
@@ -135,7 +139,6 @@ public class SystemDateTimeController extends BaseController<String> {
         @Override
         public void onReceive(Context context, Intent intent) {
             String date = getCurrentTime(); 
-            
             boolean shouldPropagate = mDataStore.shouldPropagateDateTimeUpdate(date);
             if ( shouldPropagate ) {
                 for ( Listener<String> listener : mListeners ) 
@@ -153,6 +156,22 @@ public class SystemDateTimeController extends BaseController<String> {
             df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
         }
         return df.format(Calendar.getInstance().getTime());
+    }
+
+    private boolean checkValidTime() {
+        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
+        String date = df.format(Calendar.getInstance().getTime());
+        Log.d(TAG, "current time:"+date);
+        checkBuildTime();
+        return true;
+    }
+
+    private void checkBuildTime() {
+        long time = Build.TIME;
+        Date date = new Date(time); 
+        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
+        String date1 = df.format(date);
+        Log.d(TAG, "build time :"+date1);
     }
 
     private ContentObserver createObserver() {
