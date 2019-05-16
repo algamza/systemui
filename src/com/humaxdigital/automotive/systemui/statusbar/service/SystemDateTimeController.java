@@ -11,6 +11,7 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.database.ContentObserver;
 
+import com.humaxdigital.automotive.systemui.statusbar.util.ProductConfig; 
 import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
@@ -166,17 +167,20 @@ public class SystemDateTimeController extends BaseController<String> {
     };
 
     private String getCurrentTime() {
-        int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
-                CarExtraSettings.Global.GPS_TIME_STATUS,
-                CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
-        int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
-                CarExtraSettings.Global.NTP_TIME_STATUS,
-                CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
-        if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
-            && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
-            Log.d(TAG, "time invalid"); 
-            return TIME_ERROR; 
-        } 
+
+        if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
+            int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.GPS_TIME_STATUS,
+            CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
+            int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.NTP_TIME_STATUS,
+                    CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
+            if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
+                && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
+                Log.d(TAG, "time invalid"); 
+                return TIME_ERROR; 
+            } 
+        }
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
