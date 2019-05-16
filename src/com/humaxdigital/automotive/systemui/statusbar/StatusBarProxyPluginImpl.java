@@ -36,6 +36,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
 import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarDev;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 
+import com.humaxdigital.automotive.systemui.statusbar.util.ProductConfig;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -151,7 +152,14 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     public View inflateNavBarView() {
-        final View view = View.inflate(this, R.layout.navi_overlay, null);
+        final View view = null; 
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
+            view = View.inflate(this, R.layout.du2_navi_overlay, null);
+         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
+            view = View.inflate(this, R.layout.dn8c_navi_overlay, null);
+         else 
+            view = View.inflate(this, R.layout.dn8c_navi_overlay, null);
+        
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
