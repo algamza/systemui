@@ -152,7 +152,7 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     public View inflateNavBarView() {
-        final View view = null; 
+        View view = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             view = View.inflate(this, R.layout.du2_navi_overlay, null);
          else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
