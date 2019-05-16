@@ -25,6 +25,7 @@ public class DateController {
     private IStatusBarSystem mService; 
     private String mTime = ""; 
     private String mType = "12";
+    private Boolean mIsValidTime = true; 
 
     private Handler mHandler; 
 
@@ -62,7 +63,8 @@ public class DateController {
             public void onClick(View view) {
                 if ( mService == null ) return;
                 try {
-                    mService.openDateTimeSetting(); 
+                    if ( mIsValidTime ) 
+                        mService.openDateTimeSetting(); 
                 } catch( RemoteException e ) {
                     e.printStackTrace();
                 }
@@ -80,13 +82,26 @@ public class DateController {
         }
         
         updateClockUI(mTime, mType);
+    }
 
+    private Boolean isValidTime(String time) {
+        if ( time.contains("error") ) return false;
+        return true; 
     }
 
     private void updateClockUI(String time, String type) {
         if ( mDateVew == null || mDateNoonView == null 
             || type == null || time == null ) return;
         
+        if ( !isValidTime(time) ) {
+            mIsValidTime = false;
+            mDateVew.setText("-- : --");
+            mDateNoonView.setText("");
+            return;
+        }
+
+        mIsValidTime = true;
+
         String date = "";
         String noon = "";
 

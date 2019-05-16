@@ -11,14 +11,13 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.database.ContentObserver;
 
-import android.os.Build;
+import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Date; 
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 
@@ -26,7 +25,8 @@ import java.text.DateFormat;
 public class SystemDateTimeController extends BaseController<String> {
     private static final String TAG = "SystemDateTimeController"; 
     private ContentResolver mContentResolver;
-    private ContentObserver mObserver;
+    private ContentObserver mObserverTimeType;
+    private ContentObserver mObserverTimeValid; 
     private List<SystemTimeTypeListener> mTimeTypeListeners = new ArrayList<>();
     private TimeType mCurrentTimeType = TimeType.TYPE_12; 
 
@@ -52,20 +52,29 @@ public class SystemDateTimeController extends BaseController<String> {
 
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
-        mObserver = createObserver(); 
+        mObserverTimeType = createTimeTypeObserver(); 
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
-            false, mObserver, UserHandle.USER_CURRENT); 
-        //checkValidTime();
+            false, mObserverTimeType, UserHandle.USER_CURRENT); 
+        mObserverTimeValid = createTimeValidObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.GPS_TIME_STATUS), 
+            false, mObserverTimeValid, UserHandle.USER_CURRENT); 
     }
 
     @Override
     public void disconnect() {
-        if ( mContext != null ) mContext.unregisterReceiver(mDateTimeChangedReceiver);
+        if ( mContext != null ) {
+            mContext.unregisterReceiver(mDateTimeChangedReceiver);
+        }
         
         if ( mContentResolver != null ) 
-        mContentResolver.unregisterContentObserver(mObserver); 
-        mObserver = null;
+        if ( mObserverTimeType != null ) 
+            mContentResolver.unregisterContentObserver(mObserverTimeType); 
+        if ( mObserverTimeValid != null ) 
+            mContentResolver.unregisterContentObserver(mObserverTimeValid); 
+        mObserverTimeType = null;
+        mObserverTimeValid = null;
         mContentResolver = null;
     }
 
@@ -97,14 +106,14 @@ public class SystemDateTimeController extends BaseController<String> {
 
     public void refresh() {
         if ( mContentResolver == null ) return; 
-        if ( mObserver != null )  {
-            mContentResolver.unregisterContentObserver(mObserver); 
+        if ( mObserverTimeType != null )  {
+            mContentResolver.unregisterContentObserver(mObserverTimeType); 
         }
         Log.d(TAG, "refresh");
-        mObserver = createObserver(); 
+        mObserverTimeType = createTimeTypeObserver(); 
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
-            false, mObserver, UserHandle.USER_CURRENT); 
+            false, mObserverTimeType, UserHandle.USER_CURRENT); 
 
         String type = getTimeType();
         String time = getCurrentTime(); 
@@ -148,6 +157,16 @@ public class SystemDateTimeController extends BaseController<String> {
     };
 
     private String getCurrentTime() {
+        // TODO : 
+
+        int time_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+                CarExtraSettings.Global.GPS_TIME_STATUS,
+                CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
+
+        if ( time_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID ) {
+            Log.d(TAG, "time invalid"); 
+            return "error"; 
+        }
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
@@ -155,26 +174,15 @@ public class SystemDateTimeController extends BaseController<String> {
         } else {
             df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
         }
-        return df.format(Calendar.getInstance().getTime());
+
+        String time = df.format(Calendar.getInstance().getTime());
+        
+        Log.d(TAG, "time:"+time);
+
+        return time;
     }
 
-    private boolean checkValidTime() {
-        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
-        String date = df.format(Calendar.getInstance().getTime());
-        Log.d(TAG, "current time:"+date);
-        checkBuildTime();
-        return true;
-    }
-
-    private void checkBuildTime() {
-        long time = Build.TIME;
-        Date date = new Date(time); 
-        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
-        String date1 = df.format(date);
-        Log.d(TAG, "build time :"+date1);
-    }
-
-    private ContentObserver createObserver() {
+    private ContentObserver createTimeTypeObserver() {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
@@ -186,6 +194,21 @@ public class SystemDateTimeController extends BaseController<String> {
                 for ( SystemTimeTypeListener listener : mTimeTypeListeners ) {
                     listener.onTimeTypeChanged(type); 
                 }
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createTimeValidObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                String time = getCurrentTime(); 
+                Log.d(TAG, "onChange:time="+time);
+                if ( mDataStore != null ) 
+                    mDataStore.shouldPropagateDateTimeUpdate(time);
+                for ( Listener<String> listener : mListeners ) 
+                    listener.onEvent(time);
             }
         };
         return observer; 
