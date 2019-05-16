@@ -261,7 +261,6 @@ public class DropListUIService extends Service {
     private void closeDropList() {
         Log.d(TAG, "closeDropList"); 
         if ( !mShowing ) return; 
-        if ( mControllerManager != null ) mControllerManager.clear(); 
         mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
     }
 
@@ -279,6 +278,8 @@ public class DropListUIService extends Service {
     }
 
     private void dismissH() {
+        if ( mControllerManager != null ) mControllerManager.clear(); 
+        
         mHandler.removeMessages(DialogHandler.DISMISS);
         mHandler.removeMessages(DialogHandler.SHOW);
         

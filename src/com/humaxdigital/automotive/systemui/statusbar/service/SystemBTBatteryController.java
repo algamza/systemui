@@ -144,9 +144,6 @@ public class SystemBTBatteryController extends BaseController<Integer> {
         public void onAntennaStateChanged(int level) throws RemoteException {
         }
         @Override
-        public void onBluetoothCallingStateChanged(int state) throws RemoteException {
-        }
-        @Override
         public void onBluetoothMicMuteStateChanged(int state) throws RemoteException {
         }
         @Override

@@ -36,9 +36,9 @@ public class UserBluetooth extends IUserBluetooth.Stub {
     private BluetoothAdapter mBluetoothAdapter = null;
     private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
     private int mContactsDownloadingState = 0; 
-    private final String CALL_STATUS = "com.humaxdigital.automotive.btphone.response_call_status"; 
+    //private final String CALL_STATUS = "com.humaxdigital.automotive.btphone.response_call_status"; 
 
-    private int mCurrentCallingState = 0; 
+    //private int mCurrentCallingState = 0; 
     private int mCurrentContactsDownloadState = 0;
     private int mCurrentCallHistoryDownloadState = 0;
     private int mCurrentBatteryLevel = 0; 
@@ -86,13 +86,13 @@ public class UserBluetooth extends IUserBluetooth.Stub {
         Log.d(TAG, "getAntennaLevel="+mCurrentAntennaLevel); 
         return mCurrentAntennaLevel; 
     }
-
+/*
     @Override
     public int getBluetoothCallingState() throws RemoteException {
         Log.d(TAG, "getBluetoothCallingState="+mCurrentCallingState); 
         return mCurrentCallingState; 
     }
-
+*/
     @Override
     public int getContactsDownloadState() throws RemoteException {
         Log.d(TAG, "getContactsDownloadState="+mCurrentContactsDownloadState); 
@@ -142,7 +142,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
         // PBAP_STATE_CONNECTED = 2;
         // PBAP_STATE_DOWNLOADING = 3;
         //filter.addAction("action_pbap_state"); 
-        filter.addAction(CALL_STATUS); 
+        //filter.addAction(CALL_STATUS); 
         mContext.registerReceiver(mBTReceiver, filter);
         checkAllProfileConnection(); 
     }
@@ -236,7 +236,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                 case HEADSET: {
                     mCurrentHeadsetConnected = state==1?true:false; 
                     if ( !mCurrentHeadsetConnected ) {
-                        mCurrentCallingState = 0; 
+                        //mCurrentCallingState = 0; 
                         mCurrentBatteryLevel = 0; 
                         mCurrentAntennaLevel = 0;
                         mCurrentContactsDownloadState = 0;
@@ -260,7 +260,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
 
     private void updateBluetootOn(boolean on) {
         if ( !on ) {
-            mCurrentCallingState = 0; 
+            //mCurrentCallingState = 0; 
             mCurrentContactsDownloadState = 0;
             mCurrentCallHistoryDownloadState = 0;
             mCurrentBatteryLevel = 0; 
@@ -357,16 +357,14 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                     break; 
                 }
                 */
+                /*
                 case CALL_STATUS: {
                     int state = intent.getIntExtra("status", 0);
                     Log.d(TAG, "received:com.humaxdigital.automotive.btphone.response_call_status:state="+state); 
-                    /*
-                        0 : Idle
-                        1 : Dialing
-                        2 : Calling
-                        3 : Outgoing
-                    */
-                    
+                        // 0 : Idle
+                        // 1 : Dialing
+                        // 2 : Calling
+                        // 3 : Outgoing
                     if ( state == 2 ) {
                         if ( !mCurrentHeadsetConnected ) return; 
                         if ( mCurrentCallingState == 1 ) return;
@@ -384,6 +382,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                     }
                     break;
                 }
+                */
                 default: break;
             }
         }
