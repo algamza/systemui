@@ -30,6 +30,7 @@ public class SystemDateTimeController extends BaseController<String> {
     private ContentObserver mObserverNTPValid; 
     private List<SystemTimeTypeListener> mTimeTypeListeners = new ArrayList<>();
     private TimeType mCurrentTimeType = TimeType.TYPE_12; 
+    private final String TIME_ERROR = "error"; 
 
     public enum TimeType {
         TYPE_12,
@@ -174,8 +175,8 @@ public class SystemDateTimeController extends BaseController<String> {
         if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
             && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
             Log.d(TAG, "time invalid"); 
-            return "error"; 
-        }
+            return TIME_ERROR; 
+        } 
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
@@ -213,7 +214,7 @@ public class SystemDateTimeController extends BaseController<String> {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
                 String time = getCurrentTime(); 
-                Log.d(TAG, "onChange:time="+time);
+                Log.d(TAG, "onChange GPS :time="+time);
                 if ( mDataStore != null ) 
                     mDataStore.shouldPropagateDateTimeUpdate(time);
                 for ( Listener<String> listener : mListeners ) 
@@ -228,7 +229,7 @@ public class SystemDateTimeController extends BaseController<String> {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
                 String time = getCurrentTime(); 
-                Log.d(TAG, "onChange:time="+time);
+                Log.d(TAG, "onChange NTP :time="+time);
                 if ( mDataStore != null ) 
                     mDataStore.shouldPropagateDateTimeUpdate(time);
                 for ( Listener<String> listener : mListeners ) 
