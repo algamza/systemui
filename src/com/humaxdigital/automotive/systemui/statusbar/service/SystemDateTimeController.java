@@ -26,7 +26,8 @@ public class SystemDateTimeController extends BaseController<String> {
     private static final String TAG = "SystemDateTimeController"; 
     private ContentResolver mContentResolver;
     private ContentObserver mObserverTimeType;
-    private ContentObserver mObserverTimeValid; 
+    private ContentObserver mObserverGPSValid; 
+    private ContentObserver mObserverNTPValid; 
     private List<SystemTimeTypeListener> mTimeTypeListeners = new ArrayList<>();
     private TimeType mCurrentTimeType = TimeType.TYPE_12; 
 
@@ -56,10 +57,14 @@ public class SystemDateTimeController extends BaseController<String> {
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
             false, mObserverTimeType, UserHandle.USER_CURRENT); 
-        mObserverTimeValid = createTimeValidObserver(); 
+        mObserverGPSValid = createGPSValidObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.GPS_TIME_STATUS), 
-            false, mObserverTimeValid, UserHandle.USER_CURRENT); 
+            false, mObserverGPSValid, UserHandle.USER_CURRENT); 
+        mObserverNTPValid = createNTPValidObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.NTP_TIME_STATUS), 
+            false, mObserverNTPValid, UserHandle.USER_CURRENT); 
     }
 
     @Override
@@ -71,10 +76,13 @@ public class SystemDateTimeController extends BaseController<String> {
         if ( mContentResolver != null ) 
         if ( mObserverTimeType != null ) 
             mContentResolver.unregisterContentObserver(mObserverTimeType); 
-        if ( mObserverTimeValid != null ) 
-            mContentResolver.unregisterContentObserver(mObserverTimeValid); 
+        if ( mObserverGPSValid != null ) 
+            mContentResolver.unregisterContentObserver(mObserverGPSValid); 
+        if ( mObserverNTPValid != null ) 
+            mContentResolver.unregisterContentObserver(mObserverNTPValid); 
+        mObserverNTPValid = null;
         mObserverTimeType = null;
-        mObserverTimeValid = null;
+        mObserverGPSValid = null;
         mContentResolver = null;
     }
 
@@ -157,13 +165,14 @@ public class SystemDateTimeController extends BaseController<String> {
     };
 
     private String getCurrentTime() {
-        // TODO : 
-
-        int time_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+        int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
                 CarExtraSettings.Global.GPS_TIME_STATUS,
                 CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
-
-        if ( time_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID ) {
+        int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+                CarExtraSettings.Global.NTP_TIME_STATUS,
+                CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
+        if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
+            && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
             Log.d(TAG, "time invalid"); 
             return "error"; 
         }
@@ -199,7 +208,22 @@ public class SystemDateTimeController extends BaseController<String> {
         return observer; 
     }
 
-    private ContentObserver createTimeValidObserver() {
+    private ContentObserver createGPSValidObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                String time = getCurrentTime(); 
+                Log.d(TAG, "onChange:time="+time);
+                if ( mDataStore != null ) 
+                    mDataStore.shouldPropagateDateTimeUpdate(time);
+                for ( Listener<String> listener : mListeners ) 
+                    listener.onEvent(time);
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createNTPValidObserver() {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
