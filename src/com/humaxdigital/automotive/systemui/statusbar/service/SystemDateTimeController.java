@@ -11,14 +11,13 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.database.ContentObserver;
 
-import android.os.Build;
+import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Date; 
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 
@@ -26,9 +25,12 @@ import java.text.DateFormat;
 public class SystemDateTimeController extends BaseController<String> {
     private static final String TAG = "SystemDateTimeController"; 
     private ContentResolver mContentResolver;
-    private ContentObserver mObserver;
+    private ContentObserver mObserverTimeType;
+    private ContentObserver mObserverGPSValid; 
+    private ContentObserver mObserverNTPValid; 
     private List<SystemTimeTypeListener> mTimeTypeListeners = new ArrayList<>();
     private TimeType mCurrentTimeType = TimeType.TYPE_12; 
+    private final String TIME_ERROR = "error"; 
 
     public enum TimeType {
         TYPE_12,
@@ -52,20 +54,36 @@ public class SystemDateTimeController extends BaseController<String> {
 
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
-        mObserver = createObserver(); 
+        mObserverTimeType = createTimeTypeObserver(); 
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
-            false, mObserver, UserHandle.USER_CURRENT); 
-        //checkValidTime();
+            false, mObserverTimeType, UserHandle.USER_CURRENT); 
+        mObserverGPSValid = createGPSValidObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.GPS_TIME_STATUS), 
+            false, mObserverGPSValid, UserHandle.USER_CURRENT); 
+        mObserverNTPValid = createNTPValidObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.NTP_TIME_STATUS), 
+            false, mObserverNTPValid, UserHandle.USER_CURRENT); 
     }
 
     @Override
     public void disconnect() {
-        if ( mContext != null ) mContext.unregisterReceiver(mDateTimeChangedReceiver);
+        if ( mContext != null ) {
+            mContext.unregisterReceiver(mDateTimeChangedReceiver);
+        }
         
         if ( mContentResolver != null ) 
-        mContentResolver.unregisterContentObserver(mObserver); 
-        mObserver = null;
+        if ( mObserverTimeType != null ) 
+            mContentResolver.unregisterContentObserver(mObserverTimeType); 
+        if ( mObserverGPSValid != null ) 
+            mContentResolver.unregisterContentObserver(mObserverGPSValid); 
+        if ( mObserverNTPValid != null ) 
+            mContentResolver.unregisterContentObserver(mObserverNTPValid); 
+        mObserverNTPValid = null;
+        mObserverTimeType = null;
+        mObserverGPSValid = null;
         mContentResolver = null;
     }
 
@@ -97,14 +115,14 @@ public class SystemDateTimeController extends BaseController<String> {
 
     public void refresh() {
         if ( mContentResolver == null ) return; 
-        if ( mObserver != null )  {
-            mContentResolver.unregisterContentObserver(mObserver); 
+        if ( mObserverTimeType != null )  {
+            mContentResolver.unregisterContentObserver(mObserverTimeType); 
         }
         Log.d(TAG, "refresh");
-        mObserver = createObserver(); 
+        mObserverTimeType = createTimeTypeObserver(); 
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(Settings.System.TIME_12_24), 
-            false, mObserver, UserHandle.USER_CURRENT); 
+            false, mObserverTimeType, UserHandle.USER_CURRENT); 
 
         String type = getTimeType();
         String time = getCurrentTime(); 
@@ -148,6 +166,17 @@ public class SystemDateTimeController extends BaseController<String> {
     };
 
     private String getCurrentTime() {
+        int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+                CarExtraSettings.Global.GPS_TIME_STATUS,
+                CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
+        int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
+                CarExtraSettings.Global.NTP_TIME_STATUS,
+                CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
+        if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
+            && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
+            Log.d(TAG, "time invalid"); 
+            return TIME_ERROR; 
+        } 
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
@@ -155,26 +184,15 @@ public class SystemDateTimeController extends BaseController<String> {
         } else {
             df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
         }
-        return df.format(Calendar.getInstance().getTime());
+
+        String time = df.format(Calendar.getInstance().getTime());
+        
+        Log.d(TAG, "time:"+time);
+
+        return time;
     }
 
-    private boolean checkValidTime() {
-        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
-        String date = df.format(Calendar.getInstance().getTime());
-        Log.d(TAG, "current time:"+date);
-        checkBuildTime();
-        return true;
-    }
-
-    private void checkBuildTime() {
-        long time = Build.TIME;
-        Date date = new Date(time); 
-        DateFormat df = new SimpleDateFormat("yyy:MM:dd:hh:mm:ss a", Locale.ENGLISH);
-        String date1 = df.format(date);
-        Log.d(TAG, "build time :"+date1);
-    }
-
-    private ContentObserver createObserver() {
+    private ContentObserver createTimeTypeObserver() {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
@@ -186,6 +204,36 @@ public class SystemDateTimeController extends BaseController<String> {
                 for ( SystemTimeTypeListener listener : mTimeTypeListeners ) {
                     listener.onTimeTypeChanged(type); 
                 }
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createGPSValidObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                String time = getCurrentTime(); 
+                Log.d(TAG, "onChange GPS :time="+time);
+                if ( mDataStore != null ) 
+                    mDataStore.shouldPropagateDateTimeUpdate(time);
+                for ( Listener<String> listener : mListeners ) 
+                    listener.onEvent(time);
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createNTPValidObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                String time = getCurrentTime(); 
+                Log.d(TAG, "onChange NTP :time="+time);
+                if ( mDataStore != null ) 
+                    mDataStore.shouldPropagateDateTimeUpdate(time);
+                for ( Listener<String> listener : mListeners ) 
+                    listener.onEvent(time);
             }
         };
         return observer; 
