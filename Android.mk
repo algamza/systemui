@@ -35,7 +35,12 @@ LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 	androidx.legacy_legacy-support-v4 \
 	android.extension.car
 	  
-LOCAL_RESOURCE_DIR := $(LOCAL_PATH)/res-statusbar $(LOCAL_PATH)/res-droplist $(LOCAL_PATH)/res-volumedialog $(LOCAL_PATH)/res-notificationui
+LOCAL_RESOURCE_DIR := \
+	$(LOCAL_PATH)/res-statusbar \
+	$(LOCAL_PATH)/res-droplist \
+	$(LOCAL_PATH)/res-volumedialog \
+	$(LOCAL_PATH)/res-notificationui \
+	$(LOCAL_PATH)/res-wallpaper
 
 LOCAL_CERTIFICATE := platform
 
