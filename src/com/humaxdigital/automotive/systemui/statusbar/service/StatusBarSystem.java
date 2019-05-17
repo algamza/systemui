@@ -19,7 +19,7 @@ import java.util.List;
 import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.statusbar.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.statusbar.user.PerUserService;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserService;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth;

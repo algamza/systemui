@@ -11,7 +11,7 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.database.ContentObserver;
 
-import com.humaxdigital.automotive.systemui.statusbar.util.ProductConfig; 
+import com.humaxdigital.automotive.systemui.util.ProductConfig; 
 import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;

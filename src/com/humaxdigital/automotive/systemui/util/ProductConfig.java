@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.util;
+package com.humaxdigital.automotive.systemui.util;
 
 import android.os.Build; 
 import android.util.Log;
@@ -15,8 +15,8 @@ public class ProductConfig {
         
         String[] array = name.split("-");
         if ( array.length >= 2 ) {
-            if ( array[0].contains("BHDN") ) model = MODEL.CN7C; 
-            else if ( array[0].contains("BHDU") ) model = MODEL.CN7C; 
+            if ( array[0].contains("BHDN") ) model = MODEL.DN8C; 
+            else if ( array[0].contains("BHDU") ) model = MODEL.DU2; 
             else if ( array[0].contains("BHCN") ) model = MODEL.CN7C; 
         }
         Log.d(TAG, "name="+name+", model="+model); 

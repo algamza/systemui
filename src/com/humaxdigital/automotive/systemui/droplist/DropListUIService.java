@@ -42,7 +42,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.humaxdigital.automotive.systemui.droplist.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 

@@ -16,7 +16,7 @@ import android.content.res.Resources;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 
-import com.humaxdigital.automotive.systemui.droplist.ProductConfig;
+import com.humaxdigital.automotive.systemui.util.ProductConfig;
 
 public class BrightnessController implements BaseController {
     private final String TAG = "BrightnessController"; 

@@ -11,7 +11,7 @@ import android.view.MotionEvent;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
-import com.humaxdigital.automotive.systemui.droplist.ProductConfig; 
+import com.humaxdigital.automotive.systemui.util.ProductConfig; 
 
 import android.util.Log;
 import java.util.ArrayList;

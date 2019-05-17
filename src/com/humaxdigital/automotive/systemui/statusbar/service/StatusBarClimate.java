@@ -14,7 +14,7 @@ import java.util.List;
 import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.statusbar.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.util.OSDPopup; 
 
 public class StatusBarClimate extends IStatusBarClimate.Stub {
     private static final String TAG = "StatusBarClimate";

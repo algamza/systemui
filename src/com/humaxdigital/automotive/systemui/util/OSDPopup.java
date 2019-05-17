@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.util;
+package com.humaxdigital.automotive.systemui.util;
 
 import android.content.Context;
 import android.app.Notification;
@@ -10,9 +10,9 @@ public class OSDPopup {
     
     static public void send(Context context, String text) {
         if ( context == null || text == null ) return;
-        String channelid =  "StatusBarPopup";
+        String channelid =  "SystemUIPopup";
         NotificationChannel channel = 
-            new NotificationChannel(channelid,  "StatusBarPopup", NotificationManager.IMPORTANCE_LOW);
+            new NotificationChannel(channelid,  "SystemUIPopup", NotificationManager.IMPORTANCE_LOW);
         NotificationManager notificationManager = 
             (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.createNotificationChannel(channel);

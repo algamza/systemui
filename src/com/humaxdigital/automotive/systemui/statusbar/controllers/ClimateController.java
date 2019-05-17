@@ -20,7 +20,7 @@ import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R;
 
-import com.humaxdigital.automotive.systemui.statusbar.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImg;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImgTimeout;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextDec;
@@ -136,10 +136,10 @@ public class ClimateController {
         View climate = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             climate = inflater.inflate(R.layout.du2_climate, null); 
-        else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) 
-            climate = inflater.inflate(R.layout.cn7c_climate, null); 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
             climate = inflater.inflate(R.layout.dn8c_climate, null); 
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C )
+            climate = inflater.inflate(R.layout.cn7c_climate, null); 
         else 
             climate = inflater.inflate(R.layout.dn8c_climate, null); 
         
@@ -220,7 +220,18 @@ public class ClimateController {
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
             mClimateViews.add(mAirCleaning);
-        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+        } 
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
+            mClimateViews.add(mSeatDR);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mAirCleaning); 
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mSeatPS);
+        } 
+        else {
             mClimateViews.add(mTempDR);
             mClimateViews.add(mSeatDR);
             mClimateViews.add(mAC);
@@ -230,15 +241,6 @@ public class ClimateController {
             mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mSeatPS);
             mClimateViews.add(mTempPS);
-        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
-            mClimateViews.add(mSeatDR);
-            mClimateViews.add(mAC);
-            mClimateViews.add(mIntake);
-            mClimateViews.add(mTempDR);
-            mClimateViews.add(mAirCleaning);
-            mClimateViews.add(mFanSpeed);
-            mClimateViews.add(mFanDirection);
-            mClimateViews.add(mSeatPS);
         }
 
         for ( int i = 0; i<mClimateViews.size(); i++ ) {
