@@ -170,16 +170,25 @@ public class SystemDateTimeController extends BaseController<String> {
 
         if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
             int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
-            CarExtraSettings.Global.GPS_TIME_STATUS,
-            CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
+                CarExtraSettings.Global.GPS_TIME_STATUS,
+                CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
             int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
                     CarExtraSettings.Global.NTP_TIME_STATUS,
                     CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
+
+            Log.d(TAG, "gps_valid="+gps_valid+", ntp_valid="+ntp_valid); 
+            /*
             if ( (gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID)
                 && (ntp_valid == CarExtraSettings.Global.NTP_TIME_STATUS_INVALID) ) {
                 Log.d(TAG, "time invalid"); 
                 return TIME_ERROR; 
             } 
+            */
+
+            if ( gps_valid == CarExtraSettings.Global.GPS_TIME_STATUS_INVALID ) {
+                Log.d(TAG, "time invalid"); 
+                return TIME_ERROR; 
+            }
         }
 
         DateFormat df; 
@@ -234,10 +243,12 @@ public class SystemDateTimeController extends BaseController<String> {
             public void onChange(boolean selfChange, Uri uri, int userId) {
                 String time = getCurrentTime(); 
                 Log.d(TAG, "onChange NTP :time="+time);
+                /*
                 if ( mDataStore != null ) 
                     mDataStore.shouldPropagateDateTimeUpdate(time);
                 for ( Listener<String> listener : mListeners ) 
                     listener.onEvent(time);
+                */
             }
         };
         return observer; 
