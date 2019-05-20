@@ -126,8 +126,9 @@ public class ClimateController {
         mClimate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if ( !mIGNOn || mIsOperateOn ) return;
-                openClimateSetting(); 
+                if ( !mIGNOn || mIsOperateOn ) return; 
+                fanOn(); 
+                if ( !mIsRearCameraOn ) openClimateSetting();
             }
         });
 
@@ -147,7 +148,6 @@ public class ClimateController {
         ((ViewGroup)mClimate).addView(climate); 
 
         mTempDR = new ClimateMenuTextDec(mContext).inflate(); 
-        mTempDR.setOnClickListener(mTempDROnClick); 
         mSeatDR = new ClimateMenuImg(mContext)
             .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null))
             .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_01, null))
@@ -174,7 +174,6 @@ public class ClimateController {
             .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_n, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_dis, null))
             .inflate(); 
-        mFanSpeed.setOnClickListener(mFanSpeedOnClick); 
         mFanDirection = new ClimateMenuImg(mContext)
             .addIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null))
             .addIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null))
@@ -199,7 +198,6 @@ public class ClimateController {
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_dis, null))
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
-        mTempPS.setOnClickListener(mTempPSOnClick); 
 
         int red_timeout = mContext.getResources().getIdentifier("climate_aircleaning_red_timeout", "integer", PACKAGE_NAME); 
         int green_timeout = mContext.getResources().getIdentifier("climate_aircleaning_green_timeout", "integer", PACKAGE_NAME); 
@@ -502,33 +500,6 @@ public class ClimateController {
             } catch( RemoteException e ) {
                 e.printStackTrace();
             }
-        }
-    }; 
-
-    private final View.OnClickListener mTempPSOnClick = new View.OnClickListener() { 
-        @Override
-        public void onClick(View v) {
-            if ( !mIGNOn || mIsOperateOn ) return;
-            fanOn(); 
-            if ( !mIsRearCameraOn ) openClimateSetting();
-        }
-    }; 
-
-    private final View.OnClickListener mTempDROnClick = new View.OnClickListener() { 
-        @Override
-        public void onClick(View v) {
-            if ( !mIGNOn || mIsOperateOn ) return; 
-            fanOn();
-            if ( !mIsRearCameraOn ) openClimateSetting(); 
-        }
-    }; 
-
-    private final View.OnClickListener mFanSpeedOnClick = new View.OnClickListener() { 
-        @Override
-        public void onClick(View v) {
-            if ( !mIGNOn || mIsOperateOn ) return; 
-            fanOn(); 
-            if ( !mIsRearCameraOn ) openClimateSetting();
         }
     }; 
 
