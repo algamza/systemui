@@ -12,6 +12,7 @@ import android.util.Log;
 import com.humaxdigital.automotive.systemui.statusbar.StatusBarProxyPluginImpl;
 import com.humaxdigital.automotive.systemui.droplist.DropListUIService;
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialogService; 
+import com.humaxdigital.automotive.systemui.wallpaper.WallpaperService; 
 
 public class SystemUIService extends Service {
     private static final String TAG = "SystemUIService";
@@ -21,6 +22,7 @@ public class SystemUIService extends Service {
 
         SystemUIPolicy.applyPolicies(this);
 
+        startWallpaperService(this);
         startStatusBarService(this);
         startDropListService(this);
         startVolumeDialogService(this);
@@ -57,6 +59,12 @@ public class SystemUIService extends Service {
     private void startVolumeDialogService(Context context){
         if ( context == null ) return; 
         Intent intent = new Intent(context, VolumeDialogService.class);
+        context.startService(intent);
+    }
+
+    private void startWallpaperService(Context context){
+        if ( context == null ) return; 
+        Intent intent = new Intent(context, WallpaperService.class);
         context.startService(intent);
     }
 }
