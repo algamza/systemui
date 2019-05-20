@@ -15,6 +15,8 @@ import android.content.ContentResolver;
 
 import android.app.Service;
 import android.app.WallpaperManager;
+import android.graphics.BitmapFactory; 
+import android.graphics.Bitmap; 
 
 import android.provider.Settings;
 import android.database.ContentObserver;
@@ -72,10 +74,16 @@ public class WallpaperService extends Service {
             case 2: resid = R.drawable.ho_bg_theme_2; 
             case 3: resid = R.drawable.ho_bg_theme_3; 
         }
+
+        Bitmap paper = BitmapFactory.decodeResource(getResources(), resid);
+        if ( paper == null ) return;
+
         try {
-            wallpaper.setResource(resid);
+            //wallpaper.setResource(resid);
+            wallpaper.setBitmap(paper); 
         } catch (IOException e) {
         }
+        
     }
 
     private int getCurrentTheme() {
