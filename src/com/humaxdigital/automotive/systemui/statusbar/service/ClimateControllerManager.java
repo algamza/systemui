@@ -297,6 +297,7 @@ public class ClimateControllerManager {
                 switch (id) {
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
                         handleFanPositionUpdate(getValue(val));
+                        handleDefogUpdate(getValue(val));
                         break;
                     case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
                         handleFanSpeedUpdate(areaId, getValue(val));
@@ -318,9 +319,6 @@ public class ClimateControllerManager {
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS:
                         handleAirCleaningUpdate(getValue(val));
-                        break;
-                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_DEFOG:
-                        handleDefogUpdate(areaId, getValue(val));
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS:
                         handleOperateState(getValue(val));
@@ -473,9 +471,8 @@ public class ClimateControllerManager {
         }
     }
 
-    private void handleDefogUpdate(int zone, int val) {
+    private void handleDefogUpdate(int val) {
         if ( mDefog == null ) return; 
-        if ( zone != WINDOW_FRONT ) return;
 
         if ( mDefog.update(val) )
             if ( mListener != null ) {

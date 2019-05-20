@@ -309,6 +309,9 @@ public class DataStore {
             if (SystemClock.uptimeMillis() - mLastDefrosterSet.get(zone) < COALESCE_TIME_MS) {
                 return false;
             }
+
+            if ( mDefrosterState.get(zone) == defrosterState ) return false;
+            
             mDefrosterState.put(zone, defrosterState);
         }
         return true;

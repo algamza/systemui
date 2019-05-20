@@ -10,7 +10,7 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateFanDirectionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanDirectionController";
-    private enum FanDirectionStatus { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST }
+    private enum FanDirectionStatus { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST }
     private final int mZone = 0; 
 
     public ClimateFanDirectionController(Context context, DataStore store) {

@@ -34,7 +34,7 @@ public class ClimateController {
     static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum FanDirectionState { FACE, FLOOR, FLOOR_FACE, FLOOR_DEFROST, DEFROST }
+    private enum FanDirectionState { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST, DEFROST }
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
