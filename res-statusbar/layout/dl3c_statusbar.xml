@@ -111,7 +111,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_7"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -119,7 +120,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_6"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -127,7 +129,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_5"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -135,7 +138,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_4"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -143,7 +147,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_3"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -151,7 +156,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_2"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -159,7 +165,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_1"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
@@ -167,7 +174,8 @@
                 <FrameLayout
                     android:id="@+id/system_menu_0"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="36px"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="51"
                     android:gravity="center_vertical"
                     android:layout_marginRight="6px">
