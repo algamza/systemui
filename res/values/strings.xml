@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">statusbar</string>
-    <string name="plugin_label">statusbar plugin</string>
-    <string name="temp_off">OFF</string>
-    <string name="temp_lo">LO</string>
-    <string name="temp_hi">HI</string>
-    <string name="unavailable">This Feature is currently unavailable.</string>
-</resources>
