@@ -105,6 +105,13 @@ public class SystemDateTimeController extends BaseController<String> {
         return mDataStore.getDateTime(); 
     }
 
+    public String getYearDateTime() {
+        DateFormat df = new SimpleDateFormat("yyyy:M:d:h:mm:a", Locale.ENGLISH);
+        String time = df.format(Calendar.getInstance().getTime());
+        Log.d(TAG, "getYearDateTime:"+time);
+        return time;
+    }
+
     public void addTimeTypeListener(SystemTimeTypeListener listener) {
         mTimeTypeListeners.add(listener); 
     }

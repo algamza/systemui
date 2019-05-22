@@ -30,6 +30,8 @@ import android.view.Gravity;
 
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
+import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManagerBase;
+import com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c.ControllerManagerDL3C;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
@@ -45,12 +47,15 @@ public class StatusBarProxyPluginImpl extends Service {
     private final IBinder mBinder = new LocalBinder();
     private WindowManager mWindowManager;
     private ViewGroup mNavBarWindow;
-    private View mStatusBarWindow; 
+    private ViewGroup mStatusBarWindow;
+    private View mDropListTouchWindow; 
     private View mNavBarView;
+    private View mStatusBarView; 
     private View mDevNavView;
-    private ControllerManager mControllerManager; 
+    private ControllerManagerBase mControllerManager; 
     private IStatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
+    private int mDropListTouchHeight = 0; 
     private int mStatusBarHeight = 0; 
     private int mTouchDownY = 0; 
     private int mTouchUpY = 0; 
@@ -71,20 +76,64 @@ public class StatusBarProxyPluginImpl extends Service {
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
         startStatusBarService(this);
-        
-        mStatusBarWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
-        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
+
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
+        {
+            createStatusBarWindow();
+        } else {
+            createDropListTouchWindow(); 
+            createNaviBarWindow();
+        }
+
+        mDevNavView = inflateDevNavBarView();
+    }
+
+    private void createStatusBarWindow() {
+        if ( mWindowManager == null ) return;
+        mStatusBarWindow = (ViewGroup) View.inflate(this, R.layout.status_bar_window, null);
+
+        int height = getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+        Log.d(TAG, "height="+height); 
+        int id_statusbar_height = getResources().getIdentifier("statusbar_height", "integer",  getPackageName());
+        if ( id_statusbar_height > 0 ) mStatusBarHeight = getResources().getInteger(id_statusbar_height);
+        if ( mStatusBarWindow == null ) return;
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                LayoutParams.MATCH_PARENT, mStatusBarHeight,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        lp.setTitle("HmxStatusBar");
+        lp.windowAnimations = 0; 
+        lp.gravity = Gravity.TOP;
+
+        mWindowManager.addView(mStatusBarWindow, lp);
+
+        mStatusBarView = inflateStatusBarView();
+        mControllerManager = new ControllerManagerDL3C(); 
+        mControllerManager.create(this, mStatusBarView); 
+        mStatusBarWindow.removeAllViews();
+        mStatusBarWindow.addView(mStatusBarView);
+    }
+
+    private void createDropListTouchWindow() {
+        if ( mWindowManager == null ) return;
+
+        mDropListTouchWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
+        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
         String package_name = getPackageName(); 
-        int id_statusbar_height = getResources().getIdentifier("statusbar_height", "integer",  package_name);
+        int id_droplist_touch_height = getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
         int id_down_y = getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
         int id_up_y = getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
         if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
         if ( id_up_y > 0 ) mTouchUpY = getResources().getInteger(id_up_y);
-        if ( id_statusbar_height > 0 ) mStatusBarHeight = getResources().getInteger(id_statusbar_height);
+        if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = getResources().getInteger(id_droplist_touch_height);
 
         WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            mStatusBarHeight,
+            mDropListTouchHeight,
             WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
@@ -99,8 +148,11 @@ public class StatusBarProxyPluginImpl extends Service {
         slp.packageName = package_name;
         slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-        mWindowManager.addView(mStatusBarWindow, slp);
+        mWindowManager.addView(mDropListTouchWindow, slp);
+    }
 
+    private void createNaviBarWindow() {
+        if ( mWindowManager == null ) return;
         mNavBarWindow = (ViewGroup) View.inflate(this, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
@@ -116,10 +168,8 @@ public class StatusBarProxyPluginImpl extends Service {
         mWindowManager.addView(mNavBarWindow, lp);
 
         mNavBarView = inflateNavBarView();
-        mDevNavView = inflateDevNavBarView();
-
-        mControllerManager = new ControllerManager(this, mNavBarView); 
-
+        mControllerManager = new ControllerManager(); 
+        mControllerManager.create(this, mNavBarView); 
         setContentBarView(mNavBarView);
     }
 
@@ -133,8 +183,14 @@ public class StatusBarProxyPluginImpl extends Service {
             mNavBarWindow = null;
         }
 
+        if (mDropListTouchWindow != null) {
+            ((ViewGroup)mDropListTouchWindow).removeAllViews();
+            mWindowManager.removeViewImmediate(mDropListTouchWindow);
+            mDropListTouchWindow = null;
+        }
+
         if (mStatusBarWindow != null) {
-            ((ViewGroup)mStatusBarWindow).removeAllViews();
+            mStatusBarWindow.removeAllViews();
             mWindowManager.removeViewImmediate(mStatusBarWindow);
             mStatusBarWindow = null;
         }
@@ -172,6 +228,11 @@ public class StatusBarProxyPluginImpl extends Service {
         return view;
     }
 
+    public View inflateStatusBarView() {
+        View view = View.inflate(this, R.layout.dl3c_statusbar, null);
+        return view;
+    }
+
     public View inflateDevNavBarView() {
         final DevNavigationBar devNavBarView = (DevNavigationBar)
                 View.inflate(this, R.layout.dev_nav_bar, null);
@@ -202,6 +263,7 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     public void setContentBarView(View view) {
+        if ( mNavBarWindow == null ) return;
         mNavBarWindow.removeAllViews();
         mNavBarWindow.addView(view);
     }

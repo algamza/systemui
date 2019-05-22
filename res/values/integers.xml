@@ -4,5 +4,5 @@
     <integer name="climate_aircleaning_green_timeout">120000</integer>
     <integer name="statusbar_touch_down_y">35</integer>
     <integer name="statusbar_touch_up_y">45</integer>
-    <integer name="statusbar_height">40</integer>
+    <integer name="droplist_touch_height">40</integer>
 </resources>

@@ -10,13 +10,14 @@ import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
 
 import java.util.ArrayList;
 
-public class ControllerManager {
+public class ControllerManager extends ControllerManagerBase {
     private ClimateController mClimateController = null;
     private DateController mDataController = null;
     private SystemStatusController mSystemController = null;
     private UserProfileController mUserProfileController = null;
 
-    public ControllerManager(Context context, View panel) {
+    @Override
+    public void create(Context context, View panel) {
         if ( (panel == null) || (context == null) ) return;
         
         mClimateController = new ClimateController(context, panel.findViewById(R.id.layout_climate));
@@ -25,6 +26,7 @@ public class ControllerManager {
         mUserProfileController = new UserProfileController(context, panel.findViewById(R.id.layout_userprofile));
     }
 
+    @Override
     public void init(IStatusBarService service) {
         if ( service == null ) return;
         try {
@@ -37,6 +39,7 @@ public class ControllerManager {
         }
     }
 
+    @Override
     public void deinit() {  
         if ( mClimateController != null ) mClimateController.deinit(); 
         if ( mDataController != null ) mDataController.deinit(); 

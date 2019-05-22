@@ -319,6 +319,13 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         return date;
     } 
     @Override
+    public String getYearDateTime() throws RemoteException { 
+        if ( mDateTimeController == null ) return null; 
+        String date = mDateTimeController.getYearDateTime();
+        Log.d(TAG, "getYearDateTime="+date);
+        return date;
+    } 
+    @Override
     public String getTimeType() throws RemoteException { 
         if ( mDateTimeController == null ) return null; 
         String date = mDateTimeController.getTimeType();
