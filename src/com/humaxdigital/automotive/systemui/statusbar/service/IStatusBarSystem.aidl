@@ -17,6 +17,7 @@ interface IStatusBarSystem {
     int getWirelessChargeStatus();
     int getModeStatus();
     String getDateTime(); 
+    String getYearDateTime(); 
     String getTimeType();
     void openDateTimeSetting(); 
     BitmapParcelable getUserProfileImage(); 
