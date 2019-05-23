@@ -11,7 +11,10 @@ import android.os.UserManager;
 import android.content.pm.UserInfo;
 import com.android.internal.util.UserIcons;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory; 
 import android.util.Log; 
+
+import com.humaxdigital.automotive.systemui.R; 
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,8 +87,9 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         Log.d(TAG, "getUserBitmap"); 
         Bitmap bm = mUserManager.getUserIcon(id);
         if ( bm == null ) {
-            bm = UserIcons.convertToBitmap(UserIcons.getDefaultUserIcon(
-                mContext.getResources(), id, false));
+            bm = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.co_status_profile_noimg); 
+            //bm = UserIcons.convertToBitmap(UserIcons.getDefaultUserIcon(
+            //    mContext.getResources(), id, false));
         }
         return bm; 
     }
