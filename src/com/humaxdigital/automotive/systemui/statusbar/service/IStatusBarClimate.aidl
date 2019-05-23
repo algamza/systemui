@@ -21,6 +21,7 @@ interface IStatusBarClimate {
     int getPSSeatStatus();
     float getPSTemperature();
     int getFrontDefogState();
+    boolean isModeOff(); 
     void openClimateSetting();
     void registerClimateCallback(IStatusBarClimateCallback callback);
     void unregisterClimateCallback(IStatusBarClimateCallback callback);

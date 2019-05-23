@@ -37,7 +37,8 @@ public class ClimateControllerManager {
         PASSENGER_TEMPERATURE,
         FAN_SPEED,
         FAN_DIRECTION,
-        DEFOG
+        DEFOG, 
+        MODE_OFF
     }
 
     public static final int SEAT_DRIVER = 
@@ -79,6 +80,7 @@ public class ClimateControllerManager {
     private ClimateDRSeatController mDRSeat; 
     private ClimateDRTempController mDRTemp; 
     private ClimateFanDirectionController mFanDirection; 
+    private ClimateModeOffController mModeOff; 
     private ClimateFanSpeedController mFanSpeed; 
     private ClimatePSSeatController mPSSeat; 
     private ClimatePSTempController mPSTemp; 
@@ -100,6 +102,7 @@ public class ClimateControllerManager {
         public void onPassengerSeatStatusChanged(int status);
         public void onPassengerTemperatureChanged(float temp);
         public void onFrontDefogStatusChanged(int status); 
+        public void onModeOffChanged(boolean on);
         public void onIGNOnChanged(boolean on);
         public void onOperateOnChanged(boolean on);
     }
@@ -256,6 +259,7 @@ public class ClimateControllerManager {
             case FAN_SPEED: return mFanSpeed; 
             case FAN_DIRECTION: return mFanDirection; 
             case DEFOG: return mDefog; 
+            case MODE_OFF: return mModeOff; 
         }
         return null; 
     }
@@ -285,6 +289,8 @@ public class ClimateControllerManager {
         mControllers.add(mPSTemp); 
         mDefog = new ClimateDefogController(mContext, mDataStore); 
         mControllers.add(mDefog); 
+        mModeOff = new ClimateModeOffController(mContext, mDataStore); 
+        mControllers.add(mModeOff); 
     }
 
     private final CarHvacManager.CarHvacEventCallback mHvacCallback =
@@ -298,6 +304,7 @@ public class ClimateControllerManager {
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
                         handleFanPositionUpdate(getValue(val));
                         handleDefogUpdate(getValue(val));
+                        handleModeOffUpdate(getValue(val)); 
                         break;
                     case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
                         handleFanSpeedUpdate(areaId, getValue(val));
@@ -478,6 +485,15 @@ public class ClimateControllerManager {
             if ( mListener != null ) {
                 mListener.onFrontDefogStatusChanged(mDefog.get());
             } 
+    }
+
+    private void handleModeOffUpdate(int val) {
+        if ( mModeOff == null ) return; 
+        
+        if ( mModeOff.update(mModeOff.convertUpdateValue(val)) ) {
+            if ( mListener != null )
+                mListener.onModeOffChanged(mModeOff.get());
+        }
     }
 
     private void handleOperateState(int val) {

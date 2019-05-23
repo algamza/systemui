@@ -213,6 +213,13 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
         return status;   
     }
     @Override
+    public boolean isModeOff() throws RemoteException { 
+        if ( mClimateManager == null ) return false; 
+        boolean off = (boolean)mClimateManager.getController(ClimateControllerManager.ControllerType.MODE_OFF).get();
+        Log.d(TAG, "isModeOff="+off);
+        return off;   
+    }
+    @Override
     public void openClimateSetting() throws RemoteException {
         if ( mTouchDisable ) {
             OSDPopup.send(mContext, 
@@ -362,6 +369,17 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
             try {
                 for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onFrontDefogStatusChanged(status); 
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onModeOffChanged(boolean off) {
+            Log.d(TAG, "onModeOffChanged="+off);
+            try {
+                for ( IStatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onModeOffChanged(off); 
             } catch (RemoteException e) {
                 e.printStackTrace();
             }

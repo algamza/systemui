@@ -16,7 +16,7 @@ import java.util.List;
 
 import android.provider.Settings;
 import android.extension.car.settings.CarExtraSettings;
-
+import android.util.Log; 
 
 import com.humaxdigital.automotive.systemui.R;
 
@@ -73,6 +73,7 @@ public class ClimateController {
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
+    private Boolean mModeOff = false; 
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mAirCleaningStartFromUI = false; 
@@ -80,7 +81,6 @@ public class ClimateController {
     private Boolean mIsRearCameraOn = false;
 
     private final List<View> mClimateViews = new ArrayList<>();
-
 
     public ClimateController(Context context, View view) {
         if ( view == null || context == null ) return;
@@ -281,7 +281,7 @@ public class ClimateController {
             mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
             mTempPSState = mService.getPSTemperature();
             mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
-            
+            mModeOff = mService.isModeOff(); 
             mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
         } catch( RemoteException e ) {
             e.printStackTrace();
@@ -324,6 +324,7 @@ public class ClimateController {
         }
         updateIGOnChange(mIGNOn); 
         updateOperateOnChange(mIsOperateOn); 
+        updateModeOff(mModeOff); 
     }
 
     private void updateTempOn(boolean on) {
@@ -361,7 +362,25 @@ public class ClimateController {
             view.update(state, ".0"); 
     }
 
+    private void updateModeOff(boolean off) {
+        Log.d(TAG, "updateModeOff="+off); 
+        if ( mModeOff == off ) return; 
+        mModeOff = off; 
+        if ( mModeOff ) {
+            updateTempOn(false); 
+            if ( mAC != null ) mAC.update(ACState.OFF.ordinal()); 
+            if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
+            if ( mFanDirection != null ) mFanDirection.updateDisable(true);
+        } else {
+            updateTempOn(true);
+            if ( mAC != null ) mAC.update(mACState.ordinal()); 
+            if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
+            if ( mFanDirection != null ) mFanDirection.updateDisable(false);
+        }
+    }
+
     private void updateIGOnChange(boolean on) {
+        Log.d(TAG, "updateIGOnChange="+on); 
         mIGNOn = on; 
         boolean disable = !mIGNOn; 
         if ( !disable && mIsOperateOn ) return;
@@ -377,6 +396,7 @@ public class ClimateController {
     } 
 
     private void updateOperateOnChange(boolean on) {
+        Log.d(TAG, "updateOperateOnChange="+on); 
         mIsOperateOn = on; 
         boolean disable = mIsOperateOn; 
         if ( !disable && !mIGNOn ) return;
@@ -686,7 +706,17 @@ public class ClimateController {
                     }
                 }); 
             }
+        }
 
+        public void onModeOffChanged(boolean off) throws RemoteException {
+            if ( mHandler == null ) return; 
+
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateModeOff(off); 
+                }
+            }); 
         }
 
         public void onIGNOnChanged(boolean on) throws RemoteException {

@@ -12,6 +12,7 @@ oneway interface IStatusBarClimateCallback {
     void onPSSeatStatusChanged(int status);
     void onPSTemperatureChanged(float temp);
     void onFrontDefogStatusChanged(int status); 
+    void onModeOffChanged(boolean off); 
     void onIGNOnChanged(boolean on); 
     void onOperateOnChanged(boolean on);
     void onRearCameraOn(boolean on);  
