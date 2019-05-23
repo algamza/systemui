@@ -64,6 +64,7 @@ public class DevNavigationBar extends FrameLayout {
             if (action.equals(Intent.ACTION_USER_SWITCHED)) {
                 mUserSwitchTime = SystemClock.uptimeMillis();
                 mBootCompletedTime = 0;
+                updateBootCompletedTimeText();
             } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
                 mBootCompletedTime = SystemClock.uptimeMillis();
                 updateBootCompletedTimeText();
@@ -250,6 +251,7 @@ public class DevNavigationBar extends FrameLayout {
     private void updateBootCompletedTimeText() {
         if (mStartTimeTextView != null) {
             long elapsed = mBootCompletedTime - mUserSwitchTime;
+            elapsed = (elapsed < 0) ? 0 : elapsed;
             mUserSwitchTimeTextView.setText("B:" + toSecString(elapsed));
         }
     }
