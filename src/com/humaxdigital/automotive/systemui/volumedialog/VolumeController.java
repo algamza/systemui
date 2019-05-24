@@ -11,7 +11,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.FrameLayout;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.HashMap;
@@ -21,39 +20,8 @@ import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.R; 
 
-public class VolumeController {
+public class VolumeController extends VolumeControllerBase {
     private static final String TAG = "VolumeController"; 
-    public interface VolumeChangeListener {
-        enum Event {
-            VOLUME_UP,
-            VOLUME_DOWN
-        }
-        enum Type {
-            UNKNOWN, 
-            RADIO_FM, 
-            RADIO_AM, 
-            USB, 
-            ONLINE_MUSIC, 
-            BT_AUDIO, 
-            BT_PHONE_RING, 
-            BT_PHONE_CALL, 
-            CARLIFE_MEDIA,
-            CARLIFE_NAVI, 
-            CARLIFE_TTS, 
-            BAIDU_MEDIA, 
-            BAIDU_ALERT, 
-            BAIDU_VR_TTS, 
-            BAIDU_NAVI, 
-            EMERGENCY_CALL, 
-            ADVISOR_CALL,
-            BEEP, 
-            WELCOME_SOUND, 
-            SETUP_GUIDE
-        }
-        void onVolumeUp(Type type, int max, int value);
-        void onVolumeDown(Type type, int max, int value);
-        void onMuteChanged(Type type, boolean mute);
-    }
 
     private enum AudioStateIcon {
         AUDIO,
@@ -100,7 +68,6 @@ public class VolumeController {
 
     private Handler mUIHandler; 
 
-    private ArrayList<VolumeChangeListener> mListener = new ArrayList<>();
     private Timer mTimer = new Timer();
     private TimerTask mVolumeUpTask = null;
     private TimerTask mVolumeDownTask = null;
@@ -114,7 +81,10 @@ public class VolumeController {
 
     private Map<Integer, Integer> mVolumeTypeImages = new HashMap<>();
 
-    public VolumeController(Context context, View view) {
+    public VolumeController() { }
+
+    @Override
+    public void init(Context context, View view) {
         Log.d(TAG, "VolumeController"); 
         mContext = context;
         mView = view;
@@ -124,7 +94,11 @@ public class VolumeController {
         mUIHandler = new Handler(mContext.getMainLooper());
     }
 
-    public void fetch(VolumeControlService service) {
+    @Override
+    public void deinit() {}
+
+    @Override
+    public void fetch(VolumeControlService service) { 
         Log.d(TAG, "fetch"); 
         mController = service; 
         if ( mController == null ) return; 
@@ -222,20 +196,6 @@ public class VolumeController {
             default: break; 
         }
         return ret; 
-    }
-
-    public VolumeController registVolumeListener(VolumeChangeListener listener) {
-        Log.d(TAG, "registVolumeListener"); 
-        if ( listener == null ) return this;
-        mListener.add(listener);
-        return this;
-    }
-
-    public VolumeController unregistVolumeListener(VolumeChangeListener listener) {
-        Log.d(TAG, "unregistVolumeListener"); 
-        if ( listener == null ) return this;
-        mListener.remove(listener);
-        return this;
     }
 
     private void createViews() {
