@@ -211,6 +211,13 @@ public class VolumeControlService extends Service {
         return max;
     }
 
+    public boolean getCurrentMute() {
+        if ( mAudioManager == null ) return false;
+        boolean mute = mAudioManager.isMasterMute(); 
+        Log.d(TAG, "getCurrentMute="+mute);
+        return mute;
+    }
+
     public boolean setVolume(VolumeUtil.Type type, int volume) {
 
         if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(VolumeUtil.convertToMode(type), volume) ) return false;
@@ -323,13 +330,6 @@ public class VolumeControlService extends Service {
         for (VolumeCallback callback : mCallbacks) {
             callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
         }
-    }
-
-    private boolean getCurrentMute() {
-        if ( mAudioManager == null ) return false;
-        boolean mute = mAudioManager.isMasterMute(); 
-        Log.d(TAG, "getCurrentMute="+mute);
-        return mute;
     }
 
     private int getCarAudioCurrentMode() {

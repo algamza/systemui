@@ -29,7 +29,11 @@ import android.util.Log;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.humaxdigital.automotive.systemui.util.ProductConfig; 
 import com.humaxdigital.automotive.systemui.R; 
+
+import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeDialogDL3C; 
+import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeControllerDL3C; 
 
 public class VolumeDialogService extends Service {
     private final String TAG = "VolumeDialogService"; 
@@ -41,10 +45,18 @@ public class VolumeDialogService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate"); 
-        mDialog = new VolumeDialog();
+
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
+            mDialog = new VolumeDialogDL3C();
+        else 
+            mDialog = new VolumeDialog();
         mDialog.init(this); 
 
-        mController = new VolumeController(); 
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
+            mController = new VolumeControllerDL3C(); 
+        else
+            mController = new VolumeController(); 
+
         mController.init(this, mDialog.getView()); 
         mController.registVolumeListener(mVolumeListener);
 

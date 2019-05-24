@@ -2,7 +2,9 @@
 <resources>
     <dimen name="volume_dialog_width"> 660px </dimen>
     <dimen name="volume_dialog_height"> 720px </dimen>
-    
+    <dimen name="volume_dialog_width_dl3c"> 1920px </dimen>
+    <dimen name="volume_dialog_height_dl3c"> 250px </dimen>
+
     <dimen name="plus_icon_left_margin"> 20px </dimen>
     <dimen name="plus_icon_top_margin"> 211px </dimen>
     <dimen name="plus_icon_size_width"> 80px </dimen>
