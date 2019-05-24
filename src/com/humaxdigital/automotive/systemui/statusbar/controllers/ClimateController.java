@@ -363,19 +363,20 @@ public class ClimateController {
     }
 
     private void updateModeOff(boolean off) {
-        Log.d(TAG, "updateModeOff="+off); 
+        Log.d(TAG, "updateModeOff="+off);
+        if ( mIsOperateOn || !mIGNOn ) return;   
         if ( mModeOff == off ) return; 
         mModeOff = off; 
         if ( mModeOff ) {
             updateTempOn(false); 
             if ( mAC != null ) mAC.update(ACState.OFF.ordinal()); 
             if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-            if ( mFanDirection != null ) mFanDirection.updateDisable(true);
+            //if ( mFanDirection != null ) mFanDirection.updateDisable(true);
         } else {
             updateTempOn(true);
             if ( mAC != null ) mAC.update(mACState.ordinal()); 
             if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-            if ( mFanDirection != null ) mFanDirection.updateDisable(false);
+            //if ( mFanDirection != null ) mFanDirection.updateDisable(false);
         }
     }
 
