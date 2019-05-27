@@ -338,7 +338,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
 
         if ( mTouchDisable ) {
             OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.unavailable));
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( !OPEN_DATE_SETTING.equals("") ) {
@@ -358,7 +358,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     public void openUserProfileSetting() throws RemoteException {
         if ( mTouchDisable ) {
             OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.unavailable));
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {

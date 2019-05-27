@@ -4,5 +4,5 @@
     <string name="temp_off">OFF</string>
     <string name="temp_lo">LO</string>
     <string name="temp_hi">HI</string>
-    <string name="unavailable">This Feature is currently unavailable.</string>
+    <string name="STR_MESG_18334_ID">This Feature is currently unavailable.</string>
 </resources>

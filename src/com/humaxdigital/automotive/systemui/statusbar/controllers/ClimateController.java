@@ -78,8 +78,6 @@ public class ClimateController {
     private Boolean mIsOperateOn = false; 
     private Boolean mAirCleaningStartFromUI = false; 
 
-    private Boolean mIsRearCameraOn = false;
-
     private final List<View> mClimateViews = new ArrayList<>();
 
     public ClimateController(Context context, View view) {
@@ -128,7 +126,7 @@ public class ClimateController {
             public void onClick(View view) {
                 if ( !mIGNOn || mIsOperateOn ) return; 
                 fanOn(); 
-                if ( !mIsRearCameraOn ) openClimateSetting();
+                openClimateSetting();
             }
         });
 
@@ -743,7 +741,7 @@ public class ClimateController {
         }
 
         public void onRearCameraOn(boolean on) throws RemoteException {
-            mIsRearCameraOn = on;
+            // Not implement
         }
     };
 }

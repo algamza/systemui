@@ -91,6 +91,8 @@ public class DropListUIService extends Service {
 
     private Binder mBinder = new LocalBinder();
 
+    private Context mContext; 
+
     public class LocalBinder extends Binder {
         DropListUIService getService() {
             return DropListUIService.this;
@@ -101,6 +103,7 @@ public class DropListUIService extends Service {
     public void onCreate() {
         //super.onCreate();
         Log.d(TAG, "onCreate"); 
+        mContext = this; 
         mActivityService = ActivityManager.getService();
         try {
             mActivityService.registerTaskStackListener(mTaskStackListener); 
@@ -174,17 +177,16 @@ public class DropListUIService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.d(TAG, "OPEN_DROPLIST:power="+mIsPowerOn+", rearcam="+mIsRearCameraOn); 
-                if ( context == null ) return;
                 if ( !mIsPowerOn ) return; 
                 if ( mIsRearCameraOn ) {
-                    OSDPopup.send(context, 
-                        context.getResources().getString(R.string.unavailable));
+                    if ( mContext != null ) 
+                        OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
                     return;
                 }
                 openDropList(); 
             }
         };
-        registerReceiver(mReceiver, filter); 
+        registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
 
         startNotiAnimation();
         registCameraReceiver();

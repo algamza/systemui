@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">droplist</string>
+    <string name="STR_MESG_18334_ID">此功能目前不可用</string>
     <string name="STR_MESG_14967_ID">仪表亮度控制联动</string>
     <string name="STR_WI_FI_08_ID">Wi-Fi</string>
     <string name="STR_MUTE_06_ID">静音</string>
