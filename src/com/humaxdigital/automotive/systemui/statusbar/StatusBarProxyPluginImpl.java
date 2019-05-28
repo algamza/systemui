@@ -27,6 +27,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.MotionEvent;
 import android.view.Gravity;
+import android.widget.ImageView;
 
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
@@ -116,6 +117,17 @@ public class StatusBarProxyPluginImpl extends Service {
         mControllerManager.create(this, mStatusBarView); 
         mStatusBarWindow.removeAllViews();
         mStatusBarWindow.addView(mStatusBarView);
+
+        // TODO: 
+
+        if ( mStatusBarView == null ) return;
+        ImageView droplist_icon = (ImageView) mStatusBarView.findViewById(R.id.icon_droplist); 
+        droplist_icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openDroplist();
+            }
+        }); 
     }
 
     private void createDropListTouchWindow() {

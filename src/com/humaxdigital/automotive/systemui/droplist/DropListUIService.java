@@ -154,7 +154,10 @@ public class DropListUIService extends Service {
         mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         mDialog.setCanceledOnTouchOutside(true);
+        
+
         mDialog.setContentView(R.layout.panel_main);
+        
         mDialog.setOnShowListener(mShowListener);
  
         mPanelBody = mDialog.findViewById(R.id.panel);
