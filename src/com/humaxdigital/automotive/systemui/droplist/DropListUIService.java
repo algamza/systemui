@@ -151,7 +151,7 @@ public class DropListUIService extends Service {
         lp.height = mScreenBottom - mNavBarHeight;
         lp.windowAnimations = -1;
         mWindow.setAttributes(lp);
-        mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        mWindow.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         mDialog.setCanceledOnTouchOutside(true);
         
