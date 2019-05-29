@@ -34,7 +34,7 @@ public class ClimateController {
     static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum FanDirectionState { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST, DEFROST }
+    private enum FanDirectionState { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST, DEFROST, OFF }
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
@@ -178,11 +178,13 @@ public class ClimateController {
             .addIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
             .addIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
             .addIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog, null))
+            .addIcon(FanDirectionState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off, null))
             .addDisableIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01_dis, null))
             .addDisableIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02_dis, null))
             .addDisableIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03_dis, null))
             .addDisableIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04_dis, null))
             .addDisableIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog_dis, null))
+            .addDisableIcon(FanDirectionState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off_d, null))
             .inflate();
         mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         mSeatPS = new ClimateMenuImg(mContext)
@@ -369,12 +371,12 @@ public class ClimateController {
             updateTempOn(false); 
             if ( mAC != null ) mAC.update(ACState.OFF.ordinal()); 
             if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-            //if ( mFanDirection != null ) mFanDirection.updateDisable(true);
+            if ( mFanDirection != null ) mFanDirection.update(FanDirectionState.OFF.ordinal()); 
         } else {
             updateTempOn(true);
             if ( mAC != null ) mAC.update(mACState.ordinal()); 
             if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-            //if ( mFanDirection != null ) mFanDirection.updateDisable(false);
+            if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
         }
     }
 
@@ -471,7 +473,7 @@ public class ClimateController {
 
             int next = mFanDirectionState.ordinal() + 1;
 
-            if ( next >= (FanDirectionState.values().length-1) ) {
+            if ( next >= (FanDirectionState.values().length-2) ) {
                 //mFanDirectionState = FanDirectionState.values()[0];
                 next = 0; 
             }
