@@ -49,6 +49,8 @@ public class TMSClient {
         public void onCallingStatusChanged(CallingStatus status) {};
         public void onDataUsingChanged(DataUsingStatus status) {}
         public void onLocationSharingChanged(LocationSharingStatus status) {};
+        public void onEmergencyCall(boolean on) {};
+        public void onBluelinkCall(boolean on) {};
     }
 
     public TMSClient(Context context) {
@@ -69,6 +71,7 @@ public class TMSClient {
         mTMSManager = mgr;
         try {
             mTMSManager.registerCallback(mTMSMgrCallback);
+            mTMSManager.registerCallback(mTMSEventListener);
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!");
         }
@@ -112,124 +115,136 @@ public class TMSClient {
 
     private final CarTMSManager.CarTMSEventCallback mTMSMgrCallback =
         new CarTMSManager.CarTMSEventCallback () {
-            @Override
-            public void onChangeEvent(final CarPropertyValue value) {
-                int zones = value.getAreaId();
-                if ( value.getPropertyId() != CarTMSManager.VENDOR_TMS_EVENT ) return;
+        @Override
+        public void onChangeEvent(final CarPropertyValue value) {
+            int zones = value.getAreaId();
+            if ( value.getPropertyId() != CarTMSManager.VENDOR_TMS_EVENT ) return;
 
-                int eventId = 0;
-                int dataLength = 0;
-                byte[] fullData = (byte[])value.getValue();
-                eventId = ((fullData[0] & 0xff) << 24) 
-                        | ((fullData[1] & 0xff) << 16) 
-                        | ((fullData[2] & 0xff) << 8) 
-                        | (fullData[3] & 0xff);
-                dataLength = ((fullData[4] & 0xff) << 24) 
-                        | ((fullData[5] & 0xff) << 16) 
-                        | ((fullData[6] & 0xff) << 8) 
-                        | (fullData[7] & 0xff);
-    
-                byte[] eventData = {0}; 
-                if ( dataLength > 0 ) {
-                    eventData = new byte[dataLength];
-                    System.arraycopy(fullData, 8, eventData, 0, dataLength);
-                }
+            int eventId = 0;
+            int dataLength = 0;
+            byte[] fullData = (byte[])value.getValue();
+            eventId = ((fullData[0] & 0xff) << 24) 
+                    | ((fullData[1] & 0xff) << 16) 
+                    | ((fullData[2] & 0xff) << 8) 
+                    | (fullData[3] & 0xff);
+            dataLength = ((fullData[4] & 0xff) << 24) 
+                    | ((fullData[5] & 0xff) << 16) 
+                    | ((fullData[6] & 0xff) << 8) 
+                    | (fullData[7] & 0xff);
 
-                switch(eventId) {
-                    case CarTMSManager.APP_TMS_MODEM_LIVE_SIGNAL_1SEC: {
-                        int active = eventData[0];
-                        int rssiSignal = eventData[1];
-                        int networkStatus = eventData[2];
-                        ConnectionStatus status = ConnectionStatus.DISCONNECTED; 
-                        if( networkStatus == 1 || networkStatus == 5 ) 
-                            status = ConnectionStatus.CONNECTED; 
-                        else 
-                            status = ConnectionStatus.DISCONNECTED; 
-                        if ( status != mCurrentConnectionStatus ) {
-                            mCurrentConnectionStatus = status;
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onConnectionChanged(status);
-                        }
-                        if ( rssiSignal != mCurrentSignalLevel ) {
-                            mCurrentSignalLevel = rssiSignal; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onSignalLevelChanged(mCurrentSignalLevel); 
-                        }
-
-                        Log.d(TAG, "APP_TMS_MODEM_LIVE_SIGNAL_1SEC:active="+active
-                            +", signal="+rssiSignal+", stauts="+networkStatus);
-
-                        break;
-                    }
-                    case CarTMSManager.APP_TMS_UPDATE_CALL_STATUS: {
-                        int requestDataCallStatusType       = eventData[0]; // -> Call status
-                        int requestDataPacketStatusType     = eventData[2]; // -> Packet status
-
-                        CallingStatus calling_status = CallingStatus.CALL_DISCONNECTED; 
-                        switch (requestDataCallStatusType) {
-                            case 0: calling_status = CallingStatus.CALL_DISCONNECTED; break;
-                            case 2: calling_status = CallingStatus.CALL_CONNECTED; break; 
-                            case 4: calling_status = CallingStatus.CALL_RINGING; break;
-                            case 5: calling_status = CallingStatus.CALL_DISCONNECTED; break;
-                            case 6: calling_status = CallingStatus.NO_SERIVCE; break; 
-                            case 8: calling_status = CallingStatus.CALL_TIMEOUT; break; 
-                        }
-                        
-                        if ( mCurrentCallingStatus != calling_status ) {
-                            mCurrentCallingStatus = calling_status; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onCallingStatusChanged(calling_status);
-                        }
-                        
-                        // this is only call data 
-                        /*
-                        DataUsingStatus data_status = DataUsingStatus.DATA_NO_PACKET; 
-                        switch(requestDataPacketStatusType) {
-                            case 0: data_status = DataUsingStatus.DATA_NO_PACKET; break; 
-                            case 1: data_status = DataUsingStatus.DATA_USING_PACKET; break; 
-                        }
-
-                        if ( mCurrentDataUsingStatus != data_status ) {
-                            mCurrentDataUsingStatus = data_status; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onDataUsingChanged(data_status); 
-                        }
-                        */
-
-                        Log.d(TAG, "APP_TMS_UPDATE_CALL_STATUS:call="+requestDataCallStatusType);
-
-                        break;
-                    }
-                    case CarTMSManager.APP_TMS_RES_LOCATIONSHARING: {
-                        int result = eventData[0];
-                        if (result == 0x01) {
-                            LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
-                            if ( mCurrentLocationSharingStatus != status ) {
-                                mCurrentLocationSharingStatus = status; 
-                                for ( TMSCallback callback : mListeners ) 
-                                    callback.onLocationSharingChanged(status); 
-                            }
-                        } 
-                        break;
-                    }
-                    case CarTMSManager.APP_TMS_RES_LOCATIONSHARING_CANCEL: {
-                        int result = eventData[0];
-                        if (result == 0x01) {
-                            LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
-                            if ( mCurrentLocationSharingStatus != status ) {
-                                mCurrentLocationSharingStatus = status; 
-                                for ( TMSCallback callback : mListeners ) 
-                                    callback.onLocationSharingChanged(status); 
-                            }
-                        }
-                        break;
-                    }
-                }
+            byte[] eventData = {0}; 
+            if ( dataLength > 0 ) {
+                eventData = new byte[dataLength];
+                System.arraycopy(fullData, 8, eventData, 0, dataLength);
             }
 
-            @Override
-            public void onErrorEvent(final int propertyId, final int zone) {
-                Log.w(TAG, "error : id = "+propertyId+", zone="+zone);
+            switch(eventId) {
+                case CarTMSManager.APP_TMS_MODEM_LIVE_SIGNAL_1SEC: {
+                    int active = eventData[0];
+                    int rssiSignal = eventData[1];
+                    int networkStatus = eventData[2];
+                    ConnectionStatus status = ConnectionStatus.DISCONNECTED; 
+                    if( networkStatus == 1 || networkStatus == 5 ) 
+                        status = ConnectionStatus.CONNECTED; 
+                    else 
+                        status = ConnectionStatus.DISCONNECTED; 
+                    if ( status != mCurrentConnectionStatus ) {
+                        mCurrentConnectionStatus = status;
+                        for ( TMSCallback callback : mListeners ) 
+                            callback.onConnectionChanged(status);
+                    }
+                    if ( rssiSignal != mCurrentSignalLevel ) {
+                        mCurrentSignalLevel = rssiSignal; 
+                        for ( TMSCallback callback : mListeners ) 
+                            callback.onSignalLevelChanged(mCurrentSignalLevel); 
+                    }
+
+                    Log.d(TAG, "APP_TMS_MODEM_LIVE_SIGNAL_1SEC:active="+active
+                        +", signal="+rssiSignal+", stauts="+networkStatus);
+
+                    break;
+                }
+                case CarTMSManager.APP_TMS_UPDATE_CALL_STATUS: {
+                    int requestDataCallStatusType       = eventData[0]; // -> Call status
+                    int requestDataPacketStatusType     = eventData[2]; // -> Packet status
+
+                    CallingStatus calling_status = CallingStatus.CALL_DISCONNECTED; 
+                    switch (requestDataCallStatusType) {
+                        case 0: calling_status = CallingStatus.CALL_DISCONNECTED; break;
+                        case 2: calling_status = CallingStatus.CALL_CONNECTED; break; 
+                        case 4: calling_status = CallingStatus.CALL_RINGING; break;
+                        case 5: calling_status = CallingStatus.CALL_DISCONNECTED; break;
+                        case 6: calling_status = CallingStatus.NO_SERIVCE; break; 
+                        case 8: calling_status = CallingStatus.CALL_TIMEOUT; break; 
+                    }
+                    
+                    if ( mCurrentCallingStatus != calling_status ) {
+                        mCurrentCallingStatus = calling_status; 
+                        for ( TMSCallback callback : mListeners ) 
+                            callback.onCallingStatusChanged(calling_status);
+                    }
+                    
+                    // this is only call data 
+                    /*
+                    DataUsingStatus data_status = DataUsingStatus.DATA_NO_PACKET; 
+                    switch(requestDataPacketStatusType) {
+                        case 0: data_status = DataUsingStatus.DATA_NO_PACKET; break; 
+                        case 1: data_status = DataUsingStatus.DATA_USING_PACKET; break; 
+                    }
+
+                    if ( mCurrentDataUsingStatus != data_status ) {
+                        mCurrentDataUsingStatus = data_status; 
+                        for ( TMSCallback callback : mListeners ) 
+                            callback.onDataUsingChanged(data_status); 
+                    }
+                    */
+
+                    Log.d(TAG, "APP_TMS_UPDATE_CALL_STATUS:call="+requestDataCallStatusType);
+
+                    break;
+                }
+                case CarTMSManager.APP_TMS_RES_LOCATIONSHARING: {
+                    int result = eventData[0];
+                    if (result == 0x01) {
+                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
+                        if ( mCurrentLocationSharingStatus != status ) {
+                            mCurrentLocationSharingStatus = status; 
+                            for ( TMSCallback callback : mListeners ) 
+                                callback.onLocationSharingChanged(status); 
+                        }
+                    } 
+                    break;
+                }
+                case CarTMSManager.APP_TMS_RES_LOCATIONSHARING_CANCEL: {
+                    int result = eventData[0];
+                    if (result == 0x01) {
+                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
+                        if ( mCurrentLocationSharingStatus != status ) {
+                            mCurrentLocationSharingStatus = status; 
+                            for ( TMSCallback callback : mListeners ) 
+                                callback.onLocationSharingChanged(status); 
+                        }
+                    }
+                    break;
+                }
             }
-        };
+        }
+
+        @Override
+        public void onErrorEvent(final int propertyId, final int zone) {
+            Log.w(TAG, "error : id = "+propertyId+", zone="+zone);
+        }
+    };
+    private CarTMSManager.CarTMSEventListener mTMSEventListener = new CarTMSManager.CarTMSEventListener(){
+        @Override
+        public void onEmergencyMode(boolean enabled) {
+            for ( TMSCallback callback : mListeners ) 
+                callback.onEmergencyCall(enabled); 
+        }
+        @Override
+        public void onBluelinkCallMode(boolean enabled) {
+            for ( TMSCallback callback : mListeners ) 
+                callback.onBluelinkCall(enabled); 
+        }
+    };
 }

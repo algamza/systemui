@@ -45,6 +45,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private SystemMuteController mMuteController; 
     private SystemWirelessChargeController mWirelessChargeController; 
 
+    private SystemCallingStateController mCallingStateController; 
+
     private CarExtensionClient mCarExClient = null; 
     private TMSClient mTMSClient = null; 
 
@@ -102,6 +104,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             mDateTimeController.removeListener(mDateTimeListener);
         }
         if ( mUserProfileController != null )  mUserProfileController.removeListener(mUserProfileListener);
+        if ( mCallingStateController != null ) mCallingStateController.removeListener(mSystemCallingStateListener); 
 
         for ( BaseController controller : mControllers ) controller.disconnect();
 
@@ -119,6 +122,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mMuteController = null;
         mDateTimeController = null;
         mUserProfileController = null;
+        mCallingStateController = null;
     }
 
     public void fetchCarExClient(CarExtensionClient client) {
@@ -132,6 +136,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             if ( mLocationController != null ) mLocationController.fetchTMSClient(null); 
             if ( mBLEController != null ) mBLEController.fetch(null); 
             if ( mWirelessChargeController != null ) mWirelessChargeController.fetch(null); 
+            if ( mCallingStateController != null ) mCallingStateController.fetchTMSClient(null); 
             return;
         }
 
@@ -143,6 +148,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
                 mCallController.fetchTMSClient(mTMSClient);
             if ( mLocationController != null ) 
                 mLocationController.fetchTMSClient(mTMSClient); 
+            if ( mCallingStateController != null )    
+                mCallingStateController.fetchTMSClient(mTMSClient);
         }
         if ( mBLEController != null ) 
             mBLEController.fetch(mCarExClient.getBLEManager()); 
@@ -209,6 +216,10 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mWirelessChargeController = new SystemWirelessChargeController(mContext, mDataStore); 
         mWirelessChargeController.addListener(mSystemWirelessChargeListener);
         mControllers.add(mWirelessChargeController); 
+
+        mCallingStateController = new SystemCallingStateController(mContext, mDataStore); 
+        mCallingStateController.addListener(mSystemCallingStateListener);
+        mControllers.add(mCallingStateController); 
 
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
@@ -548,6 +559,20 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
                 try {
                     callback.onDataStatusChanged(status); 
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }; 
+
+    private BaseController.Listener mSystemCallingStateListener = new BaseController.Listener<Boolean>() {
+        @Override
+        public void onEvent(Boolean on) {
+            Log.d(TAG, "mSystemCallingStateListener="+on);
+            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
+                try {
+                    callback.onCallingStateChanged(on); 
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
