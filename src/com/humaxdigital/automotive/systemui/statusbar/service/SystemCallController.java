@@ -154,7 +154,10 @@ public class SystemCallController extends BaseController<Integer> {
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
-        if ( is_bt_mic_mute ) return CallStatus.BT_PHONE_MIC_MUTE; 
+        if ( is_bt_mic_mute ) {
+            if ( getCallState() == 1 ) 
+                return CallStatus.BT_PHONE_MIC_MUTE;  
+        }
         boolean is_tms_calling = mTMSClient.getCallingStatus() == 
             TMSClient.CallingStatus.CALL_CONNECTED ? true:false;
         if ( is_tms_calling ) return CallStatus.TMS_CALLING; 
