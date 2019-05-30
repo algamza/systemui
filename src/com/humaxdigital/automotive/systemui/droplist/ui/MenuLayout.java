@@ -168,6 +168,14 @@ public class MenuLayout extends LinearLayout {
         if ( !mTexts.isEmpty() ) mViewText.setText(mTexts.get(mStatus));
     }
 
+    public void enableText() {
+        if ( mViewText != null ) mViewText.setAlpha(1.0f); 
+    }
+
+    public void disableText() {
+        if ( mViewText != null ) mViewText.setAlpha(0.2f); 
+    }
+
     public int getStatus() {
         return mStatus;
     }

@@ -20,6 +20,8 @@ public class MuteController implements BaseController {
     private SystemControl mSystem;  
     private UpdateHandler mHandler = new UpdateHandler();
     private boolean mIsVolumeSettingsActivated = false;
+    private boolean mOn = false; 
+    private boolean mIsCalling = false; 
     
     @Override
     public BaseController init(View view) {
@@ -33,7 +35,8 @@ public class MuteController implements BaseController {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
         mSystem.registerCallback(mSystemCallback);
-        mView.updateEnable(mSystem.getMuteOn());
+        mOn = mSystem.getMuteOn(); 
+        mView.updateEnable(mOn);
 
         mIsVolumeSettingsActivated = mSystem.isVolumeSettingsActivated();
     }
@@ -69,21 +72,33 @@ public class MuteController implements BaseController {
         public void onVolumeSettingsActivated(boolean on) {
             mIsVolumeSettingsActivated = on;
         }
+
+        @Override
+        public void onCallingChanged(boolean on) {
+            mIsCalling = on; 
+            if ( mIsCalling ) 
+                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+            else 
+                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+        }
     };
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override
         public boolean onClick() {
             if ( mSystem == null || mView == null ) return false;
+            if ( mIsCalling ) return false; 
             if ( mIsVolumeSettingsActivated ) {
                 Log.d(TAG, "VolumeSettingsActivated. is not working !!");
                 return false;  
             }
             if ( mView.isEnable() ) {
                 //mView.updateEnable(false);
+                mOn = false; 
                 mSystem.setMuteOn(false);
             } else {
                 //mView.updateEnable(true);
+                mOn = true; 
                 mSystem.setMuteOn(true);
             }
             return true; 
@@ -98,6 +113,8 @@ public class MuteController implements BaseController {
     private final class UpdateHandler extends Handler {
         private static final int MODE_ON = 1;
         private static final int MODE_OFF = 2;
+        private static final int MODE_DISABLE = 3; 
+        private static final int MODE_ENABLE = 4; 
 
         public UpdateHandler() {
             super(Looper.getMainLooper());
@@ -107,8 +124,27 @@ public class MuteController implements BaseController {
         public void handleMessage(Message msg) {
             if ( mView == null ) return; 
             switch(msg.what) {
-                case MODE_ON: mView.updateEnable(true); break;
-                case MODE_OFF: mView.updateEnable(false); break;
+                case MODE_ON: {
+                    mView.updateEnable(true); 
+                    mOn = true; 
+                    break;
+                }
+                case MODE_OFF: {
+                    mView.updateEnable(false); 
+                    mOn = false; 
+                    break;
+                }
+                case MODE_DISABLE: {
+                    mView.updateEnable(false); 
+                    mView.disableText(); 
+                    break;
+                }
+                case MODE_ENABLE: {
+                    if ( mOn ) mView.updateEnable(true);
+                    else  mView.updateEnable(false); 
+                    mView.enableText(); 
+                    break; 
+                }
                 default: break;
             }
         }

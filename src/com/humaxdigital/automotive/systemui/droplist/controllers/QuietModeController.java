@@ -18,6 +18,8 @@ public class QuietModeController implements BaseController {
     private SystemControl mSystem;  
     private Listener mListener; 
     private UpdateHandler mHandler = new UpdateHandler();
+    private boolean mOn = false; 
+    private boolean mIsCalling = false; 
 
     @Override
     public BaseController init(View view) {
@@ -31,7 +33,8 @@ public class QuietModeController implements BaseController {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
         mSystem.registerCallback(mSystemCallback);
-        mView.updateEnable(mSystem.getQuietModeOn());
+        mOn = mSystem.getQuietModeOn();
+        mView.updateEnable(mOn);
     }
 
     @Override
@@ -61,16 +64,28 @@ public class QuietModeController implements BaseController {
             else 
                 mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
         }
+        
+        @Override
+        public void onCallingChanged(boolean on) {
+            mIsCalling = on; 
+            if ( mIsCalling ) 
+                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+            else 
+                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+        }
     };
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override
         public boolean onClick() {
             if ( mSystem == null || mView == null ) return false;
+            if ( mIsCalling ) return false; 
             if ( mView.isEnable() ) {
+                mOn = false;
                 mView.updateEnable(false);
                 mSystem.setQuietModeOn(false);
             } else {
+                mOn = true; 
                 mView.updateEnable(true);
                 mSystem.setQuietModeOn(true);
             }
@@ -79,6 +94,7 @@ public class QuietModeController implements BaseController {
 
         @Override
         public boolean onLongClick() {
+            if ( mIsCalling ) return false; 
             if ( mSystem != null ) mSystem.openQuietModeSetting();
             return true;
         }
@@ -87,6 +103,8 @@ public class QuietModeController implements BaseController {
     private final class UpdateHandler extends Handler {
         private static final int MODE_ON = 1;
         private static final int MODE_OFF = 2;
+        private static final int MODE_DISABLE = 3; 
+        private static final int MODE_ENABLE = 4; 
 
         public UpdateHandler() {
             super(Looper.getMainLooper());
@@ -96,8 +114,27 @@ public class QuietModeController implements BaseController {
         public void handleMessage(Message msg) {
             if ( mView == null ) return; 
             switch(msg.what) {
-                case MODE_ON: mView.updateEnable(true); break;
-                case MODE_OFF: mView.updateEnable(false); break;
+                case MODE_ON: {
+                    mView.updateEnable(true); 
+                    mOn = true; 
+                    break;
+                }
+                case MODE_OFF: {
+                    mView.updateEnable(false); 
+                    mOn = false; 
+                    break;
+                }
+                case MODE_DISABLE: {
+                    mView.updateEnable(false); 
+                    mView.disableText(); 
+                    break;
+                }
+                case MODE_ENABLE: {
+                    if ( mOn ) mView.updateEnable(true);
+                    else  mView.updateEnable(false); 
+                    mView.enableText(); 
+                    break; 
+                }
                 default: break;
             }
         }

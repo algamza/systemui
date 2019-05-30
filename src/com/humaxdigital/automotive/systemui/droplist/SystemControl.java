@@ -38,6 +38,7 @@ import com.humaxdigital.automotive.systemui.droplist.impl.QuietModeImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.SetupImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.ThemeImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.WifiImpl;
+import com.humaxdigital.automotive.systemui.droplist.impl.CallingImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CarExtensionClient;
 
 import com.humaxdigital.automotive.systemui.droplist.user.UserDroplistService;
@@ -108,6 +109,7 @@ public class SystemControl extends Service {
     private SetupImpl mSetup;
     private ThemeImpl mTheme;
     private WifiImpl mWifi;
+    private CallingImpl mCalling; 
     private CarExtensionClient mCarClient; 
     private CarSystemManager mCarSystem; 
     private List<BaseImplement> mImplements = new ArrayList<>();
@@ -170,6 +172,10 @@ public class SystemControl extends Service {
         mWifi.setListener(mWifiListener);
         mImplements.add(mWifi);
 
+        mCalling = new CallingImpl(this);
+        mCalling.setListener(mCallingListener);
+        mImplements.add(mCalling);
+
         for ( BaseImplement impl : mImplements ) impl.create();
 
         registUserSwicher();
@@ -221,6 +227,7 @@ public class SystemControl extends Service {
         public void onPowerChanged(boolean on) {}
         public void onVolumeSettingsActivated(boolean on) {}
         public void onVRStateChanged(boolean on) {}
+        public void onCallingChanged(boolean on) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -334,6 +341,10 @@ public class SystemControl extends Service {
     }
     public boolean isPowerOn() {
         return isPowerOn; 
+    }
+    public boolean isCalling() {
+        if ( mCalling == null ) return false; 
+        return mCalling.get();
     }
     public boolean isVolumeSettingsActivated() {
         return mIsVolumeSettingsActivated; 
@@ -452,6 +463,7 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
+            if ( mCalling != null ) mCalling.fetchEx(mCarClient);
             
             if ( mCarClient != null ) {
                 mCarSystem = mCarClient.getSystemManager();
@@ -476,6 +488,7 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
+            if ( mCalling != null ) mCalling.fetchEx(null);
         }
     };
 
@@ -581,7 +594,14 @@ public class SystemControl extends Service {
             }
         }
     };
-
+    private BaseImplement.Listener mCallingListener = new BaseImplement.Listener<Boolean>() {
+        @Override
+        public void onChange(Boolean e) {
+            for ( SystemCallback callback : mCallbacks ) {
+                callback.onCallingChanged(e);
+            }
+        }
+    };
     private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
         new CarSystemManager.CarSystemEventCallback () {
         @Override

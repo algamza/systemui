@@ -11,6 +11,7 @@ import android.extension.car.CarEx;
 import android.extension.car.CarAudioManagerEx;
 import android.extension.car.CarSystemManager;
 import android.extension.car.CarSensorManagerEx; 
+import android.extension.car.CarTMSManager;
 import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
 
@@ -35,6 +36,7 @@ public class CarExtensionClient {
     private CarAudioManagerEx mCarAudio; 
     private CarSystemManager mCarSystem;
     private CarSensorManagerEx mCarSensor; 
+    private CarTMSManager mCarTms; 
 
     public CarExtensionClient(Context context) {
         mContext = context; 
@@ -58,6 +60,7 @@ public class CarExtensionClient {
         mCarAudio = null;
         mCarSystem = null;
         mCarSensor = null;
+        mCarTms = null;
     }
 
     public CarExtensionClient registerListener(CarExClientListener listener) {
@@ -82,6 +85,10 @@ public class CarExtensionClient {
         return mCarSensor; 
     }
 
+    public CarTMSManager getTMSManager() {
+        return mCarTms; 
+    }
+
     private final ServiceConnection mServiceConnectionListenerClient =
             new ServiceConnection () {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -90,6 +97,7 @@ public class CarExtensionClient {
                     mCarAudio = (CarAudioManagerEx)mCarEx.getCarManager(android.car.Car.AUDIO_SERVICE);
                     mCarSystem = (CarSystemManager)mCarEx.getCarManager(android.extension.car.CarEx.SYSTEM_SERVICE);
                     mCarSensor = (CarSensorManagerEx)mCarEx.getCarManager(android.car.Car.SENSOR_SERVICE); 
+                    mCarTms = (CarTMSManager)mCarEx.getCarManager(android.extension.car.CarEx.TMS_SERVICE); 
                     for ( CarExClientListener listener : mListeners ) {
                         if ( listener != null ) listener.onConnected();
                     }
