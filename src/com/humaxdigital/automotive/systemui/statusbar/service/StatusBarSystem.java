@@ -31,7 +31,9 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     
     private static final String OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
     private static final String OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
-
+    private static final String VR_PACKAGE_NAME = "com.humaxdigital.automotive.baiduadapterservice";
+    private static final String VR_RECEIVER_NAME = "com.humaxdigital.automotive.baiduadapterservice.duerosadapter.VRSpecialCaseReceiver";
+    private static final String VR_DISMISS_ACTION = "com.humaxdigital.automotive.baiduadapterservice.VR_DISMISS_REQ";    
     private SystemDateTimeController mDateTimeController;
     private SystemUserProfileController mUserProfileController;
 
@@ -354,6 +356,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         }
         if ( !OPEN_DATE_SETTING.equals("") ) {
             Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
+            vrCloseRequest();
             Intent intent = new Intent(OPEN_DATE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
@@ -374,6 +377,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         }
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
             Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
+            vrCloseRequest();
             Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
@@ -394,6 +398,16 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         synchronized (mSystemCallbacks) {
             mSystemCallbacks.remove(callback); 
         }
+    }
+
+    private void vrCloseRequest() {
+        if ( mContext == null ) return;
+        Log.d(TAG, "vrCloseRequest");
+        Intent intent = new Intent(); 
+        ComponentName name = new ComponentName(VR_PACKAGE_NAME, VR_RECEIVER_NAME);
+        intent.setComponent(name);
+        intent.setAction(VR_DISMISS_ACTION);
+        mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
     private BaseController.Listener mDateTimeListener = new BaseController.Listener<String>() {
