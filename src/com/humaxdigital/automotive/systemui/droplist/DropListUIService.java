@@ -142,7 +142,6 @@ public class DropListUIService extends Service {
 
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.format = PixelFormat.TRANSLUCENT;
-        lp.gravity = Gravity.CENTER_VERTICAL | Gravity.LEFT;
         lp.packageName = this.getPackageName();
         lp.gravity = Gravity.TOP | Gravity.LEFT;
         lp.x = 0;
@@ -151,7 +150,7 @@ public class DropListUIService extends Service {
         lp.height = mScreenBottom - mNavBarHeight;
         lp.windowAnimations = -1;
         mWindow.setAttributes(lp);
-        mWindow.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         mDialog.setCanceledOnTouchOutside(true);
         

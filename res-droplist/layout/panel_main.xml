@@ -12,7 +12,7 @@
         android:alpha="0.92" />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="630px"
         android:orientation="vertical"
         android:weightSum="630">
         <FrameLayout
