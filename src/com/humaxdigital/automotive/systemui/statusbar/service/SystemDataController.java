@@ -50,6 +50,7 @@ public class SystemDataController extends BaseController<Integer> {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(TelephonyManager.ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED); 
         mContext.registerReceiver(mConnectivityListener, filter);
 
         if ( mTelephony != null ) 
@@ -188,6 +189,7 @@ public class SystemDataController extends BaseController<Integer> {
     private final BroadcastReceiver mConnectivityListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             if ( mConnectivity == null || mTelephony == null ) return;
             final NetworkInfo netInfo = mConnectivity.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if (netInfo == null)  return;
@@ -196,7 +198,7 @@ public class SystemDataController extends BaseController<Integer> {
             mIsNetworkConnected = netInfo.isConnectedOrConnecting();
             mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
             mDataType = mTelephony.getDataNetworkType();
-            Log.d(TAG, "onReceive=CONNECTIVITY_ACTION, available="+mIsNetworkAvaliable
+            Log.d(TAG, "action="+intent.getAction()+", available="+mIsNetworkAvaliable
                 +", connected="+mIsNetworkConnected+", type="+mDataType);
             // todo : Check status when wifi is connected
             DataStatus status = convertToStatus(mIsNetworkAvaliable 
