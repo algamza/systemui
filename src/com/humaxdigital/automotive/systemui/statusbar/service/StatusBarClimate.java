@@ -25,7 +25,11 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     private List<IStatusBarClimateCallback> mClimateCallbacks = new ArrayList<>();
     private DataStore mDataStore = null;
     private Context mContext = null;
-    private boolean mTouchDisable = false; 
+    
+    // special case
+    private boolean mRearCamera = false; 
+    private boolean mFrontCamera = false;
+    private boolean mUserAgreement = false; 
 
     public StatusBarClimate(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -61,9 +65,19 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
         }
     }
 
-    
-    public void touchDisable(boolean disable) {
-        mTouchDisable = disable; 
+    public void onFrontCamera(boolean on) {
+        Log.d(TAG, "onFrontCamera="+on);
+        mFrontCamera = on; 
+    }
+
+    public void onRearCamera(boolean on) {
+        Log.d(TAG, "onRearCamera="+on);
+        mRearCamera = on; 
+    }
+
+    public void onUserAgreement(boolean on) {
+        Log.d(TAG, "onUserAgreement="+on);
+        mUserAgreement = on; 
     }
 
     @Override
@@ -215,9 +229,10 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     }
     @Override
     public void openClimateSetting() throws RemoteException {
-        if ( mTouchDisable ) {
-            OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+        Log.d(TAG, "openClimateSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
+        if ( mUserAgreement ) return; 
+        if ( mRearCamera ) {
+            Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
             return;
         }
         if ( !OPEN_HVAC_APP.equals("") ) {

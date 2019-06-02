@@ -14,6 +14,7 @@ import android.content.BroadcastReceiver;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
@@ -65,7 +66,10 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private DataStore mDataStore = null;
     private Context mContext = null;
 
-    private boolean mTouchDisable = false; 
+    // special case
+    private boolean mRearCamera = false; 
+    private boolean mFrontCamera = false;
+    private boolean mUserAgreement = false; 
   
     public StatusBarSystem(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -167,8 +171,19 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         }
     }
 
-    public void touchDisable(boolean disable) {
-        mTouchDisable = disable; 
+    public void onFrontCamera(boolean on) {
+        Log.d(TAG, "onFrontCamera="+on);
+        mFrontCamera = on; 
+    }
+
+    public void onRearCamera(boolean on) {
+        Log.d(TAG, "onRearCamera="+on);
+        mRearCamera = on; 
+    }
+
+    public void onUserAgreement(boolean on) {
+        Log.d(TAG, "onUserAgreement="+on);
+        mUserAgreement = on; 
     }
 
     private void createSystemManager() {
@@ -347,9 +362,10 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openDateTimeSetting() throws RemoteException {
+        Log.d(TAG, "openDateTimeSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
         if ( mContext == null ) return;
-
-        if ( mTouchDisable ) {
+        if ( mUserAgreement ) return; 
+        if ( mRearCamera ) {
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
@@ -370,7 +386,11 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openUserProfileSetting() throws RemoteException {
-        if ( mTouchDisable ) {
+        Log.d(TAG, "openDateTimeSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
+        if ( mContext == null ) return;
+        if ( mUserAgreement ) return; 
+        if ( mRearCamera ) {
+            Log.d(TAG, "Current Rear Camera mode : OSD display");
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;

@@ -4,13 +4,21 @@ import android.os.Bundle;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.UserHandle;
+import android.os.Handler;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 
 import android.app.Service;
+
+import android.provider.Settings;
+import android.database.ContentObserver;
+import android.net.Uri;
+
+import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 
@@ -31,6 +39,9 @@ public class StatusBarService extends Service {
     private StatusBarSystem mStatusBarSystem = null; 
     private StatusBarDev mStatusBarDev = null; 
 
+    private ContentResolver mContentResolver;
+    private ContentObserver mUserAgreementObserver;
+
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind"); 
@@ -48,6 +59,7 @@ public class StatusBarService extends Service {
         }
         createCarExClient(); 
         registCameraReceiver();
+        initSettingProvider();
     }
 
     @Override
@@ -164,17 +176,62 @@ public class StatusBarService extends Service {
                 Bundle extras = intent.getExtras();
                 if ( extras == null ) return;
                 if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
-                    mStatusBarClimate.touchDisable(true); 
-                    mStatusBarSystem.touchDisable(true); 
+                    mStatusBarClimate.onRearCamera(true); 
+                    mStatusBarSystem.onRearCamera(true); 
                 } else {
-                    mStatusBarClimate.touchDisable(false); 
-                    mStatusBarSystem.touchDisable(false); 
+                    mStatusBarClimate.onFrontCamera(true); 
+                    mStatusBarSystem.onFrontCamera(true); 
                 }
             }
             else if ( action.equals(CAMERA_STOP) ) {
-                mStatusBarClimate.touchDisable(false); 
-                mStatusBarSystem.touchDisable(false);
+                mStatusBarClimate.onFrontCamera(false); 
+                mStatusBarSystem.onFrontCamera(false);
+                mStatusBarClimate.onRearCamera(false); 
+                mStatusBarSystem.onRearCamera(false); 
             }
         }
     };
+
+    private void initSettingProvider() {
+        if ( mContext == null ) return;
+        Log.d(TAG, "init"); 
+        mContentResolver = mContext.getContentResolver();
+        if ( mContentResolver == null ) return; 
+        mUserAgreementObserver = createUserAgreementObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.System.getUriFor(CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT), 
+            false, mUserAgreementObserver, UserHandle.USER_CURRENT); 
+        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+            CarExtraSettings.Global.FALSE);     
+        if ( is_agreement == CarExtraSettings.Global.FALSE ) {
+            mStatusBarClimate.onUserAgreement(false); 
+            mStatusBarSystem.onUserAgreement(false);
+        }
+        else {
+            mStatusBarClimate.onUserAgreement(true); 
+            mStatusBarSystem.onUserAgreement(true);
+        }        
+    }
+
+    private ContentObserver createUserAgreementObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContext == null ) return;
+                int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+                    CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+                    CarExtraSettings.Global.FALSE);  
+                if ( is_agreement == CarExtraSettings.Global.FALSE ) {
+                    mStatusBarClimate.onUserAgreement(false); 
+                    mStatusBarSystem.onUserAgreement(false);
+                }
+                else {
+                    mStatusBarClimate.onUserAgreement(true); 
+                    mStatusBarSystem.onUserAgreement(true);
+                } 
+            }
+        };
+        return observer; 
+    }
 }
