@@ -63,6 +63,7 @@ public class VolumeController extends VolumeControllerBase {
     
     private final int PROGRESS_UI_STEP_MAX = 45;
     private final int PROGRESS_STEP_MAX = 170;
+    private final String MUTE_VALUE_TEXT = "00"; 
     private boolean mVolumeMute = false;
     private UpdateHandler mHandler = new UpdateHandler();
 
@@ -160,8 +161,16 @@ public class VolumeController extends VolumeControllerBase {
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                   if ( mImgVolume != null ) mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
-                   if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, volume));
+                    if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
+                    mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+                    if ( mute ) {
+                        mTextVolume.setText(MUTE_VALUE_TEXT);
+                        mProgress.setProgress(convertToProgressValue(max, 0));
+                    }
+                    else {
+                        mTextVolume.setText(convertToStep(max, volume));
+                        mProgress.setProgress(convertToProgressValue(max, volume));
+                    }
                 }
             }); 
             for ( VolumeChangeListener listener : mListener ) {
