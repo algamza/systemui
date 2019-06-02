@@ -49,6 +49,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private SystemWirelessChargeController mWirelessChargeController; 
 
     private SystemCallingStateController mCallingStateController; 
+    private SystemPowerStateController mPowerStateController; 
 
     private CarExtensionClient mCarExClient = null; 
     private TMSClient mTMSClient = null; 
@@ -105,12 +106,14 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         if ( mBTBatteryController != null )  mBTBatteryController.removeListener(mSystemBTBatteryListener);
         if ( mCallController != null )  mCallController.removeListener(mSystemCallListener);
         if ( mMuteController != null )  mMuteController.removeListener(mSystemMuteListener);
+        if ( mWirelessChargeController != null ) mWirelessChargeController.removeListener(mSystemWirelessChargeListener);
         if ( mDateTimeController != null )  {
             mDateTimeController.removeTimeTypeListener(mTimeTypeListener); 
             mDateTimeController.removeListener(mDateTimeListener);
         }
         if ( mUserProfileController != null )  mUserProfileController.removeListener(mUserProfileListener);
         if ( mCallingStateController != null ) mCallingStateController.removeListener(mSystemCallingStateListener); 
+        if ( mPowerStateController != null ) mPowerStateController.removeListener(mPowerStateControllerListener); 
 
         for ( BaseController controller : mControllers ) controller.disconnect();
 
@@ -126,9 +129,11 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mBTBatteryController = null;
         mCallController = null;
         mMuteController = null;
+        mWirelessChargeController = null; 
         mDateTimeController = null;
         mUserProfileController = null;
         mCallingStateController = null;
+        mPowerStateController = null; 
     }
 
     public void fetchCarExClient(CarExtensionClient client) {
@@ -143,6 +148,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             if ( mBLEController != null ) mBLEController.fetch(null); 
             if ( mWirelessChargeController != null ) mWirelessChargeController.fetch(null); 
             if ( mCallingStateController != null ) mCallingStateController.fetchTMSClient(null); 
+            if ( mPowerStateController != null ) mPowerStateController.fetch(null); 
             return;
         }
 
@@ -161,7 +167,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             mBLEController.fetch(mCarExClient.getBLEManager()); 
         if ( mWirelessChargeController != null ) 
             mWirelessChargeController.fetch(mCarExClient.getSystemManager()); 
-
+        if ( mPowerStateController != null ) 
+            mPowerStateController.fetch(mCarExClient.getSystemManager()); 
         try {
             for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
                 callback.onSystemInitialized();
@@ -237,6 +244,10 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mCallingStateController = new SystemCallingStateController(mContext, mDataStore); 
         mCallingStateController.addListener(mSystemCallingStateListener);
         mControllers.add(mCallingStateController); 
+
+        mPowerStateController = new SystemPowerStateController(mContext, mDataStore); 
+        mPowerStateController.addListener(mPowerStateControllerListener);
+        mControllers.add(mPowerStateController); 
 
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
@@ -362,14 +373,24 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openDateTimeSetting() throws RemoteException {
-        Log.d(TAG, "openDateTimeSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
         if ( mContext == null ) return;
-        if ( mUserAgreement ) return; 
+        if ( mUserAgreement ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
+        }
+        
+        if ( mPowerStateController != null && !mPowerStateController.get() ) {
+            Log.d(TAG, "Current Power Off"); 
+            return; 
+        }  
+        
         if ( mRearCamera ) {
+            Log.d(TAG, "Current Rear Camera"); 
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
+
         if ( !OPEN_DATE_SETTING.equals("") ) {
             Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
             vrCloseRequest();
@@ -386,15 +407,23 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openUserProfileSetting() throws RemoteException {
-        Log.d(TAG, "openDateTimeSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
-        if ( mContext == null ) return;
-        if ( mUserAgreement ) return; 
+        if ( mUserAgreement ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
+        }
+        
+        if ( mPowerStateController != null && !mPowerStateController.get() ) {
+            Log.d(TAG, "Current Power Off"); 
+            return; 
+        }  
+        
         if ( mRearCamera ) {
-            Log.d(TAG, "Current Rear Camera mode : OSD display");
+            Log.d(TAG, "Current Rear Camera"); 
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
+        
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
             Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
             vrCloseRequest();
@@ -611,6 +640,13 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
                     e.printStackTrace();
                 }
             }
+        }
+    }; 
+
+    private BaseController.Listener mPowerStateControllerListener = new BaseController.Listener<Boolean>() {
+        @Override
+        public void onEvent(Boolean on) {
+            Log.d(TAG, "mPowerStateControllerListener="+on);
         }
     }; 
 
