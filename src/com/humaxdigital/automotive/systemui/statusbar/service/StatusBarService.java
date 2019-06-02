@@ -178,7 +178,11 @@ public class StatusBarService extends Service {
                 if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
                     mStatusBarClimate.onRearCamera(true); 
                     mStatusBarSystem.onRearCamera(true); 
+                    mStatusBarClimate.onFrontCamera(false); 
+                    mStatusBarSystem.onFrontCamera(false);
                 } else {
+                    mStatusBarClimate.onRearCamera(false); 
+                    mStatusBarSystem.onRearCamera(false); 
                     mStatusBarClimate.onFrontCamera(true); 
                     mStatusBarSystem.onFrontCamera(true); 
                 }
