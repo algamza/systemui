@@ -261,10 +261,6 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
             Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
             return;
         }
-        if ( mEmergencyCall || mBluelinkCall ) {
-            Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
-            return; 
-        }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);
             Intent intent = new Intent(OPEN_HVAC_APP);
