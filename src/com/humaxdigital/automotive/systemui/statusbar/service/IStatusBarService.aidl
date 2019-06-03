@@ -8,4 +8,11 @@ interface IStatusBarService {
     IStatusBarClimate getStatusBarClimate();
     IStatusBarSystem getStatusBarSystem();
     IStatusBarDev getStatusBarDev();
+    boolean isUserAgreement();
+    boolean isFrontCamera();
+    boolean isRearCamera();
+    boolean isPowerOff();
+    boolean isEmergencyCall();
+    boolean isBluelinkCall();
+    boolean isBTCall();
 }

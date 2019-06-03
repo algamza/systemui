@@ -45,6 +45,14 @@ public class StatusBarService extends Service {
     private TelephonyManager mTelephony = null;
     private CarTMSManager mTMSManager = null;
 
+    private boolean mUserAgreement = false; 
+    private boolean mFrontCamera = false;
+    private boolean mRearCamera = false;
+    private boolean mPowerOff = false; 
+    private boolean mBTCall = false; 
+    private boolean mEmergencyCall = false; 
+    private boolean mBluelinkCall = false; 
+
     @Override
     public IBinder onBind(Intent intent) {
         Slog.d(TAG, "onBind"); 
@@ -102,6 +110,14 @@ public class StatusBarService extends Service {
             mStatusBarDev = new StatusBarDev(mContext);
     }
 
+    private boolean _isUserAgreement() {
+        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+            CarExtraSettings.Global.FALSE);   
+        if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
+        else return true;
+    }
+
     private final class StatusBarServiceBinder extends IStatusBarService.Stub {
         public StatusBarServiceBinder() {
         }
@@ -129,6 +145,49 @@ public class StatusBarService extends Service {
         public IStatusBarDev getStatusBarDev() {
             Slog.d(TAG, "getStatusBarDev");
             return mStatusBarDev;
+        }
+
+        @Override
+        public boolean isUserAgreement() {
+            mUserAgreement = _isUserAgreement();
+            Slog.d(TAG, "isUserAgreement="+mUserAgreement);
+            return mUserAgreement; 
+        }
+    
+        @Override
+        public boolean isFrontCamera() {
+            Slog.d(TAG, "isFrontCamera="+mFrontCamera);
+            return mFrontCamera; 
+        }
+    
+        @Override
+        public boolean isRearCamera() {
+            Slog.d(TAG, "isRearCamera="+mRearCamera);
+            return mRearCamera; 
+        }
+    
+        @Override
+        public boolean isPowerOff() {
+            Slog.d(TAG, "isPowerOff="+mPowerOff);
+            return mPowerOff; 
+        }
+    
+        @Override
+        public boolean isEmergencyCall() {
+            Slog.d(TAG, "isEmergencyCall="+mEmergencyCall);
+            return mEmergencyCall; 
+        }
+    
+        @Override
+        public boolean isBluelinkCall() {
+            Slog.d(TAG, "isBluelinkCall="+mBluelinkCall);
+            return mBluelinkCall; 
+        }
+    
+        @Override
+        public boolean isBTCall() {
+            Slog.d(TAG, "isBTCall="+mBTCall);
+            return mBTCall; 
         }
     }
 
@@ -185,12 +244,16 @@ public class StatusBarService extends Service {
                     if ( extras == null ) return;
                     if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
                         Slog.d(TAG, "CAM_DISPLAY_MODE=REAR_CAM_MODE");
+                        mRearCamera = true;
+                        mFrontCamera = false;
                         mStatusBarClimate.onRearCamera(true); 
                         mStatusBarSystem.onRearCamera(true); 
                         mStatusBarClimate.onFrontCamera(false); 
                         mStatusBarSystem.onFrontCamera(false);
                     } else {
                         Slog.d(TAG, "CAM_DISPLAY_MODE=FRONT_CAM_MODE");
+                        mRearCamera = false;
+                        mFrontCamera = true;
                         mStatusBarClimate.onRearCamera(false); 
                         mStatusBarSystem.onRearCamera(false); 
                         mStatusBarClimate.onFrontCamera(true); 
@@ -200,6 +263,8 @@ public class StatusBarService extends Service {
                 }
                 case CAMERA_STOP: {
                     Slog.d(TAG, "CAMERA_STOP");
+                    mRearCamera = false;
+                    mFrontCamera = false;
                     mStatusBarClimate.onFrontCamera(false); 
                     mStatusBarSystem.onFrontCamera(false);
                     mStatusBarClimate.onRearCamera(false); 
@@ -211,8 +276,10 @@ public class StatusBarService extends Service {
                     Slog.d(TAG, "ACTION_PHONE_STATE_CHANGED="+phone_state);
                     if ( phone_state == null ) break;
                     boolean btcall = isBTCalling();
+                    mBTCall = btcall; 
                     mStatusBarClimate.onBTCall(btcall); 
                     mStatusBarSystem.onBTCall(btcall); 
+                    
                     break;
                 }
             }
@@ -237,12 +304,14 @@ public class StatusBarService extends Service {
         @Override
         public void onEmergencyMode(boolean enabled) {
             Slog.d(TAG, "onEmergencyMode = "+enabled); 
+            mEmergencyCall = enabled; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.onEmergencyCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onEmergencyCall(enabled); 
         }
         @Override
         public void onBluelinkCallMode(boolean enabled) {
             Slog.d(TAG, "onBluelinkCallMode = "+enabled); 
+            mBluelinkCall = enabled; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.onBluelinkCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onBluelinkCall(enabled); 
         }

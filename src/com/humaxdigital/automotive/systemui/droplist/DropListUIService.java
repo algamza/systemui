@@ -42,7 +42,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.humaxdigital.automotive.systemui.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 
@@ -76,14 +75,9 @@ public class DropListUIService extends Service {
     private ControllerManager mControllerManager;
 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST";
-    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
-    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
     private BroadcastReceiver mReceiver; 
 
     private IActivityManager mActivityService = null;
-
-    private boolean mIsPowerOn = true;
-    private boolean mIsRearCameraOn = false;
 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
@@ -178,20 +172,12 @@ public class DropListUIService extends Service {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "OPEN_DROPLIST:power="+mIsPowerOn+", rearcam="+mIsRearCameraOn); 
-                if ( !mIsPowerOn ) return; 
-                if ( mIsRearCameraOn ) {
-                    if ( mContext != null ) 
-                        OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
-                    return;
-                }
                 openDropList(); 
             }
         };
         registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
 
         startNotiAnimation();
-        registCameraReceiver();
     }
 
     @Override
@@ -199,8 +185,6 @@ public class DropListUIService extends Service {
         if ( mReceiver != null ) {
             unregisterReceiver(mReceiver);
         }
-
-        unregistCameraReceiver();
 
         for (View view : mAddedViews) {
             mWindowManager.removeView(view);
@@ -232,7 +216,6 @@ public class DropListUIService extends Service {
             }
 
             mSystemController.registerCallback(mSystemCallback); 
-            mIsPowerOn = mSystemController.isPowerOn(); 
         }
 
         @Override
@@ -518,49 +501,6 @@ public class DropListUIService extends Service {
         }
     }
 
-    /*
-    Camera Event Related Area
- */
-    private void registCameraReceiver() {
-        Log.d(TAG, "registCameraReceiver");
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(CAMERA_START);
-        filter.addAction(CAMERA_STOP);
-        registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
-    }
-
-    private void unregistCameraReceiver() {
-        Log.d(TAG, "unregistCameraReceiver");
-        unregisterReceiver(mCameraEvtReceiver);
-    }
-
-    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if ( action == null ) return;
-            
-            switch(action) {
-                case CAMERA_START: {
-                    Log.d(TAG, "mCameraEvtReceiver CAMERA_START");
-                    Bundle extras = intent.getExtras();
-                    if ( extras == null ) return;
-                    if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
-                        mIsRearCameraOn = true;
-                    } else {
-                        mIsRearCameraOn = false;
-                    }
-                    break;
-                }
-                case CAMERA_STOP: {
-                    Log.d(TAG, "mCameraEvtReceiver CAMERA_STOP");
-                    mIsRearCameraOn = false;
-                    break;
-                }
-            }
-        }
-    };
-
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
         public void onTaskStackChanged() {
@@ -573,11 +513,6 @@ public class DropListUIService extends Service {
 
     private SystemControl.SystemCallback mSystemCallback = 
         new SystemControl.SystemCallback() {
-        @Override
-        public void onPowerChanged(boolean on) {
-            Log.d(TAG, "onPowerChanged="+on);
-            mIsPowerOn = on;
-        }
         @Override
         public void onVRStateChanged(boolean on) {
             Log.d(TAG, "onVRStateChanged="+on);

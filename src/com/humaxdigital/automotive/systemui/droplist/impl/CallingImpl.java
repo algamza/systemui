@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 
-import android.extension.car.CarTMSManager;
-
 import android.telephony.TelephonyManager;
 
 import android.util.Log;
@@ -16,8 +14,6 @@ import android.util.Log;
 public class CallingImpl extends BaseImplement<Boolean> {
     private static final String TAG = "CallingImpl"; 
     private TelephonyManager mTelephony = null;
-    private CarExtensionClient mCarClient = null;
-    private CarTMSManager mCarTMSManager = null;
 
     public CallingImpl(Context context) {
         super(context);
@@ -35,7 +31,6 @@ public class CallingImpl extends BaseImplement<Boolean> {
 
     @Override
     public void destroy() {
-        fetchEx(null);
     }
 
     @Override
@@ -43,24 +38,6 @@ public class CallingImpl extends BaseImplement<Boolean> {
         boolean isCalling = isCalling();
         Log.d(TAG, "get="+isCalling); 
         return isCalling; 
-    }
-
-    public void fetchEx(CarExtensionClient client) {
-        Log.d(TAG, "fetchEx");
-        mCarClient = client; 
-      
-        if ( client == null ) {
-            if ( mCarTMSManager != null ) {
-                mCarTMSManager.unregisterCallback(mTMSEventListener);
-                mCarTMSManager = null;
-            }
-
-            return;
-        }
-        mCarTMSManager = mCarClient.getTMSManager();
-        if ( mCarTMSManager == null ) return;
-        mCarTMSManager.registerCallback(mTMSEventListener);
-
     }
 
     private boolean isCalling() {
@@ -90,19 +67,6 @@ public class CallingImpl extends BaseImplement<Boolean> {
                     break; 
                 }
             }
-        }
-    };
-
-    private CarTMSManager.CarTMSEventListener mTMSEventListener = new CarTMSManager.CarTMSEventListener(){
-        @Override
-        public void onEmergencyMode(boolean enabled) {
-            if ( mListener != null ) 
-                mListener.onChange(enabled);
-        }
-        @Override
-        public void onBluelinkCallMode(boolean enabled) {
-            if ( mListener != null ) 
-                mListener.onChange(enabled);
         }
     };
 }

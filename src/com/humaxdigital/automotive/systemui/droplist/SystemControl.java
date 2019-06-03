@@ -47,12 +47,6 @@ import com.humaxdigital.automotive.systemui.droplist.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.droplist.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.droplist.user.IUserAudio;
 
-import android.car.CarNotConnectedException;
-import android.extension.car.util.PowerState;
-import android.extension.car.CarSystemManager;
-import android.car.hardware.CarPropertyValue;
-import android.extension.car.value.CarEventValue;
-
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log; 
@@ -111,9 +105,7 @@ public class SystemControl extends Service {
     private WifiImpl mWifi;
     private CallingImpl mCalling; 
     private CarExtensionClient mCarClient; 
-    private CarSystemManager mCarSystem; 
     private List<BaseImplement> mImplements = new ArrayList<>();
-    private boolean isPowerOn = true;
     private boolean mIsVolumeSettingsActivated = false; 
 
     private ContentResolver mVRContentResolver;
@@ -224,7 +216,6 @@ public class SystemControl extends Service {
         public void onClusterBrightnessChanged(int brightness) {}
         public void onClusterChecked(boolean checked) {}
         public void onThemeChanged(SystemTheme theme) {}
-        public void onPowerChanged(boolean on) {}
         public void onVolumeSettingsActivated(boolean on) {}
         public void onVRStateChanged(boolean on) {}
         public void onCallingChanged(boolean on) {}
@@ -338,9 +329,6 @@ public class SystemControl extends Service {
     public int getThemeMode() {
         if ( mTheme == null ) return 0; 
         return mTheme.get();
-    }
-    public boolean isPowerOn() {
-        return isPowerOn; 
     }
     public boolean isCalling() {
         if ( mCalling == null ) return false; 
@@ -463,23 +451,6 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
-            if ( mCalling != null ) mCalling.fetchEx(mCarClient);
-            
-            if ( mCarClient != null ) {
-                mCarSystem = mCarClient.getSystemManager();
-                if ( mCarSystem == null ) return;
-                try {
-                    mCarSystem.registerCallback(mSystemCallback);
-                    isPowerOn = mCarSystem.getCurrentPowerState() 
-                        == PowerState.POWER_STATE_POWER_OFF ? false:true;
-                } catch (CarNotConnectedException e) {
-                    Log.e(TAG, "Car is not connected!");
-                }
-                
-                Log.d(TAG, "isPowerOn="+isPowerOn); 
-                for ( SystemCallback callback : mCallbacks )
-                    callback.onPowerChanged(isPowerOn);
-            }
         }
 
         @Override
@@ -488,7 +459,6 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
-            if ( mCalling != null ) mCalling.fetchEx(null);
         }
     };
 
@@ -602,33 +572,6 @@ public class SystemControl extends Service {
             }
         }
     };
-    private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
-        new CarSystemManager.CarSystemEventCallback () {
-        @Override
-        public void onChangeEvent(final CarPropertyValue value) {
-            switch(value.getPropertyId()) {
-                case CarSystemManager.VENDOR_SYSTEM_LASTPOWERSTATE: {
-                    Log.d(TAG, "VENDOR_SYSTEM_LASTPOWERSTATE="+value.getValue()); 
-                    if( value.getValue().equals(PowerState.POWER_STATE_POWER_OFF) ) {
-                        if ( !isPowerOn ) return;
-                        isPowerOn = false;
-                    } else {
-                        if ( isPowerOn ) return;
-                        isPowerOn = true;
-                    }
-                    for ( SystemCallback callback : mCallbacks ) 
-                        callback.onPowerChanged(isPowerOn);
-                    break;
-                }
-            }
-        }
-        @Override
-        public void onChangeEvent(final CarEventValue value) {
-        }
-        @Override
-        public void onErrorEvent(final int propertyId, final int zone) {
-        }
-    }; 
 
     private final BroadcastReceiver mApplicationActionReceiver = new BroadcastReceiver() {
         @Override
