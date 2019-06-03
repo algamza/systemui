@@ -23,7 +23,6 @@ public class UserProfileController {
     private UserProfileView mUserProfileView;
     private IStatusBarSystem mService; 
     private Handler mHandler; 
-    private Boolean mOnCalling = false; 
 
     public UserProfileController(Context context, View view) {
         if ( context == null || view == null ) return;
@@ -57,11 +56,6 @@ public class UserProfileController {
             @Override
             public void onClick(View view) {
                 if ( mService == null ) return;
-                if ( mOnCalling ) {
-                    if ( mContext != null ) 
-                        OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_14845_ID));
-                    return;
-                }
                 try {
                     mService.openUserProfileSetting(); 
                 } catch( RemoteException e ) {
@@ -135,9 +129,6 @@ public class UserProfileController {
                         mUserProfileView.setImageBitmap(getUserBitmap()); 
                 }
             }); 
-        }
-        public void onCallingStateChanged(boolean on) throws RemoteException {
-            mOnCalling = on;
         }
     };
 }

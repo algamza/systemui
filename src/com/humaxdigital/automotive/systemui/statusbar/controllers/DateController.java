@@ -192,7 +192,5 @@ public class DateController {
         }
         public void onUserChanged(BitmapParcelable data) throws RemoteException {
         }
-        public void onCallingStateChanged(boolean on) throws RemoteException {
-        }
     };
 }

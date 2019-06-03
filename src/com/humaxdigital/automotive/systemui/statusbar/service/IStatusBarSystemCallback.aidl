@@ -18,5 +18,4 @@ oneway interface IStatusBarSystemCallback {
     void onDateTimeChanged(String time); 
     void onTimeTypeChanged(String type);
     void onUserChanged(in BitmapParcelable bitmap); 
-    void onCallingStateChanged(boolean on); 
 }

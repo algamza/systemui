@@ -13,11 +13,13 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
-
+import android.provider.Settings;
 
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
+
+import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.util.OSDPopup; 
@@ -48,7 +50,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private SystemMuteController mMuteController; 
     private SystemWirelessChargeController mWirelessChargeController; 
 
-    private SystemCallingStateController mCallingStateController; 
     private SystemPowerStateController mPowerStateController; 
 
     private CarExtensionClient mCarExClient = null; 
@@ -70,7 +71,9 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     // special case
     private boolean mRearCamera = false; 
     private boolean mFrontCamera = false;
-    private boolean mUserAgreement = false; 
+    private boolean mBTCall = false;
+    private boolean mEmergencyCall = false;
+    private boolean mBluelinkCall = false;  
   
     public StatusBarSystem(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -112,7 +115,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             mDateTimeController.removeListener(mDateTimeListener);
         }
         if ( mUserProfileController != null )  mUserProfileController.removeListener(mUserProfileListener);
-        if ( mCallingStateController != null ) mCallingStateController.removeListener(mSystemCallingStateListener); 
         if ( mPowerStateController != null ) mPowerStateController.removeListener(mPowerStateControllerListener); 
 
         for ( BaseController controller : mControllers ) controller.disconnect();
@@ -132,7 +134,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mWirelessChargeController = null; 
         mDateTimeController = null;
         mUserProfileController = null;
-        mCallingStateController = null;
         mPowerStateController = null; 
     }
 
@@ -147,7 +148,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             if ( mLocationController != null ) mLocationController.fetchTMSClient(null); 
             if ( mBLEController != null ) mBLEController.fetch(null); 
             if ( mWirelessChargeController != null ) mWirelessChargeController.fetch(null); 
-            if ( mCallingStateController != null ) mCallingStateController.fetchTMSClient(null); 
             if ( mPowerStateController != null ) mPowerStateController.fetch(null); 
             return;
         }
@@ -160,8 +160,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
                 mCallController.fetchTMSClient(mTMSClient);
             if ( mLocationController != null ) 
                 mLocationController.fetchTMSClient(mTMSClient); 
-            if ( mCallingStateController != null )    
-                mCallingStateController.fetchTMSClient(mTMSClient);
         }
         if ( mBLEController != null ) 
             mBLEController.fetch(mCarExClient.getBLEManager()); 
@@ -188,9 +186,27 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mRearCamera = on; 
     }
 
-    public void onUserAgreement(boolean on) {
-        Log.d(TAG, "onUserAgreement="+on);
-        mUserAgreement = on; 
+    public void onBTCall(boolean on) {
+        Log.d(TAG, "onBTCall="+on);
+        mBTCall = on; 
+    }
+
+    public void onEmergencyCall(boolean on) {
+        Log.d(TAG, "onEmergencyCall="+on);
+        mEmergencyCall = on; 
+    }
+
+    public void onBluelinkCall(boolean on) {
+        Log.d(TAG, "onBluelinkCall="+on);
+        mBluelinkCall = on; 
+    }
+
+    private boolean isUserAgreement() {
+        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+            CarExtraSettings.Global.FALSE);   
+        if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
+        else return true;
     }
 
     private void createSystemManager() {
@@ -240,10 +256,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mWirelessChargeController = new SystemWirelessChargeController(mContext, mDataStore); 
         mWirelessChargeController.addListener(mSystemWirelessChargeListener);
         mControllers.add(mWirelessChargeController); 
-
-        mCallingStateController = new SystemCallingStateController(mContext, mDataStore); 
-        mCallingStateController.addListener(mSystemCallingStateListener);
-        mControllers.add(mCallingStateController); 
 
         mPowerStateController = new SystemPowerStateController(mContext, mDataStore); 
         mPowerStateController.addListener(mPowerStateControllerListener);
@@ -374,7 +386,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     @Override
     public void openDateTimeSetting() throws RemoteException {
         if ( mContext == null ) return;
-        if ( mUserAgreement ) {
+        if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
             return; 
         }
@@ -407,7 +419,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     } 
     @Override
     public void openUserProfileSetting() throws RemoteException {
-        if ( mUserAgreement ) {
+        if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
             return; 
         }
@@ -423,7 +435,19 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
-        
+
+        if ( mBTCall ) {
+            Log.d(TAG, "Current BT Call"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_14845_ID));
+            return;
+        }
+
+        if ( mEmergencyCall || mBluelinkCall ) {
+            Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
+            return; 
+        }
+
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
             Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
             vrCloseRequest();
@@ -622,20 +646,6 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
                 try {
                     callback.onDataStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }; 
-
-    private BaseController.Listener mSystemCallingStateListener = new BaseController.Listener<Boolean>() {
-        @Override
-        public void onEvent(Boolean on) {
-            Log.d(TAG, "mSystemCallingStateListener="+on);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
-                    callback.onCallingStateChanged(on); 
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

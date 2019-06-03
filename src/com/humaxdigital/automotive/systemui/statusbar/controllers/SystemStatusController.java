@@ -348,7 +348,5 @@ public class SystemStatusController {
         }
         public void onUserChanged(BitmapParcelable bitmap) throws RemoteException {
         }
-        public void onCallingStateChanged(boolean on) throws RemoteException {
-        }
     };
 }

@@ -8,10 +8,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.provider.Settings;
 
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
+
+import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.util.OSDPopup; 
@@ -29,7 +32,9 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     // special case
     private boolean mRearCamera = false; 
     private boolean mFrontCamera = false;
-    private boolean mUserAgreement = false; 
+    private boolean mBTCall = false;
+    private boolean mEmergencyCall = false;
+    private boolean mBluelinkCall = false; 
 
     public StatusBarClimate(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
@@ -75,9 +80,27 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
         mRearCamera = on; 
     }
 
-    public void onUserAgreement(boolean on) {
-        Log.d(TAG, "onUserAgreement="+on);
-        mUserAgreement = on; 
+    public void onBTCall(boolean on) {
+        Log.d(TAG, "onBTCall="+on);
+        mBTCall = on; 
+    }
+
+    public void onEmergencyCall(boolean on) {
+        Log.d(TAG, "onEmergencyCall="+on);
+        mEmergencyCall = on; 
+    }
+
+    public void onBluelinkCall(boolean on) {
+        Log.d(TAG, "onBluelinkCall="+on);
+        mBluelinkCall = on; 
+    }
+
+    private boolean isUserAgreement() {
+        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+            CarExtraSettings.Global.FALSE);   
+        if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
+        else return true;
     }
 
     @Override
@@ -229,11 +252,18 @@ public class StatusBarClimate extends IStatusBarClimate.Stub {
     }
     @Override
     public void openClimateSetting() throws RemoteException {
-        Log.d(TAG, "openClimateSetting : useragreement="+mUserAgreement+", front camera="+mFrontCamera+", rear camera="+mRearCamera); 
-        if ( mUserAgreement ) return; 
+        Log.d(TAG, "openClimateSetting : front camera="+mFrontCamera+", rear camera="+mRearCamera); 
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
+        }
         if ( mRearCamera ) {
             Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
             return;
+        }
+        if ( mEmergencyCall || mBluelinkCall ) {
+            Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
+            return; 
         }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);

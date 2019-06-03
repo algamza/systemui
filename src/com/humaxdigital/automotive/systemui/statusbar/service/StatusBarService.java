@@ -17,10 +17,13 @@ import android.app.Service;
 import android.provider.Settings;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.telephony.TelephonyManager;
 
+import android.car.CarNotConnectedException;
+import android.extension.car.CarTMSManager;
 import android.extension.car.settings.CarExtraSettings;
 
-import android.util.Log;
+import android.util.Slog;
 
 import com.humaxdigital.automotive.systemui.statusbar.service.CarExtensionClient.CarExClientListener;
 
@@ -37,14 +40,14 @@ public class StatusBarService extends Service {
     private StatusBarServiceBinder mStatusBarServiceBinder = null; 
     private StatusBarClimate mStatusBarClimate = null; 
     private StatusBarSystem mStatusBarSystem = null; 
-    private StatusBarDev mStatusBarDev = null; 
+    private StatusBarDev mStatusBarDev = null;
 
-    private ContentResolver mContentResolver;
-    private ContentObserver mUserAgreementObserver;
+    private TelephonyManager mTelephony = null;
+    private CarTMSManager mTMSManager = null;
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind"); 
+        Slog.d(TAG, "onBind"); 
         return mStatusBarServiceBinder;
     }
 
@@ -58,18 +61,20 @@ public class StatusBarService extends Service {
             this.createStatusBarDev();
         }
         createCarExClient(); 
-        registCameraReceiver();
-        initSettingProvider();
+        registReceiver();
+        mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
     public void onDestroy() {
-        unregistCameraReceiver();
+        unregistReceiver();
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
         if ( mStatusBarServiceBinder != null ) {
             mStatusBarServiceBinder.destroy();
             mStatusBarServiceBinder = null;
         }
+        mTelephony = null;
+
         super.onDestroy();
     }
 
@@ -80,19 +85,19 @@ public class StatusBarService extends Service {
 
 
     public void createStatusBarClimate() {
-        Log.d(TAG, "createStatusBarClimate");
+        Slog.d(TAG, "createStatusBarClimate");
         if ( mStatusBarClimate == null ) 
             mStatusBarClimate = new StatusBarClimate(mContext, mDataStore);
     }
 
     public void createStatusBarSystem() {
-        Log.d(TAG, "createStatusBarSystem");
+        Slog.d(TAG, "createStatusBarSystem");
         if ( mStatusBarSystem == null ) 
             mStatusBarSystem = new StatusBarSystem(mContext, mDataStore);
     }
 
     public void createStatusBarDev() {
-        Log.d(TAG, "createStatusBarDev");
+        Slog.d(TAG, "createStatusBarDev");
         if ( mStatusBarDev == null ) 
             mStatusBarDev = new StatusBarDev(mContext);
     }
@@ -112,17 +117,17 @@ public class StatusBarService extends Service {
 
         @Override
         public IStatusBarClimate getStatusBarClimate() {
-            Log.d(TAG, "getStatusBarClimate");
+            Slog.d(TAG, "getStatusBarClimate");
             return mStatusBarClimate;
         }
         @Override
         public IStatusBarSystem getStatusBarSystem() {
-            Log.d(TAG, "getStatusBarSystem");
+            Slog.d(TAG, "getStatusBarSystem");
             return mStatusBarSystem;
         }
         @Override
         public IStatusBarDev getStatusBarDev() {
-            Log.d(TAG, "getStatusBarDev");
+            Slog.d(TAG, "getStatusBarDev");
             return mStatusBarDev;
         }
     }
@@ -141,101 +146,105 @@ public class StatusBarService extends Service {
             if ( mCarExClient == null ) return; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(mCarExClient);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(mCarExClient);
+            mTMSManager = mCarExClient.getTMSManager(); 
+            if ( mTMSManager != null ) mTMSManager.registerCallback(mTMSEventListener);
         }
 
         @Override
         public void onDisconnected() {
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(null);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(null);
+            mTMSManager = null; 
         }
     }; 
 
-    private void registCameraReceiver() {
-        Log.d(TAG, "registCameraReceiver");
+    private void registReceiver() {
+        Slog.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
         filter.addAction(CAMERA_START);
         filter.addAction(CAMERA_STOP);
+        filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED); 
         if ( mContext != null )
-            mContext.registerReceiverAsUser(mCameraEvtReceiver, UserHandle.ALL, filter, null, null);
+            mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
     }
 
-    private void unregistCameraReceiver() {
-        Log.d(TAG, "unregistCameraReceiver");
-        if ( mContext != null ) mContext.unregisterReceiver(mCameraEvtReceiver);
+    private void unregistReceiver() {
+        Slog.d(TAG, "unregistReceiver");
+        if ( mContext != null ) mContext.unregisterReceiver(mReceiver);
     }
 
-    private final BroadcastReceiver mCameraEvtReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-           
             String action = intent.getAction();
-            
-            if ( action == null ) return;
-            Log.d(TAG, "CameraEvtReceiver="+action);
-            if ( action.equals(CAMERA_START) ) {
-                Bundle extras = intent.getExtras();
-                if ( extras == null ) return;
-                if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
-                    mStatusBarClimate.onRearCamera(true); 
-                    mStatusBarSystem.onRearCamera(true); 
+            if ( action == null || mStatusBarClimate == null || mStatusBarSystem == null ) return;
+            Slog.d(TAG, "mReceiver="+action);
+            switch(action) {
+                case CAMERA_START: {
+                    Bundle extras = intent.getExtras();
+                    if ( extras == null ) return;
+                    if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
+                        Slog.d(TAG, "CAM_DISPLAY_MODE=REAR_CAM_MODE");
+                        mStatusBarClimate.onRearCamera(true); 
+                        mStatusBarSystem.onRearCamera(true); 
+                        mStatusBarClimate.onFrontCamera(false); 
+                        mStatusBarSystem.onFrontCamera(false);
+                    } else {
+                        Slog.d(TAG, "CAM_DISPLAY_MODE=FRONT_CAM_MODE");
+                        mStatusBarClimate.onRearCamera(false); 
+                        mStatusBarSystem.onRearCamera(false); 
+                        mStatusBarClimate.onFrontCamera(true); 
+                        mStatusBarSystem.onFrontCamera(true); 
+                    }
+                    break;
+                }
+                case CAMERA_STOP: {
+                    Slog.d(TAG, "CAMERA_STOP");
                     mStatusBarClimate.onFrontCamera(false); 
                     mStatusBarSystem.onFrontCamera(false);
-                } else {
                     mStatusBarClimate.onRearCamera(false); 
                     mStatusBarSystem.onRearCamera(false); 
-                    mStatusBarClimate.onFrontCamera(true); 
-                    mStatusBarSystem.onFrontCamera(true); 
+                    break;
                 }
-            }
-            else if ( action.equals(CAMERA_STOP) ) {
-                mStatusBarClimate.onFrontCamera(false); 
-                mStatusBarSystem.onFrontCamera(false);
-                mStatusBarClimate.onRearCamera(false); 
-                mStatusBarSystem.onRearCamera(false); 
+                case TelephonyManager.ACTION_PHONE_STATE_CHANGED: {
+                    String phone_state = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
+                    Slog.d(TAG, "ACTION_PHONE_STATE_CHANGED="+phone_state);
+                    if ( phone_state == null ) break;
+                    boolean btcall = isBTCalling();
+                    mStatusBarClimate.onBTCall(btcall); 
+                    mStatusBarSystem.onBTCall(btcall); 
+                    break;
+                }
             }
         }
     };
 
-    private void initSettingProvider() {
-        if ( mContext == null ) return;
-        Log.d(TAG, "init"); 
-        mContentResolver = mContext.getContentResolver();
-        if ( mContentResolver == null ) return; 
-        mUserAgreementObserver = createUserAgreementObserver(); 
-        mContentResolver.registerContentObserver(
-            Settings.System.getUriFor(CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT), 
-            false, mUserAgreementObserver, UserHandle.USER_CURRENT); 
-        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
-            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
-            CarExtraSettings.Global.FALSE);     
-        if ( is_agreement == CarExtraSettings.Global.FALSE ) {
-            mStatusBarClimate.onUserAgreement(false); 
-            mStatusBarSystem.onUserAgreement(false);
+    private boolean isBTCalling() {
+        if ( mTelephony == null ) return false; 
+        int state = mTelephony.getCallState(); 
+        switch(state) {
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+            case TelephonyManager.CALL_STATE_RINGING: {
+                return true; 
+            }
+            case TelephonyManager.CALL_STATE_IDLE: break; 
         }
-        else {
-            mStatusBarClimate.onUserAgreement(true); 
-            mStatusBarSystem.onUserAgreement(true);
-        }        
+        return false; 
     }
 
-    private ContentObserver createUserAgreementObserver() {
-        ContentObserver observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContext == null ) return;
-                int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
-                    CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
-                    CarExtraSettings.Global.FALSE);  
-                if ( is_agreement == CarExtraSettings.Global.FALSE ) {
-                    mStatusBarClimate.onUserAgreement(false); 
-                    mStatusBarSystem.onUserAgreement(false);
-                }
-                else {
-                    mStatusBarClimate.onUserAgreement(true); 
-                    mStatusBarSystem.onUserAgreement(true);
-                } 
-            }
-        };
-        return observer; 
-    }
+    private CarTMSManager.CarTMSEventListener mTMSEventListener = 
+        new CarTMSManager.CarTMSEventListener(){
+        @Override
+        public void onEmergencyMode(boolean enabled) {
+            Slog.d(TAG, "onEmergencyMode = "+enabled); 
+            if ( mStatusBarClimate != null ) mStatusBarClimate.onEmergencyCall(enabled); 
+            if ( mStatusBarSystem != null ) mStatusBarSystem.onEmergencyCall(enabled); 
+        }
+        @Override
+        public void onBluelinkCallMode(boolean enabled) {
+            Slog.d(TAG, "onBluelinkCallMode = "+enabled); 
+            if ( mStatusBarClimate != null ) mStatusBarClimate.onBluelinkCall(enabled); 
+            if ( mStatusBarSystem != null ) mStatusBarSystem.onBluelinkCall(enabled); 
+        }
+    };
 }
