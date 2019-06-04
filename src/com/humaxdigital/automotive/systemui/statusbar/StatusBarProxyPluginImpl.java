@@ -58,12 +58,13 @@ public class StatusBarProxyPluginImpl extends Service {
     private IStatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
     private int mDropListTouchHeight = 0; 
+    private int mDropListTouchWidth = 0; 
     private int mStatusBarHeight = 0; 
     private int mTouchDownY = 0; 
     private int mTouchUpY = 0; 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
-    private final int TOUCH_OFFSET = 16; 
+    private final int TOUCH_OFFSET = 15; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
@@ -138,14 +139,16 @@ public class StatusBarProxyPluginImpl extends Service {
         mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
         String package_name = getPackageName(); 
         int id_droplist_touch_height = getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
+        int id_droplist_touch_width = getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
         int id_down_y = getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
         int id_up_y = getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
         if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
         if ( id_up_y > 0 ) mTouchUpY = getResources().getInteger(id_up_y);
         if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = getResources().getInteger(id_droplist_touch_height);
+        if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = getResources().getInteger(id_droplist_touch_width);
 
         WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            mDropListTouchWidth,
             mDropListTouchHeight,
             WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -155,7 +158,7 @@ public class StatusBarProxyPluginImpl extends Service {
                     | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
             PixelFormat.TRANSLUCENT);
         slp.token = new Binder();
-        slp.gravity = Gravity.TOP;
+        slp.gravity = Gravity.TOP|Gravity.LEFT;
         slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
         slp.setTitle("HmxSystemUI");
         slp.packageName = package_name;
