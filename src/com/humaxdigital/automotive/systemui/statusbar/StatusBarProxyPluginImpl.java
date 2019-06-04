@@ -317,7 +317,7 @@ public class StatusBarProxyPluginImpl extends Service {
             int y = (int)event.getY(); 
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    //Log.d(TAG, "ACTION_DOWN:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    Log.d(TAG, "ACTION_DOWN:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchDownY > y ) {
                         mTouchValid = true; 
                         mTouchDownValue = y; 
@@ -325,7 +325,7 @@ public class StatusBarProxyPluginImpl extends Service {
                     break; 
                 }
                 case MotionEvent.ACTION_UP: {
-                    //Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
                         mTouchValid = false; 
                         if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
@@ -335,7 +335,7 @@ public class StatusBarProxyPluginImpl extends Service {
                     break; 
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    //Log.d(TAG, "ACTION_MOVE:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
+                    Log.d(TAG, "ACTION_MOVE:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
                         if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
                             mTouchValid = false; 

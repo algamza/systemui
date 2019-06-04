@@ -25,6 +25,8 @@ import android.net.Uri;
 
 import com.android.internal.annotations.GuardedBy;
 
+import android.extension.car.settings.CarExtraSettings;
+
 import com.humaxdigital.automotive.systemui.droplist.impl.ModeImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.BaseImplement;
 import com.humaxdigital.automotive.systemui.droplist.impl.BeepImpl;
@@ -108,9 +110,12 @@ public class SystemControl extends Service {
     private List<BaseImplement> mImplements = new ArrayList<>();
     private boolean mIsVolumeSettingsActivated = false; 
 
-    private ContentResolver mVRContentResolver;
+    private ContentResolver mContentResolver;
     private ContentObserver mVRObserver;
+    private ContentObserver mPowerObserver;
     private final String SETTINGS_VR = "vr_shown";
+
+    private boolean mAVOn = true; 
 
     @Override
     public void onCreate() {
@@ -174,7 +179,7 @@ public class SystemControl extends Service {
         registApplicationActionReceiver();
         bindToUserService();
 
-        initVRObserver();
+        initObserver();
     }
 
     @Override
@@ -219,6 +224,7 @@ public class SystemControl extends Service {
         public void onVolumeSettingsActivated(boolean on) {}
         public void onVRStateChanged(boolean on) {}
         public void onCallingChanged(boolean on) {}
+        public void onAVOnChanged(boolean on) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -336,6 +342,19 @@ public class SystemControl extends Service {
     }
     public boolean isVolumeSettingsActivated() {
         return mIsVolumeSettingsActivated; 
+    }
+    public boolean isAVOn() {
+        if ( mContentResolver == null ) return false; 
+        int state = Settings.Global.getInt(mContentResolver, 
+            CarExtraSettings.Global.POWER_STATE, 
+            CarExtraSettings.Global.POWER_STATE_NORMAL);
+        if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF 
+            || state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
+            mAVOn = false;
+        } else {
+            mAVOn = true; 
+        }
+        return mAVOn; 
     }
     public void openThemeSetting() {
         Log.d(TAG, "openThemeSetting");
@@ -598,6 +617,31 @@ public class SystemControl extends Service {
         }
     };
 
+    private ContentObserver createPowerObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                int state = Settings.Global.getInt(getContentResolver(), 
+                    CarExtraSettings.Global.POWER_STATE, 
+                    CarExtraSettings.Global.POWER_STATE_NORMAL);
+                Log.d(TAG, "onChange="+state);
+                if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF 
+                    || state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
+                    if ( !mAVOn ) return;
+                    mAVOn = false;
+                    for ( SystemCallback callback : mCallbacks )
+                        callback.onAVOnChanged(mAVOn);
+                } else {
+                    if ( mAVOn ) return;
+                    mAVOn = true;
+                    for ( SystemCallback callback : mCallbacks )
+                        callback.onAVOnChanged(mAVOn);
+                }
+            }
+        };
+        return observer; 
+    }
+
     private ContentObserver createVRObserver() {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
@@ -613,12 +657,24 @@ public class SystemControl extends Service {
         return observer; 
     }
 
-    private void initVRObserver() {
-        mVRContentResolver = getContentResolver();
-        if ( mVRContentResolver == null ) return; 
+    private void initObserver() {
+        mContentResolver = getContentResolver();
+        if ( mContentResolver == null ) return; 
         mVRObserver = createVRObserver(); 
-        mVRContentResolver.registerContentObserver(
+        mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(SETTINGS_VR), 
-            false, mVRObserver, UserHandle.USER_CURRENT); 
+            false, mVRObserver, UserHandle.USER_CURRENT);
+        mPowerObserver = createPowerObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.POWER_STATE), 
+            false, mPowerObserver, UserHandle.USER_CURRENT);
+        int state = Settings.Global.getInt(getContentResolver(), 
+            CarExtraSettings.Global.POWER_STATE, 
+            CarExtraSettings.Global.POWER_STATE_NORMAL);
+        if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF 
+            || state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) 
+            mAVOn = false;
+        else 
+            mAVOn = true;
     }
 }

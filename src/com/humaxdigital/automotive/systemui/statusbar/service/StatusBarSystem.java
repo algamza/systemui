@@ -273,6 +273,21 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             e.printStackTrace();
         }
     }
+
+    public boolean isPowerOff() {
+        if ( mPowerStateController == null ) return true;
+        int state = mPowerStateController.get(); 
+        if ( state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        return false; 
+    }
+
+    public boolean isAVOff() {
+        if ( mPowerStateController == null ) return true;
+        int state = mPowerStateController.get(); 
+        if ( state == SystemPowerStateController.State.AV_OFF.ordinal() 
+            || state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        return false; 
+    }
     
     @Override
     public boolean isSystemInitialized() throws RemoteException {
@@ -391,7 +406,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             return; 
         }
         
-        if ( mPowerStateController != null && !mPowerStateController.get() ) {
+        if ( mPowerStateController != null && (mPowerStateController.get() 
+            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         }  
@@ -424,7 +440,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             return; 
         }
         
-        if ( mPowerStateController != null && !mPowerStateController.get() ) {
+        if ( mPowerStateController != null && (mPowerStateController.get() 
+            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         }  
@@ -653,10 +670,11 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         }
     }; 
 
-    private BaseController.Listener mPowerStateControllerListener = new BaseController.Listener<Boolean>() {
+    private BaseController.Listener mPowerStateControllerListener = new BaseController.Listener<Integer>() {
         @Override
-        public void onEvent(Boolean on) {
-            Log.d(TAG, "mPowerStateControllerListener="+on);
+        public void onEvent(Integer state) {
+            Log.d(TAG, "mPowerStateControllerListener="+state);
+            // TODO:
         }
     }; 
 

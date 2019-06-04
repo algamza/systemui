@@ -168,7 +168,9 @@ public class StatusBarService extends Service {
     
         @Override
         public boolean isPowerOff() {
-            Slog.d(TAG, "isPowerOff="+mPowerOff);
+            if ( mStatusBarSystem == null ) return false;
+            mPowerOff = mStatusBarSystem.isPowerOff();
+            Slog.d(TAG, "isPowerOff="+mPowerOff);  
             return mPowerOff; 
         }
     

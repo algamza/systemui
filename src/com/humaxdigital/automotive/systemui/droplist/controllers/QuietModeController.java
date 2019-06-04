@@ -20,6 +20,7 @@ public class QuietModeController implements BaseController {
     private UpdateHandler mHandler = new UpdateHandler();
     private boolean mOn = false; 
     private boolean mIsCalling = false; 
+    private boolean mIsAVOn = true;
 
     @Override
     public BaseController init(View view) {
@@ -35,6 +36,8 @@ public class QuietModeController implements BaseController {
         mSystem.registerCallback(mSystemCallback);
         mOn = mSystem.getQuietModeOn();
         mView.updateEnable(mOn);
+        mIsAVOn = mSystem.isAVOn(); 
+        updateModeEnable(mIsAVOn); 
     }
 
     @Override
@@ -55,6 +58,14 @@ public class QuietModeController implements BaseController {
         mView.updateText(res.getString(R.string.STR_QUIET_MODE_04_ID));
     }
 
+    private void updateModeEnable(boolean enable) {
+        if ( enable ) {
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+        } else {
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        }
+    }
+
     private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
         @Override
         public void onQuietModeOnChanged(boolean isOn) {
@@ -73,13 +84,19 @@ public class QuietModeController implements BaseController {
             else 
                 mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
         }
+
+        @Override
+        public void onAVOnChanged(boolean on) {
+            mIsAVOn = on; 
+            updateModeEnable(mIsAVOn); 
+        }
     };
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override
         public boolean onClick() {
             if ( mSystem == null || mView == null ) return false;
-            if ( mIsCalling ) return false; 
+            if ( mIsCalling || !mIsAVOn ) return false; 
             if ( mView.isEnable() ) {
                 mOn = false;
                 mView.updateEnable(false);
@@ -94,7 +111,7 @@ public class QuietModeController implements BaseController {
 
         @Override
         public boolean onLongClick() {
-            if ( mIsCalling ) return false; 
+            if ( mIsCalling || !mIsAVOn ) return false; 
             if ( mSystem != null ) mSystem.openQuietModeSetting();
             return true;
         }

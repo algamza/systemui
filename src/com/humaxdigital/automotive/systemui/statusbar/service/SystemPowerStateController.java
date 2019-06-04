@@ -15,10 +15,15 @@ import android.extension.car.value.CarEventValue;
 
 import android.util.Log;
 
-public class SystemPowerStateController extends BaseController<Boolean> {
+public class SystemPowerStateController extends BaseController<Integer> {
     private final String TAG = "SystemPowerStateController"; 
+    public enum State {
+        NORMAL,
+        AV_OFF, 
+        POWER_OFF
+    }
     private CarSystemManager mSystemManager;
-    private boolean mPowerOn = true; 
+    private State mPowerState = State.NORMAL; 
    
     public SystemPowerStateController(Context context, DataStore store) {
         super(context, store);
@@ -45,8 +50,8 @@ public class SystemPowerStateController extends BaseController<Boolean> {
     }
 
     @Override
-    public Boolean get() {
-        return mPowerOn; 
+    public Integer get() {
+        return mPowerState.ordinal(); 
     }
 
     public void fetch(CarSystemManager manager) {
@@ -55,14 +60,19 @@ public class SystemPowerStateController extends BaseController<Boolean> {
         int value = 0; 
         try {
             mSystemManager.registerCallback(mSystemCallback);
-            mPowerOn = mSystemManager.getCurrentPowerState() 
-                == PowerState.POWER_STATE_POWER_OFF ? false:true;
+            int state = mSystemManager.getCurrentPowerState(); 
+            if ( state == PowerState.POWER_STATE_POWER_OFF ) 
+                mPowerState = State.POWER_OFF; 
+            else if ( state == PowerState.POWER_STATE_AV_OFF ) 
+                mPowerState = State.AV_OFF; 
+            else 
+                mPowerState = State.NORMAL; 
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!");
         }
 
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mPowerOn);
+            listener.onEvent(mPowerState.ordinal());
     }
 
     private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
@@ -73,14 +83,19 @@ public class SystemPowerStateController extends BaseController<Boolean> {
                 case CarSystemManager.VENDOR_SYSTEM_LASTPOWERSTATE: {
                     Log.d(TAG, "VENDOR_SYSTEM_LASTPOWERSTATE="+value.getValue()); 
                     if( value.getValue().equals(PowerState.POWER_STATE_POWER_OFF) ) {
-                        if ( !mPowerOn ) return;
-                        mPowerOn = false;
+                        if ( mPowerState == State.POWER_OFF ) break;
+                        mPowerState = State.POWER_OFF; 
+                    } else if( value.getValue().equals(PowerState.POWER_STATE_AV_OFF) ) {
+                        if ( mPowerState == State.AV_OFF ) break; 
+                        mPowerState = State.AV_OFF; 
                     } else {
-                        if ( mPowerOn ) return;
-                        mPowerOn = true;
+                        if ( mPowerState == State.NORMAL ) break; 
+                        mPowerState = State.NORMAL; 
                     }
+
                     for ( Listener listener : mListeners ) 
-                        listener.onEvent(mPowerOn);
+                        listener.onEvent(mPowerState.ordinal());
+
                     break;
                 }
             }
