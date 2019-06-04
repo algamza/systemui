@@ -9,4 +9,6 @@
     <color name="colorClimateBlowerOff">#596172</color>
     <color name="textColor">#ffffff</color>
     <color name="statusbar">#000000</color>
+    <color name="climateTextDis">#8d9098</color>
+    <color name="ClimateTextNor">#ffffff</color>
 </resources>

@@ -53,19 +53,18 @@ public class ClimateMenuTextDec extends LinearLayout {
 
     public ClimateMenuTextDec updateDisable(boolean disable) {
         mDisable = disable; 
-        
+        if ( mContext == null ) return this; 
         if ( mTextViewDec == null || 
             mTextViewInt == null ||
             mTextView == null ) return this; 
-
         if ( mDisable ) {
-            mTextViewDec.setAlpha(0.4f); 
-            mTextViewInt.setAlpha(0.4f); 
-            mTextView.setAlpha(0.4f); 
+            mTextViewDec.setTextColor(mContext.getResources().getColor(R.color.climateTextDis)); 
+            mTextViewInt.setTextColor(mContext.getResources().getColor(R.color.climateTextDis)); 
+            mTextView.setTextColor(mContext.getResources().getColor(R.color.climateTextDis)); 
         } else {
-            mTextViewDec.setAlpha(1.0f); 
-            mTextViewInt.setAlpha(1.0f);
-            mTextView.setAlpha(1.0f);  
+            mTextViewDec.setTextColor(mContext.getResources().getColor(R.color.ClimateTextNor)); 
+            mTextViewInt.setTextColor(mContext.getResources().getColor(R.color.ClimateTextNor)); 
+            mTextView.setTextColor(mContext.getResources().getColor(R.color.ClimateTextNor));  
         }
 
         return this; 

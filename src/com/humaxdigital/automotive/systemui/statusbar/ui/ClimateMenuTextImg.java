@@ -62,10 +62,10 @@ public class ClimateMenuTextImg extends LinearLayout {
         if ( mTextView == null || mImageView == null ) return this; 
         if ( mDisable ) {
             if ( mDisableIcon != null ) mImageView.setImageDrawable(mDisableIcon);
-            mTextView.setAlpha(0.4f); 
+            mTextView.setTextColor(mContext.getResources().getColor(R.color.climateTextDis)); 
         } else {
             mImageView.setImageDrawable(mIcons.get(mStatus));
-            mTextView.setAlpha(1.0f); 
+            mTextView.setTextColor(mContext.getResources().getColor(R.color.ClimateTextNor)); 
         }
         refresh(); 
         return this;
@@ -88,7 +88,7 @@ public class ClimateMenuTextImg extends LinearLayout {
         
         if ( mTextView == null ) return; 
         mTextView.setText(mText);
-        if ( mStateDisable ) mTextView.setAlpha(0.4f); 
+        if ( mStateDisable ) mTextView.setTextColor(mContext.getResources().getColor(R.color.climateTextDis)); 
         else mTextView.setAlpha(1.0f); 
     }
 
