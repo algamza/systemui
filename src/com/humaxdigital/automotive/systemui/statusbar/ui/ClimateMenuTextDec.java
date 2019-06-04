@@ -59,9 +59,9 @@ public class ClimateMenuTextDec extends LinearLayout {
             mTextView == null ) return this; 
 
         if ( mDisable ) {
-            mTextViewDec.setAlpha(0.2f); 
-            mTextViewInt.setAlpha(0.2f); 
-            mTextView.setAlpha(0.2f); 
+            mTextViewDec.setAlpha(0.4f); 
+            mTextViewInt.setAlpha(0.4f); 
+            mTextView.setAlpha(0.4f); 
         } else {
             mTextViewDec.setAlpha(1.0f); 
             mTextViewInt.setAlpha(1.0f);

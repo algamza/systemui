@@ -163,8 +163,8 @@ public class ClimateController {
             .inflate();
         mAC.setOnClickListener(mClimateACOnClick); 
         mIntake = new ClimateMenuImg(mContext)
-            .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
-            .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
+            .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
+            .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_dis, null))
             .inflate();
         mIntake.setOnClickListener(mClimateIntakeOnClick); 
