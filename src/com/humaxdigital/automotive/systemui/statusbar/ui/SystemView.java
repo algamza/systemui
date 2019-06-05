@@ -117,7 +117,6 @@ public class SystemView extends FrameLayout {
         else {
             ((View)this.getParent()).setVisibility(View.VISIBLE); 
         }
-        
 
         return;
     }

@@ -10,4 +10,6 @@
     <dimen name="dev_text_size">24sp</dimen>
     <dimen name="dev_button_margin">5dp</dimen>
     <dimen name="system_icon_right_margin">6dp</dimen>
+    <dimen name="system_icon_height">36px</dimen>
+    <dimen name="system_icon_width">51px</dimen>
 </resources>
