@@ -56,7 +56,7 @@ public class WifiImpl extends BaseImplement<Boolean> {
         mWifiObserver = createObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(Settings.Global.WIFI_ON), 
-            false, mWifiObserver, UserHandle.USER_ALL); 
+            false, mWifiObserver, UserHandle.USER_CURRENT); 
 
         if ( mListener != null ) mListener.onChange(isWifiOn()); 
     }
@@ -98,7 +98,7 @@ public class WifiImpl extends BaseImplement<Boolean> {
         mWifiObserver = createObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(Settings.Global.WIFI_ON), 
-            false, mWifiObserver, UserHandle.USER_ALL); 
+            false, mWifiObserver, UserHandle.USER_CURRENT); 
     }
 
     private void setWifiOn(boolean on) {
