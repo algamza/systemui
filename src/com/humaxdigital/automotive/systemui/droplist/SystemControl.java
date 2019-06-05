@@ -663,11 +663,11 @@ public class SystemControl extends Service {
         mVRObserver = createVRObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(SETTINGS_VR), 
-            false, mVRObserver, UserHandle.USER_CURRENT);
+            false, mVRObserver, UserHandle.USER_ALL);
         mPowerObserver = createPowerObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.POWER_STATE), 
-            false, mPowerObserver, UserHandle.USER_CURRENT);
+            false, mPowerObserver, UserHandle.USER_ALL);
         int state = Settings.Global.getInt(getContentResolver(), 
             CarExtraSettings.Global.POWER_STATE, 
             CarExtraSettings.Global.POWER_STATE_NORMAL);

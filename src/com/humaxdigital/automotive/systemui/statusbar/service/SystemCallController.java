@@ -238,7 +238,7 @@ public class SystemCallController extends BaseController<Integer> {
         mObserver = createObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(PBAP_STATE), 
-            false, mObserver, UserHandle.USER_CURRENT); 
+            false, mObserver, UserHandle.USER_ALL); 
     }
 
     private void deinitObserver() {

@@ -52,7 +52,7 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
         mBluetoothObserver = createObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(BT_SYSTEM), 
-            false, mBluetoothObserver, UserHandle.USER_CURRENT); 
+            false, mBluetoothObserver, UserHandle.USER_ALL); 
 
         if ( mListener != null ) mListener.onChange(isBluetoothOn()); 
     }
@@ -71,7 +71,7 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
         mBluetoothObserver = createObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(BT_SYSTEM), 
-            false, mBluetoothObserver, UserHandle.USER_CURRENT); 
+            false, mBluetoothObserver, UserHandle.USER_ALL); 
     }
 
     private void setBluetoothOn(boolean on) {

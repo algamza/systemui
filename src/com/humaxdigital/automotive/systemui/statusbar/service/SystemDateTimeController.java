@@ -62,11 +62,11 @@ public class SystemDateTimeController extends BaseController<String> {
         mObserverGPSValid = createGPSValidObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.GPS_TIME_STATUS), 
-            false, mObserverGPSValid, UserHandle.USER_CURRENT); 
+            false, mObserverGPSValid, UserHandle.USER_ALL); 
         mObserverNTPValid = createNTPValidObserver(); 
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.NTP_TIME_STATUS), 
-            false, mObserverNTPValid, UserHandle.USER_CURRENT); 
+            false, mObserverNTPValid, UserHandle.USER_ALL); 
     }
 
     @Override
