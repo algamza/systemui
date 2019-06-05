@@ -6,7 +6,7 @@
             android:tint="?attr/colorControlNormal">
             <corners android:radius="8dp"/>
             <size android:height="10dp" />
-            <solid android:color="#66000000" />
+            <solid android:color="#293342" />
         </shape>
     </item>
     <item android:id="@android:id/secondaryProgress"
@@ -16,7 +16,7 @@
                 android:tint="?attr/colorControlHighlight">
                 <corners android:radius="8dp"/>
                 <size android:height="10dp" />
-                <solid android:color="#66000000" />
+                <solid android:color="#293342" />
             </shape>
         </scale>
     </item>
