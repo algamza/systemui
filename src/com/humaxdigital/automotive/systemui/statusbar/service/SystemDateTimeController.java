@@ -178,10 +178,10 @@ public class SystemDateTimeController extends BaseController<String> {
         if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
             int gps_valid = Settings.Global.getInt(mContext.getContentResolver(), 
                 CarExtraSettings.Global.GPS_TIME_STATUS,
-                CarExtraSettings.Global.GPS_TIME_STATUS_VALID);
+                CarExtraSettings.Global.GPS_TIME_STATUS_INVALID);
             int ntp_valid = Settings.Global.getInt(mContext.getContentResolver(), 
                     CarExtraSettings.Global.NTP_TIME_STATUS,
-                    CarExtraSettings.Global.NTP_TIME_STATUS_VALID);
+                    CarExtraSettings.Global.NTP_TIME_STATUS_INVALID);
 
             Log.d(TAG, "gps_valid="+gps_valid+", ntp_valid="+ntp_valid); 
             /*
