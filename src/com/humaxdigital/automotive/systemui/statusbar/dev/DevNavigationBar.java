@@ -9,12 +9,15 @@ import android.app.IActivityManager;
 import android.app.IProcessObserver;
 import android.app.TaskStackListener;
 import android.app.Instrumentation;
+import android.car.user.CarUserManagerHelper;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.UserInfo;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Process;
 import android.os.RemoteException;
@@ -33,6 +36,9 @@ import android.widget.TextView;
 
 import com.humaxdigital.automotive.systemui.R;
 
+import java.util.List;
+import java.util.Random;
+
 public class DevNavigationBar extends FrameLayout {
     private static final String TAG = DevNavigationBar.class.getSimpleName();
 
@@ -44,6 +50,8 @@ public class DevNavigationBar extends FrameLayout {
     private final Handler mRetrieveHandler = new Handler();
     private final Runnable mRetrieveRunnable = this::retrievePeriodicData;
     private ComponentName mTopActivity;
+    private boolean mUserSwitchingTestRunning = false;
+
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
     private TextView mStartTimeTextView;
@@ -65,6 +73,10 @@ public class DevNavigationBar extends FrameLayout {
                 mUserSwitchTime = SystemClock.uptimeMillis();
                 mBootCompletedTime = 0;
                 updateBootCompletedTimeText();
+                updateUserState();
+                if (mUserSwitchingTestRunning) {
+                    doUserSwitchingTest();
+                }
             } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
                 mBootCompletedTime = SystemClock.uptimeMillis();
                 updateBootCompletedTimeText();
@@ -127,6 +139,9 @@ public class DevNavigationBar extends FrameLayout {
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
         findViewById(R.id.btnSettings).setOnClickListener(view -> { runSettings(); });
+        findViewById(R.id.btnUser0).setOnClickListener(view -> { switchUser(0); });
+        findViewById(R.id.btnUser1).setOnClickListener(view -> { switchUser(1); });
+        findViewById(R.id.btnUser2).setOnClickListener(view -> { switchUser(2); });
         findViewById(R.id.btnStop).setOnClickListener(view -> { stopTopActivity(); });
         findViewById(R.id.btnSave).setOnClickListener(view -> { saveCurrentActivity(); });
         findViewById(R.id.btnLoad).setOnClickListener(view -> { loadSavedActivity(); });
@@ -148,10 +163,12 @@ public class DevNavigationBar extends FrameLayout {
     public void onAttached() {
         retrievePeriodicData();
         updateSavedActivityText();
+        updateUserState();
     }
 
     public void onDetached() {
         mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
+        mUserSwitchingTestRunning = false;
     }
 
     public void goHome() {
@@ -323,5 +340,62 @@ public class DevNavigationBar extends FrameLayout {
         boolean support = mUsbHubCheckBox.isChecked();
         SystemProperties.set(
                 "persist.vendor.humax.usbhub.support", (support) ? "true" : "false");
+    }
+
+    private void switchUser(int index) {
+        final CarUserManagerHelper carUserManagerHelper = new CarUserManagerHelper(mContext);
+
+        List<UserInfo> users = carUserManagerHelper.getAllUsers();
+        if (index >= users.size()) {
+            return;
+        }
+
+        UserInfo toUser = users.get(index);
+        if (toUser.id == carUserManagerHelper.getCurrentForegroundUserId()) {
+            return;
+        }
+
+        carUserManagerHelper.switchToUserId(toUser.id);
+
+        final String USERPROFILE_LAST_DRIVER = "android.extension.car.USERPROFILE_LAST_DRIVER";
+        Settings.Global.putInt(mContext.getContentResolver(), USERPROFILE_LAST_DRIVER, toUser.id);
+    }
+
+    private void updateUserState() {
+        final CarUserManagerHelper carUserManagerHelper = new CarUserManagerHelper(mContext);
+        int currentUserId = carUserManagerHelper.getCurrentForegroundUserId();
+        List<UserInfo> users = carUserManagerHelper.getAllUsers();
+
+        int i = 0;
+        for (; i<users.size(); i++) {
+            if (users.get(i).id == currentUserId) {
+                break;
+            }
+        }
+
+        final int activeColor = Color.RED;
+        final int normalColor = mUserSwitchingTestRunning ? Color.BLUE : Color.BLACK;
+
+        ((TextView)findViewById(R.id.btnUser0)).setTextColor((i == 0) ? activeColor : normalColor);
+        ((TextView)findViewById(R.id.btnUser1)).setTextColor((i == 1) ? activeColor : normalColor);
+        ((TextView)findViewById(R.id.btnUser2)).setTextColor((i == 2) ? activeColor : normalColor);
+    }
+
+    private void toggleUserSwitingTest() {
+        mUserSwitchingTestRunning = !mUserSwitchingTestRunning;
+        updateUserState();
+        if (mUserSwitchingTestRunning) {
+            doUserSwitchingTest();
+        }
+    }
+
+    private void doUserSwitchingTest() {
+        new Handler().postDelayed(() -> {
+            if (mUserSwitchingTestRunning) {
+                Random r = new Random();
+                int index = r.nextInt(3 - 0) + 0;
+                switchUser(index);
+            }
+        }, 5000);
     }
 }
