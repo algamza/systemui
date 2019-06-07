@@ -1,5 +1,6 @@
 package com.humaxdigital.automotive.systemui.statusbar.service;
 
+import android.os.UserHandle;
 
 import android.content.Context;
 import android.content.Intent;
@@ -51,7 +52,7 @@ public class SystemDataController extends BaseController<Integer> {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(TelephonyManager.ACTION_PRECISE_DATA_CONNECTION_STATE_CHANGED); 
-        mContext.registerReceiver(mConnectivityListener, filter);
+        mContext.registerReceiverAsUser(mConnectivityListener, UserHandle.ALL, filter, null, null);
 
         if ( mTelephony != null ) 
             mTelephony.listen(mPhoneStateListener, PhoneStateListener.LISTEN_SERVICE_STATE);
