@@ -405,7 +405,7 @@ public class VolumeController extends VolumeControllerBase {
 
     private String convertToStep(int max, int val) {
         float current = (float)(PROGRESS_UI_STEP_MAX*val)/max;  
-        String num = String.format("%02d", Math.round(current));
+        String num = String.format("%d", Math.round(current));
         return num;        
     }
 
