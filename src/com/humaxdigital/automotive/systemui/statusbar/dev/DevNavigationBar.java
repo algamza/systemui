@@ -20,7 +20,6 @@ import android.content.pm.UserInfo;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Process;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UserHandle;

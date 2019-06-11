@@ -17,7 +17,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.UserManager;
 import android.os.UserHandle;
 import android.util.Log;
@@ -35,8 +34,8 @@ import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerMana
 import com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c.ControllerManagerDL3C;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarDev;
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarDev;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 import com.humaxdigital.automotive.systemui.util.OSDPopup; 
 
@@ -55,7 +54,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private View mStatusBarView; 
     private View mDevNavView;
     private ControllerManagerBase mControllerManager; 
-    private IStatusBarService mStatusBarService;
+    private StatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
     private int mDropListTouchHeight = 0; 
     private int mDropListTouchWidth = 0; 
@@ -264,12 +263,8 @@ public class StatusBarProxyPluginImpl extends Service {
             @Override
             public Bundle invokeDevCommand(String command, Bundle args) {
                 if (mStatusBarService != null) {
-                    try {
-                        IStatusBarDev dev = mStatusBarService.getStatusBarDev(); 
-                        if ( dev != null ) return dev.invokeDevCommand(command, args);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    StatusBarDev dev = mStatusBarService.getStatusBarDev(); 
+                    if ( dev != null ) return dev.invokeDevCommand(command, args);
                 }
                 return new Bundle();
             }
@@ -297,7 +292,7 @@ public class StatusBarProxyPluginImpl extends Service {
                 return;
             }
 
-            mStatusBarService = IStatusBarService.Stub.asInterface(service); 
+            mStatusBarService = ((StatusBarService.StatusBarServiceBinder)service).getService();
             mControllerManager.init(mStatusBarService); 
         }
 
@@ -352,35 +347,31 @@ public class StatusBarProxyPluginImpl extends Service {
 
     private boolean isSpecialCase() {
         if ( mStatusBarService == null ) return false; 
-        try {
-            if ( mStatusBarService.isUserAgreement() ) {
-                Log.d(TAG, "is special case : user agreement"); 
-                return true;
-            }
-            if ( mStatusBarService.isFrontCamera() ) {
-                Log.d(TAG, "is special case : front camera"); 
-                OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
-                return true; 
-            }
-            if ( mStatusBarService.isRearCamera() ) {
-                Log.d(TAG, "is special case : rear camera"); 
-                OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
-                return true;
-            }
-            if ( mStatusBarService.isPowerOff() ) {
-                Log.d(TAG, "is special case : power off"); 
-                return true;
-            }
-            if ( mStatusBarService.isEmergencyCall() ) {
-                Log.d(TAG, "is special case : emergency call"); 
-                return true;
-            }
-            if ( mStatusBarService.isBluelinkCall() ) {
-                Log.d(TAG, "is special case : bluelink call"); 
-                return true;
-            }
-        } catch( RemoteException e ) {
-            e.printStackTrace();
+        if ( mStatusBarService.isUserAgreement() ) {
+            Log.d(TAG, "is special case : user agreement"); 
+            return true;
+        }
+        if ( mStatusBarService.isFrontCamera() ) {
+            Log.d(TAG, "is special case : front camera"); 
+            OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
+            return true; 
+        }
+        if ( mStatusBarService.isRearCamera() ) {
+            Log.d(TAG, "is special case : rear camera"); 
+            OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
+            return true;
+        }
+        if ( mStatusBarService.isPowerOff() ) {
+            Log.d(TAG, "is special case : power off"); 
+            return true;
+        }
+        if ( mStatusBarService.isEmergencyCall() ) {
+            Log.d(TAG, "is special case : emergency call"); 
+            return true;
+        }
+        if ( mStatusBarService.isBluelinkCall() ) {
+            Log.d(TAG, "is special case : bluelink call"); 
+            return true;
         }
         return false; 
     }

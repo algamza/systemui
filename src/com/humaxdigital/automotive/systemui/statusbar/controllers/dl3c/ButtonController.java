@@ -1,7 +1,5 @@
 package com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c;
 
-
-import android.os.RemoteException;
 import android.os.Handler;
 import android.os.UserHandle;
 

@@ -29,7 +29,7 @@ import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio;
 
-public class StatusBarSystem extends IStatusBarSystem.Stub {
+public class StatusBarSystem {
     private static final String TAG = "StatusBarSystem";
     
     private static final String OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
@@ -56,7 +56,7 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private TMSClient mTMSClient = null; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
-    private List<IStatusBarSystemCallback> mSystemCallbacks = new ArrayList<>();
+    private List<StatusBarSystemCallback> mSystemCallbacks = new ArrayList<>();
 
     private IUserService mUserService;
     private IUserBluetooth mUserBluetooth;
@@ -74,7 +74,25 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
     private boolean mBTCall = false;
     private boolean mEmergencyCall = false;
     private boolean mBluelinkCall = false;  
-  
+
+    public static abstract class StatusBarSystemCallback {
+        public void onSystemInitialized() {}
+        public void onUserProfileInitialized() {}
+        public void onDateTimeInitialized() {}
+        public void onMuteStatusChanged(int status) {}
+        public void onBLEStatusChanged(int status) {}
+        public void onBTBatteryStatusChanged(int status) {}
+        public void onCallStatusChanged(int status) {}
+        public void onAntennaStatusChanged(int status) {}
+        public void onDataStatusChanged(int status) {}
+        public void onWifiStatusChanged(int status) {}
+        public void onWirelessChargeStatusChanged(int status) {}
+        public void onModeStatusChanged(int status) {}
+        public void onDateTimeChanged(String time) {}
+        public void onTimeTypeChanged(String type) {}
+        public void onUserChanged(BitmapParcelable bitmap) {}
+    }
+
     public StatusBarSystem(Context context, DataStore datastore) {
         if ( context == null || datastore == null ) return;
         Log.d(TAG, "StatusBarSystem");
@@ -90,6 +108,22 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
 
         bindToUserService();
         registUserSwicher();
+    }
+
+    public void registerSystemCallback(StatusBarSystemCallback callback) {
+        if ( callback == null ) return;
+        Log.d(TAG, "registerSystemCallback");
+        synchronized (mSystemCallbacks) {
+            mSystemCallbacks.add(callback); 
+        }
+    }
+
+    public void unregisterSystemCallback(StatusBarSystemCallback callback) {
+        if ( callback == null ) return;
+        Log.d(TAG, "unregisterSystemCallback");
+        synchronized (mSystemCallbacks) {
+            mSystemCallbacks.remove(callback); 
+        }
     }
 
     public void destroy() {
@@ -167,12 +201,9 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
             mWirelessChargeController.fetch(mCarExClient.getSystemManager()); 
         if ( mPowerStateController != null ) 
             mPowerStateController.fetch(mCarExClient.getSystemManager()); 
-        try {
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onSystemInitialized();
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
+
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onSystemInitialized();
         }
     }
 
@@ -201,6 +232,206 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         mBluelinkCall = on; 
     }
 
+    public boolean isPowerOff() {
+        if ( mPowerStateController == null ) return true;
+        int state = mPowerStateController.get(); 
+        if ( state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        return false; 
+    }
+
+    public boolean isAVOff() {
+        if ( mPowerStateController == null ) return true;
+        int state = mPowerStateController.get(); 
+        if ( state == SystemPowerStateController.State.AV_OFF.ordinal() 
+            || state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        return false; 
+    }
+    
+
+    public boolean isSystemInitialized() {
+        boolean init = false; 
+        if ( mCarExClient == null ) init = false;
+        else init = true;
+        Log.d(TAG, "isSystemInitialized="+init);
+        return init; 
+    }
+
+    public boolean isUserProfileInitialized() {
+        boolean init = false; 
+        if ( mUserProfileController == null ) init = false;
+        else init = true;
+        Log.d(TAG, "isUserProfileInitialized="+init);
+        return init; 
+    }
+ 
+    public boolean isDateTimeInitialized() {
+        boolean init = false; 
+        if ( mDateTimeController == null ) init = false;
+        else init = true;
+        Log.d(TAG, "isDateTimeInitialized="+init);
+        return init; 
+    }
+
+    public int getMuteStatus() { 
+        if ( mMuteController == null ) return 0; 
+        int status = mMuteController.get();
+        Log.d(TAG, "getMuteStatus="+status);
+        return status;
+    }
+ 
+    public int getBLEStatus() { 
+        if ( mBLEController == null ) return 0; 
+        int status = mBLEController.get(); 
+        Log.d(TAG, "getBLEStatus="+status);
+        return status;
+    }
+  
+    public int getBTBatteryStatus() { 
+        if ( mBTBatteryController == null ) return 0; 
+        int status = mBTBatteryController.get(); 
+        Log.d(TAG, "getBTBatteryStatus="+status);
+        return status;
+    }
+    
+    public int getCallStatus() { 
+        if ( mCallController == null ) return 0; 
+        int status = mCallController.get(); 
+        Log.d(TAG, "getCallStatus="+status);
+        return status;
+    }
+   
+    public int getAntennaStatus() { 
+        if ( mAntennaController == null ) return 0; 
+        int status = mAntennaController.get(); 
+        Log.d(TAG, "getAntennaStatus="+status);
+        return status;
+    }
+    
+    public int getDataStatus() {  
+        if ( mDataController == null ) return 0; 
+        int status = mDataController.get(); 
+        Log.d(TAG, "getDataStatus="+status);
+        return status;
+    }
+    
+    public int getWifiStatus() { 
+        if ( mWifiController == null ) return 0; 
+        int status = mWifiController.get(); 
+        Log.d(TAG, "getWifiStatus="+status);
+        return status;
+    }
+    
+    public int getWirelessChargeStatus() { 
+        if ( mWirelessChargeController == null ) return 0; 
+        int status = mWirelessChargeController.get(); 
+        Log.d(TAG, "getWirelessChargeStatus="+status);
+        return status;
+    }
+    
+    public int getModeStatus() { 
+        if ( mLocationController == null ) return 0; 
+        int status = mLocationController.get(); 
+        Log.d(TAG, "getModeStatus="+status);
+        return status;
+    }
+    
+    public String getDateTime() { 
+        if ( mDateTimeController == null ) return null; 
+        String date = mDateTimeController.get();
+        Log.d(TAG, "getDateTime="+date);
+        return date;
+    } 
+    
+    public String getYearDateTime() { 
+        if ( mDateTimeController == null ) return null; 
+        String date = mDateTimeController.getYearDateTime();
+        Log.d(TAG, "getYearDateTime="+date);
+        return date;
+    } 
+    
+    public String getTimeType() { 
+        if ( mDateTimeController == null ) return null; 
+        String date = mDateTimeController.getTimeType();
+        Log.d(TAG, "getTimeType="+date);
+        return date;
+    } 
+    
+    public void openDateTimeSetting() {
+        if ( mContext == null ) return;
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
+        }
+        
+        if ( mPowerStateController != null && (mPowerStateController.get() 
+            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            Log.d(TAG, "Current Power Off"); 
+            return; 
+        }  
+        
+        if ( mRearCamera ) {
+            Log.d(TAG, "Current Rear Camera"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+            return;
+        }
+
+        if ( !OPEN_DATE_SETTING.equals("") ) {
+            Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
+            vrCloseRequest();
+            Intent intent = new Intent(OPEN_DATE_SETTING);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+        }
+    } 
+    
+    public BitmapParcelable getUserProfileImage() { 
+        if ( mUserProfileController == null ) return null; 
+        Log.d(TAG, "getUserProfileImage");
+        return new BitmapParcelable(mUserProfileController.get()); 
+    } 
+    
+    public void openUserProfileSetting() {
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
+        }
+        
+        if ( mPowerStateController != null && (mPowerStateController.get() 
+            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            Log.d(TAG, "Current Power Off"); 
+            return; 
+        }  
+        
+        if ( mRearCamera ) {
+            Log.d(TAG, "Current Rear Camera"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+            return;
+        }
+
+        if ( mBTCall ) {
+            Log.d(TAG, "Current BT Call"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_14845_ID));
+            return;
+        }
+
+        if ( mEmergencyCall || mBluelinkCall ) {
+            Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
+            return; 
+        }
+
+        if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
+            Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
+            vrCloseRequest();
+            Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+        }
+    } 
+
+    
     private boolean isUserAgreement() {
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
@@ -264,229 +495,10 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
 
-        try {
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onUserProfileInitialized();
-                callback.onDateTimeInitialized();
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
 
-    public boolean isPowerOff() {
-        if ( mPowerStateController == null ) return true;
-        int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
-        return false; 
-    }
-
-    public boolean isAVOff() {
-        if ( mPowerStateController == null ) return true;
-        int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.AV_OFF.ordinal() 
-            || state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
-        return false; 
-    }
-    
-    @Override
-    public boolean isSystemInitialized() throws RemoteException {
-        boolean init = false; 
-        if ( mCarExClient == null ) init = false;
-        else init = true;
-        Log.d(TAG, "isSystemInitialized="+init);
-        return init; 
-    }
-    @Override
-    public boolean isUserProfileInitialized() throws RemoteException {
-        boolean init = false; 
-        if ( mUserProfileController == null ) init = false;
-        else init = true;
-        Log.d(TAG, "isUserProfileInitialized="+init);
-        return init; 
-    }
-    @Override
-    public boolean isDateTimeInitialized() throws RemoteException {
-        boolean init = false; 
-        if ( mDateTimeController == null ) init = false;
-        else init = true;
-        Log.d(TAG, "isDateTimeInitialized="+init);
-        return init; 
-    }
-
-    @Override
-    public int getMuteStatus() throws RemoteException { 
-        if ( mMuteController == null ) return 0; 
-        int status = mMuteController.get();
-        Log.d(TAG, "getMuteStatus="+status);
-        return status;
-    }
-    @Override
-    public int getBLEStatus() throws RemoteException { 
-        if ( mBLEController == null ) return 0; 
-        int status = mBLEController.get(); 
-        Log.d(TAG, "getBLEStatus="+status);
-        return status;
-    }
-    @Override
-    public int getBTBatteryStatus() throws RemoteException { 
-        if ( mBTBatteryController == null ) return 0; 
-        int status = mBTBatteryController.get(); 
-        Log.d(TAG, "getBTBatteryStatus="+status);
-        return status;
-    }
-    @Override
-    public int getCallStatus() throws RemoteException { 
-        if ( mCallController == null ) return 0; 
-        int status = mCallController.get(); 
-        Log.d(TAG, "getCallStatus="+status);
-        return status;
-    }
-    @Override
-    public int getAntennaStatus() throws RemoteException { 
-        if ( mAntennaController == null ) return 0; 
-        int status = mAntennaController.get(); 
-        Log.d(TAG, "getAntennaStatus="+status);
-        return status;
-    }
-    @Override
-    public int getDataStatus() throws RemoteException {  
-        if ( mDataController == null ) return 0; 
-        int status = mDataController.get(); 
-        Log.d(TAG, "getDataStatus="+status);
-        return status;
-    }
-    @Override
-    public int getWifiStatus() throws RemoteException { 
-        if ( mWifiController == null ) return 0; 
-        int status = mWifiController.get(); 
-        Log.d(TAG, "getWifiStatus="+status);
-        return status;
-    }
-    @Override
-    public int getWirelessChargeStatus() throws RemoteException { 
-        if ( mWirelessChargeController == null ) return 0; 
-        int status = mWirelessChargeController.get(); 
-        Log.d(TAG, "getWirelessChargeStatus="+status);
-        return status;
-    }
-    @Override
-    public int getModeStatus() throws RemoteException { 
-        if ( mLocationController == null ) return 0; 
-        int status = mLocationController.get(); 
-        Log.d(TAG, "getModeStatus="+status);
-        return status;
-    }
-    @Override
-    public String getDateTime() throws RemoteException { 
-        if ( mDateTimeController == null ) return null; 
-        String date = mDateTimeController.get();
-        Log.d(TAG, "getDateTime="+date);
-        return date;
-    } 
-    @Override
-    public String getYearDateTime() throws RemoteException { 
-        if ( mDateTimeController == null ) return null; 
-        String date = mDateTimeController.getYearDateTime();
-        Log.d(TAG, "getYearDateTime="+date);
-        return date;
-    } 
-    @Override
-    public String getTimeType() throws RemoteException { 
-        if ( mDateTimeController == null ) return null; 
-        String date = mDateTimeController.getTimeType();
-        Log.d(TAG, "getTimeType="+date);
-        return date;
-    } 
-    @Override
-    public void openDateTimeSetting() throws RemoteException {
-        if ( mContext == null ) return;
-        if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
-            return; 
-        }
-        
-        if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
-            Log.d(TAG, "Current Power Off"); 
-            return; 
-        }  
-        
-        if ( mRearCamera ) {
-            Log.d(TAG, "Current Rear Camera"); 
-            OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
-            return;
-        }
-
-        if ( !OPEN_DATE_SETTING.equals("") ) {
-            Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
-            vrCloseRequest();
-            Intent intent = new Intent(OPEN_DATE_SETTING);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mContext.startActivityAsUser(intent, UserHandle.CURRENT);
-        }
-    } 
-    @Override
-    public BitmapParcelable getUserProfileImage() throws RemoteException { 
-        if ( mUserProfileController == null ) return null; 
-        Log.d(TAG, "getUserProfileImage");
-        return new BitmapParcelable(mUserProfileController.get()); 
-    } 
-    @Override
-    public void openUserProfileSetting() throws RemoteException {
-        if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
-            return; 
-        }
-        
-        if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
-            Log.d(TAG, "Current Power Off"); 
-            return; 
-        }  
-        
-        if ( mRearCamera ) {
-            Log.d(TAG, "Current Rear Camera"); 
-            OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
-            return;
-        }
-
-        if ( mBTCall ) {
-            Log.d(TAG, "Current BT Call"); 
-            OSDPopup.send(mContext, 
-                mContext.getResources().getString(R.string.STR_MESG_14845_ID));
-            return;
-        }
-
-        if ( mEmergencyCall || mBluelinkCall ) {
-            Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
-            return; 
-        }
-
-        if ( !OPEN_USERPROFILE_SETTING.equals("") ) {
-            Log.d(TAG, "openUserProfileSetting="+OPEN_USERPROFILE_SETTING);
-            vrCloseRequest();
-            Intent intent = new Intent(OPEN_USERPROFILE_SETTING);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mContext.startActivityAsUser(intent, UserHandle.CURRENT);
-        }
-    } 
-    @Override
-    public void registerSystemCallback(IStatusBarSystemCallback callback) throws RemoteException {
-        if ( callback == null ) return;
-        Log.d(TAG, "registerSystemCallback");
-        synchronized (mSystemCallbacks) {
-            mSystemCallbacks.add(callback); 
-        }
-    }
-    @Override
-    public void unregisterSystemCallback(IStatusBarSystemCallback callback) throws RemoteException {
-        if ( callback == null ) return;
-        Log.d(TAG, "unregisterSystemCallback");
-        synchronized (mSystemCallbacks) {
-            mSystemCallbacks.remove(callback); 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onUserProfileInitialized();
+            callback.onDateTimeInitialized();
         }
     }
 
@@ -504,12 +516,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(String date) {
             Log.d(TAG, "onDateTimeChanged="+date);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onDateTimeChanged(date); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -519,12 +527,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onTimeTypeChanged(String type) {
             Log.d(TAG, "onTimeTypeChanged="+type);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onTimeTypeChanged(type); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -533,12 +537,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Bitmap bitmap) {
             Log.d(TAG, "onUserChanged");
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onUserChanged(new BitmapParcelable(bitmap)); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -548,12 +548,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onAntennaStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onAntennaStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -562,12 +558,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onBLEStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onBLEStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -576,12 +568,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onBTBatteryStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onBTBatteryStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -590,12 +578,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onCallStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onCallStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -604,12 +588,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onMuteStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onMuteStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -618,12 +598,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onWirelessChargeStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onWirelessChargeStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -632,12 +608,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onModeStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onModeStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -646,12 +618,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onWifiStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onWifiStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 
@@ -660,12 +628,8 @@ public class StatusBarSystem extends IStatusBarSystem.Stub {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onDataStatusChanged="+status);
-            for ( IStatusBarSystemCallback callback : mSystemCallbacks ) {
-                try {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                     callback.onDataStatusChanged(status); 
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }; 

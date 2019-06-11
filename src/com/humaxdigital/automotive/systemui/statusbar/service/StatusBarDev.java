@@ -1,12 +1,11 @@
 package com.humaxdigital.automotive.systemui.statusbar.service;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.content.Context;
 import android.util.Log;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevCommandsServer;
 
-public class StatusBarDev extends IStatusBarDev.Stub {
+public class StatusBarDev {
     private static final String TAG = "StatusBarDev";
     private DevCommandsServer mDevCommandsServer = null;
 
@@ -21,8 +20,7 @@ public class StatusBarDev extends IStatusBarDev.Stub {
         mDevCommandsServer = null;
     }
 
-    @Override
-    public Bundle invokeDevCommand(String command, Bundle args) throws RemoteException {
+    public Bundle invokeDevCommand(String command, Bundle args) {
         Log.d(TAG, "invokeDevCommand");
         if ( mDevCommandsServer == null ) return null;
         return mDevCommandsServer.invokeDevCommand(command, args);

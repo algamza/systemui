@@ -7,7 +7,6 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.RemoteException;
 import android.os.Handler;
 import android.widget.FrameLayout;
 
@@ -26,8 +25,7 @@ import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImgTimeout;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextDec;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextImg;
 
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarClimate;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarClimateCallback; 
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarClimate;
 
 public class ClimateController {
     static final String TAG = "ClimateController"; 
@@ -41,7 +39,7 @@ public class ClimateController {
     private enum AirCleaning { ON, OFF, GREEN, RED }; 
     private enum FrontDefogState { ON, OFF }; 
 
-    private IStatusBarClimate mService; 
+    private StatusBarClimate mService; 
     private Context mContext;
     private Resources mRes;
     private View mClimate;
@@ -89,34 +87,21 @@ public class ClimateController {
         initView();
     }
 
-    public void init(IStatusBarClimate service) {
+    public void init(StatusBarClimate service) {
         mService = service; 
-        try {
-            if ( mService != null ) {
-                mService.registerClimateCallback(mClimateCallback); 
-                if ( mService.isInitialized() ) update(); 
-            }
-            
-        } catch( RemoteException e ) {
-            e.printStackTrace();
+        if ( mService != null ) {
+            mService.registerClimateCallback(mClimateCallback); 
+            if ( mService.isInitialized() ) update(); 
         }
     }
 
     public void deinit() {
-        try {
-            if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
     }
 
     private void openClimateSetting() {
         if ( mService == null ) return; 
-        try {
-            mService.openClimateSetting();
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        mService.openClimateSetting();
     }
 
     private void initView() {
@@ -255,12 +240,8 @@ public class ClimateController {
         if ( (mFanSpeed != null) 
             && ( (mFanSpeedState == FanSpeedState.STEPOFF) 
             || (mFanSpeedState == FanSpeedState.STEP0) ) ) {
-            try {
-                if ( mService != null )
-                    mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
+            if ( mService != null )
+                mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
         }
     }
 
@@ -269,23 +250,19 @@ public class ClimateController {
 
         updateDisable(false);
 
-        try {
-            mIGNOn = mService.getIGNStatus() == 1 ? true:false;
-            mIsOperateOn = mService.isOperateOn(); 
-            mTempDRState = mService.getDRTemperature();
-            mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
-            mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
-            mIntakeState = mService.getAirCirculationState() ? IntakeState.ON:IntakeState.OFF; 
-            mFanSpeedState = FanSpeedState.values()[mService.getBlowerSpeed()]; 
-            mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
-            mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
-            mTempPSState = mService.getPSTemperature();
-            mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
-            mModeOff = mService.isModeOff(); 
-            mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        mIGNOn = mService.getIGNStatus() == 1 ? true:false;
+        mIsOperateOn = mService.isOperateOn(); 
+        mTempDRState = mService.getDRTemperature();
+        mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
+        mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
+        mIntakeState = mService.getAirCirculationState() ? IntakeState.ON:IntakeState.OFF; 
+        mFanSpeedState = FanSpeedState.values()[mService.getBlowerSpeed()]; 
+        mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
+        mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
+        mTempPSState = mService.getPSTemperature();
+        mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
+        mModeOff = mService.isModeOff(); 
+        mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
 
         if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
         if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
@@ -436,12 +413,9 @@ public class ClimateController {
                 //mAC.update(mACState.ordinal());
             }
 
-            try {
-                if ( mService != null ) 
-                    mService.setAirConditionerState(mACState==ACState.ON?false:true);
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
+            if ( mService != null ) 
+                mService.setAirConditionerState(mACState==ACState.ON?false:true);
+
         }
     }; 
 
@@ -457,12 +431,8 @@ public class ClimateController {
                 //mIntake.update(mIntakeState.ordinal());
             }
 
-            try {
-                if ( mService != null ) 
-                    mService.setAirCirculationState(mIntakeState==IntakeState.ON?false:true);
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
+            if ( mService != null ) 
+                mService.setAirCirculationState(mIntakeState==IntakeState.ON?false:true);
         }
     }; 
 
@@ -483,12 +453,8 @@ public class ClimateController {
                 
             //mFanDirection.update(mFanDirectionState.ordinal()); 
 
-            try {
-                if ( mService != null ) 
-                    mService.setFanDirection(next);
-            } catch( RemoteException e ) {
-                e.printStackTrace();
-            }
+            if ( mService != null ) 
+                mService.setFanDirection(next);
         }
     }; 
 
@@ -508,18 +474,14 @@ public class ClimateController {
             }
             */
 
-            try {
-                if ( mService != null ) {
-                    if ( mAirCleaningState == AirCleaning.OFF ) {
-                        mAirCleaningStartFromUI = true; 
-                        mService.setAirCleaningState(AirCleaning.ON.ordinal());
-                    } else {
-                        mAirCleaningStartFromUI = false; 
-                        mService.setAirCleaningState(AirCleaning.OFF.ordinal());
-                    }
+            if ( mService != null ) {
+                if ( mAirCleaningState == AirCleaning.OFF ) {
+                    mAirCleaningStartFromUI = true; 
+                    mService.setAirCleaningState(AirCleaning.ON.ordinal());
+                } else {
+                    mAirCleaningStartFromUI = false; 
+                    mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                 }
-            } catch( RemoteException e ) {
-                e.printStackTrace();
             }
         }
     }; 
@@ -545,26 +507,21 @@ public class ClimateController {
                 });
                 
             } else if ( status == AirCleaning.GREEN.ordinal() ) {
-                //mAirCleaningState = AirCleaning.OFF; 
-                // TODO: need to check CAN scenario 
-                //try {
-                    if ( mService != null ) {
-                        if ( mAirCleaningStartFromUI ) {
-                            mAirCleaningStartFromUI = false; 
-                            // TODO: check can scenario 
-                            //mService.setAirCleaningState(AirCleaning.OFF.ordinal());
-                        }
+                if ( mService != null ) {
+                    if ( mAirCleaningStartFromUI ) {
+                        mAirCleaningStartFromUI = false; 
+                        // TODO: check can scenario 
+                        //mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                     }
-                //} catch( RemoteException e ) {
-                    //e.printStackTrace();
-                //}
+                }
             }
         }
     }; 
 
-    private final IStatusBarClimateCallback.Stub mClimateCallback = new IStatusBarClimateCallback.Stub() {
-                
-        public void onInitialized() throws RemoteException {
+    private final StatusBarClimate.StatusBarClimateCallback mClimateCallback 
+        = new StatusBarClimate.StatusBarClimateCallback() {
+        @Override
+        public void onInitialized() {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -572,7 +529,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onDRTemperatureChanged(float temp) throws RemoteException {
+        @Override
+        public void onDRTemperatureChanged(float temp) {
             if ( mTempDR == null ) return; 
             mTempDRState = temp;
             if ( mHandler == null ) return; 
@@ -583,7 +541,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onDRSeatStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onDRSeatStatusChanged(int status) {
             if ( mSeatDR == null ) return;
             mSeatDRState = SeatState.values()[status]; 
             if ( mHandler == null ) return; 
@@ -594,7 +553,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onAirCirculationChanged(boolean isOn) throws RemoteException {
+        @Override
+        public void onAirCirculationChanged(boolean isOn) {
             if ( mIntake == null ) return; 
             mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
             if ( mHandler == null ) return; 
@@ -605,7 +565,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onAirConditionerChanged(boolean isOn) throws RemoteException {
+        @Override
+        public void onAirConditionerChanged(boolean isOn) {
             if ( mAC == null ) return; 
             mACState = isOn?ACState.ON:ACState.OFF;
             mHandler.post(new Runnable() {
@@ -615,7 +576,8 @@ public class ClimateController {
                 }
             });    
         }
-        public void onAirCleaningChanged(int status) throws RemoteException {
+        @Override
+        public void onAirCleaningChanged(int status) {
             if ( mAirCleaning == null ) return; 
             mAirCleaningState = AirCleaning.values()[status]; 
             if ( mAirCleaningState == AirCleaning.ON ) {
@@ -638,7 +600,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onFanDirectionChanged(int direction) throws RemoteException {
+        @Override
+        public void onFanDirectionChanged(int direction) {
             if ( mFanDirection == null ) return; 
             mFanDirectionState = FanDirectionState.values()[direction]; 
             if ( mHandler == null ) return; 
@@ -649,7 +612,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onBlowerSpeedChanged(int status) throws RemoteException {
+        @Override
+        public void onBlowerSpeedChanged(int status) {
             if ( mFanSpeed == null ) return; 
             mFanSpeedState = FanSpeedState.values()[status]; 
             if ( mHandler == null ) return; 
@@ -666,7 +630,8 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onPSSeatStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onPSSeatStatusChanged(int status) {
             if ( mSeatPS == null ) return; 
             mSeatPSState = SeatState.values()[status]; 
             if ( mHandler == null ) return; 
@@ -677,7 +642,7 @@ public class ClimateController {
                 }
             }); 
         }
-        public void onPSTemperatureChanged(float temp) throws RemoteException {
+        public void onPSTemperatureChanged(float temp) {
             if ( mTempPS == null ) return; 
             mTempPSState = temp;
             if ( mHandler == null ) return; 
@@ -689,7 +654,7 @@ public class ClimateController {
             }); 
         }
 
-        public void onFrontDefogStatusChanged(int state) throws RemoteException {
+        public void onFrontDefogStatusChanged(int state) {
             mFrontDefogState = FrontDefogState.values()[state]; 
             if ( mHandler == null ) return; 
             if ( mFrontDefogState == FrontDefogState.ON ) {
@@ -709,7 +674,7 @@ public class ClimateController {
             }
         }
 
-        public void onModeOffChanged(boolean off) throws RemoteException {
+        public void onModeOffChanged(boolean off) {
             if ( mHandler == null ) return; 
 
             mHandler.post(new Runnable() {
@@ -720,7 +685,7 @@ public class ClimateController {
             }); 
         }
 
-        public void onIGNOnChanged(boolean on) throws RemoteException {
+        public void onIGNOnChanged(boolean on) {
             if ( mHandler == null ) return; 
 
             mHandler.post(new Runnable() {
@@ -731,7 +696,7 @@ public class ClimateController {
             }); 
         }
 
-        public void onOperateOnChanged(boolean on) throws RemoteException {
+        public void onOperateOnChanged(boolean on) {
             if ( mHandler == null ) return; 
 
             mHandler.post(new Runnable() {
@@ -742,7 +707,7 @@ public class ClimateController {
             }); 
         }
 
-        public void onRearCameraOn(boolean on) throws RemoteException {
+        public void onRearCameraOn(boolean on) {
             // Not implement
         }
     };

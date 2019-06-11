@@ -3,10 +3,10 @@ package com.humaxdigital.automotive.systemui.statusbar.controllers;
 import android.content.Context;
 import android.view.View;
 
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 
 public abstract class ControllerManagerBase {
     public void create(Context context, View panel) {}
-    public void init(IStatusBarService service) {}
+    public void init(StatusBarService service) {}
     public void deinit() {}
 }

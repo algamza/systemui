@@ -23,7 +23,7 @@ import android.car.CarNotConnectedException;
 import android.extension.car.CarTMSManager;
 import android.extension.car.settings.CarExtraSettings;
 
-import android.util.Slog;
+import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.statusbar.service.CarExtensionClient.CarExClientListener;
 
@@ -37,7 +37,7 @@ public class StatusBarService extends Service {
     private Context mContext = this; 
     private DataStore mDataStore = new DataStore();
     private CarExtensionClient mCarExClient = null;
-    private StatusBarServiceBinder mStatusBarServiceBinder = null; 
+    private final Binder mStatusBarServiceBinder = new StatusBarServiceBinder();  
     private StatusBarClimate mStatusBarClimate = null; 
     private StatusBarSystem mStatusBarSystem = null; 
     private StatusBarDev mStatusBarDev = null;
@@ -53,16 +53,21 @@ public class StatusBarService extends Service {
     private boolean mEmergencyCall = false; 
     private boolean mBluelinkCall = false; 
 
+    public class StatusBarServiceBinder extends Binder {
+        public StatusBarService getService() {
+            return StatusBarService.this;
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        Slog.d(TAG, "onBind"); 
+        Log.d(TAG, "onBind"); 
         return mStatusBarServiceBinder;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mStatusBarServiceBinder = new StatusBarServiceBinder(); 
         if ( mStatusBarServiceBinder != null ) {
             this.createStatusBarClimate();
             this.createStatusBarSystem();
@@ -77,10 +82,12 @@ public class StatusBarService extends Service {
     public void onDestroy() {
         unregistReceiver();
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
-        if ( mStatusBarServiceBinder != null ) {
-            mStatusBarServiceBinder.destroy();
-            mStatusBarServiceBinder = null;
-        }
+        if ( mStatusBarClimate != null ) mStatusBarClimate.destroy();
+        if ( mStatusBarSystem != null ) mStatusBarSystem.destroy();
+        if ( mStatusBarDev != null ) mStatusBarDev.destroy();
+        mStatusBarClimate = null;
+        mStatusBarSystem = null;
+        mStatusBarDev = null;
         mTelephony = null;
 
         super.onDestroy();
@@ -91,21 +98,73 @@ public class StatusBarService extends Service {
         return START_STICKY;
     }
 
+    public StatusBarClimate getStatusBarClimate() {
+        Log.d(TAG, "getStatusBarClimate");
+        return mStatusBarClimate;
+    }
 
-    public void createStatusBarClimate() {
-        Slog.d(TAG, "createStatusBarClimate");
+    public StatusBarSystem getStatusBarSystem() {
+        Log.d(TAG, "getStatusBarSystem");
+        return mStatusBarSystem;
+    }
+
+    public StatusBarDev getStatusBarDev() {
+        Log.d(TAG, "getStatusBarDev");
+        return mStatusBarDev;
+    }
+
+    public boolean isUserAgreement() {
+        mUserAgreement = _isUserAgreement();
+        Log.d(TAG, "isUserAgreement="+mUserAgreement);
+        return mUserAgreement; 
+    }
+
+    public boolean isFrontCamera() {
+        Log.d(TAG, "isFrontCamera="+mFrontCamera);
+        return mFrontCamera; 
+    }
+
+    public boolean isRearCamera() {
+        Log.d(TAG, "isRearCamera="+mRearCamera);
+        return mRearCamera; 
+    }
+
+    public boolean isPowerOff() {
+        if ( mStatusBarSystem == null ) return false;
+        mPowerOff = mStatusBarSystem.isPowerOff();
+        Log.d(TAG, "isPowerOff="+mPowerOff);  
+        return mPowerOff; 
+    }
+
+    public boolean isEmergencyCall() {
+        Log.d(TAG, "isEmergencyCall="+mEmergencyCall);
+        return mEmergencyCall; 
+    }
+
+    public boolean isBluelinkCall() {
+        Log.d(TAG, "isBluelinkCall="+mBluelinkCall);
+        return mBluelinkCall; 
+    }
+
+    public boolean isBTCall() {
+        Log.d(TAG, "isBTCall="+mBTCall);
+        return mBTCall; 
+    }
+
+    private void createStatusBarClimate() {
+        Log.d(TAG, "createStatusBarClimate");
         if ( mStatusBarClimate == null ) 
             mStatusBarClimate = new StatusBarClimate(mContext, mDataStore);
     }
 
-    public void createStatusBarSystem() {
-        Slog.d(TAG, "createStatusBarSystem");
+    private void createStatusBarSystem() {
+        Log.d(TAG, "createStatusBarSystem");
         if ( mStatusBarSystem == null ) 
             mStatusBarSystem = new StatusBarSystem(mContext, mDataStore);
     }
 
-    public void createStatusBarDev() {
-        Slog.d(TAG, "createStatusBarDev");
+    private void createStatusBarDev() {
+        Log.d(TAG, "createStatusBarDev");
         if ( mStatusBarDev == null ) 
             mStatusBarDev = new StatusBarDev(mContext);
     }
@@ -116,81 +175,6 @@ public class StatusBarService extends Service {
             CarExtraSettings.Global.FALSE);   
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
-    }
-
-    private final class StatusBarServiceBinder extends IStatusBarService.Stub {
-        public StatusBarServiceBinder() {
-        }
-
-        public void destroy() {
-            if ( mStatusBarClimate != null ) mStatusBarClimate.destroy();
-            if ( mStatusBarSystem != null ) mStatusBarSystem.destroy();
-            if ( mStatusBarDev != null ) mStatusBarDev.destroy();
-            mStatusBarClimate = null;
-            mStatusBarSystem = null;
-            mStatusBarDev = null;
-        }
-
-        @Override
-        public IStatusBarClimate getStatusBarClimate() {
-            Slog.d(TAG, "getStatusBarClimate");
-            return mStatusBarClimate;
-        }
-        @Override
-        public IStatusBarSystem getStatusBarSystem() {
-            Slog.d(TAG, "getStatusBarSystem");
-            return mStatusBarSystem;
-        }
-        @Override
-        public IStatusBarDev getStatusBarDev() {
-            Slog.d(TAG, "getStatusBarDev");
-            return mStatusBarDev;
-        }
-
-        @Override
-        public boolean isUserAgreement() {
-            mUserAgreement = _isUserAgreement();
-            Slog.d(TAG, "isUserAgreement="+mUserAgreement);
-            return mUserAgreement; 
-        }
-    
-        @Override
-        public boolean isFrontCamera() {
-            Slog.d(TAG, "isFrontCamera="+mFrontCamera);
-            return mFrontCamera; 
-        }
-    
-        @Override
-        public boolean isRearCamera() {
-            Slog.d(TAG, "isRearCamera="+mRearCamera);
-            return mRearCamera; 
-        }
-    
-        @Override
-        public boolean isPowerOff() {
-            if ( mStatusBarSystem == null ) return false;
-            mPowerOff = mStatusBarSystem.isPowerOff();
-            Slog.d(TAG, "isPowerOff="+mPowerOff);  
-            return mPowerOff; 
-        }
-    
-        @Override
-        public boolean isEmergencyCall() {
-            Slog.d(TAG, "isEmergencyCall="+mEmergencyCall);
-            return mEmergencyCall; 
-        }
-    
-        @Override
-        public boolean isBluelinkCall() {
-            Slog.d(TAG, "isBluelinkCall="+mBluelinkCall);
-            return mBluelinkCall; 
-        }
-    
-        @Override
-        public boolean isBTCall() {
-            Slog.d(TAG, "isBTCall="+mBTCall);
-            return mBTCall; 
-        }
     }
 
     private void createCarExClient() {
@@ -220,7 +204,7 @@ public class StatusBarService extends Service {
     }; 
 
     private void registReceiver() {
-        Slog.d(TAG, "registReceiver");
+        Log.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
         filter.addAction(CAMERA_START);
         filter.addAction(CAMERA_STOP);
@@ -230,7 +214,7 @@ public class StatusBarService extends Service {
     }
 
     private void unregistReceiver() {
-        Slog.d(TAG, "unregistReceiver");
+        Log.d(TAG, "unregistReceiver");
         if ( mContext != null ) mContext.unregisterReceiver(mReceiver);
     }
 
@@ -239,13 +223,13 @@ public class StatusBarService extends Service {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if ( action == null || mStatusBarClimate == null || mStatusBarSystem == null ) return;
-            Slog.d(TAG, "mReceiver="+action);
+            Log.d(TAG, "mReceiver="+action);
             switch(action) {
                 case CAMERA_START: {
                     Bundle extras = intent.getExtras();
                     if ( extras == null ) return;
                     if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
-                        Slog.d(TAG, "CAM_DISPLAY_MODE=REAR_CAM_MODE");
+                        Log.d(TAG, "CAM_DISPLAY_MODE=REAR_CAM_MODE");
                         mRearCamera = true;
                         mFrontCamera = false;
                         mStatusBarClimate.onRearCamera(true); 
@@ -253,7 +237,7 @@ public class StatusBarService extends Service {
                         mStatusBarClimate.onFrontCamera(false); 
                         mStatusBarSystem.onFrontCamera(false);
                     } else {
-                        Slog.d(TAG, "CAM_DISPLAY_MODE=FRONT_CAM_MODE");
+                        Log.d(TAG, "CAM_DISPLAY_MODE=FRONT_CAM_MODE");
                         mRearCamera = false;
                         mFrontCamera = true;
                         mStatusBarClimate.onRearCamera(false); 
@@ -264,7 +248,7 @@ public class StatusBarService extends Service {
                     break;
                 }
                 case CAMERA_STOP: {
-                    Slog.d(TAG, "CAMERA_STOP");
+                    Log.d(TAG, "CAMERA_STOP");
                     mRearCamera = false;
                     mFrontCamera = false;
                     mStatusBarClimate.onFrontCamera(false); 
@@ -275,7 +259,7 @@ public class StatusBarService extends Service {
                 }
                 case TelephonyManager.ACTION_PHONE_STATE_CHANGED: {
                     String phone_state = intent.getExtras().getString(TelephonyManager.EXTRA_STATE);
-                    Slog.d(TAG, "ACTION_PHONE_STATE_CHANGED="+phone_state);
+                    Log.d(TAG, "ACTION_PHONE_STATE_CHANGED="+phone_state);
                     if ( phone_state == null ) break;
                     boolean btcall = isBTCalling();
                     mBTCall = btcall; 
@@ -305,14 +289,14 @@ public class StatusBarService extends Service {
         new CarTMSManager.CarTMSEventListener(){
         @Override
         public void onEmergencyMode(boolean enabled) {
-            Slog.d(TAG, "onEmergencyMode = "+enabled); 
+            Log.d(TAG, "onEmergencyMode = "+enabled); 
             mEmergencyCall = enabled; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.onEmergencyCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onEmergencyCall(enabled); 
         }
         @Override
         public void onBluelinkCallMode(boolean enabled) {
-            Slog.d(TAG, "onBluelinkCallMode = "+enabled); 
+            Log.d(TAG, "onBluelinkCallMode = "+enabled); 
             mBluelinkCall = enabled; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.onBluelinkCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onBluelinkCall(enabled); 

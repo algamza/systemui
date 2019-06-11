@@ -1,6 +1,5 @@
 package com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c;
 
-import android.os.RemoteException;
 import android.os.Handler;
 
 import android.content.Context;
@@ -12,8 +11,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.DateView;
 
 import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarSystem;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarSystemCallback; 
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 
 import android.util.Log; 
 
@@ -32,7 +30,7 @@ public class DateController {
     private String mTextTime = "";
     private String mTextApm = "";
     
-    private IStatusBarSystem mService; 
+    private StatusBarSystem mService; 
     private Boolean mIsValidTime = true; 
     private Handler mHandler; 
 
@@ -46,15 +44,12 @@ public class DateController {
         initMonthEng();
     }
 
-    public void init(IStatusBarSystem service) {
+    public void init(StatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
-        try {
-            mService.registerSystemCallback(mDateTimeCallback); 
-            if ( mService.isDateTimeInitialized() ) initView(); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+
+        mService.registerSystemCallback(mDateTimeCallback); 
+        if ( mService.isDateTimeInitialized() ) initView(); 
     }
 
     private void initMonthEng() {
@@ -74,11 +69,7 @@ public class DateController {
 
     public void deinit() {
         if ( mService == null ) return;
-        try {
-            mService.unregisterSystemCallback(mDateTimeCallback); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        mService.unregisterSystemCallback(mDateTimeCallback); 
     }
 
     private void initView() {
@@ -87,13 +78,6 @@ public class DateController {
             @Override
             public void onClick(View view) {
                 if ( mService == null ) return;
-                //try {
-                //    if ( mIsValidTime ) 
-                //        Log.d(TAG, "open date setting");  
-                        //mService.openDateTimeSetting(); 
-                //} catch( RemoteException e ) {
-                //    e.printStackTrace();
-                //}
             }
         });
 
@@ -107,11 +91,7 @@ public class DateController {
 
     private void updateDateTime() {
         String format = ""; 
-        try {
-            format = mService.getYearDateTime(); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        format = mService.getYearDateTime(); 
         Log.d(TAG, "updateDateTime="+format); 
         String[] arr = format.split(":");
         if ( arr.length != 6 ) return;
@@ -131,12 +111,10 @@ public class DateController {
         super.finalize();
     }
 
-    private final IStatusBarSystemCallback.Stub mDateTimeCallback = new IStatusBarSystemCallback.Stub() {
-        public void onSystemInitialized() throws RemoteException {
-        }
-        public void onUserProfileInitialized() throws RemoteException {
-        }
-        public void onDateTimeInitialized() throws RemoteException {
+    private final StatusBarSystem.StatusBarSystemCallback mDateTimeCallback 
+        = new StatusBarSystem.StatusBarSystemCallback() {
+        @Override
+        public void onDateTimeInitialized() {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -144,26 +122,8 @@ public class DateController {
                 }
             });  
         }
-        public void onMuteStatusChanged(int status) throws RemoteException {
-        }
-        public void onBLEStatusChanged(int status) throws RemoteException {
-        }
-        public void onBTBatteryStatusChanged(int status) throws RemoteException {
-        }
-        public void onCallStatusChanged(int status) throws RemoteException {
-        }
-        public void onAntennaStatusChanged(int status) throws RemoteException {
-        }
-        public void onDataStatusChanged(int status) throws RemoteException {
-        }
-        public void onWifiStatusChanged(int status) throws RemoteException {
-        }
-        public void onWirelessChargeStatusChanged(int status) throws RemoteException {
-        }
-        public void onModeStatusChanged(int status) throws RemoteException {
-        }
         @Override
-        public void onDateTimeChanged(String time) throws RemoteException {
+        public void onDateTimeChanged(String time) {
             if ( mHandler == null ) return; 
             Log.d(TAG, "onDateTimeChanged:"+time); 
             mHandler.post(new Runnable() {
@@ -175,7 +135,7 @@ public class DateController {
             }); 
         }
         @Override
-        public void onTimeTypeChanged(String type) throws RemoteException {
+        public void onTimeTypeChanged(String type) {
             if ( mHandler == null ) return; 
             Log.d(TAG, "onTimeTypeChanged:"+type); 
             mHandler.post(new Runnable() {
@@ -185,8 +145,6 @@ public class DateController {
                     updateUI();
                 }
             }); 
-        }
-        public void onUserChanged(BitmapParcelable data) throws RemoteException {
         }
     };
 }

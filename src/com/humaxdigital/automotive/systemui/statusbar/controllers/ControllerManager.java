@@ -1,12 +1,11 @@
 package com.humaxdigital.automotive.systemui.statusbar.controllers;
 
-import android.os.RemoteException;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
 
 import com.humaxdigital.automotive.systemui.R;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarService;
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 
 import java.util.ArrayList;
 
@@ -27,16 +26,12 @@ public class ControllerManager extends ControllerManagerBase {
     }
 
     @Override
-    public void init(IStatusBarService service) {
+    public void init(StatusBarService service) {
         if ( service == null ) return;
-        try {
-            if ( mClimateController != null ) mClimateController.init(service.getStatusBarClimate()); 
-            if ( mDataController != null ) mDataController.init(service.getStatusBarSystem()); 
-            if ( mSystemController != null ) mSystemController.init(service.getStatusBarSystem()); 
-            if ( mUserProfileController != null ) mUserProfileController.init(service.getStatusBarSystem()); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        if ( mClimateController != null ) mClimateController.init(service.getStatusBarClimate()); 
+        if ( mDataController != null ) mDataController.init(service.getStatusBarSystem()); 
+        if ( mSystemController != null ) mSystemController.init(service.getStatusBarSystem()); 
+        if ( mUserProfileController != null ) mUserProfileController.init(service.getStatusBarSystem()); 
     }
 
     @Override

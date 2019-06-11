@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.os.RemoteException;
 import android.os.Build; 
 import android.os.Handler;
 
@@ -17,8 +16,7 @@ import com.humaxdigital.automotive.systemui.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.SystemView;
 
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarSystem;
-import com.humaxdigital.automotive.systemui.statusbar.service.IStatusBarSystemCallback; 
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
 
 import java.util.ArrayList;
@@ -56,7 +54,7 @@ public class SystemStatusController {
     private SystemView mLocationSharing;
     private final List<SystemView> mSystemViews = new ArrayList<>();
 
-    private IStatusBarSystem mService; 
+    private StatusBarSystem mService; 
 
     public SystemStatusController(Context context, View view) {
         if ( (view == null) || (context == null) ) return;
@@ -67,23 +65,15 @@ public class SystemStatusController {
         initView();
     }
 
-    public void init(IStatusBarSystem service) {
+    public void init(StatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
-        try {
-            mService.registerSystemCallback(mSystemCallback); 
-            if ( mService.isSystemInitialized() ) fetch(); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        mService.registerSystemCallback(mSystemCallback); 
+        if ( mService.isSystemInitialized() ) fetch(); 
     }
 
     public void deinit() {
-        try {
-            if ( mService != null ) mService.unregisterSystemCallback(mSystemCallback); 
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        if ( mService != null ) mService.unregisterSystemCallback(mSystemCallback); 
     }
 
     @Override
@@ -209,19 +199,15 @@ public class SystemStatusController {
 
     private void fetch() {
         if ( mService == null ) return; 
-        try {
-            updateMute(mService.getMuteStatus());
-            if ( mBle != null ) mBle.update(BLEStatus.values()[mService.getBLEStatus()].ordinal());
-            if ( mBtBattery != null ) mBtBattery.update(BTBatteryStatus.values()[mService.getBTBatteryStatus()].ordinal());
-            if ( mPhone != null ) mPhone.update(CallStatus.values()[mService.getCallStatus()].ordinal());
-            if ( mAntenna != null ) mAntenna.update(AntennaStatus.values()[mService.getAntennaStatus()].ordinal());
-            if ( mPhoneData != null ) mPhoneData.update(DataStatus.values()[mService.getDataStatus()].ordinal());
-            if ( mWirelessCharging != null ) mWirelessCharging.update(WirelessChargeStatus.values()[mService.getWirelessChargeStatus()].ordinal());
-            if ( mWifi != null ) mWifi.update(WifiStatus.values()[mService.getWifiStatus()].ordinal());
-            if ( mLocationSharing != null ) mLocationSharing.update(ModeStatus.values()[mService.getModeStatus()].ordinal());
-        } catch( RemoteException e ) {
-            e.printStackTrace();
-        }
+        updateMute(mService.getMuteStatus());
+        if ( mBle != null ) mBle.update(BLEStatus.values()[mService.getBLEStatus()].ordinal());
+        if ( mBtBattery != null ) mBtBattery.update(BTBatteryStatus.values()[mService.getBTBatteryStatus()].ordinal());
+        if ( mPhone != null ) mPhone.update(CallStatus.values()[mService.getCallStatus()].ordinal());
+        if ( mAntenna != null ) mAntenna.update(AntennaStatus.values()[mService.getAntennaStatus()].ordinal());
+        if ( mPhoneData != null ) mPhoneData.update(DataStatus.values()[mService.getDataStatus()].ordinal());
+        if ( mWirelessCharging != null ) mWirelessCharging.update(WirelessChargeStatus.values()[mService.getWirelessChargeStatus()].ordinal());
+        if ( mWifi != null ) mWifi.update(WifiStatus.values()[mService.getWifiStatus()].ordinal());
+        if ( mLocationSharing != null ) mLocationSharing.update(ModeStatus.values()[mService.getModeStatus()].ordinal());
     }
 
     private void updateMute(int state) {
@@ -238,8 +224,10 @@ public class SystemStatusController {
         }
     }
 
-    private final IStatusBarSystemCallback.Stub mSystemCallback = new IStatusBarSystemCallback.Stub() {
-        public void onSystemInitialized() throws RemoteException {
+    private final StatusBarSystem.StatusBarSystemCallback mSystemCallback 
+        = new StatusBarSystem.StatusBarSystemCallback() {
+        @Override
+        public void onSystemInitialized() {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -247,11 +235,8 @@ public class SystemStatusController {
                 }
             });  
         }
-        public void onUserProfileInitialized() throws RemoteException {
-        }
-        public void onDateTimeInitialized() throws RemoteException {
-        }
-        public void onMuteStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onMuteStatusChanged(int status) {
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
@@ -260,7 +245,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onBLEStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onBLEStatusChanged(int status) {
             if ( mBle == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -270,7 +256,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onBTBatteryStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onBTBatteryStatusChanged(int status) {
             if ( mBtBattery == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -280,7 +267,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onCallStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onCallStatusChanged(int status) {
             if ( mPhone == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -290,7 +278,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onAntennaStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onAntennaStatusChanged(int status) {
             if ( mAntenna == null ) return;
             if ( mHandler == null ) return;             
             mHandler.post(new Runnable() {
@@ -301,7 +290,8 @@ public class SystemStatusController {
             }); 
             
         }
-        public void onDataStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onDataStatusChanged(int status) {
             if ( mPhoneData == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -311,7 +301,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onWifiStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onWifiStatusChanged(int status) {
             if ( mWifi == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -321,7 +312,8 @@ public class SystemStatusController {
                 }
             }); 
         }
-        public void onWirelessChargeStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onWirelessChargeStatusChanged(int status) {
             if ( mWirelessCharging == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -332,7 +324,8 @@ public class SystemStatusController {
             }); 
             
         }
-        public void onModeStatusChanged(int status) throws RemoteException {
+        @Override
+        public void onModeStatusChanged(int status) {
             if ( mLocationSharing == null ) return;
             if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
@@ -341,12 +334,6 @@ public class SystemStatusController {
                     mLocationSharing.update(ModeStatus.values()[status].ordinal());
                 }
             }); 
-        }
-        public void onDateTimeChanged(String time) throws RemoteException {
-        }
-        public void onTimeTypeChanged(String type) throws RemoteException {
-        }
-        public void onUserChanged(BitmapParcelable bitmap) throws RemoteException {
         }
     };
 }
