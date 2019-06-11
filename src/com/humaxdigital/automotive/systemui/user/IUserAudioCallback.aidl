@@ -1,7 +1,7 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 oneway interface IUserAudioCallback {
-    void onAudioMuteChanged(boolean mute); 
     void onBluetoothMicMuteChanged(boolean mute); 
     void onNavigationChanged(boolean mute); 
+    void onMasterMuteChanged(boolean mute); 
 }

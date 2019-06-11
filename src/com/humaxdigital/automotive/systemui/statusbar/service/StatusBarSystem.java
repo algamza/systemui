@@ -23,11 +23,11 @@ import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.util.OSDPopup; 
-import com.humaxdigital.automotive.systemui.statusbar.user.PerUserService;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserService;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.user.PerUserService;
+import com.humaxdigital.automotive.systemui.user.IUserService;
+import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
 
 public class StatusBarSystem {
     private static final String TAG = "StatusBarSystem";

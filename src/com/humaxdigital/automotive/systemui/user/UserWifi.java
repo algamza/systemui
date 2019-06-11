@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 import android.os.RemoteException;
 
@@ -69,6 +69,12 @@ public class UserWifi extends IUserWifi.Stub {
         boolean is_enable = mManager.isWifiEnabled();
         Log.d(TAG, "isEnabled="+is_enable);
         return is_enable;
+    }
+
+    @Override
+    public void setWifiEnable(boolean enable) throws RemoteException {
+        if ( mManager == null ) return;
+        mManager.setWifiEnabled(enable);
     }
 
     @Override

@@ -9,8 +9,8 @@ import android.content.BroadcastReceiver;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
 
 public class SystemMuteController extends BaseController<Integer> {
     private final String TAG = "SystemMuteController"; 
@@ -69,7 +69,7 @@ public class SystemMuteController extends BaseController<Integer> {
         MuteStatus state = MuteStatus.NONE; 
         if ( mUserAudio == null ) return state; 
         try {
-            boolean audio_is_mute = mUserAudio.isAudioMute(); 
+            boolean audio_is_mute = mUserAudio.isMasterMute(); 
             boolean naviation_is_mute = mUserAudio.isNavigationMute(); 
             if ( audio_is_mute && naviation_is_mute ) state = MuteStatus.AV_NAV_MUTE; 
             else if ( audio_is_mute ) state = MuteStatus.AV_MUTE; 
@@ -93,7 +93,7 @@ public class SystemMuteController extends BaseController<Integer> {
     private final IUserAudioCallback.Stub mUserAudioCallback = 
         new IUserAudioCallback.Stub() {
         @Override
-        public void onAudioMuteChanged(boolean mute) throws RemoteException { 
+        public void onMasterMuteChanged(boolean enable) throws RemoteException {
             broadcastChangeEvent();
         }
         @Override

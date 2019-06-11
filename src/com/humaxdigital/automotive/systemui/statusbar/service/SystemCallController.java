@@ -15,10 +15,10 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.net.Uri;
 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetoothCallback;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
 
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";
@@ -319,17 +319,18 @@ public class SystemCallController extends BaseController<Integer> {
         }
     };
 
-    private final IUserAudioCallback.Stub mUserAudioCallback = 
-        new IUserAudioCallback.Stub() {
-        @Override
-        public void onAudioMuteChanged(boolean mute) throws RemoteException { 
-        }
+    private final IUserAudioCallback.Stub mUserAudioCallback 
+        = new IUserAudioCallback.Stub() {
+        
         @Override
         public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
             broadcastChangeEvent();
         }
         @Override
         public void onNavigationChanged(boolean mute) throws RemoteException {
+        }
+        @Override
+        public void onMasterMuteChanged(boolean mute) throws RemoteException {
         }
     };
 

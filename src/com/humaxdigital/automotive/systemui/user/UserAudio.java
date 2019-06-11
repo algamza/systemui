@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 import android.os.UserHandle;
 import android.os.RemoteException;
@@ -53,14 +53,6 @@ public class UserAudio extends IUserAudio.Stub {
     }
 
     @Override
-    public boolean isAudioMute() throws RemoteException {
-        if ( mManager == null ) return false;
-        boolean mute = mManager.isMasterMute();
-        Log.d(TAG, "isAudioMute="+mute);
-        return mute;
-    }
-
-    @Override
     public boolean isBluetoothMicMute() throws RemoteException {
         if ( mManager == null ) return false;
         boolean mute = mManager.isMicrophoneMute();
@@ -73,6 +65,24 @@ public class UserAudio extends IUserAudio.Stub {
         return false;
     }
 
+    @Override
+    public boolean isMasterMute() throws RemoteException {
+        if ( mManager == null ) return false;
+        boolean mute = mManager.isMasterMute();
+        Log.d(TAG, "isMasterMute="+mute);
+        return mute;
+    }
+
+    @Override
+    public void setMasterMute(boolean mute) throws RemoteException {
+        if ( mManager == null ) return;
+        int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
+        Log.d(TAG, "set="+mute+", flags="+flags);
+        mManager.adjustSuggestedStreamVolume(
+            mute?AudioManager.ADJUST_MUTE:AudioManager.ADJUST_UNMUTE,
+            AudioManager.STREAM_MUSIC, flags);
+    }
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -83,7 +93,7 @@ public class UserAudio extends IUserAudio.Stub {
                     try {
                         boolean mute = mManager.isMasterMute();
                         for ( IUserAudioCallback callback : mListeners ) {
-                            callback.onAudioMuteChanged(mute);
+                            callback.onMasterMuteChanged(mute);
                         }
                     } catch( RemoteException e ) {
                         Log.e(TAG, "error:"+e);

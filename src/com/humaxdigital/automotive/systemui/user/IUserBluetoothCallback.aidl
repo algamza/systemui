@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 interface IUserBluetoothCallback {
     void onBluetoothEnableChanged(int enable); 

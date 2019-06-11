@@ -8,8 +8,8 @@ import android.extension.car.CarAudioManagerEx;
 import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
 
-import com.humaxdigital.automotive.systemui.droplist.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
 
 public class MuteImpl extends BaseImplement<Boolean> {
     private final String TAG = "MuteImpl"; 
@@ -101,10 +101,14 @@ public class MuteImpl extends BaseImplement<Boolean> {
 
     private final IUserAudioCallback.Stub mUserAudioCallback = 
         new IUserAudioCallback.Stub() {
+        @Override
         public void onMasterMuteChanged(boolean enable) throws RemoteException {
-            Log.d(TAG, "onAudioEnableChanged="+enable);
-            //if ( mListener != null ) 
-            //    mListener.onChange(enable);
+        }
+        @Override
+        public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
+        }
+        @Override
+        public void onNavigationChanged(boolean mute) throws RemoteException {
         }
     }; 
 

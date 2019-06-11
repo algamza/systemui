@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 import android.os.RemoteException;
 import android.os.Bundle; 
@@ -125,6 +125,23 @@ public class UserBluetooth extends IUserBluetooth.Stub {
         return enable;
     }
 
+    @Override
+    public boolean isEnabled() throws RemoteException {
+        
+        if ( mBluetoothAdapter == null ) return false;
+        boolean enable = mBluetoothAdapter.isEnabled();
+        Log.d(TAG, "isEnabled="+enable);
+        return enable;
+    }
+
+    @Override
+    public void setBluetoothEnable(boolean enable) throws RemoteException {
+        if ( mBluetoothAdapter == null ) return;
+        Log.d(TAG, "setBluetoothEnable="+enable);
+        if ( enable ) mBluetoothAdapter.enable();
+        else mBluetoothAdapter.disable();
+    }
+    
     private void connect() {
         if ( mContext == null ) return;
         Log.d(TAG, "connect"); 

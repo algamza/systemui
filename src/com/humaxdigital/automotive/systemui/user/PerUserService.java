@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.statusbar.user;
+package com.humaxdigital.automotive.systemui.user;
 
 import android.os.Binder;
 import android.os.IBinder;
@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.app.Service;
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserService; 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserBluetooth; 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserWifi; 
-import com.humaxdigital.automotive.systemui.statusbar.user.IUserAudio; 
+import com.humaxdigital.automotive.systemui.user.IUserService; 
+import com.humaxdigital.automotive.systemui.user.IUserBluetooth; 
+import com.humaxdigital.automotive.systemui.user.IUserWifi; 
+import com.humaxdigital.automotive.systemui.user.IUserAudio; 
 
 
 public class PerUserService extends Service {

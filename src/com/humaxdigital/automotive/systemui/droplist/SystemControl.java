@@ -43,11 +43,11 @@ import com.humaxdigital.automotive.systemui.droplist.impl.WifiImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CallingImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CarExtensionClient;
 
-import com.humaxdigital.automotive.systemui.droplist.user.UserDroplistService;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserService;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.user.PerUserService;
+import com.humaxdigital.automotive.systemui.user.IUserService;
+import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -410,7 +410,7 @@ public class SystemControl extends Service {
 
     private void bindToUserService() {
         Log.d(TAG, "bindToUserService");
-        Intent intent = new Intent(this, UserDroplistService.class); 
+        Intent intent = new Intent(this, PerUserService.class); 
         synchronized (mServiceBindLock) {
             mBound = true;
             boolean result = this.bindServiceAsUser(intent, mUserServiceConnection,

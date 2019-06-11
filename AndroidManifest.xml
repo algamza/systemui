@@ -66,9 +66,6 @@
             android:singleUser="true"
             android:exported="false"/>
 
-        <service android:name=".droplist.user.UserDroplistService" 
-            android:exported="false" />
-
         <service android:name=".volumedialog.VolumeDialogService"
             android:singleUser="true"
             android:exported="false"/>
@@ -99,7 +96,7 @@
             android:name=".statusbar.service.StatusBarService"
             android:singleUser="true">
         </service>
-        <service android:name=".statusbar.user.PerUserService" android:exported="false" />
+        <service android:name=".user.PerUserService" android:exported="false" />
 
         <!-- for developer's view -->
         <service

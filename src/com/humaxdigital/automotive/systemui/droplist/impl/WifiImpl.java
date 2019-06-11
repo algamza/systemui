@@ -11,8 +11,8 @@ import android.os.RemoteException;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.droplist.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.droplist.user.IUserWifiCallback;
+import com.humaxdigital.automotive.systemui.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.user.IUserWifiCallback;
 
 public class WifiImpl extends BaseImplement<Boolean> {
     private final String TAG = "WifiImpl"; 
@@ -150,9 +150,16 @@ public class WifiImpl extends BaseImplement<Boolean> {
 
     private final IUserWifiCallback.Stub mUserWifiCallback = 
         new IUserWifiCallback.Stub() {
+        @Override
         public void onWifiEnableChanged(boolean enable) throws RemoteException {
             Log.d(TAG, "onWifiEnableChanged="+enable);
             if ( mListener != null ) mListener.onChange(isWifiOn()); 
+        }
+        @Override
+        public void onWifiConnectionChanged(boolean connected) throws RemoteException {
+        }
+        @Override
+        public void onWifiRssiChanged(int rssi) throws RemoteException {
         }
     }; 
 }
