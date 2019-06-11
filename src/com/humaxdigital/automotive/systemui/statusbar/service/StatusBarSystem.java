@@ -71,6 +71,7 @@ public class StatusBarSystem {
     // special case
     private boolean mRearCamera = false; 
     private boolean mFrontCamera = false;
+    private boolean mRearGearDetected = false; 
     private boolean mBTCall = false;
     private boolean mEmergencyCall = false;
     private boolean mBluelinkCall = false;  
@@ -217,6 +218,11 @@ public class StatusBarSystem {
         mRearCamera = on; 
     }
 
+    public void onRearGearDetected(boolean on) {
+        Log.d(TAG, "onRearGearDetected="+on);
+        mRearGearDetected = on; 
+    }
+
     public void onBTCall(boolean on) {
         Log.d(TAG, "onBTCall="+on);
         mBTCall = on; 
@@ -357,12 +363,7 @@ public class StatusBarSystem {
     } 
     
     public void openDateTimeSetting() {
-        if ( mContext == null ) return;
-        if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
-            return; 
-        }
-        
+        if ( mContext == null ) return;        
         if ( mPowerStateController != null && (mPowerStateController.get() 
             == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
             Log.d(TAG, "Current Power Off"); 
@@ -374,6 +375,18 @@ public class StatusBarSystem {
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
+        }
+
+        if ( mRearGearDetected ) {
+            Log.d(TAG, "Current Rear Gear"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+            return;
+        }
+
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
         }
 
         if ( !OPEN_DATE_SETTING.equals("") ) {
@@ -391,23 +404,30 @@ public class StatusBarSystem {
         return new BitmapParcelable(mUserProfileController.get()); 
     } 
     
-    public void openUserProfileSetting() {
-        if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
-            return; 
-        }
-        
+    public void openUserProfileSetting() {        
         if ( mPowerStateController != null && (mPowerStateController.get() 
             == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
-        }  
+        } 
         
         if ( mRearCamera ) {
             Log.d(TAG, "Current Rear Camera"); 
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
+        }
+
+        if ( mRearGearDetected ) {
+            Log.d(TAG, "Current Rear Gear"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+            return;
+        }
+
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
         }
 
         if ( mBTCall ) {

@@ -30,6 +30,7 @@ public class StatusBarClimate {
     // special case
     private boolean mRearCamera = false; 
     private boolean mFrontCamera = false;
+    private boolean mRearGearDetected = false; 
     private boolean mBTCall = false;
     private boolean mEmergencyCall = false;
     private boolean mBluelinkCall = false; 
@@ -110,6 +111,11 @@ public class StatusBarClimate {
     public void onRearCamera(boolean on) {
         Log.d(TAG, "onRearCamera="+on);
         mRearCamera = on; 
+    }
+
+    public void onRearGearDetected(boolean on) {
+        Log.d(TAG, "onRearGearDetected="+on);
+        mRearGearDetected = on; 
     }
 
     public void onBTCall(boolean on) {
@@ -274,14 +280,18 @@ public class StatusBarClimate {
     }
    
     public void openClimateSetting() {
-        Log.d(TAG, "openClimateSetting : front camera="+mFrontCamera+", rear camera="+mRearCamera); 
-        if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
-            return; 
-        }
+        Log.d(TAG, "openClimateSetting : front camera="+mFrontCamera+", rear camera="+mRearCamera+", rear gear="+mRearGearDetected); 
         if ( mRearCamera ) {
             Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
             return;
+        }
+        if ( mRearGearDetected ) {
+            Log.d(TAG, "Current Rear Rear Gear : only climate toggle");
+            return;
+        }
+        if ( isUserAgreement() ) {
+            Log.d(TAG, "Current UserAgreement"); 
+            return; 
         }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);

@@ -20,7 +20,11 @@ import android.net.Uri;
 import android.telephony.TelephonyManager;
 
 import android.car.CarNotConnectedException;
+import android.car.hardware.CarSensorEvent;
+import android.car.hardware.CarSensorEvent.GearData;
+import android.extension.car.value.CarSensorEventEx;
 import android.extension.car.CarTMSManager;
+import android.extension.car.CarSensorManagerEx;
 import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
@@ -44,6 +48,7 @@ public class StatusBarService extends Service {
 
     private TelephonyManager mTelephony = null;
     private CarTMSManager mTMSManager = null;
+    private CarSensorManagerEx mSensorManager = null;
 
     private boolean mUserAgreement = false; 
     private boolean mFrontCamera = false;
@@ -52,6 +57,7 @@ public class StatusBarService extends Service {
     private boolean mBTCall = false; 
     private boolean mEmergencyCall = false; 
     private boolean mBluelinkCall = false; 
+    private boolean mRearGearDetected = false; 
 
     public class StatusBarServiceBinder extends Binder {
         public StatusBarService getService() {
@@ -129,6 +135,11 @@ public class StatusBarService extends Service {
         return mRearCamera; 
     }
 
+    public boolean isRearGearDetected() {
+        Log.d(TAG, "isRearGearDetected="+mRearGearDetected);
+        return mRearGearDetected; 
+    }
+
     public boolean isPowerOff() {
         if ( mStatusBarSystem == null ) return false;
         mPowerOff = mStatusBarSystem.isPowerOff();
@@ -192,14 +203,35 @@ public class StatusBarService extends Service {
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(mCarExClient);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(mCarExClient);
             mTMSManager = mCarExClient.getTMSManager(); 
-            if ( mTMSManager != null ) mTMSManager.registerCallback(mTMSEventListener);
+            if ( mTMSManager != null ) mTMSManager.registerCallback(mTMSEventListener); 
+            mSensorManager = mCarExClient.getSensorManagerEx();
+            if ( mSensorManager != null ) {
+                try {
+                    mSensorManager.registerListener(
+                        mSensorChangeListener, 
+                        CarSensorManagerEx.SENSOR_TYPE_GEAR, 
+                        CarSensorManagerEx.SENSOR_RATE_NORMAL);
+                    CarSensorEvent event = mSensorManager.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_GEAR);
+                    GearData gear = event.getGearData(null);
+                    if( gear.equals(CarSensorEvent.GEAR_REVERSE) ) {
+                        mRearGearDetected = true;
+                        if ( mStatusBarClimate != null ) mStatusBarClimate.onRearGearDetected(false); 
+                        if ( mStatusBarSystem != null ) mStatusBarSystem.onRearGearDetected(false); 
+                    }
+                } catch (CarNotConnectedException e) {
+                    Log.e(TAG, "Car is not connected!", e);
+                }
+            }
         }
 
         @Override
         public void onDisconnected() {
+            if ( mSensorManager != null ) 
+                mSensorManager.unregisterListener(mSensorChangeListener);
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(null);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(null);
             mTMSManager = null; 
+            mSensorManager = null;
         }
     }; 
 
@@ -300,6 +332,34 @@ public class StatusBarService extends Service {
             mBluelinkCall = enabled; 
             if ( mStatusBarClimate != null ) mStatusBarClimate.onBluelinkCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onBluelinkCall(enabled); 
+        }
+    };
+
+    private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener =
+        new CarSensorManagerEx.OnSensorChangedListenerEx () {
+        public void onSensorChanged(final CarSensorEvent event) {
+            switch (event.sensorType) {
+                case CarSensorManagerEx.SENSOR_TYPE_GEAR: {
+                    GearData gear = event.getGearData(null);
+                    Log.d(TAG, "onSensorChanged:SENSOR_TYPE_GEAR:gear=" + gear.gear);
+                    if( gear.gear == CarSensorEventEx.GEAR_R ) {
+                        if ( mRearGearDetected ) break;
+                        mRearGearDetected = true;
+                        mStatusBarClimate.onRearGearDetected(true); 
+                        mStatusBarSystem.onRearGearDetected(true); 
+                    } else {
+                        if ( !mRearGearDetected ) break;
+                        mRearGearDetected = false;
+                        mStatusBarClimate.onRearGearDetected(false); 
+                        mStatusBarSystem.onRearGearDetected(false); 
+                    }
+                    break;
+                }
+                default: break;
+            }
+        }
+
+        public void onSensorChanged(final CarSensorEventEx event) {
         }
     };
 }
