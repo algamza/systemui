@@ -82,6 +82,8 @@ public class WifiImpl extends BaseImplement<Boolean> {
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         }
+        
+        if ( mListener != null ) mListener.onChange(isWifiOn()); 
     }
 
     private void cleanup() {

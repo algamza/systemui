@@ -56,6 +56,8 @@ public class SystemMuteController extends BaseController<Integer> {
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
+
+        broadcastChangeEvent();
     }
 
     @Override

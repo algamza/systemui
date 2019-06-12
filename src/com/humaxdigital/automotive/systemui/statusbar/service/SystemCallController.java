@@ -109,6 +109,8 @@ public class SystemCallController extends BaseController<Integer> {
 
         mCurrentStatus = getCurrentCallStatus();
         Log.d(TAG, "fetchUserBluetooth="+mCurrentStatus); 
+
+        broadcastChangeEvent();
     }
 
     public void fetchUserAudio(IUserAudio audio) {
@@ -126,6 +128,8 @@ public class SystemCallController extends BaseController<Integer> {
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         } 
+
+        broadcastChangeEvent();
     }
 
     public void fetchTMSClient(TMSClient tms) {

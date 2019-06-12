@@ -78,6 +78,8 @@ public class MuteImpl extends BaseImplement<Boolean> {
         } catch( RemoteException e ) {
             Log.e(TAG, "error:"+e);
         }
+
+        sendMuteChangeEvent();
     }
 
     public void fetchEx(CarExtensionClient client) {
@@ -120,15 +122,19 @@ public class MuteImpl extends BaseImplement<Boolean> {
 
         @Override
         public void onMasterMuteChanged(int flags) {
-            if ( mListener != null && mUserAudio != null )  {
-                try {
-                    boolean mute = mUserAudio.isMasterMute(); 
-                    Log.d(TAG, "onMasterMuteChanged="+mute);
-                    mListener.onChange(mute);
-                } catch( RemoteException e ) {
-                    Log.e(TAG, "error:"+e);
-                }
-            }
+            sendMuteChangeEvent();
         }
     };
+
+    private void sendMuteChangeEvent() {
+        if ( mListener != null && mUserAudio != null )  {
+            try {
+                boolean mute = mUserAudio.isMasterMute(); 
+                Log.d(TAG, "onMasterMuteChanged="+mute);
+                mListener.onChange(mute);
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            }
+        }
+    }
 }
