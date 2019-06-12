@@ -34,6 +34,8 @@ public class StatusBarClimate {
     private boolean mBTCall = false;
     private boolean mEmergencyCall = false;
     private boolean mBluelinkCall = false; 
+    private boolean mSVIOn = false;
+    private boolean mSVSOn = false; 
 
     public static abstract class StatusBarClimateCallback {
         public void onInitialized() {}
@@ -131,6 +133,16 @@ public class StatusBarClimate {
     public void onBluelinkCall(boolean on) {
         Log.d(TAG, "onBluelinkCall="+on);
         mBluelinkCall = on; 
+    }
+
+    public void onSVIOn(boolean on) {
+        Log.d(TAG, "onSVIOn="+on);
+        mSVIOn = on; 
+    }
+
+    public void onSVSOn(boolean on) {
+        Log.d(TAG, "onSVSOn="+on);
+        mSVSOn = on; 
     }
 
     public boolean isInitialized() {
@@ -286,12 +298,20 @@ public class StatusBarClimate {
             return;
         }
         if ( mRearGearDetected ) {
-            Log.d(TAG, "Current Rear Rear Gear : only climate toggle");
+            Log.d(TAG, "Current Rear Gear : only climate toggle");
             return;
         }
         if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
             return; 
+        }
+        if ( mSVSOn ) {
+            Log.d(TAG, "Current svs on: only climate toggle");
+            return;
+        }
+        if ( mSVIOn ) {
+            Log.d(TAG, "Current svs on: only climate toggle");
+            return;
         }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);

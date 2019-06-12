@@ -75,6 +75,8 @@ public class StatusBarSystem {
     private boolean mBTCall = false;
     private boolean mEmergencyCall = false;
     private boolean mBluelinkCall = false;  
+    private boolean mSVIOn = false;
+    private boolean mSVSOn = false; 
 
     public static abstract class StatusBarSystemCallback {
         public void onSystemInitialized() {}
@@ -238,6 +240,15 @@ public class StatusBarSystem {
         mBluelinkCall = on; 
     }
 
+    public void onSVIOn(boolean on) {
+        Log.d(TAG, "onSVIOn="+on);
+        mSVIOn = on; 
+    }
+    public void onSVSOn(boolean on) {
+        Log.d(TAG, "onSVSOn="+on);
+        mSVSOn = on; 
+    }
+
     public boolean isPowerOff() {
         if ( mPowerStateController == null ) return true;
         int state = mPowerStateController.get(); 
@@ -389,6 +400,11 @@ public class StatusBarSystem {
             return; 
         }
 
+        if ( mSVSOn || mSVIOn ) {
+            Log.d(TAG, "Current svs = "+mSVSOn+", svi = "+mSVIOn);
+            return;
+        }
+
         if ( !OPEN_DATE_SETTING.equals("") ) {
             Log.d(TAG, "openDateTimeSetting="+OPEN_DATE_SETTING);
             vrCloseRequest();
@@ -440,6 +456,11 @@ public class StatusBarSystem {
         if ( mEmergencyCall || mBluelinkCall ) {
             Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
             return; 
+        }
+
+        if ( mSVSOn || mSVIOn ) {
+            Log.d(TAG, "Current svs = "+mSVSOn+", svi = "+mSVIOn);
+            return;
         }
 
         if ( !OPEN_USERPROFILE_SETTING.equals("") ) {

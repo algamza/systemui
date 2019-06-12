@@ -373,6 +373,14 @@ public class StatusBarProxyPluginImpl extends Service {
             Log.d(TAG, "is special case : bluelink call"); 
             return true;
         }
+        if ( mStatusBarService.isSVIOn() ) {
+            Log.d(TAG, "is special case : svi on"); 
+            return true;
+        }
+        if ( mStatusBarService.isSVSOn() ) {
+            Log.d(TAG, "is special case : svs on"); 
+            return true;
+        }
         return false; 
     }
 

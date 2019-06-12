@@ -58,6 +58,8 @@ public class StatusBarService extends Service {
     private boolean mEmergencyCall = false; 
     private boolean mBluelinkCall = false; 
     private boolean mRearGearDetected = false; 
+    private boolean mSVIOn = false; 
+    private boolean mSVSOn = false; 
 
     public class StatusBarServiceBinder extends Binder {
         public StatusBarService getService() {
@@ -150,6 +152,16 @@ public class StatusBarService extends Service {
     public boolean isEmergencyCall() {
         Log.d(TAG, "isEmergencyCall="+mEmergencyCall);
         return mEmergencyCall; 
+    }
+
+    public boolean isSVIOn() {
+        Log.d(TAG, "isSVIOn="+mSVIOn);
+        return mSVIOn; 
+    }
+
+    public boolean isSVSOn() {
+        Log.d(TAG, "isSVSOn="+mSVSOn);
+        return mSVSOn; 
     }
 
     public boolean isBluelinkCall() {
@@ -333,6 +345,20 @@ public class StatusBarService extends Service {
             if ( mStatusBarClimate != null ) mStatusBarClimate.onBluelinkCall(enabled); 
             if ( mStatusBarSystem != null ) mStatusBarSystem.onBluelinkCall(enabled); 
         }
+        @Override
+        public void onImmobilizationMode(boolean enabled) {
+            Log.d(TAG, "onImmobilizationMode = "+enabled); 
+            mSVIOn = enabled; 
+            if ( mStatusBarClimate != null ) mStatusBarClimate.onSVIOn(enabled); 
+            if ( mStatusBarSystem != null ) mStatusBarSystem.onSVIOn(enabled); 
+        }
+        @Override
+        public void onSlowdownMode(boolean enabled) {
+            Log.d(TAG, "onSlowdownMode = "+enabled); 
+            mSVSOn = enabled; 
+            if ( mStatusBarClimate != null ) mStatusBarClimate.onSVSOn(enabled); 
+            if ( mStatusBarSystem != null ) mStatusBarSystem.onSVSOn(enabled); 
+        }                
     };
 
     private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener =
