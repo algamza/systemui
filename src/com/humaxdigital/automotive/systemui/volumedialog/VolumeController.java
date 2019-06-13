@@ -63,7 +63,7 @@ public class VolumeController extends VolumeControllerBase {
     
     private final int PROGRESS_UI_STEP_MAX = 45;
     private final int PROGRESS_STEP_MAX = 170;
-    private final String MUTE_VALUE_TEXT = "00"; 
+    private final String MUTE_VALUE_TEXT = "0"; 
     private boolean mVolumeMute = false;
     private UpdateHandler mHandler = new UpdateHandler();
 
