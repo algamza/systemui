@@ -317,7 +317,7 @@ public class VolumeController extends VolumeControllerBase {
 
         mTimer.schedule(mVolumeDownTask, VOLUME_SELECT_TIME);
         int val = convertToProgressValue(max, value); 
-        if ( val == 0 ) if ( !isVolumeMute() ) setVolumeMute(true);
+        //if ( val == 0 ) if ( !isVolumeMute() ) setVolumeMute(true);
 
         mProgress.setProgress(val);
         mTextVolume.setText(convertToStep(max, value));
