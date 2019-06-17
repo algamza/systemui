@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">droplist</string>
-    <string name="STR_MESG_18334_ID">This Feature is currently unavailable.</string>
+    <string name="STR_MESG_18334_ID">This feature is currently unavailable.</string>
     <string name="STR_MESG_14967_ID">Link to Cluster Illumination Control</string>
     <string name="STR_WI_FI_08_ID">Wi-Fi</string>
     <string name="STR_MUTE_06_ID">Mute</string>
