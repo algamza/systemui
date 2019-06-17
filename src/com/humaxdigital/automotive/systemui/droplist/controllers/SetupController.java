@@ -49,12 +49,14 @@ public class SetupController implements BaseController {
         @Override
         public boolean onClick() {
             if ( mSystem != null ) mSystem.openSetup(); 
+            if ( mListener != null ) mListener.onClose();
             return true;
         }
 
         @Override
         public boolean onLongClick() {
             if ( mSystem != null ) mSystem.openSetup();
+            if ( mListener != null ) mListener.onClose();
             return true;
         }
     }; 

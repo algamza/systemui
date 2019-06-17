@@ -113,6 +113,7 @@ public class ModeController implements BaseController {
         @Override
         public boolean onLongClick() {
             if ( mSystem != null ) mSystem.openAutomaticSetting();
+            if ( mListener != null ) mListener.onClose();
             return true; 
         }
     }; 

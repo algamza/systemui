@@ -49,6 +49,7 @@ public class DisplayController implements BaseController {
         @Override
         public boolean onClick() {
             if ( mSystem != null ) mSystem.displayOff(); 
+            if ( mListener != null ) mListener.onClose();
             return true; 
         }
         

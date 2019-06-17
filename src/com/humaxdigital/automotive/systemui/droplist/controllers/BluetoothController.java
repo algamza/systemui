@@ -97,6 +97,7 @@ public class BluetoothController implements BaseController {
         public boolean onLongClick() {
             if ( mIsCalling ) return false; 
             if ( mSystem != null ) mSystem.openBluetoothSetting();
+            if ( mListener != null ) mListener.onClose();
             return true; 
         }
     }; 

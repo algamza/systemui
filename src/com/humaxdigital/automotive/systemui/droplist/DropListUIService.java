@@ -59,6 +59,7 @@ public class DropListUIService extends Service {
 
     private DropListDialog mDialog; 
     private boolean mShowing;
+    private boolean mStartedDismiss = false; 
     private final DialogHandler mHandler = new DialogHandler();
 
     private int mScreenBottom;
@@ -265,11 +266,14 @@ public class DropListUIService extends Service {
     }
 
     private void dismissH() {
-        if ( mControllerManager != null ) mControllerManager.clear(); 
-        
         mHandler.removeMessages(DialogHandler.DISMISS);
         mHandler.removeMessages(DialogHandler.SHOW);
-        
+
+        if ( mStartedDismiss ) return;
+        mStartedDismiss = true; 
+
+        if ( mControllerManager != null ) mControllerManager.clear(); 
+
         mPanelBody.animate().cancel();
         mPanelBody.setTranslationY(0);
         mPanelBody.setAlpha(1);
@@ -285,6 +289,7 @@ public class DropListUIService extends Service {
                             public void run() {
                                 mDialog.dismiss();
                                 mShowing = false; 
+                                mStartedDismiss = false;
                             }
                         }, DROP_MOVE_TIME_MS/2);
                     }

@@ -133,6 +133,7 @@ public class ThemeController implements BaseController {
         @Override
         public boolean onLongClick() {
             if ( mSystem != null ) mSystem.openThemeSetting();
+            if ( mListener != null ) mListener.onClose();
             return true;
         }
     }; 

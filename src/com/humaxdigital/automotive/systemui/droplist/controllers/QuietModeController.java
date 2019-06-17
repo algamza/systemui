@@ -113,6 +113,7 @@ public class QuietModeController implements BaseController {
         public boolean onLongClick() {
             if ( mIsCalling || !mIsAVOn ) return false; 
             if ( mSystem != null ) mSystem.openQuietModeSetting();
+            if ( mListener != null ) mListener.onClose();
             return true;
         }
     }; 

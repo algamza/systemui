@@ -80,6 +80,7 @@ public class WifiController implements BaseController {
         @Override
         public boolean onLongClick() {
             if ( mSystem != null ) mSystem.openWifiSetting();
+            if ( mListener != null ) mListener.onClose();
             return true;
         }
     }; 
