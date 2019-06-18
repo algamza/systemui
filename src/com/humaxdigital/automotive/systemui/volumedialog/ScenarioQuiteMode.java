@@ -58,6 +58,7 @@ public class ScenarioQuiteMode {
         mQuiteModeAudioTypeList.add(VolumeUtil.Type.RADIO_FM);
         mQuiteModeAudioTypeList.add(VolumeUtil.Type.USB);
         mQuiteModeAudioTypeList.add(VolumeUtil.Type.ONLINE_MUSIC);
+        mQuiteModeAudioTypeList.add(VolumeUtil.Type.CARLIFE_MEDIA); 
         mQuiteModeAudioTypeList.add(VolumeUtil.Type.BT_AUDIO);
         mModeObserver = createObserver(); 
         if ( mContentResolver != null ) mContentResolver.registerContentObserver(
@@ -157,11 +158,13 @@ public class ScenarioQuiteMode {
             if ( !mIsQuiteModeApplying && volume != QUITE_MODE_VOLUME ) {
                 mQuiteModeAudioChange.put(type, true);
                 if ( type == VolumeUtil.Type.RADIO_AM || type == VolumeUtil.Type.RADIO_FM 
-                || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC ) {
+                || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC 
+                || type == VolumeUtil.Type.CARLIFE_MEDIA ) {
                     mQuiteModeAudioChange.put(VolumeUtil.Type.RADIO_AM, true);
                     mQuiteModeAudioChange.put(VolumeUtil.Type.RADIO_FM, true);
                     mQuiteModeAudioChange.put(VolumeUtil.Type.USB, true);
                     mQuiteModeAudioChange.put(VolumeUtil.Type.ONLINE_MUSIC, true);
+                    mQuiteModeAudioChange.put(VolumeUtil.Type.CARLIFE_MEDIA, true);
                 }
             }
             

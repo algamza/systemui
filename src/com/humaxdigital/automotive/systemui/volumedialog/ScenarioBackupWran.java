@@ -67,6 +67,7 @@ public class ScenarioBackupWran {
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_FM);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.USB);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.ONLINE_MUSIC);
+        mBackupWarnAudioTypeList.add(VolumeUtil.Type.CARLIFE_MEDIA);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.BT_AUDIO);
 
         mModeObserver = createBackupWranObserver(); 
@@ -213,11 +214,13 @@ public class ScenarioBackupWran {
                 if ( !mIsBackupWranApplying && volume != BACKUP_WRAN_VOLUME ) {
                     mBackupWarnAudioChange.put(type, true);
                     if ( type == VolumeUtil.Type.RADIO_AM || type == VolumeUtil.Type.RADIO_FM 
-                    || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC ) {
+                    || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC 
+                    || type == VolumeUtil.Type.CARLIFE_MEDIA) {
                         mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_AM, true);
                         mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_FM, true);
                         mBackupWarnAudioChange.put(VolumeUtil.Type.USB, true);
                         mBackupWarnAudioChange.put(VolumeUtil.Type.ONLINE_MUSIC, true);
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.CARLIFE_MEDIA, true);
                     }
                 }
             }
