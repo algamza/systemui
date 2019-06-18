@@ -33,6 +33,7 @@ import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerMana
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManagerBase;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c.ControllerManagerDL3C;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevCommandsProxy;
+import com.humaxdigital.automotive.systemui.statusbar.dev.DevModeController;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarDev;
@@ -53,6 +54,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private View mNavBarView;
     private View mStatusBarView; 
     private View mDevNavView;
+    private DevModeController mDevModeController;
     private ControllerManagerBase mControllerManager; 
     private StatusBarService mStatusBarService;
     private boolean mCollapseDesired = false;
@@ -88,6 +90,14 @@ public class StatusBarProxyPluginImpl extends Service {
         }
 
         mDevNavView = inflateDevNavBarView();
+        mDevModeController = new DevModeController(this, mNavBarView, mDevNavView);
+        mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
+            @Override
+            public boolean onViewChange(View v) {
+                setContentBarView(v);
+                return true;
+            }
+        });
     }
 
     private void createStatusBarWindow() {
@@ -232,14 +242,6 @@ public class StatusBarProxyPluginImpl extends Service {
             view = View.inflate(this, R.layout.du2_navi_overlay, null);
         else 
             view = View.inflate(this, R.layout.dn8c_navi_overlay, null);
-        
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                setContentBarView(mDevNavView);
-                return true;
-            }
-        });
         return view;
     }
 
@@ -251,13 +253,6 @@ public class StatusBarProxyPluginImpl extends Service {
     public View inflateDevNavBarView() {
         final DevNavigationBar devNavBarView = (DevNavigationBar)
                 View.inflate(this, R.layout.dev_nav_bar, null);
-        devNavBarView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                setContentBarView(mNavBarView);
-                return true;
-            }
-        });
 
         devNavBarView.init(new DevCommandsProxy(this) {
             @Override
