@@ -299,6 +299,11 @@ public class VolumeControlService extends Service {
             int volume = getCarAudioVolume(mode);
             boolean mute = getCurrentMute();
 
+            if ( (mQuiteMode != null) && mQuiteMode.isQuiteMode() ) {
+                int quite_max = mQuiteMode.getQuiteModeMax(mode); 
+                if ( quite_max < volume ) volume = quite_max; 
+            }
+
             if ( mIsSettingsActivity ) return;
             
             broadcastEventMuteChange(mode, max, volume, mute);

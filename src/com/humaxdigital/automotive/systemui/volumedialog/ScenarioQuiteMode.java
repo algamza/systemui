@@ -29,6 +29,7 @@ public class ScenarioQuiteMode {
     private Context mContext = null;
     private ContentResolver mContentResolver = null;
     private ContentObserver mModeObserver = null;
+    private final int VOLUME_MAX = 45;
     private final int QUITE_MODE_MAX = 20;
     private final int QUITE_MODE_VOLUME = 7;
     private ArrayList<VolumeUtil.Type> mQuiteModeAudioTypeList = new ArrayList<>(); 
@@ -114,7 +115,7 @@ public class ScenarioQuiteMode {
         return true; 
     }
 
-    private boolean isQuiteMode() {
+    public boolean isQuiteMode() {
         if ( mContext == null ) return false;
         int on = Settings.System.getIntForUser(mContext.getContentResolver(), 
                 CarExtraSettings.System.SOUND_QUIET_MODE_ON,
@@ -122,6 +123,15 @@ public class ScenarioQuiteMode {
                         UserHandle.USER_CURRENT);
         Log.d(TAG, "isQuiteMode="+on);
         return on==0?false:true;
+    }
+
+    public int getQuiteModeMax(int mode) {
+        int max = VOLUME_MAX; 
+        for ( VolumeUtil.Type type : mQuiteModeAudioTypeList ) {
+            if ( mode != VolumeUtil.convertToMode(type) ) continue; 
+            max = QUITE_MODE_MAX; 
+        }
+        return max; 
     }
 
     private void applyQuiteMode() {
