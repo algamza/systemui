@@ -79,7 +79,7 @@ public class UserWifi extends IUserWifi.Stub {
 
     @Override
     public boolean isConnected() throws RemoteException {
-        updateNetworkInfo(mConnectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
+        //updateNetworkInfo(mConnectivityMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
         Log.d(TAG, "isConnected="+mConnected); 
         return mConnected;
     }
