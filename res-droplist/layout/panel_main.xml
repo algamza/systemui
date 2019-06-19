@@ -174,7 +174,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="49">
-                        <SeekBar
+                        <com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar
                             android:id="@+id/seekbar"
                             style="@android:style/Widget.ProgressBar.Horizontal"
                             android:layout_width="match_parent"
@@ -182,7 +182,7 @@
                             android:layout_gravity="center_vertical|center_horizontal"
                             android:max="100"
                             android:progress="20"
-                            android:progressDrawable="@drawable/custom_progress"
+                            android:progressDrawable="@android:color/transparent"
                             android:thumb="@drawable/custom_thumb" 
                             android:thumbOffset="-0dp" />
                     </FrameLayout>
