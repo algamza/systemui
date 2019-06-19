@@ -17,6 +17,7 @@ public class UserAudio extends IUserAudio.Stub {
     private final PerUserService mService; 
     private AudioManager mManager;
     private Context mContext; 
+    static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
 
     private List<IUserAudioCallback> mListeners = new ArrayList<>(); 
 
@@ -30,6 +31,7 @@ public class UserAudio extends IUserAudio.Stub {
         IntentFilter filter = new IntentFilter(); 
         filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
         filter.addAction(AudioManager.MASTER_MUTE_CHANGED_ACTION);
+        filter.addAction(ACTION_CHANGE_MIC_MUTE); 
         mContext.registerReceiver(mReceiver,filter, null, null);
     }
 
@@ -89,9 +91,9 @@ public class UserAudio extends IUserAudio.Stub {
             if ( mManager == null ) return;
             switch(intent.getAction()) {
                 case AudioManager.MASTER_MUTE_CHANGED_ACTION: {
-                    Log.d(TAG, "MASTER_MUTE_CHANGED_ACTION");
                     try {
                         boolean mute = mManager.isMasterMute();
+                        Log.d(TAG, "MASTER_MUTE_CHANGED_ACTION="+mute);
                         for ( IUserAudioCallback callback : mListeners ) {
                             callback.onMasterMuteChanged(mute);
                         }
@@ -101,9 +103,21 @@ public class UserAudio extends IUserAudio.Stub {
                     break;
                 }
                 case AudioManager.ACTION_MICROPHONE_MUTE_CHANGED: {
-                    Log.d(TAG, "ACTION_MICROPHONE_MUTE_CHANGED");
                     try {
                         boolean mute = mManager.isMicrophoneMute();
+                        Log.d(TAG, "ACTION_MICROPHONE_MUTE_CHANGED="+mute);
+                        for ( IUserAudioCallback callback : mListeners ) {
+                            callback.onBluetoothMicMuteChanged(mute);
+                        }
+                    } catch( RemoteException e ) {
+                        Log.e(TAG, "error:"+e);
+                    }
+                    break;
+                }
+                case ACTION_CHANGE_MIC_MUTE: {
+                    try {
+                        boolean mute = mManager.isMicrophoneMute();
+                        Log.d(TAG, "ACTION_CHANGE_MIC_MUTE="+mute);
                         for ( IUserAudioCallback callback : mListeners ) {
                             callback.onBluetoothMicMuteChanged(mute);
                         }
