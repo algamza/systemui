@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.graphics.drawable.StateListDrawable;
 
 import com.humaxdigital.automotive.systemui.R;
 
@@ -29,19 +30,17 @@ public class MenuLayout extends LinearLayout {
     private MenuListener mListener;
     private Context mContext;
 
-    private Drawable mIcon = null;
+    private Drawable mResIcon = null;
     private HashMap<Integer,Drawable> mToggleIcons = new HashMap<>();
     private int mStatus = 0;
     private HashMap<ButtonState,Drawable> mButtonIcon = new HashMap<>();
     private boolean mEnable = true;
     private HashMap<Integer,String> mTexts = new HashMap<>();
     private String mText;
-    private FrameLayout mViewEnable;
-    private FrameLayout mViewPress;
-    private FrameLayout mViewDisable;
-    private ImageView mImgEnable;
-    private ImageView mImgPress;
-    private ImageView mImgDisable;
+
+    private ImageView mIconBG;
+    private ImageView mIcon; 
+    
     private TextView mViewText;
 
     public MenuLayout(Context context) {
@@ -53,29 +52,30 @@ public class MenuLayout extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.menu, this, true);
 
-        mViewEnable = (FrameLayout)this.findViewById(R.id.menu_n);
-        mViewDisable = (FrameLayout)this.findViewById(R.id.menu_d);
-        mViewPress = (FrameLayout)this.findViewById(R.id.menu_p);
-        mImgEnable = (ImageView)this.findViewById(R.id.img_n);
-        mImgPress = (ImageView)this.findViewById(R.id.img_p);
-        mImgDisable = (ImageView)this.findViewById(R.id.img_d);
+        mIconBG = (ImageView)this.findViewById(R.id.img_icon_bg);
+        mIcon = (ImageView)this.findViewById(R.id.img_icon);
+
         mViewText = (TextView)this.findViewById(R.id.menu_text);
 
-        if ( mViewEnable == null || mViewDisable == null ||
-                mViewPress == null || mImgEnable == null ||
-                mImgPress == null || mImgDisable == null ||
-                mViewText == null ) return this;
+        if ( mIconBG == null || mIcon == null || mViewText == null ) return this;
 
-        if ( mIcon != null ) {
-            mImgEnable.setImageDrawable(mIcon);
+        if ( mResIcon != null ) {
+            mIcon.setImageDrawable(mResIcon);
         } else if ( mButtonIcon.size() > 0 ) {
-            mImgEnable.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE));
-            mImgDisable.setImageDrawable(mButtonIcon.get(ButtonState.DISABLE));
-            mImgPress.setImageDrawable(mButtonIcon.get(ButtonState.PRESS));
+            mIcon.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE));
         } else if ( mToggleIcons.size() > 0 ) {
-            mImgEnable.setImageDrawable(mToggleIcons.get(mStatus));
+            mIcon.setImageDrawable(mToggleIcons.get(mStatus));
         }
-        buttonEnable();
+
+        if ( mIconBG != null ) {
+            StateListDrawable states = new StateListDrawable();
+            states.addState(new int[] {android.R.attr.state_pressed},
+                getResources().getDrawable(R.drawable.dr_btn_p));
+            states.addState(new int[] { android.R.attr.state_enabled},
+                    getResources().getDrawable(R.drawable.dr_btn_n));
+            mIconBG.setImageDrawable(states);
+        }
+  
         if ( !mTexts.isEmpty() ) mViewText.setText(mTexts.get(mStatus));
         else mViewText.setText(mText);
         return this;
@@ -96,37 +96,13 @@ public class MenuLayout extends LinearLayout {
             public boolean onLongClick(View v) {
                 if ( mListener == null )  return false;
                 if ( mListener.onLongClick() ) {
-                    updateButtonVisible();
                     return true;
                 }
                 return false;
             }
         });
 
-        setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: {
-                        if ( mButtonIcon.size() > 0 ) buttonPress();
-                        break;
-                    }
-                    case MotionEvent.ACTION_UP: {
-                        updateButtonVisible(); 
-                        break;
-                    }
-                }
-                return false;
-            }
-        });
         return this;
-    }
-
-    private void updateButtonVisible() {
-        if ( mButtonIcon.size() > 0 ) {
-            if ( mEnable ) buttonEnable();
-            else buttonDisable();
-        }
     }
 
     public MenuLayout addIcon(int status, Drawable icon) {
@@ -148,10 +124,9 @@ public class MenuLayout extends LinearLayout {
     }
 
     public MenuLayout addIcon(Drawable icon) {
-        mIcon = icon;
+        mResIcon = icon;
         return this;
     }
-
 
     public MenuLayout setText(String text) {
         mText = text;
@@ -187,33 +162,15 @@ public class MenuLayout extends LinearLayout {
     public void updateState(int status) {
         Drawable drawable = mToggleIcons.get(status);
         if ( drawable == null ) return;
-        mImgEnable.setImageDrawable(drawable);
+        mIcon.setImageDrawable(drawable);
         if ( !mTexts.isEmpty() ) 
             mViewText.setText(mTexts.get(status));
         mStatus = status;
     }
 
     public void updateEnable(boolean enable) {
-        if ( enable ) buttonEnable();
-        else buttonDisable();
+        if ( enable ) mIcon.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE)); 
+        else mIcon.setImageDrawable(mButtonIcon.get(ButtonState.DISABLE)); 
         mEnable = enable;
-    }
-
-    private void buttonEnable() {
-        mViewEnable.setVisibility(View.VISIBLE);
-        mViewDisable.setVisibility(View.INVISIBLE);
-        mViewPress.setVisibility(View.INVISIBLE);
-    }
-
-    private void buttonPress() {
-        mViewEnable.setVisibility(View.INVISIBLE);
-        mViewDisable.setVisibility(View.INVISIBLE);
-        mViewPress.setVisibility(View.VISIBLE);
-    }
-
-    private void buttonDisable() {
-        mViewEnable.setVisibility(View.INVISIBLE);
-        mViewDisable.setVisibility(View.VISIBLE);
-        mViewPress.setVisibility(View.INVISIBLE);
     }
 }

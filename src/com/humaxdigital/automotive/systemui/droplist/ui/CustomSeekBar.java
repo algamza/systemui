@@ -48,7 +48,6 @@ public class CustomSeekBar extends AppCompatSeekBar {
         RectF rectf = new RectF(rect);
         canvas.drawRoundRect(rectf, SEEKBAR_RADIUS, SEEKBAR_RADIUS, paint);
 
-
         if (this.getProgress() > center) {
             rect.set(getWidth() / 2,
                     (getHeight() / 2) - (SEEKBAR_HEIGHT/2),
