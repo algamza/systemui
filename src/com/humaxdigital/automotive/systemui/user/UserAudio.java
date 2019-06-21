@@ -85,6 +85,12 @@ public class UserAudio extends IUserAudio.Stub {
             AudioManager.STREAM_MUSIC, flags);
     }
 
+    @Override
+    public void performClick() throws RemoteException {
+        if ( mManager == null ) return;
+        mManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
+    }
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

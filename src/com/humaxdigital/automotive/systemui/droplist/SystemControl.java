@@ -443,7 +443,9 @@ public class SystemControl extends Service {
                 mUserWifi = mUserService.getUserWifi();
                 mUserAudio = mUserService.getUserAudio();
 
-                if ( mMute != null ) mMute.fetch(mUserAudio); 
+                if ( mMute != null ) mMute.fetch(mUserAudio);
+                if ( mBrightness != null ) mBrightness.fetch(mUserAudio);  
+                if ( mClusterBrightness != null ) mClusterBrightness.fetch(mUserAudio);  
                 if ( mWifi != null ) mWifi.fetch(mUserWifi);
 
             } catch( RemoteException e ) {

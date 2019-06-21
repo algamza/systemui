@@ -1,13 +1,15 @@
 package com.humaxdigital.automotive.systemui.droplist.impl;
 
+import android.os.RemoteException;
+import android.os.Handler;
+import android.os.UserHandle;
+
 import android.content.Context;
+import android.content.ContentResolver;
 import android.provider.Settings;
 import android.util.Log;
-import android.content.ContentResolver;
 import android.database.ContentObserver;
-import android.os.Handler;
 import android.net.Uri;
-import android.os.UserHandle;
 
 import android.extension.car.settings.CarExtraSettings;
 import android.extension.car.CarEx;
@@ -16,8 +18,11 @@ import android.car.hardware.CarSensorEvent;
 import android.extension.car.value.CarSensorEventEx;
 import android.car.CarNotConnectedException;
 
+import com.humaxdigital.automotive.systemui.user.IUserAudio;
+
 public class BrightnessImpl extends BaseImplement<Integer> {
     private final String TAG = "BrightnessImpl"; 
+    private IUserAudio mUserAudio = null;
     private enum Mode {
         AUTOMATIC,
         DAYLIGHT,
@@ -79,6 +84,8 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     public void set(Integer e) {
         if ( mContext == null ) return; 
 
+        performClick();
+        
         switch(mCurrentMode) {
             case AUTOMATIC: {
                 if ( mIsSensorNight ) setNightBrightness(e); 
@@ -89,6 +96,20 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             case NIGHT: setNightBrightness(e); break; 
         }
         Log.d(TAG, "set="+e+", mode="+mCurrentMode);
+    }
+
+    public void fetch(IUserAudio audio) {
+        mUserAudio = audio;
+    }
+
+    private void performClick() {
+        if ( mUserAudio != null ) {
+            try {
+                mUserAudio.performClick();
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            } 
+        }
     }
 
     private void setDayBrightness(int val) {

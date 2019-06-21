@@ -9,4 +9,5 @@ interface IUserAudio {
     boolean isNavigationMute();
     boolean isMasterMute(); 
     void setMasterMute(boolean mute); 
+    void performClick();
 }
