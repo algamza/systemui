@@ -13,8 +13,8 @@ import android.view.View;
 public class DevModeController {
     private static final String TAG = DevModeController.class.getSimpleName();
 
-    private static final long ALIVE_TIME = 1000;
-    private static final long MAX_DISTANCE_PIXELS = 100;
+    private static final long ALIVE_TIME = 1500;
+    private static final long MAX_DISTANCE_PIXELS = 120;
 
     private Context mContext;
     private View mNormalView;
