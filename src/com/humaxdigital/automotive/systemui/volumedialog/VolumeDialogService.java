@@ -51,6 +51,7 @@ public class VolumeDialogService extends Service {
         else 
             mDialog = new VolumeDialog();
         mDialog.init(this); 
+        mDialog.registDialogListener(mDialogListener); 
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
             mController = new VolumeControllerDL3C(); 
@@ -71,7 +72,10 @@ public class VolumeDialogService extends Service {
             mController.unregistVolumeListener(mVolumeListener); 
             mController = null; 
         }
-        if ( mDialog != null ) mDialog.deinit();
+        if ( mDialog != null ) {
+            mDialog.unregistDialogListener(mDialogListener); 
+            mDialog.deinit();
+        }
     }
 
     @Override
@@ -129,6 +133,14 @@ public class VolumeDialogService extends Service {
             Log.d(TAG, "onServiceDisconnected");
             mVolumeService = null;
             if ( mController != null ) mController.fetch(null);
+        }
+    };
+
+    private VolumeDialogBase.DialogListener mDialogListener = 
+        new VolumeDialogBase.DialogListener() {
+        @Override
+        public void onShow(boolean show) {
+            if ( mVolumeService != null ) mVolumeService.onShow(show); 
         }
     };
 }

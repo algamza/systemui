@@ -33,7 +33,7 @@ public class VolumeDialog extends VolumeDialogBase {
     private VolumeDialogUI mDialog;
     private View mPanel;
     private Window mWindow;
-    private boolean mShowing;
+    private boolean mShowing = false;
     private final int MOVE_TIME_MS = 300;
     private final int SHOWING_TIME_MS = 3000;
     private final DialogHandler mHandler = new DialogHandler();
@@ -44,7 +44,6 @@ public class VolumeDialog extends VolumeDialogBase {
     public void init(Context context) {
         if ( context == null ) return;
         mContext = context; 
-        mShowing = false;
         mDialog = new VolumeDialogUI(mContext);
         mWindow = mDialog.getWindow();
 
@@ -129,6 +128,7 @@ public class VolumeDialog extends VolumeDialogBase {
                             public void run() {
                                 mDialog.dismiss();
                                 mShowing = false;
+                                broadcastShowEvent(mShowing); 
                             }
                         }, MOVE_TIME_MS/4);
                     }
@@ -238,6 +238,7 @@ public class VolumeDialog extends VolumeDialogBase {
                                 @Override
                                 public void run() {
                                     mShowing = true;
+                                    broadcastShowEvent(mShowing); 
                                 }
                             }, MOVE_TIME_MS/2);
                         }
@@ -247,7 +248,7 @@ public class VolumeDialog extends VolumeDialogBase {
     };
 
 
-    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Log.d(TAG, "Panel onClick");
@@ -257,4 +258,9 @@ public class VolumeDialog extends VolumeDialogBase {
         }
     };
 
+    private void broadcastShowEvent(boolean show) {
+        for ( DialogListener listener : mListener ) {
+            listener.onShow(show);
+        }
+    }
 }
