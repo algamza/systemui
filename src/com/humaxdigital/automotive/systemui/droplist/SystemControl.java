@@ -468,7 +468,6 @@ public class SystemControl extends Service {
         new CarExtensionClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            if ( mMute != null ) mMute.fetchEx(mCarClient);
             if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
@@ -476,7 +475,6 @@ public class SystemControl extends Service {
 
         @Override
         public void onDisconnected() {
-            if ( mMute != null ) mMute.fetchEx(null);
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
