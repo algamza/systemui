@@ -120,15 +120,13 @@ public class VolumeController extends VolumeControllerBase {
         @Override
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
             if ( mUIHandler == null ) return; 
-            if ( mCurrentVolumeType != type ) {
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                       mImgVolume.setImageResource(convertToVolumeIcon(mVolumeMute, type)); 
-                    }
-                }); 
-            }
             mCurrentVolumeType = type; 
+            mUIHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                   mImgVolume.setImageResource(convertToVolumeIcon(mVolumeMute, mCurrentVolumeType)); 
+                }
+            }); 
             mCurrentVolumeMax = max; 
             if ( mCurrentVolume > val ) { 
                 mCurrentVolume = val; 
