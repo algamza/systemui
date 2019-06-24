@@ -115,11 +115,17 @@ public class VolumeController extends VolumeControllerBase {
             mProgress.setProgress(convertToProgressValue(mCurrentVolumeMax, mCurrentVolume));
     }
 
+    private void updateMuteState() {
+        if ( mController == null ) return;
+        mVolumeMute = mController.getCurrentMute(); 
+    }
+
     private VolumeControlService.VolumeCallback mServiceCallback = 
         new VolumeControlService.VolumeCallback() {
         @Override
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
             if ( mUIHandler == null ) return; 
+            updateMuteState();
             mCurrentVolumeType = type; 
             mUIHandler.post(new Runnable() {
                 @Override
@@ -156,6 +162,7 @@ public class VolumeController extends VolumeControllerBase {
 
         @Override
         public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
+            updateMuteState();
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
