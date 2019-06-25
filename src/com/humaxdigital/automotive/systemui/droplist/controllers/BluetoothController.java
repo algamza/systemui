@@ -83,11 +83,11 @@ public class BluetoothController implements BaseController {
             if ( mIsCalling ) return false; 
             if ( mView.isEnable() ) {
                 mOn = false; 
-                mView.updateEnable(false);
+                //mView.updateEnable(false);
                 mSystem.setBluetoothOn(false);
             } else {
                 mOn = true; 
-                mView.updateEnable(true);
+                //mView.updateEnable(true);
                 mSystem.setBluetoothOn(true);
             }
             return true; 

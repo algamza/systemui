@@ -401,7 +401,6 @@ public class SystemControl extends Service {
             if ( mBeep != null ) mBeep.refresh();
             if ( mQuietMode != null ) mQuietMode.refresh();
             if ( mWifi != null ) mWifi.refresh();
-            if ( mBluetooth != null ) mBluetooth.refresh();
 
             unbindToUserService();
             bindToUserService();
@@ -447,6 +446,7 @@ public class SystemControl extends Service {
                 if ( mBrightness != null ) mBrightness.fetch(mUserAudio);  
                 if ( mClusterBrightness != null ) mClusterBrightness.fetch(mUserAudio);  
                 if ( mWifi != null ) mWifi.fetch(mUserWifi);
+                if ( mBluetooth != null ) mBluetooth.fetch(mUserBluetooth); 
 
             } catch( RemoteException e ) {
                 Log.e(TAG, "error:"+e);
@@ -458,6 +458,9 @@ public class SystemControl extends Service {
             Log.d(TAG, "onServiceDisconnected");
             if ( mMute != null ) mMute.fetch(null);
             if ( mWifi != null ) mWifi.fetch(null);
+            if ( mBrightness != null ) mBrightness.fetch(null);  
+            if ( mClusterBrightness != null ) mClusterBrightness.fetch(null);  
+            if ( mBluetooth != null ) mBluetooth.fetch(null); 
             mUserBluetooth = null;
             mUserWifi = null;
             mUserAudio = null;

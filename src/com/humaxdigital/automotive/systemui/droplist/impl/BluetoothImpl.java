@@ -2,19 +2,17 @@ package com.humaxdigital.automotive.systemui.droplist.impl;
 
 import android.content.Context;
 import android.provider.Settings;
-import android.content.ContentResolver;
-import android.database.ContentObserver;
-import android.os.Handler;
-import android.net.Uri;
-import android.os.UserHandle;
+import android.os.RemoteException;
 
 import android.util.Log;
 
+import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
+
 public class BluetoothImpl extends BaseImplement<Boolean> {
     private final String TAG = "BluetoothImpl"; 
-    private ContentResolver mContentResolver;
-    private ContentObserver mBluetoothObserver;
     private final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
+    private IUserBluetooth mUserBluetooth = null;
 
     public BluetoothImpl(Context context) {
         super(context);
@@ -22,12 +20,10 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
 
     @Override
     public void create() {
-        init();
     }
 
     @Override
     public void destroy() {
-        cleanup();
     }
 
     @Override
@@ -43,35 +39,23 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
         setBluetoothOn(e);
     }
 
-    public void refresh() {
-        if ( mContentResolver == null ) return; 
-        if ( mBluetoothObserver != null )  {
-            mContentResolver.unregisterContentObserver(mBluetoothObserver); 
+    public void fetch(IUserBluetooth bt) {
+        if ( bt == null ) {
+            try {
+                if ( mUserBluetooth != null ) 
+                    mUserBluetooth.unregistCallback(mUserBluetoothCallback);
+                mUserBluetooth = null;
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            } 
+            return;
         }
-        Log.d(TAG, "refresh");
-        mBluetoothObserver = createObserver(); 
-        mContentResolver.registerContentObserver(
-            Settings.Global.getUriFor(BT_SYSTEM), 
-            false, mBluetoothObserver, UserHandle.USER_CURRENT); 
-
-        if ( mListener != null ) mListener.onChange(isBluetoothOn()); 
-    }
-
-    private void cleanup() {
-        if ( mContentResolver != null ) 
-            mContentResolver.unregisterContentObserver(mBluetoothObserver); 
-        mBluetoothObserver = null;
-        mContentResolver = null;
-    }
-
-    private void init() {
-        if ( mContext == null ) return;
-        mContentResolver = mContext.getContentResolver();
-        if ( mContentResolver == null ) return; 
-        mBluetoothObserver = createObserver(); 
-        mContentResolver.registerContentObserver(
-            Settings.Global.getUriFor(BT_SYSTEM), 
-            false, mBluetoothObserver, UserHandle.USER_CURRENT); 
+        mUserBluetooth = bt; 
+        try {
+            mUserBluetooth.registCallback(mUserBluetoothCallback);
+        } catch( RemoteException e ) {
+            Log.e(TAG, "error:"+e);
+        } 
     }
 
     private void setBluetoothOn(boolean on) {
@@ -89,15 +73,35 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
         return on==0?false:true;
     }
 
-    private ContentObserver createObserver() {
-        ContentObserver observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange, Uri uri, int userId) {
-                Log.d(TAG, "onChange");
-                if ( mListener != null ) 
-                    mListener.onChange(isBluetoothOn()); 
-            }
-        };
-        return observer; 
-    }
+    private final IUserBluetoothCallback.Stub mUserBluetoothCallback = 
+        new IUserBluetoothCallback.Stub() {
+
+        @Override
+        public void onBluetoothEnableChanged(int enable) throws RemoteException {
+            Log.d(TAG, "onBluetoothEnableChanged:enable="+enable);
+            if ( mListener != null ) 
+                mListener.onChange(enable==1?true:false); 
+        }
+        @Override
+        public void onHeadsetConnectionStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onA2dpConnectionStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onBatteryStateChanged(int level) throws RemoteException {
+        }
+        @Override
+        public void onAntennaStateChanged(int level) throws RemoteException {
+        }
+        @Override
+        public void onBluetoothMicMuteStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onContactsDownloadStateChanged(int state) throws RemoteException {
+        }
+        @Override
+        public void onCallHistoryDownloadStateChanged(int state) throws RemoteException {
+        }
+    };  
 }
