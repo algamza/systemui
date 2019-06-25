@@ -219,10 +219,21 @@ public class VolumeControlService extends Service {
         return mute;
     }
 
+    private void setMasterMute(boolean mute) {
+        if ( mAudioManager == null ) return;
+        int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
+        Log.d(TAG, "set="+mute+", flags="+flags);
+        mAudioManager.adjustSuggestedStreamVolume(
+            mute?AudioManager.ADJUST_MUTE:AudioManager.ADJUST_UNMUTE,
+            AudioManager.STREAM_MUSIC, flags);
+    }
+
     public boolean setVolume(VolumeUtil.Type type, int volume) {
 
         if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(VolumeUtil.convertToMode(type), volume) ) return false;
         if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(VolumeUtil.convertToMode(type), volume) ) return false;
+
+        if ( mAudioManager != null && mAudioManager.isMasterMute() ) setMasterMute(false); 
 
         setAudioVolume(VolumeUtil.convertToMode(type), volume); 
         Log.d(TAG, "setVolume type=" + type + ", volume=" + volume);
