@@ -85,11 +85,11 @@ public class BrightnessController implements BaseController {
 
         mBrightnessProgress = mSystem.getBrightness();
 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-            mClusterChecked = false; 
-        } else {
+        //if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+        //    mClusterChecked = false; 
+        //} else {
             mClusterChecked = mSystem.getClusterCheck();
-        }
+        //}
         
         // todo : get state from system
         mClusterBrightnessProgress = 10;
@@ -189,12 +189,12 @@ public class BrightnessController implements BaseController {
         @Override
         public void onClusterChecked(boolean checked) {
             if ( mCheckbox == null ) return;
-            if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-                mClusterChecked = false; 
-            } else {
+            //if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+            //    mClusterChecked = false; 
+            //} else {
                 mCheckbox.setChecked(checked); 
                 mClusterChecked = checked; 
-            }
+            //}
         }
     };
 

@@ -165,12 +165,14 @@ public class ControllerManager {
         mCloseBtnN = mPanel.findViewById(R.id.close_n); 
         mCloseBtnP = mPanel.findViewById(R.id.close_p); 
         
+        /*
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
             mCheckBoxView = (View)mPanel.findViewById(R.id.checkbox_view); 
             if ( mCheckBoxView != null ) {
                 mCheckBoxView.setVisibility(View.INVISIBLE); 
             }
         }
+        */
     }
 
     private final View.OnClickListener mCloseListener = new View.OnClickListener() {
