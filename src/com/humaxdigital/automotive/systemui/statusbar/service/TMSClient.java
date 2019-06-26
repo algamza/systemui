@@ -1,6 +1,12 @@
 package com.humaxdigital.automotive.systemui.statusbar.service;
 
+import android.os.UserHandle;
+
 import android.content.Context;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import android.util.Log;
 import android.car.hardware.CarPropertyValue;
 import android.car.CarNotConnectedException;
@@ -11,6 +17,7 @@ import java.util.List;
 
 public class TMSClient {
     private static final String TAG = "TMSClient";
+    private static final String ACTION_LOCATION_SHARING_COUNT = "com.humaxdigital.automotive.bluelink.LSC_COUNT"; 
     private CarTMSManager mTMSManager = null;
     private List<TMSCallback> mListeners = new ArrayList<>(); 
     private Context mContext; 
@@ -56,6 +63,7 @@ public class TMSClient {
     public TMSClient(Context context) {
         if ( context == null ) return; 
         mContext = context; 
+        createBroadcastReceiver();
     }
 
     public void connect() {
@@ -203,6 +211,7 @@ public class TMSClient {
 
                     break;
                 }
+                /*
                 case CarTMSManager.APP_TMS_RES_LOCATIONSHARING: {
                     int result = eventData[0];
                     if (result == 0x01) {
@@ -227,6 +236,7 @@ public class TMSClient {
                     }
                     break;
                 }
+                */
             }
         }
 
@@ -245,6 +255,42 @@ public class TMSClient {
         public void onBluelinkCallMode(boolean enabled) {
             for ( TMSCallback callback : mListeners ) 
                 callback.onBluelinkCall(enabled); 
+        }
+    };
+
+    private void createBroadcastReceiver() {
+        if ( mContext == null ) return;
+        final IntentFilter filter = new IntentFilter(); 
+        filter.addAction(ACTION_LOCATION_SHARING_COUNT); 
+        mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
+    }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch(action) {
+                case ACTION_LOCATION_SHARING_COUNT: {
+                    int count = intent.getExtras().getInt("lsc_count");
+                    Log.d(TAG, "ACTION_LOCATION_SHARING_COUNT="+count); 
+                    if (count > 0) {
+                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
+                        if ( mCurrentLocationSharingStatus != status ) {
+                            mCurrentLocationSharingStatus = status; 
+                            for ( TMSCallback callback : mListeners ) 
+                                callback.onLocationSharingChanged(status); 
+                        }
+                    } else {
+                        LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
+                        if ( mCurrentLocationSharingStatus != status ) {
+                            mCurrentLocationSharingStatus = status; 
+                            for ( TMSCallback callback : mListeners ) 
+                                callback.onLocationSharingChanged(status); 
+                        }
+                    }
+                    break;
+                }
+            }
         }
     };
 }

@@ -5,8 +5,6 @@
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="25"/>
 
-    <protected-broadcast android:name="com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST" />
-    
     <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA"/>
     <uses-permission android:name="android.permission.DELETE_CACHE_FILES"/>
     <uses-permission android:name="android.permission.DUMP"/>
