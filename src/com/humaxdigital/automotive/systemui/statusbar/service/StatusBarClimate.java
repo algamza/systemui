@@ -305,6 +305,10 @@ public class StatusBarClimate {
             Log.d(TAG, "Current UserAgreement"); 
             return; 
         }
+        if ( isUserSwitching() ) {
+            Log.d(TAG, "Current UserSwitching"); 
+            return; 
+        }
         if ( mSVSOn ) {
             Log.d(TAG, "Current svs on: only climate toggle");
             return;
@@ -328,6 +332,15 @@ public class StatusBarClimate {
             CarExtraSettings.Global.FALSE);   
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
+    }
+
+    private boolean isUserSwitching() {
+        if ( mContext == null ) return false; 
+        int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
+            CarExtraSettings.Global.FALSE);
+        if ( isUserSwitching == CarExtraSettings.Global.TRUE ) return true; 
+        else return false;
     }
 
     private ClimateControllerManager.ClimateListener mClimateManagerListener = 

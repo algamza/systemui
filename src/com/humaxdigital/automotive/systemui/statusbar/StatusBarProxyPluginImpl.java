@@ -346,6 +346,10 @@ public class StatusBarProxyPluginImpl extends Service {
             Log.d(TAG, "is special case : user agreement"); 
             return true;
         }
+        if ( mStatusBarService.isUserSwitching() ) {
+            Log.d(TAG, "is special case : user switching"); 
+            return true;
+        }
         if ( mStatusBarService.isFrontCamera() ) {
             Log.d(TAG, "is special case : front camera"); 
             OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));

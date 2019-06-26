@@ -51,6 +51,7 @@ public class StatusBarService extends Service {
     private CarSensorManagerEx mSensorManager = null;
 
     private boolean mUserAgreement = false; 
+    private boolean mUserSwitching = false; 
     private boolean mFrontCamera = false;
     private boolean mRearCamera = false;
     private boolean mPowerOff = false; 
@@ -127,6 +128,12 @@ public class StatusBarService extends Service {
         return mUserAgreement; 
     }
 
+    public boolean isUserSwitching() {
+        mUserSwitching = _isUserSwitching();
+        Log.d(TAG, "isUserSwitching="+mUserSwitching);
+        return mUserSwitching; 
+    }
+
     public boolean isFrontCamera() {
         Log.d(TAG, "isFrontCamera="+mFrontCamera);
         return mFrontCamera; 
@@ -193,11 +200,21 @@ public class StatusBarService extends Service {
     }
 
     private boolean _isUserAgreement() {
+        if ( mContext == null ) return false; 
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
+    }
+
+    private boolean _isUserSwitching() {
+        if ( mContext == null ) return false; 
+        int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
+            CarExtraSettings.Global.FALSE);
+        if ( isUserSwitching == CarExtraSettings.Global.TRUE ) return true; 
+        else return false;
     }
 
     private void createCarExClient() {

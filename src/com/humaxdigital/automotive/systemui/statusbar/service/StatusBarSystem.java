@@ -400,6 +400,11 @@ public class StatusBarSystem {
             return; 
         }
 
+        if ( isUserSwitching() ) {
+            Log.d(TAG, "Current userSwitching"); 
+            return; 
+        }
+
         if ( mSVSOn || mSVIOn ) {
             Log.d(TAG, "Current svs = "+mSVSOn+", svi = "+mSVIOn);
             return;
@@ -446,6 +451,11 @@ public class StatusBarSystem {
             return; 
         }
 
+        if ( isUserSwitching() ) {
+            Log.d(TAG, "Current userSwitching"); 
+            return; 
+        }
+
         if ( mBTCall ) {
             Log.d(TAG, "Current BT Call"); 
             OSDPopup.send(mContext, 
@@ -474,11 +484,21 @@ public class StatusBarSystem {
 
     
     private boolean isUserAgreement() {
+        if ( mContext == null ) return false; 
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
+    }
+
+    private boolean isUserSwitching() {
+        if ( mContext == null ) return false; 
+        int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
+            CarExtraSettings.Global.FALSE);
+        if ( isUserSwitching == CarExtraSettings.Global.TRUE ) return true; 
+        else return false;
     }
 
     private void createSystemManager() {
