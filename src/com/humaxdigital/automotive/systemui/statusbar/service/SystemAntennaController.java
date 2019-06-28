@@ -142,7 +142,6 @@ public class SystemAntennaController extends BaseController<Integer> {
 
     private void broadcastChangeEvent() {
         AntennaStatus status = getCurrentStatus();
-        if ( mCurrentAntennaStatus == status ) return;
         mCurrentAntennaStatus = status;
         for ( Listener listener : mListeners ) 
             listener.onEvent(mCurrentAntennaStatus.ordinal());

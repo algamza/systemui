@@ -241,6 +241,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onMuteStatusChanged="+status); 
                     updateMute(status);
                 }
             }); 
@@ -252,6 +253,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onBLEStatusChanged="+status); 
                     mBle.update(BLEStatus.values()[status].ordinal());
                 }
             }); 
@@ -263,6 +265,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onBTBatteryStatusChanged="+status); 
                     mBtBattery.update(BTBatteryStatus.values()[status].ordinal());
                 }
             }); 
@@ -274,6 +277,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onCallStatusChanged="+status); 
                     mPhone.update(CallStatus.values()[status].ordinal());
                 }
             }); 
@@ -285,6 +289,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onAntennaStatusChanged="+status); 
                     mAntenna.update(AntennaStatus.values()[status].ordinal());
                 }
             }); 
@@ -297,6 +302,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onDataStatusChanged="+status); 
                     mPhoneData.update(DataStatus.values()[status].ordinal());
                 }
             }); 
@@ -308,6 +314,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onWifiStatusChanged="+status); 
                     mWifi.update(WifiStatus.values()[status].ordinal());
                 }
             }); 
@@ -319,6 +326,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onWirelessChargeStatusChanged="+status); 
                     mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
                 }
             }); 
@@ -331,6 +339,7 @@ public class SystemStatusController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "onModeStatusChanged="+status); 
                     mLocationSharing.update(ModeStatus.values()[status].ordinal());
                 }
             }); 
