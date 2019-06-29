@@ -79,6 +79,7 @@ public class VolumeController extends VolumeControllerBase {
     private int mCurrentVolume = 0; 
     private int mCurrentVolumeMax = 0; 
     private VolumeUtil.Type mCurrentVolumeType; 
+    private boolean mIsVolumeUp = false; 
 
     private Map<Integer, Integer> mVolumeTypeImages = new HashMap<>();
 
@@ -147,11 +148,14 @@ public class VolumeController extends VolumeControllerBase {
                 }); 
             } 
             else {
+                if ( mCurrentVolume > val ) mIsVolumeUp = false; 
+                else mIsVolumeUp = true;
                 mCurrentVolume = val; 
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        volumeUp(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        if ( mIsVolumeUp ) volumeUp(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        else volumeDown(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -463,50 +467,27 @@ public class VolumeController extends VolumeControllerBase {
     }
 
     private void _volumeUp() {
-        if ( ++mCurrentVolume > PROGRESS_UI_STEP_MAX ) {
-            mCurrentVolume = PROGRESS_UI_STEP_MAX; 
+        int up_volume = mCurrentVolume + 1; 
+        if ( up_volume > PROGRESS_UI_STEP_MAX ) {
+            up_volume = PROGRESS_UI_STEP_MAX; 
             return;
         }
 
-        if ( !mController.setVolume(mCurrentVolumeType, mCurrentVolume) ) {
-            mCurrentVolume--;
-            return;
-        }
-
-        mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                volumeUp(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume); 
-                for ( VolumeChangeListener listener : mListener ) {
-                    listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                }
-            }
-        }); 
-
+        if ( !mController.setVolume(mCurrentVolumeType, up_volume) ) return;
         
+        mUIHandler.post(new VolumeRunnable(0, up_volume)); 
     }
 
     private void _volumeDown() {
-        if ( --mCurrentVolume < 0 ) {
-            mCurrentVolume = 0; 
+        int down_volume = mCurrentVolume - 1; 
+        if ( down_volume < 0 ) {
+            down_volume = 0; 
             return;
         }
 
-        if ( !mController.setVolume(mCurrentVolumeType, mCurrentVolume) ) {
-            mCurrentVolume++; 
-            return;
-        }
+        if ( !mController.setVolume(mCurrentVolumeType, down_volume) ) return;
 
-        mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                volumeDown(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume); 
-                for ( VolumeChangeListener listener : mListener ) {
-                    listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                }
-            }
-        }); 
-        
+        mUIHandler.post(new VolumeRunnable(1, down_volume)); 
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -591,4 +572,32 @@ public class VolumeController extends VolumeControllerBase {
             return false;
         }
     };
+
+    public class VolumeRunnable implements Runnable {
+        private int mVolume = 0;
+        private int mMsg = 0; 
+        public VolumeRunnable(int msg, int volume) {
+          this.mVolume = volume;
+          this.mMsg = msg; 
+        }
+        @Override
+        public void run() {
+            switch(mMsg) {
+                case 0: {
+                    volumeUp(mCurrentVolumeType, mCurrentVolumeMax, mVolume); 
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mVolume);
+                    }
+                    break;
+                }
+                case 1: {
+                    volumeDown(mCurrentVolumeType, mCurrentVolumeMax, mVolume); 
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mVolume);
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
