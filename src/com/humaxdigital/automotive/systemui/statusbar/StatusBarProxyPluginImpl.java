@@ -62,10 +62,9 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mDropListTouchWidth = 0; 
     private int mStatusBarHeight = 0; 
     private int mTouchDownY = 0; 
-    private int mTouchUpY = 0; 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
-    private final int TOUCH_OFFSET = 15; 
+    private int mTouchOffset = 15; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
@@ -103,6 +102,12 @@ public class StatusBarProxyPluginImpl extends Service {
     private void createStatusBarWindow() {
         if ( mWindowManager == null ) return;
         mStatusBarWindow = (ViewGroup) View.inflate(this, R.layout.status_bar_window, null);
+        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
+        String package_name = getPackageName(); 
+        int id_down_y = getResources().getIdentifier("statusbar_touch_down_y_dl3c", "integer",  package_name);
+        int id_touch_offset= getResources().getIdentifier("statusbar_touch_offset_dl3c", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
+        if ( id_touch_offset > 0 ) mTouchOffset = getResources().getInteger(id_touch_offset);
 
         int height = getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
         Log.d(TAG, "height="+height); 
@@ -128,17 +133,6 @@ public class StatusBarProxyPluginImpl extends Service {
         mControllerManager.create(this, mStatusBarView); 
         mStatusBarWindow.removeAllViews();
         mStatusBarWindow.addView(mStatusBarView);
-
-        // TODO: 
-
-        if ( mStatusBarView == null ) return;
-        ImageView droplist_icon = (ImageView) mStatusBarView.findViewById(R.id.icon_droplist); 
-        droplist_icon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openDroplist();
-            }
-        }); 
     }
 
     private void createDropListTouchWindow() {
@@ -150,11 +144,11 @@ public class StatusBarProxyPluginImpl extends Service {
         int id_droplist_touch_height = getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
         int id_droplist_touch_width = getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
         int id_down_y = getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
-        int id_up_y = getResources().getIdentifier("statusbar_touch_up_y", "integer",  package_name);
+        int id_touch_offset= getResources().getIdentifier("statusbar_touch_offset", "integer",  package_name);
         if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
-        if ( id_up_y > 0 ) mTouchUpY = getResources().getInteger(id_up_y);
         if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = getResources().getInteger(id_droplist_touch_height);
         if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = getResources().getInteger(id_droplist_touch_width);
+        if ( id_touch_offset > 0 ) mTouchOffset = getResources().getInteger(id_touch_offset);
 
         WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
             mDropListTouchWidth,
@@ -318,7 +312,7 @@ public class StatusBarProxyPluginImpl extends Service {
                     Log.d(TAG, "ACTION_UP:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
                         mTouchValid = false; 
-                        if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
+                        if ( (y - mTouchDownValue) > mTouchOffset ) {
                             if ( !isSpecialCase() ) openDroplist();
                         }
                     }
@@ -327,7 +321,7 @@ public class StatusBarProxyPluginImpl extends Service {
                 case MotionEvent.ACTION_MOVE: {
                     Log.d(TAG, "ACTION_MOVE:mTouchDownY="+mTouchDownY+", y="+y+", mTouchValid="+mTouchValid); 
                     if ( mTouchValid ) {
-                        if ( (y - mTouchDownValue) > TOUCH_OFFSET ) {
+                        if ( (y - mTouchDownValue) > mTouchOffset ) {
                             mTouchValid = false; 
                             if ( !isSpecialCase() ) openDroplist();
                         }

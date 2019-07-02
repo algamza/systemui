@@ -42,6 +42,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.systemui.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 
@@ -133,6 +134,7 @@ public class DropListUIService extends Service {
                     //| WindowManager.LayoutParams.FLAG_DIM_BEHIND
                     //| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
         mWindow.setType(WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY);
 
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
@@ -146,6 +148,11 @@ public class DropListUIService extends Service {
         lp.windowAnimations = -1;
         mWindow.setAttributes(lp);
         mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
+            mWindow.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND); 
+            lp.dimAmount = 0.46f; 
+        }
 
         mDialog.setCanceledOnTouchOutside(true);
         

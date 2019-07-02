@@ -7,4 +7,6 @@
     <color name="colorCheckBox">#ffffff</color>
     <color name="colorMenu">#e5eaff</color>
     <color name="colorShadow">#000000</color>
+    <color name="colorBackground">#111111</color>
+    <color name="bubble_popup_text">#000000</color>
 </resources>

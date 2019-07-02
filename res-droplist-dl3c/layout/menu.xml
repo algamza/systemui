@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="203">
+    android:weightSum="208">
     <FrameLayout
         android:id="@+id/menu_icon"
         android:layout_width="match_parent"
@@ -23,11 +23,11 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="15"/>
+        android:layout_weight="23"/>
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="43">
+        android:layout_weight="40">
         <TextView
             android:id="@+id/menu_text"
             android:layout_width="wrap_content"

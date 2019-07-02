@@ -3,22 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/panel"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#000000"
-    android:alpha="0.5">
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="642px"
+        android:layout_gravity="top|center_horizontal"
+        android:background="@drawable/custom_bg_gradient"
+        android:alpha="0.92" />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="642px"
         android:orientation="vertical"
-        android:weightSum="630">
+        android:weightSum="642">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="83" />
+            android:layout_weight="132" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="203"
+            android:layout_weight="208"
             android:orientation="horizontal"
             android:weightSum="1920">
             <FrameLayout
@@ -101,18 +105,18 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="83">
+            android:layout_weight="78">
             <FrameLayout
                 android:id="@+id/view_popup"
                 android:layout_width="84px"
                 android:layout_height="57px"
                 android:gravity="center"
                 android:visibility="gone">
-                <ImageView
+                <View
                     android:id="@+id/img_popup"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/set_btn_bubble"
+                    android:background="@drawable/set_btn_bubble"
                     android:layout_gravity="center_vertical|center_horizontal"/>
                 <TextView
                     android:id="@+id/text_progress"
@@ -121,6 +125,7 @@
                     android:layout_marginTop="5px"
                     android:text="0"
                     android:textSize="33px"
+                    android:textColor="@color/bubble_popup_text"
                     android:gravity="center_horizontal|center_vertical"
                     android:layout_gravity="center_horizontal"/>
             </FrameLayout>
@@ -170,7 +175,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="49">
-                        <SeekBar
+                        <com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar
                             android:id="@+id/seekbar"
                             style="@android:style/Widget.ProgressBar.Horizontal"
                             android:layout_width="match_parent"
@@ -178,7 +183,7 @@
                             android:layout_gravity="center_vertical|center_horizontal"
                             android:max="100"
                             android:progress="20"
-                            android:progressDrawable="@drawable/custom_progress"
+                            android:progressDrawable="@android:color/transparent"
                             android:thumb="@drawable/custom_thumb" 
                             android:thumbOffset="-0dp" />
                     </FrameLayout>
@@ -274,13 +279,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="74"
+            android:layout_weight="114"
             android:orientation="vertical"
-            android:weightSum="74">
+            android:weightSum="114">
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="17"/>
+                android:layout_weight="57"/>
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -297,18 +302,12 @@
                     android:src="@drawable/dr_etc_line"/>
             </FrameLayout>
         </LinearLayout>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="40"
-            android:background="@color/colorShadow"
-            android:alpha="0.9" />
     </LinearLayout>
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="420px">
+        android:layout_marginTop="460px">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -319,7 +318,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="514px">
+        android:layout_marginTop="554px">
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -8,11 +8,22 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="DropListSeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:colorControlActivated">#1a237e</item>
+        <item name="android:colorControlNormal">#00b0ff</item>
+        <item name="android:progressBackgroundTint">#f4511e</item>
+        <item name="android:progressTint">#388e3c</item>
+    </style>
+
+    <style name="CheckBoxStyle" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="buttonTint">@android:color/white</item>
+    </style>
+
     <style name="Theme.D1NoTitleDim" parent="android:style/Theme.Translucent">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:background">@android:color/transparent</item>
     </style>
-
 </resources>
