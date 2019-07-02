@@ -59,6 +59,7 @@ public class DevNavigationBar extends FrameLayout {
     private CheckBox mUsbDebuggingCheckBox;
     private CheckBox mDropCacheCheckBox;
     private CheckBox mUsbHubCheckBox;
+    private CheckBox mMapAutoCheckBox;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -134,6 +135,9 @@ public class DevNavigationBar extends FrameLayout {
         mUsbHubCheckBox = (CheckBox) findViewById(R.id.chkUsbHub);
         mUsbHubCheckBox.setOnClickListener(view -> { writeUsbHubOptions(); });
 
+        mMapAutoCheckBox = (CheckBox) findViewById(R.id.chkMapAuto);
+        mMapAutoCheckBox.setOnClickListener(view -> { writeMapAutoOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -157,6 +161,8 @@ public class DevNavigationBar extends FrameLayout {
         writeDropCacheOptions();
         updateUsbHubOptions();
         writeUsbHubOptions();
+        updateMapAutoOptions();
+        writeMapAutoOptions();
     }
 
     public void onAttached() {
@@ -339,6 +345,18 @@ public class DevNavigationBar extends FrameLayout {
         boolean support = mUsbHubCheckBox.isChecked();
         SystemProperties.set(
                 "persist.vendor.humax.usbhub.support", (support) ? "true" : "false");
+    }
+
+    private void updateMapAutoOptions() {
+        final boolean support = SystemProperties.getBoolean(
+                "persist.vendor.humax.log.copy.mapauto", false);
+        mMapAutoCheckBox.setChecked(support);
+    }
+
+    private void writeMapAutoOptions() {
+        boolean support = mMapAutoCheckBox.isChecked();
+        SystemProperties.set(
+                "persist.vendor.humax.log.copy.mapauto", (support) ? "true" : "false");
     }
 
     private void switchUser(int index) {

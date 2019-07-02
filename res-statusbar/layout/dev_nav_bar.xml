@@ -153,14 +153,14 @@
                     android:checked="false" />
 
                 <CheckBox
-                    android:id="@+id/chkUsbDebugging"
+                    android:id="@+id/chkDropCache"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#222222"
                     android:layout_margin="5dp"
                     android:textSize="18sp"
                     android:textColor="#aaaaaa"
-                    android:text="USB Debugging"
+                    android:text="Drop Cache"
                     android:checked="false" />
 
             </LinearLayout>
@@ -172,14 +172,14 @@
                 android:orientation="vertical">
 
                 <CheckBox
-                    android:id="@+id/chkDropCache"
+                    android:id="@+id/chkUsbDebugging"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#222222"
                     android:layout_margin="5dp"
                     android:textSize="18sp"
                     android:textColor="#aaaaaa"
-                    android:text="Drop Cache"
+                    android:text="USB ADB"
                     android:checked="false" />
 
                 <CheckBox
@@ -191,6 +191,36 @@
                     android:textSize="18sp"
                     android:textColor="#aaaaaa"
                     android:text="USB Hub"
+                    android:checked="false" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width = "wrap_content"
+                android:layout_height= "match_parent"
+                android:gravity="top"
+                android:orientation="vertical">
+
+                <CheckBox
+                    android:id="@+id/chkMapAuto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#222222"
+                    android:layout_margin="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#aaaaaa"
+                    android:text="MapAuto"
+                    android:checked="false" />
+
+                <CheckBox
+                    android:id="@+id/chkReserved"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#222222"
+                    android:layout_margin="5dp"
+                    android:textSize="18sp"
+                    android:textColor="#aaaaaa"
+                    android:text="Reserved"
                     android:checked="false" />
 
             </LinearLayout>
@@ -215,7 +245,7 @@
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
                     android:textColor="#cccccc"
-                    android:textSize="20sp"/>
+                    android:textSize="18sp"/>
 
                 <TextView
                     android:id="@+id/txtSavedActivity"
