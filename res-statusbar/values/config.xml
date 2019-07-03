@@ -23,4 +23,7 @@
      ui is updated. It hides the semi-circle click targets/temp indicators that overlay
      the system nav bar.-->
     <bool name="config_showCollapsedBars">false</bool>
+
+    <!-- Whether or not to use system gestures -->
+    <bool name="config_useSystemGestures">false</bool>
 </resources>

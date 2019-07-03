@@ -57,6 +57,7 @@ public class StatusBarProxyPluginImpl extends Service {
     private DevModeController mDevModeController;
     private ControllerManagerBase mControllerManager; 
     private StatusBarService mStatusBarService;
+    private boolean mUseSystemGestures;
     private boolean mCollapseDesired = false;
     private int mDropListTouchHeight = 0; 
     private int mDropListTouchWidth = 0; 
@@ -77,6 +78,7 @@ public class StatusBarProxyPluginImpl extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate");
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        mUseSystemGestures = getResources().getBoolean(R.bool.config_useSystemGestures);
 
         startStatusBarService(this);
 
@@ -97,6 +99,10 @@ public class StatusBarProxyPluginImpl extends Service {
                 return true;
             }
         });
+
+        if (mUseSystemGestures) {
+            registerSystemGestureReceiver();
+        }
     }
 
     private void createStatusBarWindow() {
@@ -137,6 +143,12 @@ public class StatusBarProxyPluginImpl extends Service {
 
     private void createDropListTouchWindow() {
         if ( mWindowManager == null ) return;
+
+        if (mUseSystemGestures) {
+            // Don't need the fake invisible top window to trigger the droplist
+            // as long as using system gestures.
+            return;
+        }
 
         mDropListTouchWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
         mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
@@ -195,6 +207,10 @@ public class StatusBarProxyPluginImpl extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+
+        if (mUseSystemGestures) {
+            unregisterSystemGestureReceiver();
+        }
 
         if (mNavBarWindow != null) {
             mNavBarWindow.removeAllViews();
@@ -294,6 +310,32 @@ public class StatusBarProxyPluginImpl extends Service {
             mStatusBarService = null;
         }
     };
+
+    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
+    public static final String EXTRA_GESTURE = "gesture";
+
+    private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_SYSTEM_GESTURE)) {
+                String gesture = intent.getStringExtra(EXTRA_GESTURE);
+                if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
+                    openDroplist();
+                }
+            }
+        }
+    };
+
+    private void registerSystemGestureReceiver() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION_SYSTEM_GESTURE);
+        registerReceiver(mSystemGestureReceiver, intentFilter);
+    }
+
+    private void unregisterSystemGestureReceiver() {
+        unregisterReceiver(mSystemGestureReceiver);
+    }
 
     private final View.OnTouchListener mStatusBarTouchListener = new View.OnTouchListener() {
         @Override
