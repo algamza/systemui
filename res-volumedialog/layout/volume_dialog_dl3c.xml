@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/volume_panel"
+    android:background="@drawable/ho_bg_volumebar"
     android:layout_width="@dimen/volume_dialog_width_dl3c"
     android:layout_height="@dimen/volume_dialog_height_dl3c">
-    <ImageView
-        android:layout_width="1920px"
-        android:layout_height="250px"
-        android:layout_gravity="bottom"
-        android:alpha="0.6"
-        android:background="#000000" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="76px"
