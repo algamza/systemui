@@ -54,10 +54,27 @@ public class MenuLayout extends LinearLayout {
 
         mIconBG = (ImageView)this.findViewById(R.id.img_icon_bg);
         mIcon = (ImageView)this.findViewById(R.id.img_icon);
-
         mViewText = (TextView)this.findViewById(R.id.menu_text);
 
         if ( mIconBG == null || mIcon == null || mViewText == null ) return this;
+
+        mIconBG.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if ( mListener != null ) mListener.onClick();
+            }
+        });
+
+        mIconBG.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if ( mListener == null )  return false;
+                if ( mListener.onLongClick() ) {
+                    return true;
+                }
+                return false;
+            }
+        });
 
         if ( mResIcon != null ) {
             mIcon.setImageDrawable(mResIcon);
@@ -84,24 +101,6 @@ public class MenuLayout extends LinearLayout {
     public MenuLayout setListener(MenuListener listener) {
         if ( mListener != null ) return this;
         mListener = listener;
-        setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if ( mListener != null ) mListener.onClick();
-            }
-        });
-
-        setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if ( mListener == null )  return false;
-                if ( mListener.onLongClick() ) {
-                    return true;
-                }
-                return false;
-            }
-        });
-
         return this;
     }
 
