@@ -135,9 +135,12 @@ public class NotificationSubscriber extends NotificationListenerService {
                             if (!exists) {
                                 sNotifications.add(delta.mSbn);
                             } else {
-                                int position = mTmpRanking.getRank();
-                                if ( sNotifications.size() > position ) 
-                                    sNotifications.set(position, delta.mSbn);
+                                for (int i = 0; i < sNotifications.size(); i++) {
+                                    StatusBarNotification notification = sNotifications.get(i); 
+                                    if ( notification.getKey().equals(delta.mSbn.getKey()) ) {
+                                        sNotifications.set(i, delta.mSbn); 
+                                    }
+                                }
                             }
                             mRankingMap = delta.mRankingMap;
                             Collections.sort(sNotifications, mRankingComparator);
