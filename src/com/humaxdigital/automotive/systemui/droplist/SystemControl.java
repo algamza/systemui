@@ -366,6 +366,16 @@ public class SystemControl extends Service {
         openActivity(ACTION_OPEN_SETUP); 
     }
 
+    public void performClick() {
+        if ( mUserAudio != null ) {
+            try {
+                mUserAudio.performClick();
+            } catch( RemoteException e ) {
+                Log.e(TAG, "error:"+e);
+            } 
+        }
+    }
+
     private void registUserSwicher() {
         Log.d(TAG, "registUserSwicher");
         IntentFilter filter = new IntentFilter();
@@ -443,7 +453,6 @@ public class SystemControl extends Service {
                 mUserAudio = mUserService.getUserAudio();
 
                 if ( mMute != null ) mMute.fetch(mUserAudio);
-                if ( mBrightness != null ) mBrightness.fetch(mUserAudio);  
                 if ( mClusterBrightness != null ) mClusterBrightness.fetch(mUserAudio);  
                 if ( mWifi != null ) mWifi.fetch(mUserWifi);
                 if ( mBluetooth != null ) mBluetooth.fetch(mUserBluetooth); 
@@ -458,7 +467,6 @@ public class SystemControl extends Service {
             Log.d(TAG, "onServiceDisconnected");
             if ( mMute != null ) mMute.fetch(null);
             if ( mWifi != null ) mWifi.fetch(null);
-            if ( mBrightness != null ) mBrightness.fetch(null);  
             if ( mClusterBrightness != null ) mClusterBrightness.fetch(null);  
             if ( mBluetooth != null ) mBluetooth.fetch(null); 
             mUserBluetooth = null;
