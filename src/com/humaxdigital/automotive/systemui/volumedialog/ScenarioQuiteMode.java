@@ -37,6 +37,7 @@ public class ScenarioQuiteMode {
     private HashMap<VolumeUtil.Type,Boolean> mQuiteModeAudioChange = new HashMap<>();
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private boolean mIsQuiteModeApplying = false; 
+    private boolean mNeedToShowUI = false; 
 
     public ScenarioQuiteMode(Context context) {
         if ( context == null ) return;
@@ -161,7 +162,9 @@ public class ScenarioQuiteMode {
 
     public boolean checkQuietMode(int mode, int volume) {
         if ( !isQuiteMode() ) return false; 
-        
+
+        mNeedToShowUI = false;
+
         for ( VolumeUtil.Type type : mQuiteModeAudioTypeList ) {
             if ( mode != VolumeUtil.convertToMode(type) ) continue; 
 
@@ -178,6 +181,8 @@ public class ScenarioQuiteMode {
                 }
             }
             
+            if ( volume == QUITE_MODE_MAX ) mNeedToShowUI = true;
+            
             if ( volume > QUITE_MODE_MAX ) {
                 setAudioVolume(mode, QUITE_MODE_MAX); 
                 Log.d(TAG, "checkQuietMode:type="+type+", las volume="+volume);
@@ -186,6 +191,10 @@ public class ScenarioQuiteMode {
         }
 
         return false;
+    }
+
+    public boolean isNeedToShowUI() {
+        return mNeedToShowUI; 
     }
 
     public void userRefresh() {
