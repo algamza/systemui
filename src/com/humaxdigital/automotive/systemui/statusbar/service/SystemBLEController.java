@@ -141,10 +141,12 @@ public class SystemBLEController extends BaseController<Integer> {
                             }
                         }
                     } else if ( id == CarBLEManager.EVT_BLE_ERROR_FOR_CALIBRATION ) {
-                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTION_FAIL.ordinal()) ) {
+                        // INFO : BLEStatus.CONNECTION_FAIL 
+                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
                             for ( Listener listener : mListeners ) 
-                                listener.onEvent(BLEStatus.CONNECTION_FAIL.ordinal());
+                                listener.onEvent(BLEStatus.NONE.ordinal());
                         }
+                        
                     } else if ( id == CarBLEManager.EVT_BLE_CONNECTED_PHONE_INFO ) {
                         int dataLength = ((data[4] & 0xff) << 24) 
                                         | ((data[5] & 0xff) << 16) 
