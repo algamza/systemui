@@ -22,10 +22,13 @@ import java.util.List;
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
+    public static final String CHANGE_USER_ICON_EVENT = "com.humaxdigital.automotive.app.USERPROFILE.CHANGE_USER_ICON_EVENT";
+    public static final String CHANGE_USER_GET_EXTRA_IMG = "BitmapImage"; 
     private int mCurrentUserID = 0; 
     private UserManager mUserManager; 
     private ActivityManager mActivityManager;
     private List<UserChangeListener> mUserChangeListeners = new ArrayList<>(); 
+    private Bitmap mCurrentUserIcon = null; 
 
     public interface UserChangeListener {
         void onUserChanged(int userid); 
@@ -45,6 +48,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         //filter.addAction(Intent.ACTION_USER_ADDED);
         filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
         filter.addAction(Intent.ACTION_USER_SWITCHED);
+        filter.addAction(CHANGE_USER_ICON_EVENT);
         //filter.addAction(Intent.ACTION_USER_STOPPED);
         //filter.addAction(Intent.ACTION_USER_UNLOCKED);
         mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
@@ -123,6 +127,13 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
                     for ( Listener<Bitmap> listener : mListeners ) 
                         listener.onEvent(getUserBitmap(mCurrentUserID));
                     break;
+                }
+                case CHANGE_USER_ICON_EVENT: {
+                    if ( intent == null ) break;
+                    mCurrentUserIcon = (Bitmap)intent.getExtras().get(CHANGE_USER_GET_EXTRA_IMG); 
+                    for ( Listener<Bitmap> listener : mListeners ) 
+                        listener.onEvent(mCurrentUserIcon);
+                    break; 
                 }
             }
 
