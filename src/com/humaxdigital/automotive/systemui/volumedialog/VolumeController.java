@@ -140,7 +140,7 @@ public class VolumeController extends VolumeControllerBase {
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        volumeDown(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        volumeDownNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -154,8 +154,8 @@ public class VolumeController extends VolumeControllerBase {
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if ( mIsVolumeUp ) volumeUp(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        else volumeDown(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        if ( mIsVolumeUp ) volumeUpNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        else volumeDownNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -273,6 +273,21 @@ public class VolumeController extends VolumeControllerBase {
             mMinus.setOnLongClickListener(mOnLongClickListener);
             mMinus.setOnTouchListener(mOnTouchListener);
         }
+    }
+
+    
+    private void volumeUpNoUI(VolumeUtil.Type type, int max, int value) {
+        Log.d(TAG, "volumeUpNoUI:type="+type+", max="+max+", value="+value); 
+        if ( isVolumeMute() ) setVolumeMute(false);
+        if ( mProgress != null ) mProgress.setProgress(convertToProgressValue(max, value));
+        if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
+    }
+
+    private void volumeDownNoUI(VolumeUtil.Type type, int max, int value) {
+        Log.d(TAG, "volumeDownNoUI:type="+type+", max="+max+", value="+value); 
+        int val = convertToProgressValue(max, value); 
+        if ( mProgress != null ) mProgress.setProgress(val);
+        if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
     }
 
     private void volumeUp(VolumeUtil.Type type, int max, int value) {
