@@ -344,16 +344,14 @@ public class ClimateController {
         if ( mIsOperateOn || !mIGNOn ) return;   
         if ( mModeOff == off ) return; 
         mModeOff = off; 
+        if ( mFanDirection == null ) return;
         if ( mModeOff ) {
-            updateTempOn(false); 
-            if ( mAC != null ) mAC.update(ACState.OFF.ordinal()); 
-            if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-            if ( mFanDirection != null ) mFanDirection.update(FanDirectionState.OFF.ordinal()); 
+            mFanDirection.update(FanDirectionState.OFF.ordinal()); 
         } else {
-            updateTempOn(true);
-            if ( mAC != null ) mAC.update(mACState.ordinal()); 
-            if ( mFanSpeed != null ) mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-            if ( mFanDirection != null ) mFanDirection.update(mFanDirectionState.ordinal()); 
+            if ( mFrontDefogState == FrontDefogState.ON ) 
+                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
+            else 
+                mFanDirection.update(mFanDirectionState.ordinal()); 
         }
     }
 
