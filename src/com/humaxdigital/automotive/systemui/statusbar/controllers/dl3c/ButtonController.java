@@ -13,15 +13,16 @@ import android.app.Instrumentation;
 
 import android.util.Log; 
 
+import com.humaxdigital.automotive.systemui.statusbar.ui.FrameLayoutButton; 
 import com.humaxdigital.automotive.systemui.R;
 
 public class ButtonController {
     private static String TAG = "ButtonController"; 
     private View mParentView; 
     private Context mContext;
-    private ImageView mBtnBack; 
-    private ImageView mBtnHome; 
+    private FrameLayoutButton mBtnBack; 
     private ImageView mIconBack; 
+    private FrameLayoutButton mBtnHome; 
     private ImageView mIconHome; 
     private Handler mHandler; 
 
