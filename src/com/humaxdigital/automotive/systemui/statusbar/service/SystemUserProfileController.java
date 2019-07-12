@@ -24,6 +24,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
     public static final String CHANGE_USER_ICON_EVENT = "com.humaxdigital.automotive.app.USERPROFILE.CHANGE_USER_ICON_EVENT";
     public static final String CHANGE_USER_GET_EXTRA_IMG = "BitmapImage"; 
+    public static final String REQUEST_CURRENT_USER_ICON = "com.humaxdigital.dn8c.REQUEST_CURRENT_USER_ICON";
     private int mCurrentUserID = 0; 
     private UserManager mUserManager; 
     private ActivityManager mActivityManager;
@@ -52,6 +53,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         //filter.addAction(Intent.ACTION_USER_STOPPED);
         //filter.addAction(Intent.ACTION_USER_UNLOCKED);
         mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
+        requestUserIcon();
     }
 
     @Override
@@ -76,6 +78,12 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     public void unregisterUserChangeCallback(UserChangeListener listener) {
         if ( listener == null ) return; 
         mUserChangeListeners.remove(listener);
+    }
+
+    private void requestUserIcon() {
+        if ( mContext == null ) return;
+        Intent intent = new Intent(REQUEST_CURRENT_USER_ICON); 
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
     }
 
     private int getCurrentUserID() {
