@@ -79,19 +79,18 @@ public class StatusBarProxyPluginImpl extends Service {
         Log.d(TAG, "onCreate");
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         mUseSystemGestures = getResources().getBoolean(R.bool.config_useSystemGestures);
-
         startStatusBarService(this);
-
+        mDevNavView = inflateDevNavBarView();
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
         {
             createStatusBarWindow();
+            mDevModeController = new DevModeController(this, mStatusBarView, mDevNavView);
         } else {
             createDropListTouchWindow(); 
             createNaviBarWindow();
+            mDevModeController = new DevModeController(this, mNavBarView, mDevNavView);
         }
-
-        mDevNavView = inflateDevNavBarView();
-        mDevModeController = new DevModeController(this, mNavBarView, mDevNavView);
+       
         mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
             @Override
             public boolean onViewChange(View v) {
@@ -137,8 +136,7 @@ public class StatusBarProxyPluginImpl extends Service {
         mStatusBarView = inflateStatusBarView();
         mControllerManager = new ControllerManagerDL3C(); 
         mControllerManager.create(this, mStatusBarView); 
-        mStatusBarWindow.removeAllViews();
-        mStatusBarWindow.addView(mStatusBarView);
+        setContentBarView(mStatusBarView);
     }
 
     private void createDropListTouchWindow() {
@@ -279,9 +277,15 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     public void setContentBarView(View view) {
-        if ( mNavBarWindow == null ) return;
-        mNavBarWindow.removeAllViews();
-        mNavBarWindow.addView(view);
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
+            if ( mStatusBarWindow == null ) return;
+            mStatusBarWindow.removeAllViews();
+            mStatusBarWindow.addView(view); 
+        } else {
+            if ( mNavBarWindow == null ) return;
+            mNavBarWindow.removeAllViews();
+            mNavBarWindow.addView(view);
+        }
     }
 
     private void startStatusBarService(Context context){

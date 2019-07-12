@@ -80,6 +80,7 @@ public class DevModeController {
     }
 
     private boolean stepPattern(int x, int y, int width) {
+        Log.d(TAG, "stepPattern:x="+x+", y="+y+", width="+width); 
         long eventTime = SystemClock.uptimeMillis();
         if (Math.abs(eventTime - mLastEventTime) > ALIVE_TIME) {
             mCurrentStep = 0;
