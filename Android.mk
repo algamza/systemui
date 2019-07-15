@@ -37,14 +37,17 @@ LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 	  
 LOCAL_RESOURCE_DIR := \
 	$(LOCAL_PATH)/res-statusbar \
-	$(LOCAL_PATH)/res-volumedialog \
 	$(LOCAL_PATH)/res-notificationui \
 	$(LOCAL_PATH)/res-wallpaper
 
 ifneq ($(filter dydl_%, $(TARGET_PRODUCT)),)
-LOCAL_RESOURCE_DIR += $(LOCAL_PATH)/res-droplist-dl3c 
+LOCAL_RESOURCE_DIR += \
+	$(LOCAL_PATH)/res-droplist-dl3c \
+	$(LOCAL_PATH)/res-volumedialog-dl3c
 else
-LOCAL_RESOURCE_DIR += $(LOCAL_PATH)/res-droplist
+LOCAL_RESOURCE_DIR += \
+	$(LOCAL_PATH)/res-droplist \
+	$(LOCAL_PATH)/res-volumedialog
 endif 
 
 LOCAL_CERTIFICATE := platform
