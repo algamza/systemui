@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/panel"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="642px">
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="642px"
         android:layout_gravity="top|center_horizontal"
         android:background="@drawable/custom_bg_gradient"
-        android:alpha="0.92" />
+        android:alpha="0.95" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="642px"
@@ -18,7 +18,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="132" />
+            android:layout_weight="133" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -114,8 +114,8 @@
                 android:visibility="gone">
                 <View
                     android:id="@+id/img_popup"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="84px"
+                    android:layout_height="57px"
                     android:background="@drawable/set_btn_bubble"
                     android:layout_gravity="center_vertical|center_horizontal"/>
                 <TextView
@@ -134,9 +134,9 @@
             android:id="@+id/seekbar_control"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="147"
+            android:layout_weight="146"
             android:orientation="vertical"
-            android:weightSum="147">
+            android:weightSum="146">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -214,7 +214,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="12" />
+                android:layout_weight="11" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -279,18 +279,13 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="114"
+            android:layout_weight="77"
             android:orientation="vertical"
-            android:weightSum="114">
+            android:weightSum="77">
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="57"/>
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="56">
-            </FrameLayout>
+                android:layout_weight="76"/>
              <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -304,24 +299,24 @@
         </LinearLayout>
     </LinearLayout>
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="12px"
+        android:layout_height="7px"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="460px">
+        android:layout_marginTop="480px">
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="12px"
+            android:layout_height="7px"
             android:src="@drawable/dr_ic_center" />
     </FrameLayout>
     <FrameLayout
         android:id="@+id/close"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="213px"
+        android:layout_height="56px"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="554px">
+        android:layout_marginTop="585px">
         <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="213px"
+            android:layout_height="56px"
             android:id="@+id/close_n">
             <ImageView
                 android:layout_width="wrap_content"
@@ -329,8 +324,8 @@
                 android:src="@drawable/dr_btn_bottom_n"/>
         </FrameLayout>
         <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="213px"
+            android:layout_height="56px"
             android:id="@+id/close_p"
             android:visibility="invisible">
             <ImageView
