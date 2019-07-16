@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dialog_width"> 1920px </dimen>
+    <dimen name="dialog_height"> 90px </dimen>
+    
+    <dimen name="icon_width"> 80px </dimen>
+    <dimen name="icon_height"> 80px </dimen>
+    <dimen name="line_width"> 3px </dimen>
+    <dimen name="line_height"> 60px </dimen>
+
+    <dimen name="title_width"> 216px </dimen>
+
+    <dimen name="notification_title_text_size"> 42px </dimen>
+    <dimen name="notification_body_text_size"> 42px </dimen>
+    <dimen name="notification_body_double_line_text_size"> 30px </dimen>
+
+    <dimen name="notification_title_margin"> 30px </dimen>
+    <dimen name="notification_title_left_margin"> 30px </dimen>
+    <dimen name="notification_line_margin"> 30px </dimen>
+    <dimen name="notification_icon_margin"> 30px </dimen>
+    <dimen name="notification_body_spacing_margin"> 0dp </dimen>
+    
+    
+</resources>

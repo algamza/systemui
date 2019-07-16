@@ -14,6 +14,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.RemoteViews;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -157,19 +158,22 @@ public class NotificationUiService extends Service {
                     if ( !isValidPackage(notification.getPackageName()) ) return false;
                     Notification noti = notification.getNotification();
                     if ( noti == null ) return false; 
+                     
                     Icon icon = noti.getSmallIcon(); 
                     long duration = noti.getTimeoutAfter(); 
                     Bundle extras = noti.extras;
                     String title = extras.getString(Notification.EXTRA_TITLE);
                     CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
                     CharSequence subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT);
-
+                    RemoteViews remote_view = noti.contentView;
+                    //RemoteViews remote_view = noti.bigContentView;
+                    //RemoteViews remote_view = noti.headsUpContentView; 
                     Log.d(TAG, "packagename:"+notification.getPackageName()+", title:"+title+", text:"+text); 
-
-                    if ( (text == null || text.equals("")) && 
+                    if ( (remote_view == null) && (text == null || text.equals("")) && 
                         (title == null  || title.equals("")) ) return false; 
-                    if ( !isValidTitle(title) ) return false;
+                    if ( (remote_view == null) && !isValidTitle(title) ) return false;
                     NotificationUI ui = new NotificationUI(NotificationUiService.this); 
+                    if ( remote_view != null ) ui.setRemoteViews(remote_view); 
                     if ( title != null && !title.equals("") ) ui.setTitle(title); 
                     else ui.setTitle(""); 
                     if ( text != null ) ui.setBody(text.toString()); 

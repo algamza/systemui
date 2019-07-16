@@ -18,40 +18,32 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone">
-                <FrameLayout
+                <com.humaxdigital.automotive.systemui.statusbar.ui.FrameLayoutButton
+                    android:id="@+id/btn_back"
                     android:layout_width="119px"
-                    android:layout_height="match_parent"
+                    android:layout_height="76px"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginLeft="26px">
-                    <ImageView
-                        android:id="@+id/btn_back"
-                        android:layout_width="119px"
-                        android:layout_height="76px"
-                        android:layout_gravity="center_vertical|center_horizontal"
-                        android:src="@drawable/co_btn_status"/>
                     <ImageView
                         android:id="@+id/icon_back"
                         android:layout_width="52px"
                         android:layout_height="52px"
                         android:layout_gravity="center_horizontal|center_vertical"
                         android:src="@drawable/co_ico_status_back"/>
-                </FrameLayout>
-                <FrameLayout
+                </com.humaxdigital.automotive.systemui.statusbar.ui.FrameLayoutButton>
+                <com.humaxdigital.automotive.systemui.statusbar.ui.FrameLayoutButton
+                    android:id="@+id/btn_home"
                     android:layout_width="119px"
-                    android:layout_height="match_parent"
+                    android:layout_height="76px"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginLeft="151px">
-                    <ImageView
-                        android:id="@+id/btn_home"
-                        android:layout_width="119px"
-                        android:layout_height="76px"
-                        android:layout_gravity="center_vertical|center_horizontal"
-                        android:src="@drawable/co_btn_status"/>
                     <ImageView
                         android:id="@+id/icon_home"
                         android:layout_width="52px"
                         android:layout_height="52px"
                         android:layout_gravity="center_horizontal|center_vertical"
                         android:src="@drawable/co_ico_status_home"/>
-                </FrameLayout>
+                </com.humaxdigital.automotive.systemui.statusbar.ui.FrameLayoutButton>
             </FrameLayout>
             <FrameLayout
                 android:id="@+id/layout_userprofile"

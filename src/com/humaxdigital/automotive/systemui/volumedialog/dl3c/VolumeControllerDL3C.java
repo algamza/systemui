@@ -82,6 +82,8 @@ public class VolumeControllerDL3C extends VolumeControllerBase {
             mTextVolumeValue.setText(String.format("%d", mCurrentVolume));
         if ( mTextVolumeName != null ) 
             mTextVolumeName.setText(convertToString(mCurrentVolumeType)); 
+        if ( mImgVolumeIcon != null ) 
+            mImgVolumeIcon.setImageResource(getVolumeIcon(mCurrentVolumeType, mCurrentMute)); 
         for ( int i = 1; i <= mCurrentVolume; i++ ) 
             mVolumeSels.get(i).setImageResource(mIdSellOn); 
         for ( int i = mCurrentVolume+1; i <= UI_SEL_MAX; i++ ) 
@@ -182,5 +184,63 @@ public class VolumeControllerDL3C extends VolumeControllerBase {
 
         mIdSellOff = R.drawable.ho_bg_volume_nor; 
         mIdSellOn = R.drawable.ho_bg_volume_sel; 
+    }
+
+    private int getVolumeIcon(VolumeUtil.Type type, boolean mute) {
+        Log.d(TAG, "getVolumeIcon : mute="+mute+", type="+type);
+        int resId = R.drawable.co_ic_volume; 
+        switch(type) {
+            case UNKNOWN:
+            case RADIO_FM:
+            case RADIO_AM:
+            case USB:
+            case WELCOME_SOUND: 
+            case SETUP_GUIDE:
+            case BAIDU_MEDIA: 
+            case CARLIFE_MEDIA:
+            case ONLINE_MUSIC: {
+                if ( !mute ) resId = R.drawable.co_ic_volume; 
+                else resId = R.drawable.co_ic_volume_mute;  
+                break;
+            } 
+            case BT_AUDIO: {
+                if ( !mute ) resId = R.drawable.co_ic_btaudio; 
+                else resId = R.drawable.co_ic_btaudio_mute;
+                break;
+            } 
+            case EMERGENCY_CALL: 
+            case ADVISOR_CALL: 
+            case BT_PHONE_CALL: {
+                if ( !mute ) resId = R.drawable.co_ic_btphone;
+                else resId = R.drawable.co_ic_btphone_mute;
+                break;
+            } 
+            case CARLIFE_NAVI:
+            case BAIDU_NAVI: {
+                if ( !mute ) resId = R.drawable.co_ic_navi;
+                else resId = R.drawable.co_ic_navi_mute; 
+                break;
+            } 
+            case CARLIFE_TTS:
+            case BAIDU_VR_TTS:  {
+                if ( !mute ) resId = R.drawable.co_ic_vr;
+                else resId = R.drawable.co_ic_vr_mute;
+                break;
+            } 
+            case BT_PHONE_RING: {
+                if ( !mute ) resId = R.drawable.co_ic_ringtone;
+                else resId = R.drawable.co_ic_ringtone_mute;
+                break;
+            }
+            case BEEP:
+            case BAIDU_ALERT: {
+                break;
+            }
+            default: break;
+        }
+
+        if ( resId < 0 ) resId = R.drawable.co_ic_volume; 
+
+        return resId; 
     }
 }

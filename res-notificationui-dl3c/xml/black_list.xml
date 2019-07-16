@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blacklist>
+    <app name="title">com.</app>
+    <app name="title">Humax</app>
+    <app name="title">humax</app>
+    <app name="title">HUMAX</app>
+    <app name="is_running">is running</app>
+    <app name="is_running">正在运行</app>
+    <app name="is_running">실행 중입니다</app>
+</blacklist>
