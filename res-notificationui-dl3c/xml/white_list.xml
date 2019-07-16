@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<whitelist>
+    <app name="Radio">com.humaxdigital.automotive.radio</app>
+    <app name="USBMusic">com.humaxdigital.media.usbmusic</app>
+    <app name="Video">com.humaxdigital.media.video</app>
+    <app name="MyMusic">com.humaxdigital.media.mymusic</app>
+    <app name="MyVideo">com.humaxdigital.media.myvideo</app>
+    <app name="QQMusic">com.humaxdigital.automotive.qqmusic</app>
+    <app name="USBPhoto">com.humaxdigital.automotive.usbphoto</app>
+    <app name="BlueLink">com.humaxdigital.automotive.bluelink</app>
+    <app name="BaiduNavigation">com.baidu.mapauto</app>
+    <app name="BaiduCarLife">com.humaxdigital.carlife</app>
+    <app name="UserProfile">com.humaxdigital.userprofile</app>
+    <app name="CameraAHD">com.humaxdigital.automotive.camera</app>
+    <app name="CarMainService">com.humaxdigital.automotive.carmainservice</app>
+    <app name="notificationtest">com.humaxdigital.automotive.noti_test</app>
+    <app name="DN8CSetup">com.humaxdigital.dn8c.setup</app>
+    <app name="DU2Setup">com.humaxdigital.du2.setup</app>
+    <app name="PhoneContacts">com.android.phone</app>
+    <app name="PhoneCall">com.humaxdigital.automotive.btphone</app>
+    <app name="CarDialer">com.android.car.dialer</app>
+    <app name="BTSetting">com.humaxdigital.automotive.btsetting</app>
+	<app name="BaiduAdapterService">com.humaxdigital.automotive.baiduadapterservice</app>
+    <app name="BTAudio">com.humaxdigital.automotive.btaudio</app>
+    <app name="SystemUiTest">com.humaxdigital.automotive.systemuitest</app>
+    <app name="KaolaFM">com.humaxdigital.automotive.kaolafm</app>
+    <app name="DropList">com.humaxdigital.automotive.droplist</app>
+    <app name="StatusBar">com.humaxdigital.automotive.systemui</app>
+    <app name="HomeLauncher">com.humaxdigital.automotive.dn8clauncher</app>
+    <app name="DuerOS">com.baidu.che.codriver</app>
+    <app name="sidebar">com.humaxdigital.automotive.sidebarservice</app>
+</whitelist>
