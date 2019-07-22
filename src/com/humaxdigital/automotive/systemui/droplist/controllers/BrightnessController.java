@@ -264,12 +264,12 @@ public class BrightnessController implements BaseController {
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    if ( mSystem != null ) mSystem.performClick();
                     if ( mCheckbox != null && mCheckbox.isChecked() ) break;
                     if ( mPopupView != null && mIsUserSeek ) mPopupView.setVisibility(View.VISIBLE);
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
+                    if ( mSystem != null ) mSystem.performClick();
                     if ( mPopupView != null ) mPopupView.setVisibility(View.GONE);
                     break;
                 }
