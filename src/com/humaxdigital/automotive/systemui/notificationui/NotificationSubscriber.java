@@ -25,6 +25,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationListenerService.Ranking;
@@ -130,18 +131,19 @@ public class NotificationSubscriber extends NotificationListenerService {
                 switch (msg.what) {
                     case MSG_NOTIFY:
                         Log.i(TAG, "notify: " + delta.mSbn.getKey());
+
                         synchronized (sNotifications) {
                             boolean exists = mRankingMap.getRanking(delta.mSbn.getKey(), mTmpRanking);
-                            if (!exists) {
-                                sNotifications.add(delta.mSbn);
-                            } else {
-                                for (int i = 0; i < sNotifications.size(); i++) {
-                                    StatusBarNotification notification = sNotifications.get(i); 
-                                    if ( notification.getKey().equals(delta.mSbn.getKey()) ) {
-                                        sNotifications.set(i, delta.mSbn); 
-                                    }
+                            Log.d(TAG, "exists="+exists); 
+                            if (!exists) sNotifications.add(delta.mSbn);
+                            for (int i = 0; i < sNotifications.size(); i++) {
+                                StatusBarNotification notification = sNotifications.get(i); 
+                                if ( notification.getKey().equals(delta.mSbn.getKey()) ) {
+                                    Log.d(TAG, "key:"+delta.mSbn.getKey());
+                                    sNotifications.set(i, delta.mSbn); 
                                 }
                             }
+                            
                             mRankingMap = delta.mRankingMap;
                             Collections.sort(sNotifications, mRankingComparator);
                             Log.i(TAG, "finish with: " + sNotifications.size());
