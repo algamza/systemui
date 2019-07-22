@@ -49,6 +49,9 @@ public class StatusBarService extends Service {
     private TelephonyManager mTelephony = null;
     private CarTMSManager mTMSManager = null;
     private CarSensorManagerEx mSensorManager = null;
+    private ContentResolver mContentResolver;
+    private ContentObserver mUserAgreementObserver;
+    private ContentObserver mUserSwitchingObserver; 
 
     private boolean mUserAgreement = false; 
     private boolean mUserSwitching = false; 
@@ -85,10 +88,12 @@ public class StatusBarService extends Service {
         createCarExClient(); 
         registReceiver();
         mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        createObserver(); 
     }
 
     @Override
     public void onDestroy() {
+        destroyObserver(); 
         unregistReceiver();
         if ( mCarExClient != null ) mCarExClient.disconnect(); 
         if ( mStatusBarClimate != null ) mStatusBarClimate.destroy();
@@ -179,6 +184,43 @@ public class StatusBarService extends Service {
     public boolean isBTCall() {
         Log.d(TAG, "isBTCall="+mBTCall);
         return mBTCall; 
+    }
+
+    private void createObserver() {
+        if ( mContext == null ) return;
+        mContentResolver = mContext.getContentResolver();
+        mUserAgreementObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                boolean is_usergreement = _isUserAgreement();
+                if ( mStatusBarSystem != null ) 
+                    mStatusBarSystem.onUserAgreement(is_usergreement); 
+            }
+        };
+        mUserSwitchingObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                boolean is_userswitching = _isUserSwitching();
+                if ( mStatusBarSystem != null ) 
+                    mStatusBarSystem.onUserSwitching(is_userswitching); 
+            }
+        };
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT), 
+            false, mUserAgreementObserver, UserHandle.USER_CURRENT); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH), 
+            false, mUserSwitchingObserver, UserHandle.USER_CURRENT); 
+    }
+
+    private void destroyObserver() {
+        if ( mContentResolver != null ) {
+            mContentResolver.unregisterContentObserver(mUserAgreementObserver);
+            mContentResolver.unregisterContentObserver(mUserSwitchingObserver);
+        }
+        mContentResolver = null;
+        mUserAgreementObserver = null;
+        mUserSwitchingObserver = null;
     }
 
     private void createStatusBarClimate() {

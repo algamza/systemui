@@ -17,4 +17,12 @@ public class UserProfileView extends ImageView {
     public UserProfileView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
+
+    public void enable() {
+
+    }
+
+    public void disable() {
+        
+    }
 }

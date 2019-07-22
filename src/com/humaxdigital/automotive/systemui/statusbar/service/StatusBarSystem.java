@@ -94,6 +94,14 @@ public class StatusBarSystem {
         public void onDateTimeChanged(String time) {}
         public void onTimeTypeChanged(String type) {}
         public void onUserChanged(BitmapParcelable bitmap) {}
+        public void onPowerStateChanged(int state) {}
+        public void onUserAgreementMode(boolean on) {}
+        public void onUserSwitching(boolean on) {}
+        public void onBTCalling(boolean on) {}
+        public void onEmergencyMode(boolean on) {}
+        public void onBluelinkMode(boolean on) {}
+        public void onImmoilizationMode(boolean on) {}
+        public void onSlowdownMode(boolean on) {}
     }
 
     public StatusBarSystem(Context context, DataStore datastore) {
@@ -228,25 +236,51 @@ public class StatusBarSystem {
     public void onBTCall(boolean on) {
         Log.d(TAG, "onBTCall="+on);
         mBTCall = on; 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onBTCalling(on);
+        }
     }
 
     public void onEmergencyCall(boolean on) {
         Log.d(TAG, "onEmergencyCall="+on);
         mEmergencyCall = on; 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onEmergencyMode(on);
+        }
     }
 
     public void onBluelinkCall(boolean on) {
         Log.d(TAG, "onBluelinkCall="+on);
         mBluelinkCall = on; 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onBluelinkMode(on);
+        }
     }
 
     public void onSVIOn(boolean on) {
         Log.d(TAG, "onSVIOn="+on);
         mSVIOn = on; 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onImmoilizationMode(on);
+        }
     }
     public void onSVSOn(boolean on) {
         Log.d(TAG, "onSVSOn="+on);
         mSVSOn = on; 
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onSlowdownMode(on);
+        }
+    }
+    public void onUserAgreement(boolean on) {
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onUserAgreementMode(on);
+        }
+    }
+
+    public void onUserSwitching(boolean on) {
+        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+            callback.onUserSwitching(on);
+        }
     }
 
     public boolean isPowerOff() {
@@ -264,6 +298,30 @@ public class StatusBarSystem {
         return false; 
     }
     
+    public boolean isBTCalling() {
+        Log.d(TAG, "isBTCalling="+mBTCall);
+        return mBTCall; 
+    }
+
+    public boolean isEmergencyMode() {
+        Log.d(TAG, "isEmergencyMode="+mEmergencyCall);
+        return mEmergencyCall; 
+    }
+
+    public boolean isBluelinkMode() {
+        Log.d(TAG, "isBluelinkMode="+mBluelinkCall);
+        return mBluelinkCall; 
+    }
+
+    public boolean isImmoilizationMOde() {
+        Log.d(TAG, "isImmoilizationMOde="+mSVIOn);
+        return mSVIOn; 
+    }
+
+    public boolean isSlowdownMode() {
+        Log.d(TAG, "isSlowdownMode="+mSVSOn);
+        return mSVSOn; 
+    }
 
     public boolean isSystemInitialized() {
         boolean init = false; 
@@ -483,7 +541,7 @@ public class StatusBarSystem {
     } 
 
     
-    private boolean isUserAgreement() {
+    public boolean isUserAgreement() {
         if ( mContext == null ) return false; 
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
@@ -492,7 +550,7 @@ public class StatusBarSystem {
         else return true;
     }
 
-    private boolean isUserSwitching() {
+    public boolean isUserSwitching() {
         if ( mContext == null ) return false; 
         int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
@@ -699,7 +757,9 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer state) {
             Log.d(TAG, "mPowerStateControllerListener="+state);
-            // TODO:
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onPowerStateChanged(state); 
+            }
         }
     }; 
 
