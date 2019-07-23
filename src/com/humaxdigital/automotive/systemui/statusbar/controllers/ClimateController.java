@@ -445,12 +445,12 @@ public class ClimateController {
             if ( mAirCleaning == null || !mIGNOn || mIsOperateOn ) return; 
             if ( mService != null ) {
                 if ( mAirCleaningState == AirCleaning.OFF ) {
-                    mAirCleaningState = AirCleaning.ON;
-                    mAirCleaning.update(mAirCleaningState.ordinal()); 
+                    //mAirCleaningState = AirCleaning.ON;
+                    //mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.ON.ordinal());
                 } else {
-                    mAirCleaningState = AirCleaning.OFF;
-                    mAirCleaning.update(mAirCleaningState.ordinal()); 
+                    //mAirCleaningState = AirCleaning.OFF;
+                    //mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                 }
             }
