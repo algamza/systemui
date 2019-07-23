@@ -1,5 +1,9 @@
 package com.humaxdigital.automotive.systemui.droplist.controllers;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+
 import android.view.View;
 
 import android.content.Context;
@@ -13,6 +17,8 @@ public class DisplayController implements BaseController {
     private MenuLayout mView;
     private SystemControl mSystem;  
     private Listener mListener; 
+    private UpdateHandler mHandler = new UpdateHandler();
+    private boolean mIsCalling = false; 
 
     @Override
     public BaseController init(View view) {
@@ -25,6 +31,7 @@ public class DisplayController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null ) return; 
         mSystem = system; 
+        mSystem.registerCallback(mSystemCallback);
     }
 
     @Override
@@ -48,6 +55,7 @@ public class DisplayController implements BaseController {
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override
         public boolean onClick() {
+            if ( mIsCalling ) return false;
             if ( mSystem != null ) mSystem.displayOff(); 
             if ( mListener != null ) mListener.onClose();
             return true; 
@@ -58,4 +66,43 @@ public class DisplayController implements BaseController {
             return false; 
         }
     }; 
+
+    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
+        @Override
+        public void onCallingChanged(boolean on) {
+            if ( mHandler == null ) return;
+            mIsCalling = on; 
+            if ( mIsCalling ) 
+                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+            else 
+                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+        }
+    };
+
+    private final class UpdateHandler extends Handler {
+        private static final int MODE_DISABLE = 1; 
+        private static final int MODE_ENABLE = 2; 
+
+        public UpdateHandler() {
+            super(Looper.getMainLooper());
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if ( mView == null ) return; 
+            switch(msg.what) {
+                case MODE_DISABLE: {
+                    mView.updateEnable(false); 
+                    mView.disableText(); 
+                    break;
+                }
+                case MODE_ENABLE: {
+                    mView.updateEnable(true);
+                    mView.enableText(); 
+                    break; 
+                }
+                default: break;
+            }
+        }
+    }
 }
