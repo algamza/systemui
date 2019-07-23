@@ -36,7 +36,7 @@ public class ClimateController {
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
-    private enum AirCleaning { ON, OFF, GREEN, RED }; 
+    private enum AirCleaning { ON, OFF }; 
     private enum FrontDefogState { ON, OFF }; 
 
     private StatusBarClimate mService; 
@@ -66,7 +66,7 @@ public class ClimateController {
     private ClimateMenuTextImg mFanSpeed;
     private FanSpeedState mFanSpeedState = FanSpeedState.STEPOFF;
 
-    private ClimateMenuImgTimeout mAirCleaning; 
+    private ClimateMenuImg mAirCleaning; 
     private AirCleaning mAirCleaningState = AirCleaning.OFF; 
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
@@ -74,7 +74,6 @@ public class ClimateController {
     private Boolean mModeOff = false; 
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
-    private Boolean mAirCleaningStartFromUI = false; 
 
     private final List<View> mClimateViews = new ArrayList<>();
 
@@ -184,15 +183,10 @@ public class ClimateController {
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
-        int red_timeout = mContext.getResources().getIdentifier("climate_aircleaning_red_timeout", "integer", PACKAGE_NAME); 
-        int green_timeout = mContext.getResources().getIdentifier("climate_aircleaning_green_timeout", "integer", PACKAGE_NAME); 
-        mAirCleaning = new ClimateMenuImgTimeout(mContext)
-            .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null), 0)
-            .addIcon(AirCleaning.RED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_01, null), 
-                red_timeout > 0 ? mContext.getResources().getInteger(red_timeout):0)
-            .addIcon(AirCleaning.GREEN.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null), 0)
+        mAirCleaning = new ClimateMenuImg(mContext)
+            .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
+            .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
-            .registTimeoutListener(mClimateAirCleaningImgTimeout)
             .inflate(); 
         mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
 
@@ -286,19 +280,8 @@ public class ClimateController {
                 updateTempOn(true); 
             }
         }
-        if ( mAirCleaning != null ) {
-            if ( mAirCleaningState == AirCleaning.ON ) {
-                Settings.Global.putInt(mContext.getContentResolver(), 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_RED);
-                mAirCleaningState = AirCleaning.RED; 
-            } else {
-                Settings.Global.putInt(mContext.getContentResolver(), 
-                CarExtraSettings.Global.AIR_CLEANING_STATUS, 
-                CarExtraSettings.Global.AIR_CLEANING_STATUS_OFF);
-            }
-            mAirCleaning.update(mAirCleaningState.ordinal()); 
-        }
+        if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
+        
         updateIGOnChange(mIGNOn); 
         updateOperateOnChange(mIsOperateOn); 
         updateModeOff(mModeOff); 
@@ -460,57 +443,15 @@ public class ClimateController {
         @Override
         public void onClick(View v) {
             if ( mAirCleaning == null || !mIGNOn || mIsOperateOn ) return; 
-            /*
-            if ( mAirCleaningState == AirCleaning.ON ||
-                mAirCleaningState == AirCleaning.RED || 
-                mAirCleaningState == AirCleaning.GREEN ) {
-                mAirCleaningState = AirCleaning.OFF; 
-                mAirCleaning.update(mAirCleaningState.ordinal());
-            } else if ( mAirCleaningState == AirCleaning.OFF ) {
-                mAirCleaningState = AirCleaning.RED; 
-                mAirCleaning.update(mAirCleaningState.ordinal());
-            }
-            */
-
             if ( mService != null ) {
                 if ( mAirCleaningState == AirCleaning.OFF ) {
-                    mAirCleaningStartFromUI = true; 
+                    mAirCleaningState = AirCleaning.ON;
+                    mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.ON.ordinal());
                 } else {
-                    mAirCleaningStartFromUI = false; 
+                    mAirCleaningState = AirCleaning.OFF;
+                    mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.OFF.ordinal());
-                }
-            }
-        }
-    }; 
-
-    private final ClimateMenuImgTimeout.ClimateDrawableTimout mClimateAirCleaningImgTimeout = 
-        new ClimateMenuImgTimeout.ClimateDrawableTimout() {
-        @Override
-        public void onDrawableTimout(int status) {
-            if ( mAirCleaning == null ) return; 
-            if ( status == AirCleaning.RED.ordinal() ) {
-                mAirCleaningState = AirCleaning.GREEN; 
-
-                Settings.Global.putInt(mContext.getContentResolver(), 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_GREEN);
-
-                if ( mHandler == null ) return; 
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAirCleaning.update(mAirCleaningState.ordinal()); 
-                    }
-                });
-                
-            } else if ( status == AirCleaning.GREEN.ordinal() ) {
-                if ( mService != null ) {
-                    if ( mAirCleaningStartFromUI ) {
-                        mAirCleaningStartFromUI = false; 
-                        // TODO: check can scenario 
-                        //mService.setAirCleaningState(AirCleaning.OFF.ordinal());
-                    }
                 }
             }
         }
@@ -578,23 +519,12 @@ public class ClimateController {
         public void onAirCleaningChanged(int status) {
             if ( mAirCleaning == null ) return; 
             mAirCleaningState = AirCleaning.values()[status]; 
-            if ( mAirCleaningState == AirCleaning.ON ) {
-                Settings.Global.putInt(mContext.getContentResolver(), 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS_ON_RED);
-                mAirCleaningState = AirCleaning.RED; 
-            }
-            else if ( mAirCleaningState == AirCleaning.OFF ) {
-                Settings.Global.putInt(mContext.getContentResolver(), 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS, 
-                    CarExtraSettings.Global.AIR_CLEANING_STATUS_OFF);
-                mAirCleaningStartFromUI = false; 
-            }
-           
+            
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAirCleaning.update(mAirCleaningState.ordinal()); 
+                    if ( mAirCleaning != null ) 
+                        mAirCleaning.update(mAirCleaningState.ordinal()); 
                 }
             }); 
         }
