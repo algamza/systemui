@@ -32,12 +32,32 @@ public class ScenarioQuiteMode {
     private final int VOLUME_MAX = 45;
     private final int QUITE_MODE_MAX = 20;
     private final int QUITE_MODE_VOLUME = 7;
-    private ArrayList<VolumeUtil.Type> mQuiteModeAudioTypeList = new ArrayList<>(); 
+
     private HashMap<VolumeUtil.Type,Integer> mQuiteModeLastVolume = new HashMap<>();
     private HashMap<VolumeUtil.Type,Boolean> mQuiteModeAudioChange = new HashMap<>();
+    private ArrayList<VolumeUtil.Type> mQuiteModeAudioTypeList = new ArrayList<>(); 
+
+    
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private boolean mIsQuiteModeApplying = false; 
     private boolean mNeedToShowUI = false; 
+/*
+    public class VolumeRecovery {
+        public class VolumeDB {
+            public class VolumeValue {
+                public int mLastVolume; 
+                public boolean mIsVolumeChanged; 
+            }
+            private HashMap<VolumeUtil.Type,VolumeValue> mVolumeDB = new HashMap<>();
+        }
+        private int mUser; 
+        private HashMap<int,VolumeRecovery> mUserVolume = new HashMap<>();
+        VolumeRecovery(int userid) {
+            mUser = userid; 
+        }
+    }
+*/
+    
 
     public ScenarioQuiteMode(Context context) {
         if ( context == null ) return;

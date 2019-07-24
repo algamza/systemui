@@ -118,7 +118,8 @@ public class ScenarioBackupWran {
         try {
             CarSensorEvent event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_GEAR);
             GearData gear = event.getGearData(null);
-            if(gear.equals(CarSensorEvent.GEAR_REVERSE)) mIsRGearDetected = true;
+            Log.d(TAG, "updateRGearDetectState:gear=" + gear.gear);
+            if(gear.gear == CarSensorEventEx.GEAR_R) mIsRGearDetected = true;
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
