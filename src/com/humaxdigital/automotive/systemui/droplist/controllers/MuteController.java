@@ -111,11 +111,9 @@ public class MuteController implements BaseController {
                 return false;  
             }
             if ( mView.isEnable() ) {
-                //mView.updateEnable(false);
                 mOn = false; 
                 mSystem.setMuteOn(false);
             } else {
-                //mView.updateEnable(true);
                 mOn = true; 
                 mSystem.setMuteOn(true);
             }
@@ -144,13 +142,14 @@ public class MuteController implements BaseController {
             if ( mView == null ) return; 
             switch(msg.what) {
                 case MODE_ON: {
-                    mView.updateEnable(true); 
                     mOn = true; 
+                    if ( !mIsAVOn ) break;
+                    mView.updateEnable(true); 
                     break;
                 }
                 case MODE_OFF: {
-                    mView.updateEnable(false); 
                     mOn = false; 
+                    mView.updateEnable(false); 
                     break;
                 }
                 case MODE_DISABLE: {
