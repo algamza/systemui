@@ -43,6 +43,7 @@ public class ScenarioBackupWran {
     private HashMap<VolumeUtil.Type,Integer> mBackupWarnLastVolume = new HashMap<>();
     private HashMap<VolumeUtil.Type,Boolean> mBackupWarnAudioChange = new HashMap<>();
     private boolean mIsRGearDetected = false; 
+    private boolean mIsIGNOff = false; 
     private int mBTAudioChangeVolume = 0;
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private CarSensorManagerEx mCarSensorManagerEx = null;
@@ -104,8 +105,14 @@ public class ScenarioBackupWran {
         if ( mgr == null ) return;
         mCarSensorManagerEx = mgr; 
         try {
-            mCarSensorManagerEx.registerListener(mSensorChangeListener, 
-                            CarSensorManagerEx.SENSOR_TYPE_GEAR, CarSensorManagerEx.SENSOR_RATE_NORMAL);
+            mCarSensorManagerEx.registerListener(
+                mSensorChangeListener, 
+                CarSensorManagerEx.SENSOR_TYPE_GEAR, 
+                CarSensorManagerEx.SENSOR_RATE_NORMAL);
+            mCarSensorManagerEx.registerListener(
+                mSensorChangeListener, 
+                CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE, 
+                CarSensorManagerEx.SENSOR_RATE_NORMAL);
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
@@ -118,8 +125,18 @@ public class ScenarioBackupWran {
         try {
             CarSensorEvent event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_GEAR);
             GearData gear = event.getGearData(null);
-            Log.d(TAG, "updateRGearDetectState:gear=" + gear.gear);
             if(gear.gear == CarSensorEventEx.GEAR_R) mIsRGearDetected = true;
+            CarSensorEvent ign_event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
+            int state = ign_event.intValues[0]; 
+            Log.d(TAG, "updateRGearDetectState:gear=" + gear.gear+", ign="+state);
+            if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
+                || state == CarSensorEvent.IGNITION_STATE_OFF
+                || state == CarSensorEvent.IGNITION_STATE_ACC ) {
+                mIsIGNOff = true;
+            } else if ( state == CarSensorEvent.IGNITION_STATE_ON
+                || state == CarSensorEvent.IGNITION_STATE_START ) {
+                mIsIGNOff = false;
+            }
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
@@ -128,7 +145,7 @@ public class ScenarioBackupWran {
     private void backupWarnChanged() {
         if ( isBackupWarn() ) applyBackupWarn(); 
         else {
-
+            if ( mIsIGNOff ) return;
             if ( mBackupWarnLastVolume.isEmpty() || mBackupWarnAudioChange.isEmpty() ) return;
             for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
                 boolean changed = mBackupWarnAudioChange.get(type); 
@@ -162,10 +179,10 @@ public class ScenarioBackupWran {
                 CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON,
                 CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON_DEFAULT,
                         UserHandle.USER_CURRENT);
-        if ( on != 0 && mIsRGearDetected ) ret = true; 
+        if ( on != 0 && mIsRGearDetected && !mIsIGNOff ) ret = true; 
         else ret = false; 
 
-        Log.d(TAG, "isBackupWarn="+ret+", settings value="+on+", gearR="+mIsRGearDetected);
+        Log.d(TAG, "isBackupWarn="+ret+", settings value="+on+", gearR="+mIsRGearDetected+", ignoff="+mIsIGNOff);
         
         return ret;
     }
@@ -248,6 +265,19 @@ public class ScenarioBackupWran {
                         backupWarnChanged();
                     }
                     break;
+                }
+                case CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE: {
+                    int state = event.intValues[0];
+                    Log.d(TAG, "onSensorChanged:SENSOR_TYPE_IGNITION_STATE="+state);
+                    if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
+                        || state == CarSensorEvent.IGNITION_STATE_OFF
+                        || state == CarSensorEvent.IGNITION_STATE_ACC ) {
+                        if ( !mIsIGNOff ) mIsIGNOff = true;
+                    } else if ( state == CarSensorEvent.IGNITION_STATE_ON
+                        || state == CarSensorEvent.IGNITION_STATE_START ) {
+                        if ( mIsIGNOff ) mIsIGNOff = false;
+                    }
+                    break; 
                 }
                 default: break;
             }
