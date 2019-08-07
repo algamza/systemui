@@ -535,6 +535,14 @@ public class DropListUIService extends Service {
                 closeDropList();
             }
         }
+        @Override
+        public void onPowerOnChanged(boolean on) {
+            Log.d(TAG, "onPowerOnChanged="+on);
+            if ( on ) return;
+            if ( mDialog != null && mDialog.isShowing() ) {
+                closeDropList();
+            }
+        }
     };
 
 }

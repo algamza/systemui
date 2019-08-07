@@ -116,6 +116,7 @@ public class SystemControl extends Service {
     private final String SETTINGS_VR = "vr_shown";
 
     private boolean mAVOn = true; 
+    private boolean mPowerOn = true;
 
     @Override
     public void onCreate() {
@@ -225,6 +226,7 @@ public class SystemControl extends Service {
         public void onVRStateChanged(boolean on) {}
         public void onCallingChanged(boolean on) {}
         public void onAVOnChanged(boolean on) {}
+        public void onPowerOnChanged(boolean on) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -355,6 +357,18 @@ public class SystemControl extends Service {
             mAVOn = true; 
         }
         return mAVOn; 
+    }
+    public boolean isPowerOn() {
+        if ( mContentResolver == null ) return false; 
+        int state = Settings.Global.getInt(mContentResolver, 
+            CarExtraSettings.Global.POWER_STATE, 
+            CarExtraSettings.Global.POWER_STATE_NORMAL);
+        if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
+            mPowerOn = false;
+        } else {
+            mPowerOn = true; 
+        }
+        return mPowerOn; 
     }
     public void openThemeSetting() {
         Log.d(TAG, "openThemeSetting");
@@ -636,17 +650,39 @@ public class SystemControl extends Service {
                     CarExtraSettings.Global.POWER_STATE, 
                     CarExtraSettings.Global.POWER_STATE_NORMAL);
                 Log.d(TAG, "onChange="+state);
-                if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF 
-                    || state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
-                    if ( !mAVOn ) return;
-                    mAVOn = false;
-                    for ( SystemCallback callback : mCallbacks )
-                        callback.onAVOnChanged(mAVOn);
+                if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
+                    if ( mPowerOn ) {
+                        mPowerOn = false; 
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onPowerOnChanged(mPowerOn); 
+                    }
+                    if ( mAVOn ) {
+                        mAVOn = false;
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onAVOnChanged(mAVOn);
+                    }
+                } else if ( state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
+                    if ( mAVOn ) {
+                        mAVOn = false;
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onAVOnChanged(mAVOn);
+                    }
+                    if ( !mPowerOn ) {
+                        mPowerOn = true; 
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onPowerOnChanged(mPowerOn); 
+                    }
                 } else {
-                    if ( mAVOn ) return;
-                    mAVOn = true;
-                    for ( SystemCallback callback : mCallbacks )
-                        callback.onAVOnChanged(mAVOn);
+                    if ( !mAVOn ) {
+                        mAVOn = true;
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onAVOnChanged(mAVOn);
+                    }
+                    if ( !mPowerOn ) {
+                        mPowerOn = true; 
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onPowerOnChanged(mPowerOn); 
+                    }
                 }
             }
         };
@@ -682,10 +718,15 @@ public class SystemControl extends Service {
         int state = Settings.Global.getInt(getContentResolver(), 
             CarExtraSettings.Global.POWER_STATE, 
             CarExtraSettings.Global.POWER_STATE_NORMAL);
-        if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF 
-            || state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) 
+        if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
             mAVOn = false;
-        else 
+            mPowerOn = false; 
+        } else if ( state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
+            mAVOn = false;
+            mPowerOn = true; 
+        } else {
             mAVOn = true;
+            mPowerOn = true; 
+        }
     }
 }
