@@ -255,29 +255,41 @@
                     android:textColor="#aaaaaa"
                     android:textSize="16sp"/>
 
-                    <LinearLayout
-                        android:layout_width = "wrap_content"
-                        android:layout_height= "match_parent"
-                        android:gravity="bottom|right"
-                        android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="bottom|right"
+                    android:orientation="horizontal">
 
-                        <Button
-                            android:id="@+id/btnLoad"
-                            android:layout_height="wrap_content"
-                            android:layout_width ="wrap_content"
-                            android:text="Load"
-                            android:layout_margin="0dp"
-                            android:textSize="16dp"/>
+                    <Switch
+                        android:id="@+id/swKeepUnlocked"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="#222222"
+                        android:text="Keep Unlocked"
+                        android:textSize="18sp"
+                        android:textColor="#aaaaaa"
+                        android:checked="false" />
 
-                        <Button
-                            android:id="@+id/btnSave"
-                            android:layout_height="wrap_content"
-                            android:layout_width ="wrap_content"
-                            android:text="Save"
-                            android:layout_margin="0dp"
-                            android:textSize="16dp"/>
+                    <Button
+                        android:id="@+id/btnLoad"
+                        android:layout_height="wrap_content"
+                        android:layout_width ="wrap_content"
+                        android:text="Load"
+                        android:layout_margin="0dp"
+                        android:textSize="16dp"/>
 
-                    </LinearLayout>
+                    <Button
+                        android:id="@+id/btnSave"
+                        android:layout_height="wrap_content"
+                        android:layout_width ="wrap_content"
+                        android:text="Save"
+                        android:layout_margin="0dp"
+                        android:textSize="16dp"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 

@@ -31,6 +31,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.humaxdigital.automotive.systemui.R;
@@ -55,11 +56,14 @@ public class DevNavigationBar extends FrameLayout {
     private TextView mSavedActivityTextView;
     private TextView mStartTimeTextView;
     private TextView mUserSwitchTimeTextView;
+
     private CheckBox mCpuUsageCheckBox;
     private CheckBox mUsbDebuggingCheckBox;
     private CheckBox mDropCacheCheckBox;
     private CheckBox mUsbHubCheckBox;
     private CheckBox mMapAutoCheckBox;
+
+    private Switch mKeepUnlockedSwitch;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -138,6 +142,9 @@ public class DevNavigationBar extends FrameLayout {
         mMapAutoCheckBox = (CheckBox) findViewById(R.id.chkMapAuto);
         mMapAutoCheckBox.setOnClickListener(view -> { writeMapAutoOptions(); });
 
+        mKeepUnlockedSwitch = (Switch) findViewById(R.id.swKeepUnlocked);
+        mKeepUnlockedSwitch.setOnClickListener(view -> { writeKeepUnlockedOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -163,6 +170,7 @@ public class DevNavigationBar extends FrameLayout {
         writeUsbHubOptions();
         updateMapAutoOptions();
         writeMapAutoOptions();
+        updateKeepUnlockedOptions();
     }
 
     public void onAttached() {
@@ -357,6 +365,14 @@ public class DevNavigationBar extends FrameLayout {
         boolean support = mMapAutoCheckBox.isChecked();
         SystemProperties.set(
                 "persist.vendor.humax.log.copy.mapauto", (support) ? "true" : "false");
+    }
+
+    private void updateKeepUnlockedOptions() {
+        mKeepUnlockedSwitch.setChecked(DevUtils.isKeepingDevUnlocked(mContext));
+    }
+
+    private void writeKeepUnlockedOptions() {
+        DevUtils.setKeepingDevUnlocked(mContext, mKeepUnlockedSwitch.isChecked());
     }
 
     private void switchUser(int index) {
