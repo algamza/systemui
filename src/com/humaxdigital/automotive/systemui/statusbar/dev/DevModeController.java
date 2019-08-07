@@ -4,8 +4,12 @@
 package com.humaxdigital.automotive.systemui.statusbar.dev;
 
 import android.content.Context;
+import android.database.ContentObserver;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.os.UserManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,10 +31,27 @@ public class DevModeController {
     private int mTouchAnchorY = 0;
     private long mLastEventTime = 0;
 
+    private final ContentObserver mSettingsObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            initViews();
+        }
+    };
+
     public DevModeController(Context context, View normalView, View devView) {
         mContext = context;
+
         mNormalView = normalView;
         mDevView = devView;
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.Global.getUriFor(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED),
+                false, mSettingsObserver);
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.Global.getUriFor(DevUtils.KEEP_UNLOCKED),
+                false, mSettingsObserver);
+
         initViews();
     }
 
@@ -49,15 +70,31 @@ public class DevModeController {
                     return false;
                 }
             });
+
+            boolean allowLongClick = true;
+            allowLongClick &= DevUtils.isDevelopmentSettingsEnabled(mContext);
+            allowLongClick &= DevUtils.isKeepingDevUnlocked(mContext);
+
+            if (allowLongClick) {
+                mNormalView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        if (isDevelopmentSettingsEnabled(mContext)) {
+                            dispatchOnViewChange(mDevView);
+                        }
+                        return false;
+                    }
+                });
+            } else {
+                mNormalView.setOnLongClickListener(null);
+            }
         }
 
         if (mDevView != null) {
             mDevView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if (mNormalView != null) {
-                        dispatchOnViewChange(mNormalView);
-                    }
+                    dispatchOnViewChange(mNormalView);
                     return false;
                 }
             });
@@ -120,7 +157,7 @@ public class DevModeController {
     }
 
     private void dispatchOnViewChange(View v) {
-        if (mOnViewChangeListener != null) {
+        if (v != null && mOnViewChangeListener != null) {
             mHandler.post(() -> mOnViewChangeListener.onViewChange(v));
         }
     }
@@ -134,5 +171,16 @@ public class DevModeController {
          * @return True if the listener has consumed the event, false otherwise.
          */
         boolean onViewChange(View v);
+    }
+
+    public static boolean isDevelopmentSettingsEnabled(Context context) {
+        final UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
+        final boolean settingEnabled = Settings.Global.getInt(context.getContentResolver(),
+                Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+                Build.TYPE.equals("eng") ? 1 : 0) != 0;
+        final boolean hasRestriction = um.hasUserRestriction(
+                UserManager.DISALLOW_DEBUGGING_FEATURES);
+        final boolean isAdminOrDemo = um.isAdminUser() || um.isDemoUser();
+        return isAdminOrDemo && !hasRestriction && settingEnabled;
     }
 }
