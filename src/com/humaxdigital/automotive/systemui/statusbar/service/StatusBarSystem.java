@@ -195,6 +195,7 @@ public class StatusBarSystem {
             if ( mBLEController != null ) mBLEController.fetch(null); 
             if ( mWirelessChargeController != null ) mWirelessChargeController.fetch(null); 
             if ( mPowerStateController != null ) mPowerStateController.fetch(null); 
+            if ( mMuteController != null ) mMuteController.fetchAudioEx(null);
             return;
         }
 
@@ -215,6 +216,8 @@ public class StatusBarSystem {
             mWirelessChargeController.fetch(mCarExClient.getSystemManager()); 
         if ( mPowerStateController != null ) 
             mPowerStateController.fetch(mCarExClient.getSystemManager()); 
+        if ( mMuteController != null ) 
+            mMuteController.fetchAudioEx(mCarExClient.getAudioManagerEx());
 
         for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
             callback.onSystemInitialized();

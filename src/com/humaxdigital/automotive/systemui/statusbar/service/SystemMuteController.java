@@ -9,6 +9,10 @@ import android.content.BroadcastReceiver;
 
 import android.util.Log;
 
+import android.car.CarNotConnectedException;
+import android.car.media.ICarVolumeCallback;
+import android.extension.car.CarAudioManagerEx;
+
 import com.humaxdigital.automotive.systemui.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
 
@@ -17,6 +21,7 @@ public class SystemMuteController extends BaseController<Integer> {
     private enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
     private IUserAudio mUserAudio = null;
     private MuteStatus mCurrentStatus = MuteStatus.NONE; 
+    private CarAudioManagerEx mCarAudioEx = null;
 
     public SystemMuteController(Context context, DataStore store) {
         super(context, store);
@@ -41,6 +46,17 @@ public class SystemMuteController extends BaseController<Integer> {
         } 
     }
 
+    private void cleanupAudioManager() {
+        Log.d(TAG, "cleanupAudioManager");
+        try {
+            if (mCarAudioEx != null)
+                mCarAudioEx.unregisterVolumeCallback(mVolumeChangeCallback.asBinder());
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
+        }
+        mCarAudioEx = null;
+    }
+
     public void fetchUserAudio(IUserAudio audio) {
         try {
             if ( audio == null ) {
@@ -58,6 +74,17 @@ public class SystemMuteController extends BaseController<Integer> {
         } 
 
         broadcastChangeEvent();
+    }
+
+    public void fetchAudioEx(CarAudioManagerEx audio) {
+        mCarAudioEx = audio;
+        try {
+            if ( mCarAudioEx != null ) {
+                mCarAudioEx.registerVolumeCallback(mVolumeChangeCallback.asBinder());
+            }
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
+        } 
     }
 
     @Override
@@ -96,13 +123,24 @@ public class SystemMuteController extends BaseController<Integer> {
         new IUserAudioCallback.Stub() {
         @Override
         public void onMasterMuteChanged(boolean enable) throws RemoteException {
-            broadcastChangeEvent();
+            //broadcastChangeEvent();
         }
         @Override
         public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
         }
         @Override
         public void onNavigationChanged(boolean mute) throws RemoteException {
+            //broadcastChangeEvent();
+        }
+    };
+
+    private final ICarVolumeCallback mVolumeChangeCallback = new ICarVolumeCallback.Stub() {
+        @Override
+        public void onGroupVolumeChanged(int groupId, int flags) {
+        }
+
+        @Override
+        public void onMasterMuteChanged(int flags) {
             broadcastChangeEvent();
         }
     };
