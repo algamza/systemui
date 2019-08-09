@@ -185,7 +185,7 @@ public class ClimateController {
 
         mAirCleaning = new ClimateMenuImg(mContext)
             .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
-            .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on, null))
+            .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
             .inflate(); 
         mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
