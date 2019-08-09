@@ -22,6 +22,7 @@ public class TMSClient {
     private List<TMSCallback> mListeners = new ArrayList<>(); 
     private Context mContext; 
     private ConnectionStatus mCurrentConnectionStatus = ConnectionStatus.DISCONNECTED; 
+    private ActiveStatus mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
     private int mCurrentSignalLevel = 0; 
     private CallingStatus mCurrentCallingStatus = CallingStatus.CALL_DISCONNECTED; 
     private DataUsingStatus mCurrentDataUsingStatus = DataUsingStatus.DATA_NO_PACKET; 
@@ -30,6 +31,11 @@ public class TMSClient {
     public enum ConnectionStatus {
         DISCONNECTED,
         CONNECTED
+    }
+
+    public enum ActiveStatus {
+        ACTIVE,
+        DEACTIVE
     }
 
     public enum CallingStatus {
@@ -100,6 +106,11 @@ public class TMSClient {
         return mCurrentConnectionStatus; 
     }
 
+    public ActiveStatus getActiveStatus() {
+        Log.d(TAG, "getActiveStatus="+mCurrentActiveStatus);
+        return mCurrentActiveStatus; 
+    }
+
     public int getSignalLevel() {
         Log.d(TAG, "getSignalLevel="+mCurrentSignalLevel); 
         // min = 0, max = 7
@@ -166,6 +177,10 @@ public class TMSClient {
                         for ( TMSCallback callback : mListeners ) 
                             callback.onSignalLevelChanged(mCurrentSignalLevel); 
                     }
+                    if ( active == 0 ) 
+                        mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
+                    else 
+                        mCurrentActiveStatus = ActiveStatus.ACTIVE; 
 
                     Log.d(TAG, "APP_TMS_MODEM_LIVE_SIGNAL_1SEC:active="+active
                         +", signal="+rssiSignal+", stauts="+networkStatus);

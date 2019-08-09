@@ -25,6 +25,7 @@ public class SystemDataController extends BaseController<Integer> {
     private enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
     private ConnectivityManager mConnectivity = null;
     private TelephonyManager mTelephony = null;
+    private TMSClient mTMSClient = null;
     private Timer mTimer = new Timer();
     private TimerTask mNetworkCheckTask = null;
     private final int LOOP_TIME = 500;
@@ -73,8 +74,7 @@ public class SystemDataController extends BaseController<Integer> {
                             && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
                         if ( mDataStatus != status ) {
                             mDataStatus = status; 
-                            for ( Listener<Integer> listener : mListeners ) 
-                                listener.onEvent(mDataStatus.ordinal());
+                            broadcastStatus(mDataStatus); 
                         }
                     } 
                 } else {
@@ -85,8 +85,7 @@ public class SystemDataController extends BaseController<Integer> {
                             && mIsNetworkConnected, mDataType, mUsing);// && mIsAvaliableActivityType, mDataType, mUsing); 
                         if ( mDataStatus != status ) {
                             mDataStatus = status; 
-                            for ( Listener<Integer> listener : mListeners ) 
-                                listener.onEvent(mDataStatus.ordinal());
+                            broadcastStatus(mDataStatus); 
                         }
                     }
                 }
@@ -109,6 +108,8 @@ public class SystemDataController extends BaseController<Integer> {
 
         if ( mTelephony != null ) 
             mTelephony.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
+
+        mTMSClient = null;
     }
 
     @Override
@@ -129,9 +130,21 @@ public class SystemDataController extends BaseController<Integer> {
             +", avaliable data="+mIsAvaliableActivityType+", type="+mDataType+", status="+mDataStatus);
     }
 
+    public void fetchTMSClient(TMSClient tms) {
+        if ( tms == null ) return; 
+        Log.d(TAG, "fetchTMSClient"); 
+        mTMSClient = tms; 
+    }
+
     @Override
     public Integer get() {
-        return mDataStatus.ordinal(); 
+        DataStatus status = mDataStatus; 
+        if ( mTMSClient != null ) {
+            if ( mTMSClient.getActiveStatus() == TMSClient.ActiveStatus.DEACTIVE ) 
+                status = DataStatus.NONE; 
+        }
+        Log.d(TAG, "get="+status+", mDataStatus="+mDataStatus); 
+        return status.ordinal(); 
     }
 
     private boolean isAvaliableData(int direction) {
@@ -206,8 +219,7 @@ public class SystemDataController extends BaseController<Integer> {
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
             if ( status != mDataStatus ) {
                 mDataStatus = status;
-                for ( Listener<Integer> listener : mListeners ) 
-                    listener.onEvent(mDataStatus.ordinal());
+                broadcastStatus(mDataStatus); 
             }
         }
     };
@@ -222,9 +234,20 @@ public class SystemDataController extends BaseController<Integer> {
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
             if ( status != mDataStatus ) {
                 mDataStatus = status;
-                for ( Listener<Integer> listener : mListeners ) 
-                    listener.onEvent(mDataStatus.ordinal());
+                broadcastStatus(mDataStatus); 
             }
         }
     };
+
+    private void broadcastStatus(DataStatus status) {
+        DataStatus _status = status; 
+        if ( mTMSClient != null ) {
+            if ( mTMSClient.getActiveStatus() == TMSClient.ActiveStatus.DEACTIVE ) 
+                _status = DataStatus.NONE; 
+        }
+        Log.d(TAG, "broadcastStatus="+_status+", status="+status); 
+
+        for ( Listener<Integer> listener : mListeners ) 
+            listener.onEvent(_status.ordinal());
+    }
 }

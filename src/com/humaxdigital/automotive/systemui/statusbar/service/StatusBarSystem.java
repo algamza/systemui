@@ -191,6 +191,7 @@ public class StatusBarSystem {
             if ( mAntennaController != null ) mAntennaController.fetchTMSClient(null); 
             if ( mCallController != null ) mCallController.fetchTMSClient(null);
             if ( mLocationController != null ) mLocationController.fetchTMSClient(null); 
+            if ( mDataController != null ) mDataController.fetchTMSClient(null); 
             if ( mBLEController != null ) mBLEController.fetch(null); 
             if ( mWirelessChargeController != null ) mWirelessChargeController.fetch(null); 
             if ( mPowerStateController != null ) mPowerStateController.fetch(null); 
@@ -205,6 +206,8 @@ public class StatusBarSystem {
                 mCallController.fetchTMSClient(mTMSClient);
             if ( mLocationController != null ) 
                 mLocationController.fetchTMSClient(mTMSClient); 
+            if ( mDataController != null ) 
+                mDataController.fetchTMSClient(mTMSClient); 
         }
         if ( mBLEController != null ) 
             mBLEController.fetch(mCarExClient.getBLEManager()); 
