@@ -17,12 +17,16 @@ import android.app.Service;
 import android.app.WallpaperManager;
 import android.graphics.BitmapFactory; 
 import android.graphics.Bitmap; 
+import android.graphics.Point;
 
 import android.provider.Settings;
 import android.database.ContentObserver;
 import android.net.Uri;
 
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
+
 import java.io.IOException;
 
 import android.extension.car.settings.CarExtraSettings;
@@ -34,6 +38,7 @@ public class WallpaperService extends Service {
 
     private ContentResolver mContentResolver;
     private ContentObserver mThemeObserver;
+    private Display mDefaultDisplay;
 
     @Override
     public void onCreate() {
@@ -70,17 +75,15 @@ public class WallpaperService extends Service {
         Log.d(TAG, "setWallPaper="+id); 
         int resid = R.drawable.ho_bg_theme_1; 
         switch(id) {
-            case 1: resid = R.drawable.ho_bg_theme_1; 
-            case 2: resid = R.drawable.ho_bg_theme_2; 
-            case 3: resid = R.drawable.ho_bg_theme_3; 
+            case 1: resid = R.drawable.ho_bg_theme_1; break;
+            case 2: resid = R.drawable.ho_bg_theme_2; break;
+            case 3: resid = R.drawable.ho_bg_theme_3; break;
         }
 
-        Bitmap paper = BitmapFactory.decodeResource(getResources(), resid);
-        if ( paper == null ) return;
-
         try {
-            //wallpaper.setResource(resid);
-            wallpaper.setBitmap(paper); 
+            Point displaySize = getDefaultDisplaySize();
+            wallpaper.suggestDesiredDimensions(displaySize.x, displaySize.y);
+            wallpaper.setResource(resid);
         } catch (IOException e) {
         }
         
@@ -143,4 +146,12 @@ public class WallpaperService extends Service {
             refresh(); 
         }
     };
+
+    private Point getDefaultDisplaySize() {
+        Point p = new Point();
+        WindowManager wm = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
+        Display d = wm.getDefaultDisplay();
+        d.getRealSize(p);
+        return p;
+    }
 }
