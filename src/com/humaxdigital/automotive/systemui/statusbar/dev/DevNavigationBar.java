@@ -19,7 +19,11 @@ import android.content.IntentFilter;
 import android.content.pm.UserInfo;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Parcel;
 import android.os.Process;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UserHandle;
@@ -33,6 +37,8 @@ import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.android.settingslib.development.SystemPropPoker;
 
 import com.humaxdigital.automotive.systemui.R;
 
@@ -64,6 +70,8 @@ public class DevNavigationBar extends FrameLayout {
     private CheckBox mMapAutoCheckBox;
 
     private Switch mKeepUnlockedSwitch;
+    private Switch mShowUpdatesSwitch;
+    private Switch mDebugLayoutSwitch;
 
     private long mStartTime;
     private long mUserSwitchTime;
@@ -145,6 +153,12 @@ public class DevNavigationBar extends FrameLayout {
         mKeepUnlockedSwitch = (Switch) findViewById(R.id.swKeepUnlocked);
         mKeepUnlockedSwitch.setOnClickListener(view -> { writeKeepUnlockedOptions(); });
 
+        mShowUpdatesSwitch = (Switch) findViewById(R.id.swShowUpdates);
+        mShowUpdatesSwitch.setOnClickListener(view -> { writeShowUpdatesOption(); });
+
+        mDebugLayoutSwitch = (Switch) findViewById(R.id.swDebugLayout);
+        mDebugLayoutSwitch.setOnClickListener(view -> { writeDebugLayoutOptions(); });
+
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
         findViewById(R.id.btnAppList).setOnClickListener(view -> { runAppList(); });
@@ -171,6 +185,8 @@ public class DevNavigationBar extends FrameLayout {
         updateMapAutoOptions();
         writeMapAutoOptions();
         updateKeepUnlockedOptions();
+        updateShowUpdatesOption();
+        updateDebugLayoutOptions();
     }
 
     public void onAttached() {
@@ -373,6 +389,62 @@ public class DevNavigationBar extends FrameLayout {
 
     private void writeKeepUnlockedOptions() {
         DevUtils.setKeepingDevUnlocked(mContext, mKeepUnlockedSwitch.isChecked());
+    }
+
+    private void updateShowUpdatesOption() {
+        // magic communication with surface flinger.
+        try {
+            IBinder flinger = ServiceManager.getService("SurfaceFlinger");
+            if (flinger != null) {
+                Parcel data = Parcel.obtain();
+                Parcel reply = Parcel.obtain();
+                data.writeInterfaceToken("android.ui.ISurfaceComposer");
+                flinger.transact(1010, data, reply, 0);
+                @SuppressWarnings("unused")
+                int showCpu = reply.readInt();
+                @SuppressWarnings("unused")
+                int enableGL = reply.readInt();
+                int showUpdates = reply.readInt();
+                @SuppressWarnings("unused")
+                int showBackground = reply.readInt();
+                int disableOverlays = reply.readInt();
+                reply.recycle();
+                data.recycle();
+
+                mShowUpdatesSwitch.setChecked((showUpdates == 1));
+            }
+        } catch (RemoteException ex) {
+            // ignore
+        }
+    }
+
+    private void writeShowUpdatesOption() {
+        try {
+            IBinder flinger = ServiceManager.getService("SurfaceFlinger");
+            if (flinger != null) {
+                Parcel data = Parcel.obtain();
+                data.writeInterfaceToken("android.ui.ISurfaceComposer");
+                final int showUpdates = mShowUpdatesSwitch.isChecked() ? 1 : 0;
+                data.writeInt(showUpdates);
+                flinger.transact(1002, data, null, 0);
+                data.recycle();
+
+                updateShowUpdatesOption();
+            }
+        } catch (RemoteException ex) {
+            // ignore
+        }
+    }
+
+    private void updateDebugLayoutOptions() {
+        mDebugLayoutSwitch.setChecked(
+                SystemProperties.getBoolean(View.DEBUG_LAYOUT_PROPERTY, false));
+    }
+
+    private void writeDebugLayoutOptions() {
+        SystemProperties.set(View.DEBUG_LAYOUT_PROPERTY,
+                mDebugLayoutSwitch.isChecked() ? "true" : "false");
+        SystemPropPoker.getInstance().poke();
     }
 
     private void switchUser(int index) {
