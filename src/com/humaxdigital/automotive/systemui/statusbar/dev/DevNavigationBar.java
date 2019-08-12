@@ -51,9 +51,13 @@ public class DevNavigationBar extends FrameLayout {
     private Context mContext;
     private DevCommands mDevCommands;
     private ContentResolver mContentResolver;
-    private ActivityManager mActivityManager;
 
-    private final Handler mRetrieveHandler = new Handler();
+    private final ProcessObserver mProcessObserver;
+    private final TaskListener mTaskListener;
+    private ActivityManager mActivityManager;
+    private final IActivityManager mActivityManagerService;
+
+    private final Handler mRetrieveHandler;
     private final Runnable mRetrieveRunnable = this::retrievePeriodicData;
     private ComponentName mTopActivity;
     private boolean mUserSwitchingTestRunning = false;
@@ -96,12 +100,35 @@ public class DevNavigationBar extends FrameLayout {
         }
     };
 
+    private class ProcessObserver extends IProcessObserver.Stub {
+        @Override
+        public void onForegroundActivitiesChanged(int pid, int uid, boolean foregroundActivities) {
+            mRetrieveHandler.post(mRetrieveRunnable);
+        }
+
+        @Override
+        public void onProcessDied(int pid, int uid) {
+            mRetrieveHandler.post(mRetrieveRunnable);
+        }
+    }
+
+    private class TaskListener extends TaskStackListener {
+        @Override
+        public void onTaskStackChanged() {
+            mRetrieveHandler.post(mRetrieveRunnable);
+        }
+    }
+
     public DevNavigationBar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         mContext = context;
         mContentResolver = context.getContentResolver();
+        mProcessObserver = new ProcessObserver();
+        mTaskListener = new TaskListener();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        mActivityManagerService = ActivityManager.getService();
+        mRetrieveHandler = new Handler(context.getMainLooper());
         mStartTime = mUserSwitchTime = SystemClock.uptimeMillis();
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -190,7 +217,15 @@ public class DevNavigationBar extends FrameLayout {
     }
 
     public void onAttached() {
+        try {
+            mActivityManagerService.registerProcessObserver(mProcessObserver);
+            mActivityManagerService.registerTaskStackListener(mTaskListener);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
         retrievePeriodicData();
+
         updateSavedActivityText();
         updateUserState();
     }
@@ -198,6 +233,13 @@ public class DevNavigationBar extends FrameLayout {
     public void onDetached() {
         mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
         mUserSwitchingTestRunning = false;
+
+        try {
+            mActivityManagerService.unregisterProcessObserver(mProcessObserver);
+            mActivityManagerService.unregisterTaskStackListener(mTaskListener);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void goHome() {
@@ -275,8 +317,6 @@ public class DevNavigationBar extends FrameLayout {
                 updateBootCompletedTimeText();
             }
         }
-
-        mRetrieveHandler.postDelayed(mRetrieveRunnable, 1000);
     }
 
     private void updateSavedActivityText() {
