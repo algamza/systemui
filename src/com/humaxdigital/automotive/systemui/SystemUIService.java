@@ -22,7 +22,7 @@ public class SystemUIService extends Service {
 
         SystemUIPolicy.applyPolicies(this);
 
-        //startWallpaperService(this);
+        startWallpaperService(this);
         startStatusBarService(this);
         startDropListService(this);
         startVolumeDialogService(this);
