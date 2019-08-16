@@ -213,11 +213,17 @@ public class UserBluetooth extends IUserBluetooth.Stub {
                 case BluetoothProfile.HEADSET_CLIENT: {
                     if ( proxy.getConnectedDevices().size() > 0 ) {
                         BluetoothHeadsetClient client = (BluetoothHeadsetClient)proxy;
-                        Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
-                        int battery_level = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
-                        int antenna_level = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
-                        mCurrentBatteryLevel = battery_level; 
-                        mCurrentAntennaLevel = antenna_level;
+                        try{
+                            Bundle features = client.getCurrentAgEvents(proxy.getConnectedDevices().get(0));  
+                            if ( features != null ) {
+                                mCurrentBatteryLevel = features.getInt(BluetoothHeadsetClient.EXTRA_BATTERY_LEVEL);
+                                mCurrentAntennaLevel = features.getInt(BluetoothHeadsetClient.EXTRA_NETWORK_SIGNAL_STRENGTH);
+                            } else {
+                                Log.d(TAG, "features are null"); 
+                            }
+                        } catch(Exception ex){
+                            Log.d(TAG, "error : "+ex); 
+                        }
                         updateConectionState(Profiles.HEADSET, 1); 
                     }
                     else updateConectionState(Profiles.HEADSET, 0); 
