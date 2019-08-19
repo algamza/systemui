@@ -151,6 +151,16 @@ public class ScenarioQuiteMode {
         return volume; 
     }
 
+    private boolean hasQuiteModeLastVolume() {
+        int user = getCurrentUser(); 
+        UserVolume uv = mUserVolume.get(user);
+        boolean ret = false; 
+        if ( uv == null ) ret = false; 
+        else ret = true;
+        Log.d(TAG, "hasQuiteModeLastVolume="+ret); 
+        return ret; 
+    }
+
     private boolean isQuiteModeLastVolumeChanged(VolumeUtil.Type type) {
         boolean changed = false; 
         int user = getCurrentUser(); 
@@ -205,6 +215,7 @@ public class ScenarioQuiteMode {
         if ( isUserSwiching() ) return; 
         if ( isQuiteMode() ) applyQuiteMode();
         else {
+            if ( !hasQuiteModeLastVolume() ) return; 
             for ( VolumeUtil.Type type : mAudioTypeList ) {
                 boolean changed = isQuiteModeLastVolumeChanged(type); 
                 if ( !changed ) {
