@@ -256,9 +256,11 @@ public class DropListUIService extends Service {
     }
 
     private void closeDropList() {
-        Log.d(TAG, "closeDropList"); 
-        if ( !mShowing ) return; 
-        mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
+        Log.d(TAG, "closeDropList");
+        if ( mDialog != null && mDialog.isShowing() ) {
+            if ( !mShowing ) return; 
+            mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
+        }
     }
 
     private ControllerManager.Listener mPanelListener = new ControllerManager.Listener() {
@@ -376,15 +378,6 @@ public class DropListUIService extends Service {
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            /*
-            if ( isShowing() ) {
-                if ( event.getAction() == MotionEvent.ACTION_OUTSIDE ) {
-                    Log.d(TAG, "onTouchEvent:MotionEvent.ACTION_OUTSIDE");
-                    closeDropList();
-                    return true;
-                }
-            }
-            */
             return false;
         }
     }
@@ -531,17 +524,33 @@ public class DropListUIService extends Service {
         public void onVRStateChanged(boolean on) {
             Log.d(TAG, "onVRStateChanged="+on);
             if ( !on ) return;
-            if ( mDialog != null && mDialog.isShowing() ) {
-                closeDropList();
-            }
+            closeDropList();
         }
         @Override
         public void onPowerOnChanged(boolean on) {
             Log.d(TAG, "onPowerOnChanged="+on);
             if ( on ) return;
-            if ( mDialog != null && mDialog.isShowing() ) {
-                closeDropList();
-            }
+            closeDropList();
+        }
+
+        @Override
+        public void onEmergencyModeChanged(boolean enable) {
+            closeDropList();
+        }
+
+        @Override
+        public void onBluelinkCallModeChanged(boolean enable) {
+            closeDropList();
+        }
+
+        @Override
+        public void onImmobilizationModeChanged(boolean enable) {
+            closeDropList();
+        }
+
+        @Override
+        public void onSlowdownModeChanged(boolean enable) {
+            closeDropList();
         }
     };
 

@@ -299,6 +299,8 @@ public class StatusBarService extends Service {
         public void onDisconnected() {
             if ( mSensorManager != null ) 
                 mSensorManager.unregisterListener(mSensorChangeListener);
+            if ( mTMSManager != null )
+                mTMSManager.unregisterCallback(mTMSEventListener); 
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(null);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(null);
             mTMSManager = null; 

@@ -25,6 +25,7 @@ import android.net.Uri;
 
 import com.android.internal.annotations.GuardedBy;
 
+import android.extension.car.CarTMSManager;
 import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.droplist.impl.ModeImpl;
@@ -227,6 +228,10 @@ public class SystemControl extends Service {
         public void onCallingChanged(boolean on) {}
         public void onAVOnChanged(boolean on) {}
         public void onPowerOnChanged(boolean on) {}
+        public void onEmergencyModeChanged(boolean enable) {}
+        public void onBluelinkCallModeChanged(boolean enable) {}
+        public void onImmobilizationModeChanged(boolean enable) {}
+        public void onSlowdownModeChanged(boolean enable) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -496,13 +501,19 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
+            if ( mCarClient != null ) 
+                mCarClient.getTMSManager().registerCallback(mTMSEventListener); 
+            
         }
 
         @Override
         public void onDisconnected() {
+            if ( mCarClient != null ) 
+                mCarClient.getTMSManager().unregisterCallback(mTMSEventListener); 
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
+            mCarClient = null;
         }
     };
 
@@ -640,6 +651,26 @@ public class SystemControl extends Service {
                 }
             }
         }
+    };
+
+    private CarTMSManager.CarTMSEventListener mTMSEventListener = 
+        new CarTMSManager.CarTMSEventListener(){
+        @Override
+        public void onEmergencyMode(boolean enabled) {
+            Log.d(TAG, "onEmergencyMode = "+enabled); 
+        }
+        @Override
+        public void onBluelinkCallMode(boolean enabled) {
+            Log.d(TAG, "onBluelinkCallMode = "+enabled);  
+        }
+        @Override
+        public void onImmobilizationMode(boolean enabled) {
+            Log.d(TAG, "onImmobilizationMode = "+enabled); 
+        }
+        @Override
+        public void onSlowdownMode(boolean enabled) {
+            Log.d(TAG, "onSlowdownMode = "+enabled); 
+        }                
     };
 
     private ContentObserver createPowerObserver() {
