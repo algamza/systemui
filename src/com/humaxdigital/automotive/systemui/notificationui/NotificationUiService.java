@@ -103,7 +103,7 @@ public class NotificationUiService extends Service {
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive:ACTION_CANCEL");
             closeDialog();
-            dismissAll();
+            //dismissAll();
         }
     };
 
@@ -234,7 +234,7 @@ public class NotificationUiService extends Service {
             }
             Log.d(TAG, "onClick");
             closeDialog();
-            dismissAll();
+            //dismissAll();
         }
     }; 
 
