@@ -8,12 +8,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+import android.content.ContentResolver;
+
+import android.provider.Settings;
+import android.net.Uri;
+import android.database.ContentObserver;
 
 import android.os.IBinder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Bundle;
+import android.os.UserHandle;
 
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -23,6 +29,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import android.graphics.PixelFormat;
+
+import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 
@@ -41,6 +49,10 @@ public class VolumeDialogService extends Service {
     private VolumeDialogBase mDialog; 
     private VolumeControllerBase mController; 
     private VolumeControlService mVolumeService;
+
+    private ContentResolver mContentResolver = null;
+    private ContentObserver mLastModeObserver = null;
+    private int mLastMode = 0; 
 
     @Override
     public void onCreate() {
@@ -62,11 +74,21 @@ public class VolumeDialogService extends Service {
         mController.registVolumeListener(mVolumeListener);
 
         startVolumeControlService(); 
+
+        mContentResolver = this.getContentResolver();
+        mLastModeObserver = createLastModeObserver();
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.LAST_MEDIA_MODE), 
+                false, mLastModeObserver, UserHandle.USER_CURRENT); 
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy"); 
+        if ( mLastModeObserver != null && mContentResolver != null )  {
+            mContentResolver.unregisterContentObserver(mLastModeObserver); 
+        }
+
         if ( mController != null ) {
             mController.deinit(); 
             mController.unregistVolumeListener(mVolumeListener); 
@@ -143,4 +165,22 @@ public class VolumeDialogService extends Service {
             if ( mVolumeService != null ) mVolumeService.onShow(show); 
         }
     };
+
+    private ContentObserver createLastModeObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                
+                if ( mContentResolver == null ) return;
+                int lastmode = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.LAST_MEDIA_MODE, 
+                    CarExtraSettings.Global.LAST_MEDIA_MODE_DEFAULT);
+                Log.d(TAG, "onChange:lastmode="+lastmode);
+                if ( mLastMode == lastmode ) return;
+                mLastMode = lastmode; 
+                if ( mDialog != null ) mDialog.close();
+            }
+        };
+        return observer; 
+    }
 }
