@@ -144,7 +144,9 @@ public class StatusBarSystem {
 
         if ( mTMSClient != null ) mTMSClient.disconnect();
 
-        mSystemCallbacks.clear(); 
+        synchronized (mSystemCallbacks) {
+            mSystemCallbacks.clear(); 
+        }
 
         if ( mDataController != null )  mDataController.removeListener(mSystemDataListener);
         if ( mWifiController != null )  mWifiController.removeListener(mSystemWifiListener);
@@ -218,9 +220,10 @@ public class StatusBarSystem {
             mPowerStateController.fetch(mCarExClient.getSystemManager()); 
         if ( mMuteController != null ) 
             mMuteController.fetchAudioEx(mCarExClient.getAudioManagerEx());
-
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onSystemInitialized();
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onSystemInitialized();
+            }
         }
     }
 
@@ -242,50 +245,64 @@ public class StatusBarSystem {
     public void onBTCall(boolean on) {
         Log.d(TAG, "onBTCall="+on);
         mBTCall = on; 
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onBTCalling(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                    callback.onBTCalling(on);
+            }
         }
     }
 
     public void onEmergencyCall(boolean on) {
         Log.d(TAG, "onEmergencyCall="+on);
         mEmergencyCall = on; 
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onEmergencyMode(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                    callback.onEmergencyMode(on);
+            }
         }
     }
 
     public void onBluelinkCall(boolean on) {
         Log.d(TAG, "onBluelinkCall="+on);
         mBluelinkCall = on; 
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onBluelinkMode(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onBluelinkMode(on);
+            }
         }
     }
 
     public void onSVIOn(boolean on) {
         Log.d(TAG, "onSVIOn="+on);
         mSVIOn = on; 
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onImmoilizationMode(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onImmoilizationMode(on);
+            }
         }
     }
     public void onSVSOn(boolean on) {
         Log.d(TAG, "onSVSOn="+on);
         mSVSOn = on; 
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onSlowdownMode(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onSlowdownMode(on);
+            }
         }
     }
     public void onUserAgreement(boolean on) {
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onUserAgreementMode(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onUserAgreementMode(on);
+            }
         }
     }
 
     public void onUserSwitching(boolean on) {
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onUserSwitching(on);
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onUserSwitching(on);
+            }
         }
     }
 
@@ -620,10 +637,11 @@ public class StatusBarSystem {
         for ( BaseController controller : mControllers ) controller.connect(); 
         for ( BaseController controller : mControllers ) controller.fetch();
 
-
-        for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-            callback.onUserProfileInitialized();
-            callback.onDateTimeInitialized();
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                callback.onUserProfileInitialized();
+                callback.onDateTimeInitialized();
+            }
         }
     }
 
@@ -641,8 +659,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(String date) {
             Log.d(TAG, "onDateTimeChanged="+date);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onDateTimeChanged(date); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onDateTimeChanged(date); 
+                }
             }
         }
     }; 
@@ -652,8 +672,10 @@ public class StatusBarSystem {
         @Override
         public void onTimeTypeChanged(String type) {
             Log.d(TAG, "onTimeTypeChanged="+type);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onTimeTypeChanged(type); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onTimeTypeChanged(type); 
+                }
             }
         }
     }; 
@@ -662,8 +684,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Bitmap bitmap) {
             Log.d(TAG, "onUserChanged");
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onUserChanged(new BitmapParcelable(bitmap)); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onUserChanged(new BitmapParcelable(bitmap)); 
+                }
             }
         }
     }; 
@@ -673,8 +697,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onAntennaStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onAntennaStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onAntennaStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -683,8 +709,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onBLEStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onBLEStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onBLEStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -693,8 +721,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onBTBatteryStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onBTBatteryStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onBTBatteryStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -703,8 +733,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onCallStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onCallStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onCallStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -713,8 +745,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onMuteStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onMuteStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onMuteStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -723,8 +757,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onWirelessChargeStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onWirelessChargeStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onWirelessChargeStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -733,8 +769,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onModeStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onModeStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onModeStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -743,8 +781,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onWifiStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onWifiStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onWifiStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -753,8 +793,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer status) {
             Log.d(TAG, "onDataStatusChanged="+status);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                    callback.onDataStatusChanged(status); 
+            synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                        callback.onDataStatusChanged(status); 
+                }
             }
         }
     }; 
@@ -763,8 +805,10 @@ public class StatusBarSystem {
         @Override
         public void onEvent(Integer state) {
             Log.d(TAG, "mPowerStateControllerListener="+state);
-            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
-                callback.onPowerStateChanged(state); 
+                synchronized (mSystemCallbacks) {
+                for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                    callback.onPowerStateChanged(state); 
+                }
             }
         }
     }; 

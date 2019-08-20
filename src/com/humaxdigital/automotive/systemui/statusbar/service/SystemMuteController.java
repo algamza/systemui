@@ -37,6 +37,7 @@ public class SystemMuteController extends BaseController<Integer> {
     @Override
     public void disconnect() {
         Log.d(TAG, "disconnect"); 
+        cleanupAudioManager(); 
         try {
             if ( mUserAudio != null ) 
                 mUserAudio.unregistCallback(mUserAudioCallback);
@@ -77,6 +78,12 @@ public class SystemMuteController extends BaseController<Integer> {
     }
 
     public void fetchAudioEx(CarAudioManagerEx audio) {
+        if ( audio == null ) {
+            Log.d(TAG, "fetchAudioEx=null"); 
+            cleanupAudioManager(); 
+            return;
+        }
+        
         mCarAudioEx = audio;
         try {
             if ( mCarAudioEx != null ) {

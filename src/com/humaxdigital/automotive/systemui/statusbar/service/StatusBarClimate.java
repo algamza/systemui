@@ -348,100 +348,128 @@ public class StatusBarClimate {
         @Override
         public void onInitialized() {
             Log.d(TAG, "onInitialized");
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) {
-                callback.onInitialized();
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) {
+                    callback.onInitialized();
+                }
             }
         }
 
         @Override
         public void onDriverTemperatureChanged(float temp) {
             Log.d(TAG, "onDriverTemperatureChanged="+temp);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onDRTemperatureChanged(temp); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onDRTemperatureChanged(temp); 
+            }
         }
         
         @Override
         public void onDriverSeatStatusChanged(int status) {
             Log.d(TAG, "onDriverSeatStatusChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onDRSeatStatusChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onDRSeatStatusChanged(status); 
+            }
         }
 
         @Override
         public void onAirCirculationChanged(boolean isOn) {
             Log.d(TAG, "onAirCirculationChanged="+isOn);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onAirCirculationChanged(isOn); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onAirCirculationChanged(isOn); 
+            }
         }
 
         @Override
         public void onAirConditionerChanged(boolean isOn) {
             Log.d(TAG, "onAirConditionerChanged="+isOn);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onAirConditionerChanged(isOn); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onAirConditionerChanged(isOn); 
+            }
         }
 
         @Override
         public void onAirCleaningChanged(int status) {
             Log.d(TAG, "onAirCleaningChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onAirCleaningChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onAirCleaningChanged(status); 
+            }
         }
 
         @Override
         public void onFanDirectionChanged(int status) {
             Log.d(TAG, "onFanDirectionChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onFanDirectionChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onFanDirectionChanged(status); 
+            }
         }
 
         @Override
         public void onFanSpeedStatusChanged(int status) {
             Log.d(TAG, "onFanSpeedStatusChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onBlowerSpeedChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onBlowerSpeedChanged(status); 
+            }
         }
 
         @Override
         public void onPassengerSeatStatusChanged(int status) {
             Log.d(TAG, "onPassengerSeatStatusChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onPSSeatStatusChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onPSSeatStatusChanged(status); 
+            }
         }
 
         @Override
         public void onPassengerTemperatureChanged(float temp) {
             Log.d(TAG, "onPassengerTemperatureChanged="+temp);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onPSTemperatureChanged(temp); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onPSTemperatureChanged(temp); 
+            }
         }
 
         @Override
         public void onFrontDefogStatusChanged(int status) {
             Log.d(TAG, "onFrontDefogStatusChanged="+status);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onFrontDefogStatusChanged(status); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onFrontDefogStatusChanged(status); 
+            }
         }
 
         @Override
         public void onModeOffChanged(boolean off) {
             Log.d(TAG, "onModeOffChanged="+off);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onModeOffChanged(off); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onModeOffChanged(off); 
+            }
         }
 
         @Override
         public void onIGNOnChanged(boolean on) {
             Log.d(TAG, "onIGNOnChanged="+on);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onIGNOnChanged(on); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onIGNOnChanged(on); 
+            }
         }
 
         @Override
         public void onOperateOnChanged(boolean on) {
             Log.d(TAG, "onOperateOnChanged="+on);
-            for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                callback.onOperateOnChanged(on); 
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onOperateOnChanged(on); 
+            }
         }
     }; 
 }

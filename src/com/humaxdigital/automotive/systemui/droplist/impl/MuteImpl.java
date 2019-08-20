@@ -4,12 +4,18 @@ import android.os.RemoteException;
 import android.content.Context;
 import android.util.Log;
 
+import android.car.CarNotConnectedException;
+import android.car.media.ICarVolumeCallback;
+import android.extension.car.CarAudioManagerEx;
+
 import com.humaxdigital.automotive.systemui.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
 
 public class MuteImpl extends BaseImplement<Boolean> {
     private final String TAG = "MuteImpl"; 
     private IUserAudio mUserAudio = null;
+    private CarExtensionClient mCarClient = null;
+    private CarAudioManagerEx mCarAudioEx = null;
 
     public MuteImpl(Context context) {
         super(context);
@@ -17,6 +23,7 @@ public class MuteImpl extends BaseImplement<Boolean> {
 
     @Override
     public void destroy() {
+        cleanupAudioManager(); 
         try {
             if ( mUserAudio != null ) 
                 mUserAudio.unregistCallback(mUserAudioCallback);
@@ -25,6 +32,8 @@ public class MuteImpl extends BaseImplement<Boolean> {
         } 
         mUserAudio = null;
         mListener = null;
+        mCarClient = null;
+        mCarAudioEx = null;
     }
 
     @Override
@@ -76,11 +85,46 @@ public class MuteImpl extends BaseImplement<Boolean> {
         sendMuteChangeEvent();
     }
 
+    public void fetchEx(CarExtensionClient client) {
+        Log.d(TAG, "fetchEx="+client);
+        if ( client == null ) {
+            cleanupAudioManager(); 
+            return;
+        }
+
+        mCarClient = client; 
+
+        if ( client == null ) {
+            mCarAudioEx = null;
+            return;
+        }
+        mCarAudioEx = mCarClient.getAudioManager(); 
+        try {
+            if ( mCarAudioEx != null ) {
+                mCarAudioEx.registerVolumeCallback(mVolumeChangeCallback.asBinder());
+            }
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
+        } 
+
+    }
+
+    private void cleanupAudioManager() {
+        Log.d(TAG, "cleanupAudioManager");
+        try {
+            if (mCarAudioEx != null)
+                mCarAudioEx.unregisterVolumeCallback(mVolumeChangeCallback.asBinder());
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
+        }
+        mCarAudioEx = null;
+    }
+
     private final IUserAudioCallback.Stub mUserAudioCallback = 
         new IUserAudioCallback.Stub() {
         @Override
         public void onMasterMuteChanged(boolean enable) throws RemoteException {
-            sendMuteChangeEvent();
+            //sendMuteChangeEvent();
         }
         @Override
         public void onBluetoothMicMuteChanged(boolean mute) throws RemoteException {
@@ -89,6 +133,17 @@ public class MuteImpl extends BaseImplement<Boolean> {
         public void onNavigationChanged(boolean mute) throws RemoteException {
         }
     }; 
+
+    private final ICarVolumeCallback mVolumeChangeCallback = new ICarVolumeCallback.Stub() {
+        @Override
+        public void onGroupVolumeChanged(int groupId, int flags) {
+        }
+
+        @Override
+        public void onMasterMuteChanged(int flags) {
+            sendMuteChangeEvent();
+        }
+    };
 
     private void sendMuteChangeEvent() {
         if ( mListener != null && mUserAudio != null )  {

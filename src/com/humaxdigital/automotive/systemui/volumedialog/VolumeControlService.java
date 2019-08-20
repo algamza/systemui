@@ -347,15 +347,19 @@ public class VolumeControlService extends Service {
 
     private void broadcastEventVolumeChange(int mode, int max, int value) {
         Log.d(TAG, "broadcastEventVolumeChange:mode=" + mode + ", max=" + max + ", value=" + value);
-        for (VolumeCallback callback : mCallbacks) {
-            callback.onVolumeChanged(VolumeUtil.convertToType(mode), max, value);
+        synchronized (mCallbacks) {
+            for (VolumeCallback callback : mCallbacks) {
+                callback.onVolumeChanged(VolumeUtil.convertToType(mode), max, value);
+            }
         }
     }
 
     private void broadcastEventMuteChange(int mode, int max, int volume, boolean mute) {
         Log.d(TAG, "broadcastEventMuteChange:mode=" + mode + ", max=" + max + ", volume="+volume+", mute=" + mute);
-        for (VolumeCallback callback : mCallbacks) {
-            callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
+        synchronized (mCallbacks) {
+            for (VolumeCallback callback : mCallbacks) {
+                callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
+            }
         }
     }
 

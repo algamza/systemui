@@ -501,6 +501,7 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
+            if ( mMute != null ) mMute.fetchEx(mCarClient); 
             if ( mCarClient != null ) 
                 mCarClient.getTMSManager().registerCallback(mTMSEventListener); 
             
@@ -513,6 +514,7 @@ public class SystemControl extends Service {
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
+            if ( mMute != null ) mMute.fetchEx(null); 
             mCarClient = null;
         }
     };
@@ -530,8 +532,10 @@ public class SystemControl extends Service {
     private BaseImplement.Listener mBluetoothListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onBluetoothOnChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onBluetoothOnChanged(e);
+                }
             }
         }
     };
@@ -548,8 +552,10 @@ public class SystemControl extends Service {
                 default: break;
             }
             
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onAutomaticModeChanged(mode);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onAutomaticModeChanged(mode);
+                }
             }
         }
     };
@@ -566,64 +572,80 @@ public class SystemControl extends Service {
                 default: break;
             }
             
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onThemeChanged(mode);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onThemeChanged(mode);
+                }
             }
         }
     };
     private BaseImplement.Listener mBeepListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onBeepOnChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onBeepOnChanged(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mBrightnessListener = new BaseImplement.Listener<Integer>() {
         @Override
         public void onChange(Integer e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onBrightnessChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onBrightnessChanged(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mClusterCheckListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onClusterChecked(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onClusterChecked(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mMuteListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onMuteOnChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onMuteOnChanged(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mQuietModeListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onQuietModeOnChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onQuietModeOnChanged(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mWifiListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onWifiOnChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onWifiOnChanged(e);
+                }
             }
         }
     };
     private BaseImplement.Listener mCallingListener = new BaseImplement.Listener<Boolean>() {
         @Override
         public void onChange(Boolean e) {
-            for ( SystemCallback callback : mCallbacks ) {
-                callback.onCallingChanged(e);
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onCallingChanged(e);
+                }
             }
         }
     };
@@ -638,15 +660,19 @@ public class SystemControl extends Service {
             switch(action) {
                 case ACTION_VOLUME_SETTINGS_STARTED: {
                     mIsVolumeSettingsActivated = true;
-                    for ( SystemCallback callback : mCallbacks ) 
-                        callback.onVolumeSettingsActivated(mIsVolumeSettingsActivated);
+                    synchronized (mCallbacks) {
+                        for ( SystemCallback callback : mCallbacks ) 
+                            callback.onVolumeSettingsActivated(mIsVolumeSettingsActivated);
+                    }
                     break;
                 }
                 
                 case ACTION_VOLUME_SETTINGS_STOPPED: {
                     mIsVolumeSettingsActivated = false;
-                    for ( SystemCallback callback : mCallbacks ) 
-                        callback.onVolumeSettingsActivated(mIsVolumeSettingsActivated);
+                    synchronized (mCallbacks) {
+                        for ( SystemCallback callback : mCallbacks ) 
+                            callback.onVolumeSettingsActivated(mIsVolumeSettingsActivated);
+                    }
                     break;
                 }
             }
@@ -681,38 +707,40 @@ public class SystemControl extends Service {
                     CarExtraSettings.Global.POWER_STATE, 
                     CarExtraSettings.Global.POWER_STATE_NORMAL);
                 Log.d(TAG, "onChange="+state);
-                if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
-                    if ( mPowerOn ) {
-                        mPowerOn = false; 
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onPowerOnChanged(mPowerOn); 
-                    }
-                    if ( mAVOn ) {
-                        mAVOn = false;
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onAVOnChanged(mAVOn);
-                    }
-                } else if ( state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
-                    if ( mAVOn ) {
-                        mAVOn = false;
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onAVOnChanged(mAVOn);
-                    }
-                    if ( !mPowerOn ) {
-                        mPowerOn = true; 
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onPowerOnChanged(mPowerOn); 
-                    }
-                } else {
-                    if ( !mAVOn ) {
-                        mAVOn = true;
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onAVOnChanged(mAVOn);
-                    }
-                    if ( !mPowerOn ) {
-                        mPowerOn = true; 
-                        for ( SystemCallback callback : mCallbacks )
-                            callback.onPowerOnChanged(mPowerOn); 
+                synchronized (mCallbacks) {
+                    if ( state == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
+                        if ( mPowerOn ) {
+                            mPowerOn = false; 
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onPowerOnChanged(mPowerOn); 
+                        }
+                        if ( mAVOn ) {
+                            mAVOn = false;
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onAVOnChanged(mAVOn);
+                        }
+                    } else if ( state == CarExtraSettings.Global.POWER_STATE_AV_OFF ) {
+                        if ( mAVOn ) {
+                            mAVOn = false;
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onAVOnChanged(mAVOn);
+                        }
+                        if ( !mPowerOn ) {
+                            mPowerOn = true; 
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onPowerOnChanged(mPowerOn); 
+                        }
+                    } else {
+                        if ( !mAVOn ) {
+                            mAVOn = true;
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onAVOnChanged(mAVOn);
+                        }
+                        if ( !mPowerOn ) {
+                            mPowerOn = true; 
+                            for ( SystemCallback callback : mCallbacks )
+                                callback.onPowerOnChanged(mPowerOn); 
+                        }
                     }
                 }
             }
@@ -727,8 +755,10 @@ public class SystemControl extends Service {
                 int on = Settings.Global.getInt(getContentResolver(), SETTINGS_VR, 0);
                 Log.d(TAG, "onChange="+on);
                 if ( on == 1 ) {
-                    for ( SystemCallback callback : mCallbacks )
-                        callback.onVRStateChanged(true);
+                    synchronized (mCallbacks) {
+                        for ( SystemCallback callback : mCallbacks )
+                            callback.onVRStateChanged(true);
+                    }
                 }
             }
         };
