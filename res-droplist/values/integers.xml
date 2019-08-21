@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="seekbar_cluster_brightness_max">20</integer>
-    <integer name="seekbar_cluster_brightness_min">0</integer>
+    <integer name="seekbar_cluster_brightness_min">1</integer>
     <integer name="seekbar_brightness_max">5</integer>
     <integer name="seekbar_brightness_min">-5</integer>
 </resources>

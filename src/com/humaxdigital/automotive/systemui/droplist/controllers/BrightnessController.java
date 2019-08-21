@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ImageView;
 import android.graphics.Rect;
 
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.content.res.Resources;
 
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
+import com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar;
 
 import com.humaxdigital.automotive.systemui.util.ProductConfig;
 
@@ -30,11 +32,12 @@ public class BrightnessController implements BaseController {
     private Context mContext;
     private SystemControl mSystem;
     private View mView;
-    private SeekBar mSeekbar;
+    private CustomSeekBar mSeekbar;
     private CheckBox mCheckbox;
     private View mPopupView;
     private TextView mText;
     private TextView mCheckboxText; 
+    private ImageView mImgCenter; 
 
     private int mBrightnessMin;
     private int mBrightnessMax;
@@ -71,6 +74,7 @@ public class BrightnessController implements BaseController {
 
         mPopupView = (View)mView.findViewById(R.id.view_popup);
         mText = (TextView)mPopupView.findViewById(R.id.text_progress);
+        mImgCenter = (ImageView)mView.findViewById(R.id.img_center); 
 
         mCheckboxText = (TextView)mView.findViewById(R.id.text_checkbox); 
 
@@ -79,29 +83,27 @@ public class BrightnessController implements BaseController {
 
     @Override
     public void fetch(SystemControl system) {
-        if ( system == null || mCheckbox == null || mSeekbar == null ) return;
+        if ( system == null || mCheckbox == null || mSeekbar == null || mImgCenter == null ) return;
         mSystem = system;
         mSystem.registerCallback(mBrightnessListener);
 
         mBrightnessProgress = mSystem.getBrightness();
-
-        //if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-        //    mClusterChecked = false; 
-        //} else {
-            mClusterChecked = mSystem.getClusterCheck();
-        //}
-        
-        // todo : get state from system
-        mClusterBrightnessProgress = 10;
+        mClusterChecked = mSystem.getClusterCheck();
+        mClusterBrightnessProgress = mSystem.getClusterBrightness();
         
         mCheckbox.setChecked(mClusterChecked);
 
-        if ( mCheckbox.isChecked() )
+        if ( mCheckbox.isChecked() ) {
             updateType(TYPE.CLUSTER_BRIGHTNESS, mClusterBrightnessProgress);
-        else
+            mImgCenter.setVisibility(View.GONE);
+            mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT); 
+        }   
+        else {
             updateType(TYPE.BRIGHTNESS, mBrightnessProgress);
-
-        Log.d(TAG, "fetch="+mBrightnessProgress+", cluseter check="+mClusterChecked);
+            mImgCenter.setVisibility(View.VISIBLE);
+            mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_CENTER); 
+        }
+        Log.d(TAG, "fetch:brightness="+mBrightnessProgress+", cluster="+mClusterBrightnessProgress+", cluseter check="+mClusterChecked);
     }
 
     @Override
@@ -140,11 +142,17 @@ public class BrightnessController implements BaseController {
             {
                 mSeekbar.setMax(mClusterBrightnessMax);
                 mSeekbar.setMin(mClusterBrightnessMin);
-                mSeekbar.setProgress(progress);
+                mSeekbar.setProgress(convertValidClusterBrightness(progress));
                 break;
             }
             default: break;
         }
+    }
+
+    private int convertValidClusterBrightness(int progress) {
+        if ( progress > mClusterBrightnessMax ) return mClusterBrightnessMax; 
+        if ( progress < mClusterBrightnessMin ) return mClusterBrightnessMin; 
+        return progress; 
     }
 
     private int convertBrightnessToLevel(int brightness, int levelMin, int levelMax) {
@@ -180,21 +188,27 @@ public class BrightnessController implements BaseController {
         @Override
         public void onClusterBrightnessChanged(int brightness) {
             if ( mCheckbox.isChecked() ) {
-                mClusterBrightnessProgress = brightness;
-                mSeekbar.setProgress(convertBrightnessToLevel(brightness, mClusterBrightnessMin, mClusterBrightnessMax));
+                mClusterBrightnessProgress = convertValidClusterBrightness(brightness); 
+                mSeekbar.setProgress(mClusterBrightnessProgress);
+                Log.d(TAG, "onClusterBrightnessChanged="+mClusterBrightnessProgress);
             } else {
                 mClusterBrightnessProgress = brightness;
             }
         }
         @Override
         public void onClusterChecked(boolean checked) {
-            if ( mCheckbox == null ) return;
-            //if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-            //    mClusterChecked = false; 
-            //} else {
-                mCheckbox.setChecked(checked); 
-                mClusterChecked = checked; 
-            //}
+            if ( mCheckbox == null || mImgCenter == null || mSeekbar == null ) return;
+            mCheckbox.setChecked(checked); 
+            mClusterChecked = checked; 
+            if ( checked ) {
+                mImgCenter.setVisibility(View.GONE);
+                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT); 
+            }
+            else {
+                mImgCenter.setVisibility(View.VISIBLE);
+                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_CENTER); 
+            }
+            
         }
     };
 
@@ -202,12 +216,16 @@ public class BrightnessController implements BaseController {
             new CheckBox.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+            if ( mImgCenter == null ) return;
             if ( isChecked ) {
                 updateType(TYPE.CLUSTER_BRIGHTNESS, mClusterBrightnessProgress);
+                mImgCenter.setVisibility(View.GONE);
+                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT); 
             }
             else {
                 updateType(TYPE.BRIGHTNESS, mBrightnessProgress);
+                mImgCenter.setVisibility(View.VISIBLE);
+                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_CENTER); 
             }
             if ( mSystem != null ) mSystem.setClusterCheck(isChecked);
             
@@ -234,17 +252,15 @@ public class BrightnessController implements BaseController {
             Log.d(TAG, "onProgressChanged="+progress+", fromUser="+fromUser);
         
             if ( mCheckbox.isChecked() ) {
+                mClusterBrightnessProgress = convertValidClusterBrightness(progress); 
                 if ( mText != null ) 
-                    mText.setText(Integer.toString(mClusterBrightnessProgress)); 
-                if ( fromUser ) mSeekbar.setProgress(mClusterBrightnessProgress);
-                //mClusterBrightnessProgress = convertLevelToBrightness(progress, mClusterBrightnessMin, mClusterBrightnessMax);
-                //mSystem.setClusterBrightness(mClusterBrightnessProgress);
+                    mText.setText(Integer.toString(progress)); 
+                if ( fromUser ) mSystem.setClusterBrightness(mClusterBrightnessProgress);
             } else {
                 mBrightnessProgress = convertLevelToBrightness(progress, mBrightnessMin, mBrightnessMax);
                 if ( mText != null ) 
                     mText.setText(Integer.toString(progress)); 
                 if ( fromUser ) mSystem.setBrightness(mBrightnessProgress);
-                //Log.d(TAG, "onProgressChanged="+mBrightnessProgress);
             }
         }
 
@@ -264,8 +280,8 @@ public class BrightnessController implements BaseController {
         public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
-                    if ( mCheckbox != null && mCheckbox.isChecked() ) break;
-                    if ( mPopupView != null && mIsUserSeek ) mPopupView.setVisibility(View.VISIBLE);
+                    if ( mPopupView != null && mIsUserSeek ) 
+                        mPopupView.setVisibility(View.VISIBLE);
                     break;
                 }
                 case MotionEvent.ACTION_UP: {

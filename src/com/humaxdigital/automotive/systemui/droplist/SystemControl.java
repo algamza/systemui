@@ -152,6 +152,10 @@ public class SystemControl extends Service {
         mClusterCheck.setListener(mClusterCheckListener);
         mImplements.add(mClusterCheck);
 
+        mClusterBrightness = new ClusterBrightnessImpl(this);
+        mClusterBrightness.setListener(mClusterBrightnessListener);
+        mImplements.add(mClusterBrightness);
+
         mMute = new MuteImpl(this);
         mMute.setListener(mMuteListener);
         mImplements.add(mMute);
@@ -472,7 +476,6 @@ public class SystemControl extends Service {
                 mUserAudio = mUserService.getUserAudio();
 
                 if ( mMute != null ) mMute.fetch(mUserAudio);
-                if ( mClusterBrightness != null ) mClusterBrightness.fetch(mUserAudio);  
                 if ( mWifi != null ) mWifi.fetch(mUserWifi);
                 if ( mBluetooth != null ) mBluetooth.fetch(mUserBluetooth); 
 
@@ -486,7 +489,6 @@ public class SystemControl extends Service {
             Log.d(TAG, "onServiceDisconnected");
             if ( mMute != null ) mMute.fetch(null);
             if ( mWifi != null ) mWifi.fetch(null);
-            if ( mClusterBrightness != null ) mClusterBrightness.fetch(null);  
             if ( mBluetooth != null ) mBluetooth.fetch(null); 
             mUserBluetooth = null;
             mUserWifi = null;
@@ -502,6 +504,7 @@ public class SystemControl extends Service {
             if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
             if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
             if ( mMute != null ) mMute.fetchEx(mCarClient); 
+            if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(mCarClient); 
             if ( mCarClient != null ) 
                 mCarClient.getTMSManager().registerCallback(mTMSEventListener); 
             
@@ -515,6 +518,7 @@ public class SystemControl extends Service {
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
             if ( mMute != null ) mMute.fetchEx(null); 
+            if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(null); 
             mCarClient = null;
         }
     };
@@ -595,6 +599,16 @@ public class SystemControl extends Service {
             synchronized (mCallbacks) {
                 for ( SystemCallback callback : mCallbacks ) {
                     callback.onBrightnessChanged(e);
+                }
+            }
+        }
+    };
+    private BaseImplement.Listener mClusterBrightnessListener = new BaseImplement.Listener<Integer>() {
+        @Override
+        public void onChange(Integer e) {
+            synchronized (mCallbacks) {
+                for ( SystemCallback callback : mCallbacks ) {
+                    callback.onClusterBrightnessChanged(e);
                 }
             }
         }
