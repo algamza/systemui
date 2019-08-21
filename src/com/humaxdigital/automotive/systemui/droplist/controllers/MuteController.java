@@ -153,11 +153,13 @@ public class MuteController implements BaseController {
                     break;
                 }
                 case MODE_DISABLE: {
+                    mView.setListener(null); 
                     mView.updateEnable(false); 
                     mView.disableText(); 
                     break;
                 }
                 case MODE_ENABLE: {
+                    mView.setListener(mMenuCallback);
                     if ( mOn ) mView.updateEnable(true);
                     else  mView.updateEnable(false); 
                     mView.enableText(); 

@@ -92,11 +92,13 @@ public class DisplayController implements BaseController {
             if ( mView == null ) return; 
             switch(msg.what) {
                 case MODE_DISABLE: {
+                    mView.setListener(null); 
                     mView.updateEnable(false); 
                     mView.disableText(); 
                     break;
                 }
                 case MODE_ENABLE: {
+                    mView.setListener(mMenuCallback);
                     mView.updateEnable(true);
                     mView.enableText(); 
                     break; 
