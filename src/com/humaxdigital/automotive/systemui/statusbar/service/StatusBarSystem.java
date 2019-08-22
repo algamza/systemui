@@ -538,14 +538,15 @@ public class StatusBarSystem {
             Log.d(TAG, "Current userSwitching"); 
             return; 
         }
-
+        // changed special case
+        /*
         if ( mBTCall ) {
             Log.d(TAG, "Current BT Call"); 
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_14845_ID));
             return;
         }
-
+        */
         if ( mEmergencyCall || mBluelinkCall ) {
             Log.d(TAG, "Current emergency="+mEmergencyCall+", bluelinkcall="+mBluelinkCall); 
             return; 
