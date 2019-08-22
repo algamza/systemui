@@ -414,10 +414,12 @@ public class StatusBarProxyPluginImpl extends Service {
         }
         if ( mStatusBarService.isSVIOn() ) {
             Log.d(TAG, "is special case : svi on"); 
+            OSDPopup.send(this, this.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return true;
         }
         if ( mStatusBarService.isSVSOn() ) {
             Log.d(TAG, "is special case : svs on"); 
+            OSDPopup.send(this, this.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return true;
         }
         return false; 

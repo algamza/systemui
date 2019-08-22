@@ -488,6 +488,8 @@ public class StatusBarSystem {
 
         if ( mSVSOn || mSVIOn ) {
             Log.d(TAG, "Current svs = "+mSVSOn+", svi = "+mSVIOn);
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return;
         }
 
@@ -551,6 +553,8 @@ public class StatusBarSystem {
 
         if ( mSVSOn || mSVIOn ) {
             Log.d(TAG, "Current svs = "+mSVSOn+", svi = "+mSVIOn);
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return;
         }
 
