@@ -149,4 +149,15 @@ public class NotificationUI extends LinearLayout {
         mFlags.put(Flag.VIEWS, true); 
         return this;
     }
+
+    public void updateBody(String body) {
+        if ( body == null || mBody == null || mDataText == null ) return; 
+        setBody(body); 
+        if ( mFlags.get(Flag.TEXT) ) {
+            mBody.setVisibility(View.VISIBLE); 
+            mBody.setText(mDataText);
+        } else {
+            mBody.setVisibility(View.GONE);
+        }
+    }
 }

@@ -54,6 +54,8 @@ public class NotificationUiService extends Service {
     private long mCurrentShowingTimeMS = 0; 
     private ArrayList<String> mWhiteList = new ArrayList<>(); 
     private ArrayList<String> mBlackList = new ArrayList<>(); 
+    private String mCurrentKey = ""; 
+    private String mCurrentTitle = ""; 
 
     @Override
     public void onCreate() {
@@ -158,7 +160,6 @@ public class NotificationUiService extends Service {
                     if ( !isValidPackage(notification.getPackageName()) ) return false;
                     Notification noti = notification.getNotification();
                     if ( noti == null ) return false; 
-                     
                     Icon icon = noti.getSmallIcon(); 
                     long duration = noti.getTimeoutAfter(); 
                     Bundle extras = noti.extras;
@@ -172,6 +173,7 @@ public class NotificationUiService extends Service {
                     if ( (remote_view == null) && (text == null || text.equals("")) && 
                         (title == null  || title.equals("")) ) return false; 
                     if ( (remote_view == null) && !isValidTitle(title) ) return false;
+                    
                     NotificationUI ui = new NotificationUI(NotificationUiService.this); 
                     if ( remote_view != null ) ui.setRemoteViews(remote_view); 
                     if ( title != null && !title.equals("") ) ui.setTitle(title); 
@@ -205,6 +207,23 @@ public class NotificationUiService extends Service {
                     else mCurrentShowingTimeMS = 0; 
                     
                     ui.inflate();
+
+                    if ( mCurrentKey.equals(key) ) {
+                        Log.d(TAG, "equals(key)="+key); 
+                        if ( title != null && !title.equals("") && title.equals(mCurrentTitle) ) {
+                            if ( text != null ) {
+                                if ( mCurrentNotificationUI != null ) 
+                                    mCurrentNotificationUI.updateBody(text.toString()); 
+                                Log.d(TAG, "only update body"); 
+                                return true;
+                            }
+                        }
+                    } else {
+                        mCurrentKey = key;
+                    }
+
+                    mCurrentTitle = title; 
+
                     if ( mCurrentNotificationUI != null ) {
                         ((ViewGroup)mPanel).addView(ui); 
                         ((ViewGroup)mPanel).removeView(mCurrentNotificationUI); 
@@ -288,7 +307,13 @@ public class NotificationUiService extends Service {
     public void closeDialog() {
         Log.d(TAG, "closeDialog");
         if ( !mShowing ) return;
+        clearSpecialCase();
         mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
+    }
+
+    private void clearSpecialCase() {
+        mCurrentKey = ""; 
+        mCurrentTitle = ""; 
     }
 
     public void openDialog() {
