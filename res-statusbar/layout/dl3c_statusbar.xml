@@ -67,22 +67,23 @@
                 android:id="@+id/layout_date"
                 android:layout_width="317px"
                 android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_marginLeft="536px"
+                android:layout_gravity="left|center_vertical"
                 android:orientation="vertical"
                 android:weightSum="90">
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0px"
-                    android:layout_weight="20" />
+                    android:layout_weight="10" />
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0px"
-                    android:layout_weight="50">
+                    android:layout_weight="70">
                     <TextView
                         android:id="@+id/text_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="40px"
+                        android:textSize="48px"
                         android:layout_gravity="bottom|left"
                         android:textColor="@color/textColor"
                         android:text="10:28"/>
@@ -90,7 +91,7 @@
                         android:id="@+id/text_apm"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="18px"
+                        android:textSize="22px"
                         android:layout_marginLeft="113px"
                         android:layout_gravity="bottom|left"
                         android:textColor="@color/textColor"
@@ -99,8 +100,8 @@
                         android:id="@+id/text_date"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="30px"
-                        android:textColor="@color/textColor"
+                        android:textSize="36px"
+                        android:textColor="@color/textDayColor"
                         android:layout_gravity="left|bottom"
                         android:layout_marginLeft="187px"
                         android:text="Apr. 24"/>
@@ -108,7 +109,7 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0px"
-                    android:layout_weight="20" />
+                    android:layout_weight="10" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/layout_system"
