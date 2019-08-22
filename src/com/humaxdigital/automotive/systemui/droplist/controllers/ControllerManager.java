@@ -85,12 +85,6 @@ public class ControllerManager {
                         res.getDrawable(R.drawable.dr_btn_bt_p),
                         res.getDrawable(R.drawable.dr_btn_bt_d)))
                 .setListener(mControlListener));
-        mControllers.add(new MuteController()
-                .init(new MenuLayout(mContext)
-                    .setText(res.getString(R.string.STR_MUTE_06_ID))
-                    .addIcon(res.getDrawable(R.drawable.dr_btn_mute_n),
-                        res.getDrawable(R.drawable.dr_btn_mute_p),
-                        res.getDrawable(R.drawable.dr_btn_mute_d)))); 
         mControllers.add(new QuietModeController()
                 .init(new MenuLayout(mContext)
                     .setText(res.getString(R.string.STR_QUIET_MODE_04_ID))
@@ -104,6 +98,12 @@ public class ControllerManager {
                     .addIcon(res.getDrawable(R.drawable.dr_btn_beep_n),
                         res.getDrawable(R.drawable.dr_btn_beep_p),
                         res.getDrawable(R.drawable.dr_btn_beep_d)))); 
+        mControllers.add(new MuteController()
+                .init(new MenuLayout(mContext)
+                    .setText(res.getString(R.string.STR_MUTE_06_ID))
+                    .addIcon(res.getDrawable(R.drawable.dr_btn_mute_n),
+                        res.getDrawable(R.drawable.dr_btn_mute_p),
+                        res.getDrawable(R.drawable.dr_btn_mute_d)))); 
         mControllers.add(new ModeController()
                 .init(new MenuLayout(mContext)
                     .addIconText(ModeController.Mode.AUTOMATIC.ordinal(), 
@@ -164,15 +164,6 @@ public class ControllerManager {
 
         mCloseBtnN = mPanel.findViewById(R.id.close_n); 
         mCloseBtnP = mPanel.findViewById(R.id.close_p); 
-        
-        /*
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
-            mCheckBoxView = (View)mPanel.findViewById(R.id.checkbox_view); 
-            if ( mCheckBoxView != null ) {
-                mCheckBoxView.setVisibility(View.INVISIBLE); 
-            }
-        }
-        */
     }
 
     private final View.OnClickListener mCloseListener = new View.OnClickListener() {
