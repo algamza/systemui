@@ -104,8 +104,13 @@ public class NotificationUiService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive:ACTION_CANCEL");
-            closeDialog();
-            //dismissAll();
+            String key = intent.getStringExtra(NotificationSubscriber.EXTRA_KEY); 
+            if ( key != null && key.equals(mCurrentKey) ) {
+                Log.d(TAG, "onReceive:ACTION_CANCEL:current key");
+                closeDialog();
+            } else {
+                Log.d(TAG, "onReceive:ACTION_CANCEL:other key");
+            }   
         }
     };
 
@@ -368,6 +373,7 @@ public class NotificationUiService extends Service {
         Log.d(TAG, "showH");
         mHandler.removeMessages(DialogHandler.SHOW);
         mHandler.removeMessages(DialogHandler.DISMISS);
+        Log.d(TAG, "show");
         mDialog.show();
     }
 
@@ -381,6 +387,8 @@ public class NotificationUiService extends Service {
         mPanel.animate().cancel();
         mPanel.setTranslationY(0);
         mPanel.setAlpha(1);
+        mDialog.dismiss();
+        /*
         mPanel.animate()
                 .alpha(0)
                 .translationY(-mPanel.getHeight())
@@ -391,12 +399,14 @@ public class NotificationUiService extends Service {
                         mHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
+                                Log.d(TAG, "dismiss");
                                 mDialog.dismiss();
                             }
                         }, MOVE_TIME_MS/4);
                     }
                 })
                 .start();
+                */
     }
 
 
