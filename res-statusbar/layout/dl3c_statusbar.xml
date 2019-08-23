@@ -75,7 +75,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0px"
                     android:layout_weight="10" />
-                <FrameLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="0px"
                     android:layout_weight="70">
@@ -84,7 +84,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="48px"
-                        android:layout_gravity="bottom|left"
+                        android:layout_centerInParent="true"
+                        android:layout_toLeftOf="@id/text_apm"
+                        android:layout_marginRight="12px"
                         android:textColor="@color/textColor"
                         android:text="10:28"/>
                     <TextView
@@ -92,8 +94,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="22px"
-                        android:layout_marginLeft="113px"
-                        android:layout_gravity="bottom|left"
+                        android:layout_toLeftOf="@id/text_date"
+                        android:layout_marginRight="46px"
+                        android:layout_marginTop="25px"
                         android:textColor="@color/textColor"
                         android:text="PM"/>
                     <TextView
@@ -102,10 +105,11 @@
                         android:layout_height="wrap_content"
                         android:textSize="36px"
                         android:textColor="@color/textDayColor"
-                        android:layout_gravity="left|bottom"
-                        android:layout_marginLeft="187px"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerInParent="true"
+                        android:layout_gravity="center_horizontal"
                         android:text="Apr. 24"/>
-                </FrameLayout>
+                </RelativeLayout>
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0px"
