@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.res.Configuration;
 
 import android.provider.Settings;
 import android.net.Uri;
@@ -58,10 +59,10 @@ public class VolumeDialog implements SystemUIBase {
     private Context mContext = null; 
 
     @Override
-    public SystemUIBase create(Context context) {
+    public void onCreate(Context context) {
         Log.d(TAG, "create"); 
         mContext = context; 
-        if ( context == null ) return this;
+        if ( context == null ) return;
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
             mDialog = new VolumeDialogWindowDL3C();
         else 
@@ -84,11 +85,10 @@ public class VolumeDialog implements SystemUIBase {
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.LAST_MEDIA_MODE), 
                 false, mLastModeObserver, UserHandle.USER_CURRENT); 
-        return this; 
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         Log.d(TAG, "destroy"); 
         if ( mLastModeObserver != null && mContentResolver != null )  {
             mContentResolver.unregisterContentObserver(mLastModeObserver); 
@@ -103,6 +103,10 @@ public class VolumeDialog implements SystemUIBase {
             mDialog.unregistDialogListener(mDialogListener); 
             mDialog.deinit();
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
     }
 
     private void startVolumeControlService() {

@@ -6,6 +6,7 @@ package com.humaxdigital.automotive.systemui;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -16,7 +17,9 @@ import com.humaxdigital.automotive.systemui.wallpaper.WallpaperService;
 
 public class SystemUIService extends Service {
     private static final String TAG = "SystemUIService";
+    private SystemUIBase mDropList = null; 
     private SystemUIBase mVolumeDialog = null; 
+    
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
@@ -25,16 +28,19 @@ public class SystemUIService extends Service {
 
         startWallpaperService(this);
         startStatusBarService(this);
-        startDropListService(this);
-        mVolumeDialog = new VolumeDialog().create(this); 
+        mDropList = new DropListUIService(); 
+        mVolumeDialog = new VolumeDialog(); 
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        if ( mVolumeDialog != null ) mVolumeDialog.destroy(); 
-        
-        mVolumeDialog = null; 
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // TODO: 
     }
 
     @Override
@@ -51,12 +57,6 @@ public class SystemUIService extends Service {
     private void startStatusBarService(Context context){
         if ( context == null ) return; 
         Intent intent = new Intent(context, StatusBar.class);
-        context.startService(intent);
-    }
-
-    private void startDropListService(Context context){
-        if ( context == null ) return; 
-        Intent intent = new Intent(context, DropListUIService.class);
         context.startService(intent);
     }
 

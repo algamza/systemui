@@ -42,12 +42,14 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.systemui.SystemUIBase;
+
 import com.humaxdigital.automotive.systemui.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 
 
-public class DropListUIService extends Service {
+public class DropListUIService implements SystemUIBase {
     private static final String TAG = "DropListUIService";
 
     private final List<View> mAddedViews = new ArrayList<>();
@@ -85,21 +87,13 @@ public class DropListUIService extends Service {
     private Boolean mTouchValid = false; 
     private final int TOUCH_OFFSET = -100; 
 
-    private Binder mBinder = new LocalBinder();
-
     private Context mContext; 
 
-    public class LocalBinder extends Binder {
-        DropListUIService getService() {
-            return DropListUIService.this;
-        }
-    }
-
     @Override
-    public void onCreate() {
-        //super.onCreate();
-        Log.d(TAG, "onCreate"); 
-        mContext = this; 
+    public void onCreate(Context context) {
+        Log.d(TAG, "create"); 
+        mContext = context; 
+        if ( mContext == null ) return;
         mActivityService = ActivityManager.getService();
         try {
             mActivityService.registerTaskStackListener(mTaskStackListener); 
@@ -107,7 +101,7 @@ public class DropListUIService extends Service {
             Log.e(TAG, "error:"+e);
         } 
        
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        mWindowManager = (WindowManager)mContext.getSystemService(mContext.WINDOW_SERVICE);
 
         DisplayMetrics metrics;
         metrics = new DisplayMetrics();
@@ -115,14 +109,14 @@ public class DropListUIService extends Service {
         mScreenBottom = metrics.heightPixels;
         mScreenWidth = metrics.widthPixels;
 
-        Resources res = getResources();
+        Resources res = mContext.getResources();
         int identifier = res.getIdentifier("navigation_bar_height_car_mode", "dimen", "android");   
         mNavBarHeight = (identifier > 0) ? res.getDimensionPixelSize(identifier) : 0;
 
-        mDialog = new DropListDialog(this);
+        mDialog = new DropListDialog(mContext);
         mWindow = mDialog.getWindow();
 
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(mContext.LAYOUT_INFLATER_SERVICE);
 
         mWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND
             | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR);
@@ -139,7 +133,7 @@ public class DropListUIService extends Service {
 
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.format = PixelFormat.TRANSLUCENT;
-        lp.packageName = this.getPackageName();
+        lp.packageName = mContext.getPackageName();
         lp.gravity = Gravity.TOP | Gravity.LEFT;
         lp.x = 0;
         lp.y = 0;
@@ -149,8 +143,8 @@ public class DropListUIService extends Service {
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND); 
             lp.dimAmount = 0.90f; 
-            int height = getResources().getIdentifier("dl3c_window_height", "integer",  this.getPackageName());
-            if ( height > 0 ) lp.height = getResources().getInteger(height); 
+            int height = mContext.getResources().getIdentifier("dl3c_window_height", "integer",  mContext.getPackageName());
+            if ( height > 0 ) lp.height = mContext.getResources().getInteger(height); 
         }
         mWindow.setAttributes(lp);
         mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -168,11 +162,11 @@ public class DropListUIService extends Service {
         //mPanelBody.setOnTouchListener(mDropListTouchListener);
         mShowing = false;
 
-        mControllerManager = new ControllerManager(this, mPanelBody);
+        mControllerManager = new ControllerManager(mContext, mPanelBody);
         mControllerManager.setListener(mPanelListener);
 
-        Intent bindIntent = new Intent(this, SystemControl.class);
-        if ( !bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE) )
+        Intent bindIntent = new Intent(mContext, SystemControl.class);
+        if ( !mContext.bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE) )
         {
             Log.e(TAG, "Failed to connect to SystemControl");
         }
@@ -185,7 +179,7 @@ public class DropListUIService extends Service {
                 openDropList(); 
             }
         };
-        registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
+        mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
 
         startNotiAnimation();
     }
@@ -193,7 +187,8 @@ public class DropListUIService extends Service {
     @Override
     public void onDestroy() {
         if ( mReceiver != null ) {
-            unregisterReceiver(mReceiver);
+            if ( mContext != null ) 
+                mContext.unregisterReceiver(mReceiver);
         }
 
         for (View view : mAddedViews) {
@@ -202,17 +197,16 @@ public class DropListUIService extends Service {
         mAddedViews.clear();
 
         if ( mSystemController != null ) {
-            unbindService(mServiceConnection);
+            if ( mContext != null ) 
+                mContext.unbindService(mServiceConnection);
         }
-            
-        super.onDestroy();
     }
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             mSystemController = ((SystemControl.LocalBinder)iBinder).getService();
-            final Context context = DropListUIService.this;
+            final Context context = mContext;
 
             final Runnable r = new Runnable() {
                 @Override
@@ -236,16 +230,10 @@ public class DropListUIService extends Service {
     };
 
     @Override
-    public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind"); 
-        return mBinder;
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        this.getResources().updateConfiguration(newConfig, null);
-        if ( mControllerManager != null ) mControllerManager.configurationChange(this);
+        if ( mContext == null ) return;
+        mContext.getResources().updateConfiguration(newConfig, null);
+        if ( mControllerManager != null ) mControllerManager.configurationChange(mContext);
         Log.d(TAG, "onConfigurationChanged=mPanelBody"); 
     }
 
@@ -410,7 +398,8 @@ public class DropListUIService extends Service {
 
     private void startNotiAnimation() {
         Log.d(TAG, "startNotiAnimation");
-        mNotiDialog = new NotiDialog(this);
+        if ( mContext == null ) return;
+        mNotiDialog = new NotiDialog(mContext);
         if ( mNotiDialog == null ) return;
         Window window = mNotiDialog.getWindow();
         if ( window == null ) return;
@@ -425,12 +414,12 @@ public class DropListUIService extends Service {
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         window.setType(WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY);
         final WindowManager.LayoutParams lp = window.getAttributes();
-        lp.packageName = this.getPackageName();
+        lp.packageName = mContext.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
         lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
         if ( mScreenWidth != 0 ) lp.width = mScreenWidth;
-        else lp.width = (int)getResources().getDimension(R.dimen.noti_width);
-        mNotiDialogHeight = (int)getResources().getDimension(R.dimen.noti_height);
+        else lp.width = (int)mContext.getResources().getDimension(R.dimen.noti_width);
+        mNotiDialogHeight = (int)mContext.getResources().getDimension(R.dimen.noti_height);
         lp.height = mNotiDialogHeight; 
         lp.windowAnimations = -1;
 

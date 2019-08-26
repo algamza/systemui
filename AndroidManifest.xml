@@ -57,10 +57,6 @@
         android:allowBackup="false"
         android:persistent="true">
 
-        <service android:name=".droplist.DropListUIService"
-            android:singleUser="true"
-            android:exported="false" />
-
         <service android:name=".droplist.SystemControl"
             android:singleUser="true"
             android:exported="false"/>
