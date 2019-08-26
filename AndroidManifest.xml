@@ -57,22 +57,10 @@
         android:allowBackup="false"
         android:persistent="true">
 
-        <service android:name=".droplist.DropListUIService"
-            android:singleUser="true"
-            android:exported="false" />
-
         <service android:name=".droplist.SystemControl"
             android:singleUser="true"
             android:exported="false"/>
-
-        <service android:name=".volumedialog.VolumeDialogService"
-            android:singleUser="true"
-            android:exported="false"/>
-
         <service android:name=".volumedialog.VolumeControlService"
-            android:singleUser="true"
-            android:exported="false"/>
-        <service android:name=".wallpaper.WallpaperService"
             android:singleUser="true"
             android:exported="false"/>
         <service android:name=".notificationui.NotificationSubscriber"
@@ -86,11 +74,6 @@
         <service android:name=".notificationui.NotificationUiService"
             android:singleUser="true"
             android:exported="false" />
-
-        <service android:name=".statusbar.StatusBarProxyPluginImpl"
-            android:singleUser="true"
-            android:label="@string/plugin_label">
-        </service>
         <service 
             android:name=".statusbar.service.StatusBarService"
             android:singleUser="true">

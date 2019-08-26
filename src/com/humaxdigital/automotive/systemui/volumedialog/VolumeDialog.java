@@ -1,15 +1,26 @@
-
 package com.humaxdigital.automotive.systemui.volumedialog;
 
-
+import android.app.Service;
 import android.app.Dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.res.Configuration;
 
+import android.provider.Settings;
+import android.net.Uri;
+import android.database.ContentObserver;
+
+import android.os.IBinder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Bundle;
+import android.os.UserHandle;
 
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -20,247 +31,160 @@ import android.view.WindowManager;
 
 import android.graphics.PixelFormat;
 
+import android.extension.car.settings.CarExtraSettings;
+
 import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.humaxdigital.automotive.systemui.SystemUIBase;
+
+import com.humaxdigital.automotive.systemui.util.ProductConfig; 
 import com.humaxdigital.automotive.systemui.R; 
 
-public class VolumeDialog extends VolumeDialogBase {
+import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeDialogWindowDL3C; 
+import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeControllerDL3C; 
+
+public class VolumeDialog implements SystemUIBase {
     private final String TAG = "VolumeDialog"; 
-    private Context mContext; 
-    private VolumeDialogUI mDialog;
-    private View mPanel;
-    private Window mWindow;
-    private boolean mShowing = false;
-    private final int MOVE_TIME_MS = 300;
-    private final int SHOWING_TIME_MS = 3000;
-    private final DialogHandler mHandler = new DialogHandler();
-    private Timer mTimer;
-    private TimerTask mHideTask;
+
+    private VolumeDialogWindowBase mDialog; 
+    private VolumeControllerBase mController; 
+    private VolumeControlService mVolumeService;
+
+    private ContentResolver mContentResolver = null;
+    private ContentObserver mLastModeObserver = null;
+    private int mLastMode = 0; 
+    private Context mContext = null; 
 
     @Override
-    public void init(Context context) {
-        if ( context == null ) return;
+    public void onCreate(Context context) {
+        Log.d(TAG, "create"); 
         mContext = context; 
-        mDialog = new VolumeDialogUI(mContext);
-        mWindow = mDialog.getWindow();
+        if ( context == null ) return;
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
+            mDialog = new VolumeDialogWindowDL3C();
+        else 
+            mDialog = new VolumeDialogWindow();
+        mDialog.init(mContext); 
+        mDialog.registDialogListener(mDialogListener); 
 
-        mWindow.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND
-                | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR);
-        mWindow.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        mWindow.setType(WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY);
-        final WindowManager.LayoutParams lp = mWindow.getAttributes();
-        lp.packageName = mContext.getPackageName();
-        lp.format = PixelFormat.TRANSLUCENT;
-        lp.gravity = Gravity.TOP | Gravity.LEFT;
-        lp.width = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_width);
-        lp.height = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_height);
-        lp.windowAnimations = -1;
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
+            mController = new VolumeControllerDL3C(); 
+        else
+            mController = new VolumeController(); 
 
-        mWindow.setAttributes(lp);
-        mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, 
-            ViewGroup.LayoutParams.WRAP_CONTENT);
+        mController.init(mContext, mDialog.getView()); 
+        mController.registVolumeListener(mVolumeListener);
 
-        mDialog.setCanceledOnTouchOutside(true);
-        mDialog.setContentView(R.layout.volume_dialog);
-        mDialog.setOnShowListener(mShowListener);
+        startVolumeControlService(); 
 
-        mPanel = mDialog.findViewById(R.id.volume_panel);
-        mPanel.setTranslationX(-mPanel.getWidth());
-
-        if ( mPanel != null ) 
-            mPanel.setOnClickListener(mOnClickListener);
-
-        mTimer = new Timer();
+        mContentResolver = mContext.getContentResolver();
+        mLastModeObserver = createLastModeObserver();
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.LAST_MEDIA_MODE), 
+                false, mLastModeObserver, UserHandle.USER_CURRENT); 
     }
 
     @Override
-    public void deinit() {
+    public void onDestroy() {
+        Log.d(TAG, "destroy"); 
+        if ( mLastModeObserver != null && mContentResolver != null )  {
+            mContentResolver.unregisterContentObserver(mLastModeObserver); 
+        }
 
+        if ( mController != null ) {
+            mController.deinit(); 
+            mController.unregistVolumeListener(mVolumeListener); 
+            mController = null; 
+        }
+        if ( mDialog != null ) {
+            mDialog.unregistDialogListener(mDialogListener); 
+            mDialog.deinit();
+        }
     }
 
     @Override
-    public void open() {
-        openDialog(); 
-    }
-    
-    @Override
-    public void close() {
-        closeDialog(); 
+    public void onConfigurationChanged(Configuration newConfig) {
     }
 
-    @Override
-    public View getView() {
-        return mPanel; 
-    }
-    
-    private void showH() {
-        Log.d(TAG, "showH");
-        mHandler.removeMessages(DialogHandler.SHOW);
-        mHandler.removeMessages(DialogHandler.DISMISS);
-        mDialog.show();
+    private void startVolumeControlService() {
+        if ( mContext == null ) return;
+        Log.d(TAG, "startVolumeControlService");
+        Intent bindIntent = new Intent(mContext, VolumeControlService.class);
+        if ( !mContext.bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE) ) {
+            Log.e(TAG, "Failed to connect to VolumeControlService");
+        }
     }
 
-    private void dismissH() {
-        Log.d(TAG, "dismissH");
-        mHandler.removeMessages(DialogHandler.DISMISS);
-        mHandler.removeMessages(DialogHandler.SHOW);
-
-        mPanel.animate().cancel();
-        mPanel.setTranslationX(0);
-        mPanel.setAlpha(1);
-        mPanel.animate()
-                .alpha(0)
-                .translationX(-mPanel.getWidth())
-                .setDuration(MOVE_TIME_MS/2)
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mDialog.dismiss();
-                                mShowing = false;
-                                broadcastShowEvent(mShowing); 
-                            }
-                        }, MOVE_TIME_MS/4);
-                    }
-                })
-                .start();
-    }
-
-    private final class DialogHandler extends Handler {
-        private static final int SHOW = 1;
-        private static final int DISMISS = 2;
-
-        public DialogHandler() {
-            super(Looper.getMainLooper());
+    private VolumeControllerBase.VolumeChangeListener mVolumeListener = 
+        new VolumeControllerBase.VolumeChangeListener() {
+        @Override
+        public void onVolumeUp(VolumeControllerBase.VolumeChangeListener.Type type, int max, int value) {
+            if ( mDialog != null ) mDialog.open();
         }
 
         @Override
-        public void handleMessage(Message msg) {
-            switch(msg.what) {
-                case SHOW: showH(); break;
-                case DISMISS: dismissH(); break;
-                default: break;
-            }
-        }
-    }
-
-    private final class VolumeDialogUI extends Dialog implements DialogInterface {
-        public VolumeDialogUI(Context context) {
-            super(context, R.style.Theme_D1NoTitleDim);
+        public void onVolumeDown(VolumeControllerBase.VolumeChangeListener.Type type, int max, int value) {
+            if ( mDialog != null ) mDialog.open();
         }
 
         @Override
-        public boolean dispatchTouchEvent(MotionEvent ev) {
-            // todo : reschedule timeout
-            Log.d(TAG, "dispatchTouchEvent");
-            return super.dispatchTouchEvent(ev);
+        public void onMuteChanged(VolumeControllerBase.VolumeChangeListener.Type type, boolean mute) {
+            if ( mDialog != null ) mDialog.open();
         }
+    };
 
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
-        protected void onStart() {
-            Log.d(TAG, "onStart");
-            super.setCanceledOnTouchOutside(true);
-            super.onStart();
-        }
-
-        @Override
-        protected void onStop() {
-            Log.d(TAG, "onStop");
-            super.onStop();
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            if ( isShowing() ) {
-                if ( event.getAction() == MotionEvent.ACTION_OUTSIDE ) {
-                    Log.d(TAG, "onTouchEvent:MotionEvent.ACTION_OUTSIDE");
-                    //closeDialog();
-                    return true;
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.d(TAG, "onServiceConnected");
+            mVolumeService = ((VolumeControlService.LocalBinder)iBinder).getService();
+            final Context context = mContext;
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    if ( mController != null ) mController.fetch(mVolumeService);
                 }
-            }
-            return false;
-        }
-    }
+            };
 
-    
-    private void closeDialog() {
-        Log.d(TAG, "closeDialog");
-        if ( !mShowing ) return;
-        mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
-    }
-
-    private void openDialog() {
-        Log.d(TAG, "openDialog");
-        if ( mHideTask != null ) {
-            if ( mHideTask.scheduledExecutionTime() > 0 ) {
-                mHideTask.cancel();
-                mTimer.purge();
-                mHideTask =  null;
+            if ( mVolumeService != null ) {
+                mVolumeService.requestRefresh(r, new Handler(context.getMainLooper()));
             }
         }
-        mHideTask = new TimerTask() {
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.d(TAG, "onServiceDisconnected");
+            mVolumeService = null;
+            if ( mController != null ) mController.fetch(null);
+        }
+    };
+
+    private VolumeDialogWindowBase.DialogListener mDialogListener = 
+        new VolumeDialogWindowBase.DialogListener() {
+        @Override
+        public void onShow(boolean show) {
+            if ( mVolumeService != null ) mVolumeService.onShow(show); 
+        }
+    };
+
+    private ContentObserver createLastModeObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
-            public void run() {
-                closeDialog();
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                
+                if ( mContentResolver == null ) return;
+                int lastmode = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.LAST_MEDIA_MODE, 
+                    CarExtraSettings.Global.LAST_MEDIA_MODE_DEFAULT);
+                Log.d(TAG, "onChange:lastmode="+lastmode);
+                if ( mLastMode == lastmode ) return;
+                mLastMode = lastmode; 
+                if ( mDialog != null ) mDialog.close();
             }
         };
-        mTimer.schedule(mHideTask, SHOWING_TIME_MS);
-
-        if ( mShowing ) return;
-        mHandler.obtainMessage(DialogHandler.SHOW, 0).sendToTarget();
-    }
-
-    private Dialog.OnShowListener mShowListener = new Dialog.OnShowListener() {
-        @Override
-        public void onShow(DialogInterface dialog) {
-            Log.d(TAG, "onShow");
-            if ( mPanel == null ) return;
-            mPanel.setTranslationX(-mPanel.getWidth());
-            mPanel.setAlpha(0);
-            mPanel.animate()
-                    .alpha(1)
-                    .translationX(0)
-                    .setDuration(MOVE_TIME_MS)
-                    .withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            mHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mShowing = true;
-                                    broadcastShowEvent(mShowing); 
-                                }
-                            }, MOVE_TIME_MS/2);
-                        }
-                    })
-                    .start();
-        }
-    };
-
-
-    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, "Panel onClick");
-            if ( v.getId() != R.id.volume_panel ) return;
-            Log.d(TAG, "closeDialog");
-            closeDialog();
-        }
-    };
-
-    private void broadcastShowEvent(boolean show) {
-        for ( DialogListener listener : mListener ) {
-            listener.onShow(show);
-        }
+        return observer; 
     }
 }

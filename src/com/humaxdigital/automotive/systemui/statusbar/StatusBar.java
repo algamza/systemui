@@ -28,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.Gravity;
 import android.widget.ImageView;
 
+import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManagerBase;
@@ -44,10 +45,10 @@ import com.humaxdigital.automotive.systemui.util.ProductConfig;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-public class StatusBarProxyPluginImpl extends Service {
-    private static final String TAG = "StatusBarProxyPluginImpl";
-    private final IBinder mBinder = new LocalBinder();
+public class StatusBar implements SystemUIBase {
+    private static final String TAG = "StatusBar";
     private WindowManager mWindowManager;
+    private Context mContext = null; 
     private ViewGroup mNavBarWindow;
     private ViewGroup mStatusBarWindow;
     private View mDropListTouchWindow; 
@@ -68,27 +69,23 @@ public class StatusBarProxyPluginImpl extends Service {
     private int mTouchOffset = 15; 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
 
-    public class LocalBinder extends Binder {
-        StatusBarProxyPluginImpl getService() {
-            return StatusBarProxyPluginImpl.this;
-        }
-    }
-
     @Override
-    public void onCreate() {
+    public void onCreate(Context context) {
         Log.d(TAG, "onCreate");
-        mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        mUseSystemGestures = getResources().getBoolean(R.bool.config_useSystemGestures);
-        startStatusBarService(this);
+        mContext = context; 
+        if ( mContext == null ) return;
+        mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
+        startStatusBarService(mContext);
         mDevNavView = inflateDevNavBarView();
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
         {
             createStatusBarWindow();
-            mDevModeController = new DevModeController(this, mStatusBarView, mDevNavView);
+            mDevModeController = new DevModeController(mContext, mStatusBarView, mDevNavView);
         } else {
             createDropListTouchWindow(); 
             createNaviBarWindow();
-            mDevModeController = new DevModeController(this, mNavBarView, mDevNavView);
+            mDevModeController = new DevModeController(mContext, mNavBarView, mDevNavView);
         }
        
         mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
@@ -104,104 +101,7 @@ public class StatusBarProxyPluginImpl extends Service {
         }
     }
 
-    private void createStatusBarWindow() {
-        if ( mWindowManager == null ) return;
-        mStatusBarWindow = (ViewGroup) View.inflate(this, R.layout.status_bar_window, null);
-        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
-        String package_name = getPackageName(); 
-        int id_down_y = getResources().getIdentifier("statusbar_touch_down_y_dl3c", "integer",  package_name);
-        int id_touch_offset= getResources().getIdentifier("statusbar_touch_offset_dl3c", "integer",  package_name);
-        if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
-        if ( id_touch_offset > 0 ) mTouchOffset = getResources().getInteger(id_touch_offset);
-
-        int height = getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
-        Log.d(TAG, "height="+height); 
-        int id_statusbar_height = getResources().getIdentifier("statusbar_height", "integer",  getPackageName());
-        if ( id_statusbar_height > 0 ) mStatusBarHeight = getResources().getInteger(id_statusbar_height);
-        if ( mStatusBarWindow == null ) return;
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                LayoutParams.MATCH_PARENT, mStatusBarHeight,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                PixelFormat.TRANSLUCENT);
-        lp.setTitle("HmxStatusBar");
-        lp.windowAnimations = 0; 
-        lp.gravity = Gravity.TOP;
-
-        mWindowManager.addView(mStatusBarWindow, lp);
-
-        mStatusBarView = inflateStatusBarView();
-        mControllerManager = new ControllerManagerDL3C(); 
-        mControllerManager.create(this, mStatusBarView); 
-        setContentBarView(mStatusBarView);
-    }
-
-    private void createDropListTouchWindow() {
-        if ( mWindowManager == null ) return;
-
-        if (mUseSystemGestures) {
-            // Don't need the fake invisible top window to trigger the droplist
-            // as long as using system gestures.
-            return;
-        }
-
-        mDropListTouchWindow = (View)View.inflate(this, R.layout.status_bar_overlay, null);
-        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
-        String package_name = getPackageName(); 
-        int id_droplist_touch_height = getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
-        int id_droplist_touch_width = getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
-        int id_down_y = getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
-        int id_touch_offset= getResources().getIdentifier("statusbar_touch_offset", "integer",  package_name);
-        if ( id_down_y > 0 ) mTouchDownY = getResources().getInteger(id_down_y); 
-        if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = getResources().getInteger(id_droplist_touch_height);
-        if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = getResources().getInteger(id_droplist_touch_width);
-        if ( id_touch_offset > 0 ) mTouchOffset = getResources().getInteger(id_touch_offset);
-
-        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
-            mDropListTouchWidth,
-            mDropListTouchHeight,
-            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-            PixelFormat.TRANSLUCENT);
-        slp.token = new Binder();
-        slp.gravity = Gravity.TOP|Gravity.LEFT;
-        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        slp.setTitle("HmxSystemUI");
-        slp.packageName = package_name;
-        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-
-        mWindowManager.addView(mDropListTouchWindow, slp);
-    }
-
-    private void createNaviBarWindow() {
-        if ( mWindowManager == null ) return;
-        mNavBarWindow = (ViewGroup) View.inflate(this, R.layout.nav_bar_window, null);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                PixelFormat.TRANSLUCENT);
-        lp.setTitle("HmxNavigationBar");
-        lp.windowAnimations = 0; 
-
-        mWindowManager.addView(mNavBarWindow, lp);
-
-        mNavBarView = inflateNavBarView();
-        mControllerManager = new ControllerManager(); 
-        mControllerManager.create(this, mNavBarView); 
-        setContentBarView(mNavBarView);
-    }
-
+    
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
@@ -230,39 +130,133 @@ public class StatusBarProxyPluginImpl extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // keep it alive.
-        return START_STICKY;
+    public void onConfigurationChanged(Configuration newConfig) {
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
+    private void createStatusBarWindow() {
+        if ( mWindowManager == null || mContext == null ) return;
+        mStatusBarWindow = (ViewGroup) View.inflate(mContext, R.layout.status_bar_window, null);
+        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
+        String package_name = mContext.getPackageName(); 
+        int id_down_y = mContext.getResources().getIdentifier("statusbar_touch_down_y_dl3c", "integer",  package_name);
+        int id_touch_offset= mContext.getResources().getIdentifier("statusbar_touch_offset_dl3c", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = mContext.getResources().getInteger(id_down_y); 
+        if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
+
+        int height = mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+        Log.d(TAG, "height="+height); 
+        int id_statusbar_height = mContext.getResources().getIdentifier("statusbar_height", "integer",  mContext.getPackageName());
+        if ( id_statusbar_height > 0 ) mStatusBarHeight = mContext.getResources().getInteger(id_statusbar_height);
+        if ( mStatusBarWindow == null ) return;
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                LayoutParams.MATCH_PARENT, mStatusBarHeight,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        lp.setTitle("HmxStatusBar");
+        lp.windowAnimations = 0; 
+        lp.gravity = Gravity.TOP;
+
+        mWindowManager.addView(mStatusBarWindow, lp);
+
+        mStatusBarView = inflateStatusBarView();
+        mControllerManager = new ControllerManagerDL3C(); 
+        mControllerManager.create(mContext, mStatusBarView); 
+        setContentBarView(mStatusBarView);
+    }
+
+    private void createDropListTouchWindow() {
+        if ( mWindowManager == null || mContext == null ) return;
+
+        if (mUseSystemGestures) {
+            // Don't need the fake invisible top window to trigger the droplist
+            // as long as using system gestures.
+            return;
+        }
+
+        mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
+        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
+        String package_name = mContext.getPackageName(); 
+        int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
+        int id_droplist_touch_width = mContext.getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
+        int id_down_y = mContext.getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
+        int id_touch_offset = mContext.getResources().getIdentifier("statusbar_touch_offset", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = mContext.getResources().getInteger(id_down_y); 
+        if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = mContext.getResources().getInteger(id_droplist_touch_height);
+        if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = mContext.getResources().getInteger(id_droplist_touch_width);
+        if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
+
+        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
+            mDropListTouchWidth,
+            mDropListTouchHeight,
+            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+            PixelFormat.TRANSLUCENT);
+        slp.token = new Binder();
+        slp.gravity = Gravity.TOP|Gravity.LEFT;
+        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+        slp.setTitle("HmxSystemUI");
+        slp.packageName = package_name;
+        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+
+        mWindowManager.addView(mDropListTouchWindow, slp);
+    }
+
+    private void createNaviBarWindow() {
+        if ( mWindowManager == null || mContext == null ) return;
+        mNavBarWindow = (ViewGroup) View.inflate(mContext, R.layout.nav_bar_window, null);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        lp.setTitle("HmxNavigationBar");
+        lp.windowAnimations = 0; 
+
+        mWindowManager.addView(mNavBarWindow, lp);
+
+        mNavBarView = inflateNavBarView();
+        mControllerManager = new ControllerManager(); 
+        mControllerManager.create(mContext, mNavBarView); 
+        setContentBarView(mNavBarView);
     }
 
     public View inflateNavBarView() {
+        if ( mContext == null ) return null;
         View view = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
-            view = View.inflate(this, R.layout.du2_navi_overlay, null);
+            view = View.inflate(mContext, R.layout.du2_navi_overlay, null);
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
-            view = View.inflate(this, R.layout.dn8c_navi_overlay, null);
+            view = View.inflate(mContext, R.layout.dn8c_navi_overlay, null);
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) 
-            view = View.inflate(this, R.layout.du2_navi_overlay, null);
+            view = View.inflate(mContext, R.layout.du2_navi_overlay, null);
         else 
-            view = View.inflate(this, R.layout.dn8c_navi_overlay, null);
+            view = View.inflate(mContext, R.layout.dn8c_navi_overlay, null);
         return view;
     }
 
     public View inflateStatusBarView() {
-        View view = View.inflate(this, R.layout.dl3c_statusbar, null);
+        if ( mContext == null ) return null; 
+        View view = View.inflate(mContext, R.layout.dl3c_statusbar, null);
         return view;
     }
 
     public View inflateDevNavBarView() {
+        if ( mContext == null ) return null;
         final DevNavigationBar devNavBarView = (DevNavigationBar)
-                View.inflate(this, R.layout.dev_nav_bar, null);
+                View.inflate(mContext, R.layout.dev_nav_bar, null);
 
-        devNavBarView.init(new DevCommandsProxy(this) {
+        devNavBarView.init(new DevCommandsProxy(mContext) {
             @Override
             public Bundle invokeDevCommand(String command, Bundle args) {
                 if (mStatusBarService != null) {
@@ -332,13 +326,15 @@ public class StatusBarProxyPluginImpl extends Service {
     };
 
     private void registerSystemGestureReceiver() {
+        if ( mContext == null ) return;
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_SYSTEM_GESTURE);
-        registerReceiver(mSystemGestureReceiver, intentFilter);
+        mContext.registerReceiver(mSystemGestureReceiver, intentFilter);
     }
 
     private void unregisterSystemGestureReceiver() {
-        unregisterReceiver(mSystemGestureReceiver);
+        if ( mContext != null ) 
+            mContext.unregisterReceiver(mSystemGestureReceiver);
     }
 
     private final View.OnTouchListener mStatusBarTouchListener = new View.OnTouchListener() {
@@ -381,7 +377,7 @@ public class StatusBarProxyPluginImpl extends Service {
     }; 
 
     private boolean isSpecialCase() {
-        if ( mStatusBarService == null ) return false; 
+        if ( mStatusBarService == null || mContext == null ) return false; 
         if ( mStatusBarService.isUserAgreement() ) {
             Log.d(TAG, "is special case : user agreement"); 
             return true;
@@ -392,12 +388,12 @@ public class StatusBarProxyPluginImpl extends Service {
         }
         if ( mStatusBarService.isFrontCamera() ) {
             Log.d(TAG, "is special case : front camera"); 
-            OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
+            OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return true; 
         }
         if ( mStatusBarService.isRearCamera() ) {
             Log.d(TAG, "is special case : rear camera"); 
-            OSDPopup.send(this, this.getResources().getString(R.string.STR_MESG_18334_ID));
+            OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return true;
         }
         if ( mStatusBarService.isPowerOff() ) {
@@ -414,26 +410,27 @@ public class StatusBarProxyPluginImpl extends Service {
         }
         if ( mStatusBarService.isSVIOn() ) {
             Log.d(TAG, "is special case : svi on"); 
-            OSDPopup.send(this, this.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
+            OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return true;
         }
         if ( mStatusBarService.isSVSOn() ) {
             Log.d(TAG, "is special case : svs on"); 
-            OSDPopup.send(this, this.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
+            OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_FEATURE_CURRENTLY_UNAVAILABLE_ID));
             return true;
         }
         return false; 
     }
 
     private void updateUIController(Runnable r) {
-        if (mControllerManager == null) return;
-        Handler handler = new Handler(getMainLooper()); 
+        if ( mControllerManager == null || mContext == null ) return;
+        Handler handler = new Handler(mContext.getMainLooper()); 
         handler.post(r); 
     }
 
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
+        if ( mContext == null ) return;
         Intent intent = new Intent(OPEN_DROPLIST); 
-        sendBroadcast(intent);
+        mContext.sendBroadcast(intent);
     }
 }

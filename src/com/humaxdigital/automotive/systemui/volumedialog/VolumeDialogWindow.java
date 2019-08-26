@@ -1,5 +1,5 @@
 
-package com.humaxdigital.automotive.systemui.volumedialog.dl3c;
+package com.humaxdigital.automotive.systemui.volumedialog;
 
 
 import android.app.Dialog;
@@ -26,15 +26,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialogBase; 
 
-public class VolumeDialogDL3C extends VolumeDialogBase {
-    private final String TAG = "VolumeDialogDL3C"; 
+public class VolumeDialogWindow extends VolumeDialogWindowBase {
+    private final String TAG = "VolumeDialogWindow"; 
     private Context mContext; 
     private VolumeDialogUI mDialog;
     private View mPanel;
     private Window mWindow;
-    private boolean mShowing;
+    private boolean mShowing = false;
     private final int MOVE_TIME_MS = 300;
     private final int SHOWING_TIME_MS = 3000;
     private final DialogHandler mHandler = new DialogHandler();
@@ -45,7 +44,6 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
     public void init(Context context) {
         if ( context == null ) return;
         mContext = context; 
-        mShowing = false;
         mDialog = new VolumeDialogUI(mContext);
         mWindow = mDialog.getWindow();
 
@@ -61,9 +59,9 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
         final WindowManager.LayoutParams lp = mWindow.getAttributes();
         lp.packageName = mContext.getPackageName();
         lp.format = PixelFormat.TRANSLUCENT;
-        lp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        lp.width = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_width_dl3c);
-        lp.height = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_height_dl3c);
+        lp.gravity = Gravity.TOP | Gravity.LEFT;
+        lp.width = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_width);
+        lp.height = (int)mContext.getResources().getDimension(R.dimen.volume_dialog_height);
         lp.windowAnimations = -1;
 
         mWindow.setAttributes(lp);
@@ -71,12 +69,11 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
             ViewGroup.LayoutParams.WRAP_CONTENT);
 
         mDialog.setCanceledOnTouchOutside(true);
-        mDialog.setContentView(R.layout.volume_dialog_dl3c);
+        mDialog.setContentView(R.layout.volume_dialog);
         mDialog.setOnShowListener(mShowListener);
 
         mPanel = mDialog.findViewById(R.id.volume_panel);
-        int height = 720; 
-        mPanel.setTranslationY(height);
+        mPanel.setTranslationX(-mPanel.getWidth());
 
         if ( mPanel != null ) 
             mPanel.setOnClickListener(mOnClickListener);
@@ -117,11 +114,11 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
         mHandler.removeMessages(DialogHandler.SHOW);
 
         mPanel.animate().cancel();
-        mPanel.setTranslationY(0);
+        mPanel.setTranslationX(0);
         mPanel.setAlpha(1);
         mPanel.animate()
                 .alpha(0)
-                .translationY(mPanel.getHeight())
+                .translationX(-mPanel.getWidth())
                 .setDuration(MOVE_TIME_MS/2)
                 .withEndAction(new Runnable() {
                     @Override
@@ -131,6 +128,7 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
                             public void run() {
                                 mDialog.dismiss();
                                 mShowing = false;
+                                broadcastShowEvent(mShowing); 
                             }
                         }, MOVE_TIME_MS/4);
                     }
@@ -227,11 +225,11 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
         public void onShow(DialogInterface dialog) {
             Log.d(TAG, "onShow");
             if ( mPanel == null ) return;
-            mPanel.setTranslationY(mPanel.getHeight());
+            mPanel.setTranslationX(-mPanel.getWidth());
             mPanel.setAlpha(0);
             mPanel.animate()
                     .alpha(1)
-                    .translationY(0)
+                    .translationX(0)
                     .setDuration(MOVE_TIME_MS)
                     .withEndAction(new Runnable() {
                         @Override
@@ -240,6 +238,7 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
                                 @Override
                                 public void run() {
                                     mShowing = true;
+                                    broadcastShowEvent(mShowing); 
                                 }
                             }, MOVE_TIME_MS/2);
                         }
@@ -249,7 +248,7 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
     };
 
 
-    View.OnClickListener mOnClickListener = new View.OnClickListener() {
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Log.d(TAG, "Panel onClick");
@@ -259,4 +258,9 @@ public class VolumeDialogDL3C extends VolumeDialogBase {
         }
     };
 
+    private void broadcastShowEvent(boolean show) {
+        for ( DialogListener listener : mListener ) {
+            listener.onShow(show);
+        }
+    }
 }
