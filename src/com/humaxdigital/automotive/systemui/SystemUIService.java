@@ -58,16 +58,4 @@ public class SystemUIService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-    private void startStatusBarService(Context context){
-        if ( context == null ) return; 
-        Intent intent = new Intent(context, StatusBar.class);
-        context.startService(intent);
-    }
-
-    private void startWallpaperService(Context context){
-        if ( context == null ) return; 
-        Intent intent = new Intent(context, WallpaperService.class);
-        context.startService(intent);
-    }
 }
