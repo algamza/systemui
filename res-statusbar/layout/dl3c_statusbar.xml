@@ -65,9 +65,9 @@
             android:layout_weight="1650">
             <LinearLayout
                 android:id="@+id/layout_date"
-                android:layout_width="317px"
+                android:layout_width="337px"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="536px"
+                android:layout_marginLeft="516px"
                 android:layout_gravity="left|center_vertical"
                 android:orientation="vertical"
                 android:weightSum="90">
