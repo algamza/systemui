@@ -11,11 +11,12 @@ import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.statusbar.StatusBar;
 import com.humaxdigital.automotive.systemui.droplist.DropListUIService;
-import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialogService; 
+import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialog; 
 import com.humaxdigital.automotive.systemui.wallpaper.WallpaperService; 
 
 public class SystemUIService extends Service {
     private static final String TAG = "SystemUIService";
+    private SystemUIBase mVolumeDialog = null; 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
@@ -25,12 +26,15 @@ public class SystemUIService extends Service {
         startWallpaperService(this);
         startStatusBarService(this);
         startDropListService(this);
-        startVolumeDialogService(this);
+        mVolumeDialog = new VolumeDialog().create(this); 
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+        if ( mVolumeDialog != null ) mVolumeDialog.destroy(); 
+        
+        mVolumeDialog = null; 
     }
 
     @Override
@@ -53,12 +57,6 @@ public class SystemUIService extends Service {
     private void startDropListService(Context context){
         if ( context == null ) return; 
         Intent intent = new Intent(context, DropListUIService.class);
-        context.startService(intent);
-    }
-
-    private void startVolumeDialogService(Context context){
-        if ( context == null ) return; 
-        Intent intent = new Intent(context, VolumeDialogService.class);
         context.startService(intent);
     }
 

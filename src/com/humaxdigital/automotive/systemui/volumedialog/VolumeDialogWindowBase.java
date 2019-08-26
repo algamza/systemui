@@ -6,7 +6,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 
-public abstract class VolumeDialogBase {
+public abstract class VolumeDialogWindowBase {
     protected ArrayList<DialogListener> mListener = new ArrayList<>();
     public interface DialogListener {
         void onShow(boolean show);

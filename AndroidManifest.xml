@@ -65,10 +65,6 @@
             android:singleUser="true"
             android:exported="false"/>
 
-        <service android:name=".volumedialog.VolumeDialogService"
-            android:singleUser="true"
-            android:exported="false"/>
-
         <service android:name=".volumedialog.VolumeControlService"
             android:singleUser="true"
             android:exported="false"/>
