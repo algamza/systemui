@@ -15,10 +15,12 @@ import com.humaxdigital.automotive.systemui.droplist.DropListUIService;
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialog; 
 import com.humaxdigital.automotive.systemui.wallpaper.WallpaperService; 
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SystemUIService extends Service {
     private static final String TAG = "SystemUIService";
-    private SystemUIBase mDropList = null; 
-    private SystemUIBase mVolumeDialog = null; 
+    private final List<SystemUIBase> mSystemUIs = new ArrayList<>();
     
     @Override
     public void onCreate() {
@@ -26,21 +28,24 @@ public class SystemUIService extends Service {
 
         SystemUIPolicy.applyPolicies(this);
 
-        startWallpaperService(this);
-        startStatusBarService(this);
-        mDropList = new DropListUIService(); 
-        mVolumeDialog = new VolumeDialog(); 
+        mSystemUIs.add(new WallpaperService()); 
+        mSystemUIs.add(new StatusBar()); 
+        mSystemUIs.add(new DropListUIService()); 
+        mSystemUIs.add(new VolumeDialog()); 
+
+        for ( SystemUIBase ui : mSystemUIs ) ui.onCreate(this);
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+        for ( SystemUIBase ui : mSystemUIs ) ui.onDestroy();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // TODO: 
+        for ( SystemUIBase ui : mSystemUIs ) ui.onConfigurationChanged(newConfig);
     }
 
     @Override

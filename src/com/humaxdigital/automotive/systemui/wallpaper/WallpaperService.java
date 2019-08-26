@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContentResolver;
+import android.content.res.Configuration;
 
 import android.app.Service;
 import android.app.WallpaperManager;
@@ -31,18 +32,22 @@ import java.io.IOException;
 
 import android.extension.car.settings.CarExtraSettings;
 
+import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.R; 
 
-public class WallpaperService extends Service {
+public class WallpaperService implements SystemUIBase {
     private static final String TAG = "WallpaperService";
 
     private ContentResolver mContentResolver;
     private ContentObserver mThemeObserver;
     private Display mDefaultDisplay;
+    private Context mContext = null; 
 
     @Override
-    public void onCreate() {
+    public void onCreate(Context context) {
         Log.d(TAG, "onCreate"); 
+        mContext = context; 
+        if ( mContext == null ) return;
         registUserSwicher();
         initThemeObserver();
     }
@@ -55,13 +60,12 @@ public class WallpaperService extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind"); 
-        return null;
+    public void onConfigurationChanged(Configuration newConfig) {
     }
 
     private void initThemeObserver() {
-        mContentResolver = getContentResolver();
+        if ( mContext == null ) return;
+        mContentResolver =  mContext.getContentResolver();
         if ( mContentResolver == null ) return;
         setWallPaper(getCurrentTheme()); 
         mThemeObserver = createThemeObserver(); 
@@ -71,7 +75,8 @@ public class WallpaperService extends Service {
     }
 
     private void setWallPaper(int id) {
-        WallpaperManager wallpaper = WallpaperManager.getInstance(this);
+        if ( mContext == null ) return;
+        WallpaperManager wallpaper = WallpaperManager.getInstance(mContext);
         Log.d(TAG, "setWallPaper="+id); 
         int resid = R.drawable.ho_bg_theme_1; 
         switch(id) {
@@ -86,11 +91,11 @@ public class WallpaperService extends Service {
             wallpaper.setResource(resid);
         } catch (IOException e) {
         }
-        
     }
 
     private int getCurrentTheme() {
-        int theme = Settings.System.getIntForUser(getContentResolver(), 
+        if ( mContext == null ) return 0;
+        int theme = Settings.System.getIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.ADVANCED_THEME_STYLE,
             CarExtraSettings.System.ADVANCED_THEME_STYLE_DEFAULT,
             UserHandle.USER_CURRENT);
@@ -131,13 +136,15 @@ public class WallpaperService extends Service {
 
     private void registUserSwicher() {
         Log.d(TAG, "registUserSwicher");
+        if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_SWITCHED);
-        registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
+        mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
     }
 
     private void unregistUserSwicher() {
-        unregisterReceiver(mUserChangeReceiver);
+        if ( mContext == null ) return;
+        mContext.unregisterReceiver(mUserChangeReceiver);
     }
 
     private final BroadcastReceiver mUserChangeReceiver = new BroadcastReceiver() {
@@ -149,7 +156,8 @@ public class WallpaperService extends Service {
 
     private Point getDefaultDisplaySize() {
         Point p = new Point();
-        WindowManager wm = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
+        if ( mContext == null ) return p;
+        WindowManager wm = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         Display d = wm.getDefaultDisplay();
         d.getRealSize(p);
         return p;
