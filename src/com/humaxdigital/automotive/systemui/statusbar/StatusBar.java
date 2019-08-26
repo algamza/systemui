@@ -54,7 +54,7 @@ public class StatusBar implements SystemUIBase {
     private View mDropListTouchWindow; 
     private View mNavBarView;
     private View mStatusBarView; 
-    private View mDevNavView;
+    private DevNavigationBar mDevNavView;
     private DevModeController mDevModeController;
     private ControllerManagerBase mControllerManager; 
     private StatusBarService mStatusBarService;
@@ -77,30 +77,23 @@ public class StatusBar implements SystemUIBase {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
         startStatusBarService(mContext);
-        mDevNavView = inflateDevNavBarView();
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
-        {
+
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
             createStatusBarWindow();
-            mDevModeController = new DevModeController(mContext, mStatusBarView, mDevNavView);
         } else {
             createDropListTouchWindow(); 
             createNaviBarWindow();
-            mDevModeController = new DevModeController(mContext, mNavBarView, mDevNavView);
         }
-       
-        mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
-            @Override
-            public boolean onViewChange(View v) {
-                setContentBarView(v);
-                return true;
-            }
-        });
 
         if (mUseSystemGestures) {
             registerSystemGestureReceiver();
         }
-    }
 
+        // Defers creating developers view not to interfere loading of statusbar
+        new Handler().postDelayed(() -> {
+            createDevelopersWindow();
+        }, 1000);
+    }
     
     @Override
     public void onDestroy() {
@@ -163,8 +156,6 @@ public class StatusBar implements SystemUIBase {
         mWindowManager.addView(mStatusBarWindow, lp);
 
         mStatusBarView = inflateStatusBarView();
-        mControllerManager = new ControllerManagerDL3C(); 
-        mControllerManager.create(mContext, mStatusBarView); 
         setContentBarView(mStatusBarView);
     }
 
@@ -226,9 +217,37 @@ public class StatusBar implements SystemUIBase {
         mWindowManager.addView(mNavBarWindow, lp);
 
         mNavBarView = inflateNavBarView();
-        mControllerManager = new ControllerManager(); 
-        mControllerManager.create(mContext, mNavBarView); 
         setContentBarView(mNavBarView);
+    }
+
+    private void createDevelopersWindow() {
+        mDevNavView = (DevNavigationBar) View.inflate(mContext, R.layout.dev_nav_bar, null);
+        mDevNavView.init(new DevCommandsProxy(mContext) {
+            @Override
+            public Bundle invokeDevCommand(String command, Bundle args) {
+                if (mStatusBarService != null) {
+                    StatusBarDev dev = mStatusBarService.getStatusBarDev();
+                    if ( dev != null ) return dev.invokeDevCommand(command, args);
+                }
+                return new Bundle();
+            }
+        });
+
+        View normalView;
+        if (ProductConfig.getModel() == ProductConfig.MODEL.DL3C) {
+            normalView = mStatusBarView;
+        } else {
+            normalView = mNavBarView;
+        }
+
+        mDevModeController = new DevModeController(mContext, normalView, mDevNavView);
+        mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
+            @Override
+            public boolean onViewChange(View v) {
+                setContentBarView(v);
+                return true;
+            }
+        });
     }
 
     public View inflateNavBarView() {
@@ -296,6 +315,14 @@ public class StatusBar implements SystemUIBase {
             }
 
             mStatusBarService = ((StatusBarService.StatusBarServiceBinder)service).getService();
+
+            if (ProductConfig.getModel() == ProductConfig.MODEL.DL3C) {
+                mControllerManager = new ControllerManagerDL3C();
+                mControllerManager.create(mContext, mStatusBarView);
+            } else {
+                mControllerManager = new ControllerManager();
+                mControllerManager.create(mContext, mNavBarView);
+            }
             mControllerManager.init(mStatusBarService); 
         }
 
@@ -303,6 +330,7 @@ public class StatusBar implements SystemUIBase {
         public void onServiceDisconnected(ComponentName name) {
             updateUIController(() -> {
                 mControllerManager.deinit();
+                mControllerManager = null;
             });
 
             mStatusBarService = null;
