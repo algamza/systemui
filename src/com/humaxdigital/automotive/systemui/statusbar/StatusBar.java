@@ -44,8 +44,8 @@ import com.humaxdigital.automotive.systemui.util.ProductConfig;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-public class StatusBarProxyPluginImpl extends Service {
-    private static final String TAG = "StatusBarProxyPluginImpl";
+public class StatusBar extends Service {
+    private static final String TAG = "StatusBar";
     private final IBinder mBinder = new LocalBinder();
     private WindowManager mWindowManager;
     private ViewGroup mNavBarWindow;
@@ -69,8 +69,8 @@ public class StatusBarProxyPluginImpl extends Service {
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
 
     public class LocalBinder extends Binder {
-        StatusBarProxyPluginImpl getService() {
-            return StatusBarProxyPluginImpl.this;
+        StatusBar getService() {
+            return StatusBar.this;
         }
     }
 

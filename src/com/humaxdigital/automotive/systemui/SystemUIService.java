@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.statusbar.StatusBarProxyPluginImpl;
+import com.humaxdigital.automotive.systemui.statusbar.StatusBar;
 import com.humaxdigital.automotive.systemui.droplist.DropListUIService;
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialogService; 
 import com.humaxdigital.automotive.systemui.wallpaper.WallpaperService; 
@@ -46,7 +46,7 @@ public class SystemUIService extends Service {
 
     private void startStatusBarService(Context context){
         if ( context == null ) return; 
-        Intent intent = new Intent(context, StatusBarProxyPluginImpl.class);
+        Intent intent = new Intent(context, StatusBar.class);
         context.startService(intent);
     }
 

@@ -87,7 +87,7 @@
             android:singleUser="true"
             android:exported="false" />
 
-        <service android:name=".statusbar.StatusBarProxyPluginImpl"
+        <service android:name=".statusbar.StatusBar"
             android:singleUser="true"
             android:label="@string/plugin_label">
         </service>
