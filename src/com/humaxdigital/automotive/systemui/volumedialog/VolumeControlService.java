@@ -331,6 +331,11 @@ public class VolumeControlService extends Service {
             }
 
             if ( mIsSettingsActivity ) return;
+
+            if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
+                Log.d(TAG, "SKIP onMasterMuteChanged");
+                return;
+            }
             
             broadcastEventMuteChange(mode, max, volume, mute);
         }
