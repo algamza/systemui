@@ -172,6 +172,7 @@ public class VolumeControlService extends Service {
                 synchronized (mServiceReady) {
                     while (mCarAudioManagerEx == null) {
                         try {
+                            Log.d(TAG, "system ready"); 
                             mServiceReady.wait();
                         } catch (InterruptedException e) {
                             return null;
@@ -261,6 +262,9 @@ public class VolumeControlService extends Service {
         public void onConnected() {
             if ( mCarClient == null ) return;
             mCarAudioManagerEx = mCarClient.getAudioManagerEx(); 
+            synchronized (mServiceReady) {
+                mServiceReady.notify(); 
+            }
             try {
                 if ( mCarAudioManagerEx != null ) {
                     mCarAudioManagerEx.registerCallbackForStartupVolume();

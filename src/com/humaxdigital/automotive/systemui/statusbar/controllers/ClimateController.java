@@ -120,7 +120,7 @@ public class ClimateController {
         View climate = null; 
         
         // check trim : 
-        boolean support_seat = false; 
+        boolean support_seat = true; 
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             climate = inflater.inflate(R.layout.du2_climate, null); 
