@@ -51,9 +51,9 @@ public class ClimateController {
     private float mTempPSState = 0.0f;
     private Boolean mTempOn = true; 
 
-    private ClimateMenuImg mSeatDR;
+    private ClimateMenuImg mSeatDR = null;
     private SeatState mSeatDRState = SeatState.NONE;
-    private ClimateMenuImg mSeatPS;
+    private ClimateMenuImg mSeatPS = null;
     private SeatState mSeatPSState = SeatState.NONE;
 
     private ClimateMenuImg mIntake;
@@ -118,10 +118,18 @@ public class ClimateController {
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if ( inflater == null ) return; 
         View climate = null; 
+        
+        // check trim : 
+        boolean support_seat = false; 
+
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             climate = inflater.inflate(R.layout.du2_climate, null); 
-        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
-            climate = inflater.inflate(R.layout.dn8c_climate, null); 
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+            if ( support_seat )
+                climate = inflater.inflate(R.layout.dn8c_climate, null); 
+            else 
+                climate = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
+        }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C )
             climate = inflater.inflate(R.layout.cn7c_climate, null); 
         else 
@@ -210,15 +218,25 @@ public class ClimateController {
             mClimateViews.add(mSeatPS);
         } 
         else {
-            mClimateViews.add(mTempDR);
-            mClimateViews.add(mSeatDR);
-            mClimateViews.add(mAC);
-            mClimateViews.add(mIntake);
-            mClimateViews.add(mFanSpeed);
-            mClimateViews.add(mFanDirection);
-            mClimateViews.add(mAirCleaning); 
-            mClimateViews.add(mSeatPS);
-            mClimateViews.add(mTempPS);
+            if ( support_seat ) {
+                mClimateViews.add(mTempDR);
+                mClimateViews.add(mSeatDR);
+                mClimateViews.add(mAC);
+                mClimateViews.add(mIntake);
+                mClimateViews.add(mFanSpeed);
+                mClimateViews.add(mFanDirection);
+                mClimateViews.add(mAirCleaning); 
+                mClimateViews.add(mSeatPS);
+                mClimateViews.add(mTempPS);
+            } else {
+                mClimateViews.add(mTempDR);
+                mClimateViews.add(mFanDirection);
+                mClimateViews.add(mAC);
+                mClimateViews.add(mIntake);
+                mClimateViews.add(mAirCleaning); 
+                mClimateViews.add(mFanSpeed);
+                mClimateViews.add(mTempPS);
+            }
         }
 
         for ( int i = 0; i<mClimateViews.size(); i++ ) {
