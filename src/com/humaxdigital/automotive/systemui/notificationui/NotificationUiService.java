@@ -57,6 +57,9 @@ public class NotificationUiService extends Service {
     private String mCurrentKey = ""; 
     private String mCurrentTitle = ""; 
 
+    private String mBlockKey = ""; 
+    private boolean mIsBlockState = false; 
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -213,22 +216,9 @@ public class NotificationUiService extends Service {
                     
                     ui.inflate();
 
-                    if ( mCurrentKey.equals(key) ) {
-                        Log.d(TAG, "equals(key)="+key); 
-                        if ( title != null && !title.equals("") && title.equals(mCurrentTitle) ) {
-                            if ( text != null ) {
-                                if ( mCurrentNotificationUI != null ) 
-                                    mCurrentNotificationUI.updateBody(text.toString()); 
-                                Log.d(TAG, "only update body"); 
-                                return true;
-                            }
-                        }
-                    } else {
-                        mCurrentKey = key;
-                    }
-
-                    mCurrentTitle = title; 
-
+                    if ( isBlockOSD(key) ) return false; 
+                    if ( isUpdateOSD(key, title, text) ) return true;
+                    
                     if ( mCurrentNotificationUI != null ) {
                         ((ViewGroup)mPanel).addView(ui); 
                         ((ViewGroup)mPanel).removeView(mCurrentNotificationUI); 
@@ -244,6 +234,49 @@ public class NotificationUiService extends Service {
         return false;
     }
 
+    private boolean isBlockOSD(String key) {
+        boolean ret = false; 
+        if ( mBlockKey.equals(key) ) {
+            if ( mIsBlockState ) ret = true; 
+        } else {
+            mBlockKey = key; 
+            mIsBlockState = false;
+        }
+
+        return ret;
+    }
+
+    private void updateBlock() {
+        Log.d(TAG, "updateBlock:state="+mIsBlockState); 
+        if ( mIsBlockState ) return;
+        mIsBlockState = true; 
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            Log.d(TAG, "cancel block:state="+mIsBlockState); 
+            mIsBlockState = false;
+            mBlockKey = ""; 
+        }, 1000);
+    }
+
+    private boolean isUpdateOSD(String key, String title, CharSequence text) {
+        boolean ret = false;
+        if ( mCurrentKey.equals(key) ) {
+            Log.d(TAG, "isUpdateOSD equals(key)="+key); 
+            if ( title != null && !title.equals("") && title.equals(mCurrentTitle) ) {
+                if ( text != null ) {
+                    if ( mCurrentNotificationUI != null ) 
+                        mCurrentNotificationUI.updateBody(text.toString()); 
+                    Log.d(TAG, "only update body"); 
+                    ret = true;
+                }
+            }
+        } else {
+            mCurrentKey = key;
+            ret = false;
+        }
+        mCurrentTitle = title; 
+        return ret; 
+    }
+
     private View.OnClickListener mOnClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -257,8 +290,8 @@ public class NotificationUiService extends Service {
                 }
             }
             Log.d(TAG, "onClick");
+            updateBlock();
             closeDialog();
-            //dismissAll();
         }
     }; 
 
