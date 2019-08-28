@@ -55,6 +55,7 @@ public class VolumeDialog implements SystemUIBase {
 
     private ContentResolver mContentResolver = null;
     private ContentObserver mLastModeObserver = null;
+    private ContentObserver mPowerObserver = null;
     private int mLastMode = 0; 
     private Context mContext = null; 
 
@@ -82,16 +83,21 @@ public class VolumeDialog implements SystemUIBase {
 
         mContentResolver = mContext.getContentResolver();
         mLastModeObserver = createLastModeObserver();
+        mPowerObserver = createPowerObserver();
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CarExtraSettings.Global.LAST_MEDIA_MODE), 
                 false, mLastModeObserver, UserHandle.USER_CURRENT); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.POWER_STATE), 
+                false, mPowerObserver, UserHandle.USER_CURRENT); 
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "destroy"); 
-        if ( mLastModeObserver != null && mContentResolver != null )  {
+        if ( mLastModeObserver != null && mContentResolver != null && mPowerObserver != null )  {
             mContentResolver.unregisterContentObserver(mLastModeObserver); 
+            mContentResolver.unregisterContentObserver(mPowerObserver); 
         }
 
         if ( mController != null ) {
@@ -174,7 +180,6 @@ public class VolumeDialog implements SystemUIBase {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                
                 if ( mContentResolver == null ) return;
                 int lastmode = Settings.Global.getInt(mContentResolver, 
                     CarExtraSettings.Global.LAST_MEDIA_MODE, 
@@ -183,6 +188,23 @@ public class VolumeDialog implements SystemUIBase {
                 if ( mLastMode == lastmode ) return;
                 mLastMode = lastmode; 
                 if ( mDialog != null ) mDialog.close();
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createPowerObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContentResolver == null ) return;
+                int power = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.POWER_STATE, 
+                    CarExtraSettings.Global.POWER_STATE_NORMAL);
+                Log.d(TAG, "onChange:power="+power);
+                if ( power == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
+                    if ( mDialog != null ) mDialog.close();
+                }
             }
         };
         return observer; 
