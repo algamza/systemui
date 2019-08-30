@@ -32,12 +32,14 @@ public class ClimateController {
     static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
+    private enum SeatOption { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
     private enum FanDirectionState { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST, DEFROST, OFF }
     private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
     private enum AirCleaning { ON, OFF }; 
     private enum FrontDefogState { ON, OFF }; 
+    private enum ClimateType { DEFAULT, NO_SEAT }; 
 
     private StatusBarClimate mService; 
     private Context mContext;
@@ -56,6 +58,9 @@ public class ClimateController {
     private ClimateMenuImg mSeatPS = null;
     private SeatState mSeatPSState = SeatState.NONE;
 
+    private SeatOption mSeatDROption = SeatOption.INVALID; 
+    private SeatOption mSeatPSOption = SeatOption.INVALID; 
+
     private ClimateMenuImg mIntake;
     private IntakeState mIntakeState = IntakeState.OFF;
     private ClimateMenuImg mAC;
@@ -70,6 +75,8 @@ public class ClimateController {
     private AirCleaning mAirCleaningState = AirCleaning.OFF; 
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
+
+    private ClimateType mClimateType = ClimateType.DEFAULT; 
 
     private Boolean mModeOff = false; 
     private Boolean mIGNOn = true; 
@@ -257,7 +264,11 @@ public class ClimateController {
                 mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
         }
     }
+/*
+    private ClimateType checkClimateType() {
 
+    }
+*/
     private void update() {
         if ( mService == null ) return; 
 

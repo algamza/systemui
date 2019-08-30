@@ -32,8 +32,10 @@ public class ClimateControllerManager {
         AIR_CONDITIONER,
         AIR_CLEANING,
         DRIVER_SEAT,
+        DRIVER_SEAT_OPTION,
         DRIVER_TEMPERATURE,
         PASSENGER_SEAT,
+        PASSENGER_SEAT_OPTION,
         PASSENGER_TEMPERATURE,
         FAN_SPEED,
         FAN_DIRECTION,
@@ -78,11 +80,13 @@ public class ClimateControllerManager {
     private ClimateAirConditionerController mAirConditioner; 
     private ClimateAirCleaningController mAirCleaning; 
     private ClimateDRSeatController mDRSeat; 
+    private ClimateDRSeatOptionController mDRSeatOption; 
     private ClimateDRTempController mDRTemp; 
     private ClimateFanDirectionController mFanDirection; 
     private ClimateModeOffController mModeOff; 
     private ClimateFanSpeedController mFanSpeed; 
     private ClimatePSSeatController mPSSeat; 
+    private ClimatePSSeatOptionController mPSSeatOption; 
     private ClimatePSTempController mPSTemp; 
     private ClimateDefogController mDefog; 
 
@@ -94,12 +98,14 @@ public class ClimateControllerManager {
         public void onInitialized();
         public void onDriverTemperatureChanged(float temp);
         public void onDriverSeatStatusChanged(int status);
+        public void onDriverSeatOptionChanged(int option);
         public void onAirCirculationChanged(boolean isOn);
         public void onAirConditionerChanged(boolean isOn);
         public void onAirCleaningChanged(int status);
         public void onFanDirectionChanged(int direction);
         public void onFanSpeedStatusChanged(int status);
         public void onPassengerSeatStatusChanged(int status);
+        public void onPassengerSeatOptionChanged(int option);
         public void onPassengerTemperatureChanged(float temp);
         public void onFrontDefogStatusChanged(int status); 
         public void onModeOffChanged(boolean on);
@@ -253,8 +259,10 @@ public class ClimateControllerManager {
             case AIR_CONDITIONER: return mAirConditioner; 
             case AIR_CLEANING: return mAirCleaning; 
             case DRIVER_SEAT: return mDRSeat; 
+            case DRIVER_SEAT_OPTION: return mDRSeatOption; 
             case DRIVER_TEMPERATURE: return mDRTemp; 
             case PASSENGER_SEAT: return mPSSeat; 
+            case PASSENGER_SEAT_OPTION: return mPSSeatOption; 
             case PASSENGER_TEMPERATURE: return mPSTemp; 
             case FAN_SPEED: return mFanSpeed; 
             case FAN_DIRECTION: return mFanDirection; 
@@ -277,6 +285,8 @@ public class ClimateControllerManager {
         mControllers.add(mAirCleaning); 
         mDRSeat = new ClimateDRSeatController(mContext, mDataStore); 
         mControllers.add(mDRSeat); 
+        mDRSeatOption = new ClimateDRSeatOptionController(mContext, mDataStore); 
+        mControllers.add(mDRSeatOption); 
         mDRTemp = new ClimateDRTempController(mContext, mDataStore); 
         mControllers.add(mDRTemp); 
         mFanDirection = new ClimateFanDirectionController(mContext, mDataStore); 
@@ -285,6 +295,8 @@ public class ClimateControllerManager {
         mControllers.add(mFanSpeed); 
         mPSSeat = new ClimatePSSeatController(mContext, mDataStore); 
         mControllers.add(mPSSeat); 
+        mPSSeatOption = new ClimatePSSeatOptionController(mContext, mDataStore); 
+        mControllers.add(mPSSeatOption); 
         mPSTemp = new ClimatePSTempController(mContext, mDataStore); 
         mControllers.add(mPSTemp); 
         mDefog = new ClimateDefogController(mContext, mDataStore); 
@@ -317,6 +329,9 @@ public class ClimateControllerManager {
                         break;
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
                         handleSeatWarmerUpdate(areaId, getValue(val));
+                        break;
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT:
+                        handleSeatOptionUpdate(areaId, getValue(val));
                         break;
                     case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
@@ -409,6 +424,20 @@ public class ClimateControllerManager {
             if ( mPSSeat.update(level) ) 
                 if ( mListener != null ) 
                     mListener.onPassengerSeatStatusChanged(mPSSeat.get());
+        }
+    }
+
+    private void handleSeatOptionUpdate(int zone, int option) {
+        if ( mDRSeatOption == null || mPSSeatOption == null ) return; 
+        
+        if (zone == SEAT_DRIVER) {
+            if ( mDRSeatOption.update(option) ) 
+                if ( mListener != null ) 
+                    mListener.onDriverSeatOptionChanged(mDRSeatOption.get());
+        } else {
+            if ( mPSSeatOption.update(option) ) 
+                if ( mListener != null ) 
+                    mListener.onPassengerSeatOptionChanged(mPSSeatOption.get());
         }
     }
 
