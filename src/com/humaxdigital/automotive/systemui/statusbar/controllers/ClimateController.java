@@ -39,7 +39,7 @@ public class ClimateController {
     private enum IntakeState { ON, OFF };
     private enum AirCleaning { ON, OFF }; 
     private enum FrontDefogState { ON, OFF }; 
-    private enum ClimateType { DEFAULT, NO_SEAT }; 
+    private enum ClimateType { NONE, DEFAULT, NO_SEAT }; 
 
     private StatusBarClimate mService; 
     private Context mContext;
@@ -76,12 +76,16 @@ public class ClimateController {
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
-    private ClimateType mClimateType = ClimateType.DEFAULT; 
+    private ClimateType mClimateType = ClimateType.NONE; 
 
     private Boolean mModeOff = false; 
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
+
+    private ContentResolver mContentResolver;
+    private ContentObserver mTypeObserver;
+    private final String mTypeKey = "com.humaxdigital.automotive.systemui.statusbar.ClimateType"
 
     private final List<View> mClimateViews = new ArrayList<>();
 
@@ -91,19 +95,73 @@ public class ClimateController {
         mClimate = view;
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
-        initView();
+        initObserver();
+        if ( mClimateType != ClimateType.NONE ) initView();
     }
 
     public void init(StatusBarClimate service) {
         mService = service; 
         if ( mService != null ) {
             mService.registerClimateCallback(mClimateCallback); 
-            if ( mService.isInitialized() ) update(); 
+            if ( mService.isInitialized() ) {
+                if ( mClimateType == ClimateType.NONE ) {
+                    initView();
+                }
+                update(); 
+            }
+            
         }
     }
 
     public void deinit() {
         if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
+    }
+
+    private void initObserver() {
+        if ( mContext == null ) return;
+        mContentResolver = mContext.getContentResolver();
+        mTypeObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                Log.d(TAG, "onChange");
+
+            }
+        };
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(mTypeKey), 
+            false, mTypeObserver, UserHandle.USER_CURRENT); 
+
+        int type = 0; 
+        try {
+            type = Settings.Global.getInt(mContentResolver, mTypeKey);
+        } catch(Settings.SettingNotFoundException e) {
+            Log.e(TAG, "error : " + e ); 
+        }
+        mClimateType = converToType(type); 
+    }
+
+    private ClimateType updateClimateType() {
+        mClimateType; 
+    }
+
+    private ClimateType converToType(int type) {
+        ClimateType _type = ClimateType.NONE; 
+        switch( type ) {
+            case 0: _type = ClimateType.NONE; break;
+            case 1: _type = ClimateType.DEFAULT; break;
+            case 2: _type = ClimateType.NO_SEAT; break;
+        }
+        return _type;
+    }
+
+    private int converToInt(ClimateType type) {
+        int _type = 0; 
+        switch( type ) {
+            case ClimateType.NONE: _type = 0; break; 
+            case ClimateType.DEFAULT: _type = 1; break; 
+            case ClimateType.NO_SEAT: _type = 2; break; 
+        }
+        return _type;
     }
 
     private void openClimateSetting() {
@@ -264,11 +322,7 @@ public class ClimateController {
                 mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
         }
     }
-/*
-    private ClimateType checkClimateType() {
 
-    }
-*/
     private void update() {
         if ( mService == null ) return; 
 
