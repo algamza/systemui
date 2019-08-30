@@ -27,7 +27,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ScenarioBackupWran {
     private static final String TAG = "ScenarioBackupWran";
@@ -48,6 +49,10 @@ public class ScenarioBackupWran {
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private CarSensorManagerEx mCarSensorManagerEx = null;
     private boolean mIsBackupWranApplying = false;
+
+    private Timer mTimer = new Timer();
+    private TimerTask mChatteringTask = null;
+    private final int CHATTERING_TIME = 300; 
 
     public ScenarioBackupWran(Context context) {
         mContext = context; 
@@ -248,6 +253,15 @@ public class ScenarioBackupWran {
         return false; 
     }
 
+    private void cancelChattering() {
+        if ( mChatteringTask == null ) return;
+        if ( mChatteringTask.scheduledExecutionTime() > 0 ) {
+            Log.d(TAG, "cancelChattering");
+            mChatteringTask.cancel();
+            mTimer.purge();
+            mChatteringTask =  null;
+        }
+    }
     private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener =
         new CarSensorManagerEx.OnSensorChangedListenerEx () {
         public void onSensorChanged(final CarSensorEvent event) {
@@ -256,10 +270,19 @@ public class ScenarioBackupWran {
                     GearData gear = event.getGearData(null);
                     Log.d(TAG, "onSensorChanged:SENSOR_TYPE_GEAR:gear=" + gear.gear);
                     if(gear.gear == CarSensorEventEx.GEAR_R) {
-                        if ( mIsRGearDetected ) break;
-                        mIsRGearDetected = true;
-                        if ( isBackupWarn() ) applyBackupWarn();
+                        cancelChattering(); 
+                        mChatteringTask = new TimerTask() {
+                            @Override
+                            public void run() {
+                                Log.d(TAG, "onSensorChanged:applybackupwran:Rgear=" + mIsRGearDetected);
+                                if ( mIsRGearDetected ) return;
+                                mIsRGearDetected = true;
+                                if ( isBackupWarn() ) applyBackupWarn();
+                            }
+                        };
+                        mTimer.schedule(mChatteringTask, CHATTERING_TIME);
                     } else {
+                        cancelChattering(); 
                         if ( !mIsRGearDetected ) break;
                         mIsRGearDetected = false;
                         backupWarnChanged();
