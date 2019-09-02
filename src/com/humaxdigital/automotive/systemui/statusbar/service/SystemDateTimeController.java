@@ -106,7 +106,12 @@ public class SystemDateTimeController extends BaseController<String> {
     }
 
     public String getYearDateTime() {
-        DateFormat df = new SimpleDateFormat("yyyy:M:d:h:mm:a", Locale.ENGLISH);
+        DateFormat df; 
+        if ( mCurrentTimeType == TimeType.TYPE_24 ) {
+            df = new SimpleDateFormat("yyyy:M:d:H:mm", Locale.ENGLISH);
+        } else {
+            df = new SimpleDateFormat("yyyy:M:d:h:mm:a", Locale.ENGLISH);
+        }
         String time = df.format(Calendar.getInstance().getTime());
         Log.d(TAG, "getYearDateTime:"+time);
         return time;

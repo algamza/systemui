@@ -94,10 +94,11 @@ public class DateController {
         format = mService.getYearDateTime(); 
         Log.d(TAG, "updateDateTime="+format); 
         String[] arr = format.split(":");
-        if ( arr.length != 6 ) return;
+        if ( arr.length < 5 ) return;
         mTextDate = mMonthEng.get(arr[1]) + " " + arr[2]; 
         mTextTime = arr[3]+":"+arr[4];  
-        mTextApm = arr[5]; 
+        if ( arr.length == 6 ) mTextApm = arr[5]; 
+        else if ( arr.length == 5 ) mTextApm = ""; 
     }
 
     private void updateUI() {
