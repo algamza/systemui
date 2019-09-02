@@ -31,6 +31,7 @@ public class UserProfileController {
     private boolean mBluelinkMode; 
     private boolean mImmoilizationMode; 
     private boolean mSlowdownMode; 
+    private boolean mRearCameraMode; 
 
     public UserProfileController(Context context, View view) {
         if ( context == null || view == null ) return;
@@ -61,6 +62,7 @@ public class UserProfileController {
         if ( mService.isBluelinkMode() ) mBluelinkMode = true;
         if ( mService.isImmoilizationMOde() ) mImmoilizationMode = true;
         if ( mService.isSlowdownMode() ) mSlowdownMode = true;
+        if ( mService.isRearCamera() ) mRearCameraMode = true;
 
         Log.d(TAG, "checkUserIconDisable:mIsPowerOff="+mIsPowerOff+
             ", mUserAgreementMode="+mUserAgreementMode+
@@ -69,7 +71,8 @@ public class UserProfileController {
             ", mEmergencyMode="+mEmergencyMode+
             ", mBluelinkMode="+mBluelinkMode+
             ", mImmoilizationMode="+mImmoilizationMode+
-            ", mSlowdownMode="+mSlowdownMode); 
+            ", mSlowdownMode="+mSlowdownMode+
+            ", mRearCameraMode="+mRearCameraMode); 
         if ( mIsPowerOff 
             || mUserAgreementMode
             || mUserSwitching
@@ -77,7 +80,8 @@ public class UserProfileController {
             || mEmergencyMode
             || mBluelinkMode
             || mImmoilizationMode
-            || mSlowdownMode ) setUserIconDisable(true);
+            || mSlowdownMode
+            || mRearCameraMode ) setUserIconDisable(true);
         else setUserIconDisable(false);
     }
 
@@ -237,6 +241,19 @@ public class UserProfileController {
                 @Override
                 public void run() {
                     setUserIconDisable(mSlowdownMode);
+                }
+            }); 
+        }
+
+        @Override
+        public void onRearCamera(boolean on) {
+            if ( mHandler == null ) return; 
+            Log.d(TAG, "onRearCamera="+on);
+            mRearCameraMode = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    setUserIconDisable(mRearCameraMode);
                 }
             }); 
         }

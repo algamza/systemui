@@ -102,6 +102,7 @@ public class StatusBarSystem {
         public void onBluelinkMode(boolean on) {}
         public void onImmoilizationMode(boolean on) {}
         public void onSlowdownMode(boolean on) {}
+        public void onRearCamera(boolean on) {}
     }
 
     public StatusBarSystem(Context context, DataStore datastore) {
@@ -235,6 +236,11 @@ public class StatusBarSystem {
     public void onRearCamera(boolean on) {
         Log.d(TAG, "onRearCamera="+on);
         mRearCamera = on; 
+        synchronized (mSystemCallbacks) {
+            for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
+                    callback.onRearCamera(on);
+            }
+        }
     }
 
     public void onRearGearDetected(boolean on) {
@@ -344,6 +350,11 @@ public class StatusBarSystem {
     public boolean isSlowdownMode() {
         Log.d(TAG, "isSlowdownMode="+mSVSOn);
         return mSVSOn; 
+    }
+
+    public boolean isRearCamera() {
+        Log.d(TAG, "isRearCamera="+mRearCamera);
+        return mRearCamera; 
     }
 
     public boolean isSystemInitialized() {
