@@ -104,16 +104,24 @@ public class ClimateController {
         mService.openClimateSetting();
     }
 
+    private void addOnClick() {
+        if ( mClimate != null ) mClimate.setOnClickListener(mClimateOnClick);
+        if ( mAC != null ) mAC.setOnClickListener(mClimateACOnClick); 
+        if ( mIntake != null ) mIntake.setOnClickListener(mClimateIntakeOnClick); 
+        if ( mFanDirection != null ) mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
+        if ( mAirCleaning != null ) mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
+    }
+    
+    private void removeOnClick() {
+        if ( mClimate != null ) mClimate.setOnClickListener(null);
+        if ( mAC != null ) mAC.setOnClickListener(null); 
+        if ( mIntake != null ) mIntake.setOnClickListener(null); 
+        if ( mFanDirection != null ) mFanDirection.setOnClickListener(null); 
+        if ( mAirCleaning != null ) mAirCleaning.setOnClickListener(null); 
+    }
+
     private void initView() {
         if ( mClimate == null || mContext == null ) return;
-        mClimate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if ( !mIGNOn || mIsOperateOn || mIsDisable ) return; 
-                fanOn(); 
-                openClimateSetting();
-            }
-        });
 
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if ( inflater == null ) return; 
@@ -154,13 +162,11 @@ public class ClimateController {
             .addIcon(ACState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_off, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_dis, null))
             .inflate();
-        mAC.setOnClickListener(mClimateACOnClick); 
         mIntake = new ClimateMenuImg(mContext)
             .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
             .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_dis, null))
             .inflate();
-        mIntake.setOnClickListener(mClimateIntakeOnClick); 
         mFanSpeed = new ClimateMenuTextImg(mContext)
             .addIcon(0, ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_n, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_dis, null))
@@ -179,7 +185,6 @@ public class ClimateController {
             .addDisableIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog_dis, null))
             .addDisableIcon(FanDirectionState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off_d, null))
             .inflate();
-        mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         mSeatPS = new ClimateMenuImg(mContext)
             .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_00, null))
             .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_01, null))
@@ -197,7 +202,6 @@ public class ClimateController {
             .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
             .inflate(); 
-        mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
             mClimateViews.add(mAC);
@@ -374,6 +378,11 @@ public class ClimateController {
     } 
 
     private void updateDisable(boolean disable) {
+        Log.d(TAG, "updateDisable="+disable); 
+
+        if ( disable ) removeOnClick(); 
+        else addOnClick(); 
+        
         mIsDisable = disable; 
         if ( mTempDR != null ) mTempDR.updateDisable(disable);
         if ( mSeatDR != null ) mSeatDR.updateDisable(disable);
@@ -385,6 +394,15 @@ public class ClimateController {
         if ( mTempPS != null ) mTempPS.updateDisable(disable);
         if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
     } 
+
+    private View.OnClickListener mClimateOnClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if ( !mIGNOn || mIsOperateOn || mIsDisable ) return; 
+            fanOn(); 
+            openClimateSetting();
+        }
+    }; 
 
     private View.OnClickListener mClimateACOnClick = new View.OnClickListener() { 
         @Override
