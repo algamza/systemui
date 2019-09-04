@@ -2,6 +2,8 @@ package com.humaxdigital.automotive.systemui.statusbar.controllers;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.ContentResolver;
+import android.provider.Settings;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.view.LayoutInflater;
@@ -76,16 +78,14 @@ public class ClimateController {
 
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
-    private ClimateType mClimateType = ClimateType.NONE; 
-
     private Boolean mModeOff = false; 
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
 
     private ContentResolver mContentResolver;
-    private ContentObserver mTypeObserver;
-    private final String mTypeKey = "com.humaxdigital.automotive.systemui.statusbar.ClimateType"
+    private final String mTypeKey = "com.humaxdigital.automotive.systemui.statusbar.ClimateType";
+    private boolean mIsViewInit = false; 
 
     private final List<View> mClimateViews = new ArrayList<>();
 
@@ -95,21 +95,15 @@ public class ClimateController {
         mClimate = view;
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
-        initObserver();
-        if ( mClimateType != ClimateType.NONE ) initView();
+        mContentResolver = mContext.getContentResolver();
+        initView();
     }
 
     public void init(StatusBarClimate service) {
         mService = service; 
         if ( mService != null ) {
             mService.registerClimateCallback(mClimateCallback); 
-            if ( mService.isInitialized() ) {
-                if ( mClimateType == ClimateType.NONE ) {
-                    initView();
-                }
-                update(); 
-            }
-            
+            if ( mService.isInitialized() ) update(); 
         }
     }
 
@@ -117,51 +111,18 @@ public class ClimateController {
         if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
     }
 
-    private void initObserver() {
-        if ( mContext == null ) return;
-        mContentResolver = mContext.getContentResolver();
-        mTypeObserver = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange, Uri uri, int userId) {
-                Log.d(TAG, "onChange");
-
-            }
-        };
-        mContentResolver.registerContentObserver(
-            Settings.Global.getUriFor(mTypeKey), 
-            false, mTypeObserver, UserHandle.USER_CURRENT); 
-
+    private ClimateType getClimateType() {
+        ClimateType _type = ClimateType.NONE; 
+        if ( mContentResolver == null ) return _type;
         int type = 0; 
         try {
             type = Settings.Global.getInt(mContentResolver, mTypeKey);
         } catch(Settings.SettingNotFoundException e) {
             Log.e(TAG, "error : " + e ); 
         }
-        mClimateType = converToType(type); 
-    }
-
-    private ClimateType updateClimateType() {
-        mClimateType; 
-    }
-
-    private ClimateType converToType(int type) {
-        ClimateType _type = ClimateType.NONE; 
-        switch( type ) {
-            case 0: _type = ClimateType.NONE; break;
-            case 1: _type = ClimateType.DEFAULT; break;
-            case 2: _type = ClimateType.NO_SEAT; break;
-        }
-        return _type;
-    }
-
-    private int converToInt(ClimateType type) {
-        int _type = 0; 
-        switch( type ) {
-            case ClimateType.NONE: _type = 0; break; 
-            case ClimateType.DEFAULT: _type = 1; break; 
-            case ClimateType.NO_SEAT: _type = 2; break; 
-        }
-        return _type;
+        _type = ClimateType.values()[type]; 
+        Log.d(TAG, "getClimateType="+_type); 
+        return _type; 
     }
 
     private void openClimateSetting() {
@@ -188,13 +149,16 @@ public class ClimateController {
     private void initView() {
         if ( mClimate == null || mContext == null ) return;
 
+        ClimateType type = getClimateType(); 
+        if ( type == ClimateType.NONE ) return;
+
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if ( inflater == null ) return; 
-        View climate = null; 
-        
-        // check trim : 
+        mIsViewInit = true;
         boolean support_seat = true; 
+        if ( type == ClimateType.NO_SEAT ) support_seat = false; 
 
+        View climate = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             climate = inflater.inflate(R.layout.du2_climate, null); 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
@@ -327,8 +291,37 @@ public class ClimateController {
         }
     }
 
+    private void setClimateType(ClimateType type) {
+        if ( mContentResolver == null ) return;
+        Log.d(TAG, "setClimateType="+type); 
+        Settings.Global.putInt(mContentResolver, mTypeKey, type.ordinal()); 
+    }
+
+    private void updateClimateType() {
+        if ( mService == null ) ; 
+
+        int ps_seat_op = mService.getPSSeatOption(); 
+        int dr_seat_op = mService.getDRSeatOption();
+        
+        Log.d(TAG, "updateClimateType : ps-option="+ps_seat_op+", dr-option="+dr_seat_op); 
+
+        if ( SeatOption.values()[ps_seat_op] == SeatOption.INVALID 
+            || SeatOption.values()[dr_seat_op] == SeatOption.INVALID ) {
+            setClimateType(ClimateType.NO_SEAT); 
+        } else {
+            setClimateType(ClimateType.DEFAULT); 
+        }
+    }
+
     private void update() {
         if ( mService == null ) return; 
+
+        updateClimateType();
+
+        if ( !mIsViewInit ) {
+            mIsViewInit = true; 
+            initView(); 
+        }
 
         updateDisable(false);
 
@@ -580,6 +573,10 @@ public class ClimateController {
             }); 
         }
         @Override
+        public void onDRSeatOptionChanged(int option) {
+            updateClimateType();
+        }
+        @Override
         public void onAirCirculationChanged(boolean isOn) {
             if ( mIntake == null ) return; 
             mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
@@ -657,6 +654,12 @@ public class ClimateController {
                 }
             }); 
         }
+        @Override
+        public void onPSSeatOptionChanged(int option) {
+            updateClimateType();
+        }
+
+        @Override
         public void onPSTemperatureChanged(float temp) {
             if ( mTempPS == null ) return; 
             mTempPSState = temp;
@@ -669,6 +672,7 @@ public class ClimateController {
             }); 
         }
 
+        @Override
         public void onFrontDefogStatusChanged(int state) {
             mFrontDefogState = FrontDefogState.values()[state]; 
             if ( mHandler == null ) return; 
@@ -689,6 +693,7 @@ public class ClimateController {
             }
         }
 
+        @Override
         public void onModeOffChanged(boolean off) {
             if ( mHandler == null ) return; 
 
@@ -700,6 +705,7 @@ public class ClimateController {
             }); 
         }
 
+        @Override
         public void onIGNOnChanged(boolean on) {
             if ( mHandler == null ) return; 
 
@@ -711,6 +717,7 @@ public class ClimateController {
             }); 
         }
 
+        @Override
         public void onOperateOnChanged(boolean on) {
             if ( mHandler == null ) return; 
 
@@ -722,6 +729,7 @@ public class ClimateController {
             }); 
         }
 
+        @Override
         public void onRearCameraOn(boolean on) {
             // Not implement
         }

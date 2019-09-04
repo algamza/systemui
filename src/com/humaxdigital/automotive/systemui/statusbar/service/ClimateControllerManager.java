@@ -420,7 +420,7 @@ public class ClimateControllerManager {
             if ( mDRSeat.update(level) ) 
                 if ( mListener != null ) 
                     mListener.onDriverSeatStatusChanged(mDRSeat.get());
-        } else {
+        } else if ( zone == SEAT_PASSENGER ) {
             if ( mPSSeat.update(level) ) 
                 if ( mListener != null ) 
                     mListener.onPassengerSeatStatusChanged(mPSSeat.get());
@@ -434,7 +434,7 @@ public class ClimateControllerManager {
             if ( mDRSeatOption.update(option) ) 
                 if ( mListener != null ) 
                     mListener.onDriverSeatOptionChanged(mDRSeatOption.get());
-        } else {
+        } else if ( zone == SEAT_PASSENGER ) {
             if ( mPSSeatOption.update(option) ) 
                 if ( mListener != null ) 
                     mListener.onPassengerSeatOptionChanged(mPSSeatOption.get());

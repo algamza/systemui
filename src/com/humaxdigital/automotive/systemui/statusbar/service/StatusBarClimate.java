@@ -41,14 +41,14 @@ public class StatusBarClimate {
         public void onInitialized() {}
         public void onDRTemperatureChanged(float temp) {}
         public void onDRSeatStatusChanged(int status) {}
-        public void onDRSeatOptionChanged(int status) {}
+        public void onDRSeatOptionChanged(int option) {}
         public void onAirCirculationChanged(boolean isOn) {}
         public void onAirConditionerChanged(boolean isOn) {}
         public void onAirCleaningChanged(int status) {}
         public void onFanDirectionChanged(int direction) {}
         public void onBlowerSpeedChanged(int status) {}
         public void onPSSeatStatusChanged(int status) {}
-        public void onPSSeatOptionChanged(int status) {}
+        public void onPSSeatOptionChanged(int option) {}
         public void onPSTemperatureChanged(float temp) {}
         public void onFrontDefogStatusChanged(int status) {}
         public void onModeOffChanged(boolean off) {}

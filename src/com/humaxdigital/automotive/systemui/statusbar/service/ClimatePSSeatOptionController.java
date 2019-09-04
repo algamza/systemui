@@ -9,7 +9,7 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimatePSSeatOptionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimatePSSeatOptionController";
-    enum SeatStatus { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
+    private enum SeatStatus { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
     final int mZone = ClimateControllerManager.SEAT_PASSENGER; 
     private SeatStatus mStatus = SeatStatus.INVALID; 
 
