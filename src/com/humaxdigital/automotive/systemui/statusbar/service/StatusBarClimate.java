@@ -41,12 +41,14 @@ public class StatusBarClimate {
         public void onInitialized() {}
         public void onDRTemperatureChanged(float temp) {}
         public void onDRSeatStatusChanged(int status) {}
+        public void onDRSeatOptionChanged(int status) {}
         public void onAirCirculationChanged(boolean isOn) {}
         public void onAirConditionerChanged(boolean isOn) {}
         public void onAirCleaningChanged(int status) {}
         public void onFanDirectionChanged(int direction) {}
         public void onBlowerSpeedChanged(int status) {}
         public void onPSSeatStatusChanged(int status) {}
+        public void onPSSeatOptionChanged(int status) {}
         public void onPSTemperatureChanged(float temp) {}
         public void onFrontDefogStatusChanged(int status) {}
         public void onModeOffChanged(boolean off) {}
@@ -189,6 +191,13 @@ public class StatusBarClimate {
         return status;
     }
 
+    public int getDRSeatOption() { 
+        if ( mClimateManager == null ) return 0; 
+        int option = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.DRIVER_SEAT_OPTION).get(); 
+        Log.d(TAG, "getDRSeatOption="+option);
+        return option;
+    }
+
     public boolean getAirCirculationState() { 
         if ( mClimateManager == null ) return false; 
         boolean status = (boolean)mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CIRCULATION).get(); 
@@ -259,6 +268,13 @@ public class StatusBarClimate {
         int status = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT).get(); 
         Log.d(TAG, "getPSSeatStatus="+status);
         return status;  
+    }
+
+    public int getPSSeatOption() {
+        if ( mClimateManager == null ) return 0; 
+        int option = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT_OPTION).get(); 
+        Log.d(TAG, "getPSSeatOption="+option);
+        return option;  
     }
     
     public float getPSTemperature() { 
@@ -382,6 +398,15 @@ public class StatusBarClimate {
         }
 
         @Override
+        public void onDriverSeatOptionChanged(int option) {
+            Log.d(TAG, "onDriverSeatOptionChanged="+option);
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onDRSeatOptionChanged(option); 
+            }
+        }
+
+        @Override
         public void onAirCirculationChanged(boolean isOn) {
             Log.d(TAG, "onAirCirculationChanged="+isOn);
             synchronized (mClimateCallbacks) {
@@ -432,6 +457,15 @@ public class StatusBarClimate {
             synchronized (mClimateCallbacks) {
                 for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onPSSeatStatusChanged(status); 
+            }
+        }
+
+        @Override
+        public void onPassengerSeatOptionChanged(int option) {
+            Log.d(TAG, "onPassengerSeatOptionChanged="+option);
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onPSSeatOptionChanged(option); 
             }
         }
 
