@@ -698,18 +698,26 @@ public class SystemControl extends Service {
         @Override
         public void onEmergencyMode(boolean enabled) {
             Log.d(TAG, "onEmergencyMode = "+enabled); 
+            for ( SystemCallback callback : mCallbacks )
+                callback.onEmergencyModeChanged(enabled);
         }
         @Override
         public void onBluelinkCallMode(boolean enabled) {
             Log.d(TAG, "onBluelinkCallMode = "+enabled);  
+            for ( SystemCallback callback : mCallbacks )
+                callback.onBluelinkCallModeChanged(enabled);
         }
         @Override
         public void onImmobilizationMode(boolean enabled) {
             Log.d(TAG, "onImmobilizationMode = "+enabled); 
+            for ( SystemCallback callback : mCallbacks )
+                callback.onImmobilizationModeChanged(enabled);
         }
         @Override
         public void onSlowdownMode(boolean enabled) {
             Log.d(TAG, "onSlowdownMode = "+enabled); 
+            for ( SystemCallback callback : mCallbacks )
+                callback.onSlowdownModeChanged(enabled);
         }                
     };
 
