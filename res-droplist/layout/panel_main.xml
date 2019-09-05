@@ -214,66 +214,34 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="12" />
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="60"
-                android:orientation="horizontal"
-                android:weightSum="1920">
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="430" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="155" />
-                <LinearLayout
+                android:layout_weight="60">
+                <RelativeLayout
                     android:id="@+id/checkbox_view"
-                    android:layout_width="0dp"
+                    android:layout_width="750px"
                     android:layout_height="match_parent"
-                    android:layout_weight="750"
-                    android:orientation="horizontal"
-                    android:weightSum="750">
-                    <FrameLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="160">
-                        <CheckBox
-                            android:id="@+id/checkbox"
-                            android:layout_width="@dimen/checkbox_size"
-                            android:layout_height="@dimen/checkbox_size"
-                            android:layout_gravity="center_vertical|right"
-                            android:background="@drawable/custom_checkbox"
-                            android:button="@null"/>
-                    </FrameLayout>
-                    <FrameLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="5" />
-                    <FrameLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="585">
-                        <TextView
-                            android:id="@+id/text_checkbox"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|left"
-                            android:textSize="@dimen/text_size_check_illumination"
-                            android:text="@string/STR_MESG_14967_ID"
-                            android:textColor="@color/colorCheckBox" />
-                    </FrameLayout>
-                </LinearLayout>
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="155" />
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="430" />
-            </LinearLayout>
+                    android:layout_gravity="center_vertical|center_horizontal">
+                    <CheckBox
+                        android:id="@+id/checkbox"
+                        android:layout_width="@dimen/checkbox_size"
+                        android:layout_height="@dimen/checkbox_size"
+                        android:layout_centerVertical="true"
+                        android:layout_toLeftOf="@+id/text_checkbox"
+                        android:layout_marginRight="5px"
+                        android:background="@drawable/custom_checkbox"
+                        android:button="@null"/>
+                    <TextView
+                        android:id="@+id/text_checkbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:textSize="@dimen/text_size_check_illumination"
+                        android:text="@string/STR_MESG_14967_ID"
+                        android:textColor="@color/colorCheckBox" />
+                </RelativeLayout>
+            </FrameLayout>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
