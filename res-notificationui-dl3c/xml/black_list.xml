@@ -7,4 +7,5 @@
     <app name="is_running">is running</app>
     <app name="is_running">正在运行</app>
     <app name="is_running">실행 중입니다</app>
+    <app name="qqmusic">TAI Service</app>
 </blacklist>
