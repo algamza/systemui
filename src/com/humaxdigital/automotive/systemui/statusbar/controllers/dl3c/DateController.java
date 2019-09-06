@@ -3,6 +3,7 @@ package com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c;
 import android.os.Handler;
 
 import android.content.Context;
+import android.content.res.Configuration;
 
 import android.view.View;
 import android.widget.TextView;
@@ -34,7 +35,7 @@ public class DateController {
     private Boolean mIsValidTime = true; 
     private Handler mHandler; 
 
-    private HashMap<String,String> mMonthEng = new HashMap<>();
+    private HashMap<String,Integer> mMonthStr = new HashMap<>();
 
     public DateController(Context context, View view) {
         if ( context == null || view == null ) return;
@@ -52,24 +53,30 @@ public class DateController {
         if ( mService.isDateTimeInitialized() ) initView(); 
     }
 
-    private void initMonthEng() {
-        mMonthEng.put("1", "Jan."); 
-        mMonthEng.put("2", "Feb."); 
-        mMonthEng.put("3", "Mar."); 
-        mMonthEng.put("4", "Apr."); 
-        mMonthEng.put("5", "May."); 
-        mMonthEng.put("6", "Jun."); 
-        mMonthEng.put("7", "Jul."); 
-        mMonthEng.put("8", "Aug."); 
-        mMonthEng.put("9", "Sep."); 
-        mMonthEng.put("10", "Oct."); 
-        mMonthEng.put("11", "Nov."); 
-        mMonthEng.put("12", "Dec."); 
-    }
-
     public void deinit() {
         if ( mService == null ) return;
         mService.unregisterSystemCallback(mDateTimeCallback); 
+    }
+
+    public void configurationChange(Configuration newConfig) {
+        if ( mDateVew == null || mContext == null ) return;
+        updateDateTime();
+        if ( mDateVew != null ) mDateVew.setText(mTextDate); 
+    }
+
+    private void initMonthEng() {
+        mMonthStr.put("1", R.string.STR_JAN_04_ID); 
+        mMonthStr.put("2", R.string.STR_FEB_04_ID); 
+        mMonthStr.put("3", R.string.STR_MAR_04_ID); 
+        mMonthStr.put("4", R.string.STR_APR_04_ID); 
+        mMonthStr.put("5", R.string.STR_MAY_09_ID); 
+        mMonthStr.put("6", R.string.STR_JUN_04_ID); 
+        mMonthStr.put("7", R.string.STR_JUL_04_ID); 
+        mMonthStr.put("8", R.string.STR_AUG_04_ID); 
+        mMonthStr.put("9", R.string.STR_SEP_04_ID); 
+        mMonthStr.put("10", R.string.STR_OCT_04_ID); 
+        mMonthStr.put("11", R.string.STR_NOV_04_ID); 
+        mMonthStr.put("12", R.string.STR_DEC_04_ID); 
     }
 
     private void initView() {
@@ -90,12 +97,13 @@ public class DateController {
     }
 
     private void updateDateTime() {
+        if ( mContext == null ) return;
         String format = ""; 
         format = mService.getYearDateTime(); 
         Log.d(TAG, "updateDateTime="+format); 
         String[] arr = format.split(":");
         if ( arr.length < 5 ) return;
-        mTextDate = mMonthEng.get(arr[1]) + " " + arr[2]; 
+        mTextDate = mContext.getResources().getString(mMonthStr.get(arr[1])) + " " + arr[2]; 
         mTextTime = arr[3]+":"+arr[4];  
         if ( arr.length == 6 ) mTextApm = arr[5]; 
         else if ( arr.length == 5 ) mTextApm = ""; 

@@ -124,6 +124,9 @@ public class StatusBar implements SystemUIBase {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        if ( mContext == null ) return;
+        mContext.getResources().updateConfiguration(newConfig, null);
+        if ( mControllerManager != null ) mControllerManager.configurationChange(newConfig);
     }
 
     private void createStatusBarWindow() {

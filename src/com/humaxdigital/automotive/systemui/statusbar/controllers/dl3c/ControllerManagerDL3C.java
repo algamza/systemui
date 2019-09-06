@@ -3,11 +3,13 @@ package com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.content.ContentResolver;
+
 import android.util.Log;
 import android.view.View;
 import android.net.Uri;
 import android.provider.Settings;
-import android.content.ContentResolver;
 import android.database.ContentObserver;
 
 import com.humaxdigital.automotive.systemui.R;
@@ -66,6 +68,11 @@ public class ControllerManagerDL3C extends ControllerManagerBase {
         mSystemController = null;
         mButtonController = null;
         mUserProfileController = null;
+    }
+
+    @Override
+    public void configurationChange(Configuration newConfig) {
+        if ( mDataController != null ) mDataController.configurationChange(newConfig); 
     }
 
     private void updateUI() {
