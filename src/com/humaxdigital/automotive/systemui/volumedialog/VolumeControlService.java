@@ -20,6 +20,7 @@ import android.extension.car.CarEx;
 import android.extension.car.CarAudioManagerEx;
 import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
+import android.extension.car.util.AudioTypes;
 
 import android.util.Log;
 import java.util.ArrayList;
@@ -215,7 +216,10 @@ public class VolumeControlService extends Service {
 
     public boolean getCurrentMute() {
         if ( mAudioManager == null ) return false;
-        boolean mute = mAudioManager.isMasterMute(); 
+        // boolean mute = mAudioManager.isMasterMute(); 
+        boolean mute = false;
+        mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
+        //  TODO: (Audio) mute = mCarAudioManagerEx.getAudioMute(); 
         Log.d(TAG, "getCurrentMute="+mute);
         return mute;
     }
@@ -224,9 +228,13 @@ public class VolumeControlService extends Service {
         if ( mAudioManager == null ) return;
         int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
         Log.d(TAG, "set="+mute+", flags="+flags);
-        mAudioManager.adjustSuggestedStreamVolume(
-            mute?AudioManager.ADJUST_MUTE:AudioManager.ADJUST_UNMUTE,
-            AudioManager.STREAM_MUSIC, flags);
+        //mAudioManager.adjustSuggestedStreamVolume(
+        //    mute?AudioManager.ADJUST_MUTE:AudioManager.ADJUST_UNMUTE,
+        //    AudioManager.STREAM_MUSIC, flags);
+        mCarAudioManagerEx.setAudioMute(AudioTypes.AUDIO_MUTE_ID_USER, 
+            ((mute==true) ? AudioTypes.AUDIO_MUTE_ON : AudioTypes.AUDIO_MUTE_OFF), 
+            AudioTypes.AUDIO_MUTE_SHOW_ICON);
+        //  TODO: (Audio) mCarAudioManagerEx.setAudioMute(mute); 
     }
 
     public boolean setVolume(VolumeUtil.Type type, int volume) {
@@ -234,7 +242,7 @@ public class VolumeControlService extends Service {
         if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(VolumeUtil.convertToMode(type), volume) ) return false;
         if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(VolumeUtil.convertToMode(type), volume) ) return false;
 
-        if ( mAudioManager != null && mAudioManager.isMasterMute() ) setMasterMute(false); 
+        if ( mAudioManager != null && getCurrentMute() ) setMasterMute(false); 
 
         setAudioVolume(VolumeUtil.convertToMode(type), volume); 
         Log.d(TAG, "setVolume type=" + type + ", volume=" + volume);
