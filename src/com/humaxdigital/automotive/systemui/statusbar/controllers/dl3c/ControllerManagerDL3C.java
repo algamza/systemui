@@ -18,9 +18,13 @@ import com.humaxdigital.automotive.systemui.statusbar.controllers.SystemStatusCo
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManagerBase; 
 import com.humaxdigital.automotive.systemui.statusbar.controllers.UserProfileController; 
 
+import android.util.Log;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ControllerManagerDL3C extends ControllerManagerBase {
+    private static final String TAG = "ControllerManagerDL3C";
     final static String KEY_IS_HOME_SCREEN = "com.humaxdigital.dn8c.KEY_IS_HOME_SCREEN";
     private DateController mDataController = null;
     private SystemStatusController mSystemController = null;
@@ -30,6 +34,9 @@ public class ControllerManagerDL3C extends ControllerManagerBase {
     private View mUserProfileView; 
     private ContentResolver mContentResolver;
     
+    private Timer mTimer = new Timer();
+    private TimerTask mChatteringTask = null;
+    private final int CHATTERING_TIME = 500; 
 
     @Override
     public void create(Context context, View panel) {
@@ -89,8 +96,25 @@ public class ControllerManagerDL3C extends ControllerManagerBase {
 
     private ContentObserver mObserver = new ContentObserver(new Handler()) {
         @Override
-        public void onChange(boolean selfChange, Uri uri, int userId) {
-            updateUI();
+        public void onChange(boolean selfChange, Uri uri, int userId) {      
+            cancelChattering(); 
+            mChatteringTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "Timeout -> updateUI");
+                    updateUI();
+                }
+            };
+            mTimer.schedule(mChatteringTask, CHATTERING_TIME);
         }
     };
+    private void cancelChattering() {
+        if ( mChatteringTask == null ) return;
+        if ( mChatteringTask.scheduledExecutionTime() > 0 ) {
+            Log.d(TAG, "cancelChattering");
+            mChatteringTask.cancel();
+            mTimer.purge();
+            mChatteringTask =  null;
+        }
+    }
 }
