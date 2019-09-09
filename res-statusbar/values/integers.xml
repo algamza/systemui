@@ -6,6 +6,8 @@
     <integer name="statusbar_touch_down_y_dl3c">90</integer>
     <integer name="droplist_touch_height">45</integer>
     <integer name="droplist_touch_width">1770</integer>
+    <integer name="droplist_touch_height_dl3c">45</integer>
+    <integer name="droplist_touch_width_dl3c">1650</integer>
     <integer name="statusbar_height">90</integer>
     <integer name="statusbar_touch_offset">15</integer>
     <integer name="statusbar_touch_offset_dl3c">30</integer>

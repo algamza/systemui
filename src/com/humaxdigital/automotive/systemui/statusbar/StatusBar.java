@@ -80,9 +80,10 @@ public class StatusBar implements SystemUIBase {
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
             createStatusBarWindow();
-        } else {
-            createDropListTouchWindow(); 
+            createDL3CDropListTouchWindow();
+        } else { 
             createNaviBarWindow();
+            createDropListTouchWindow();
         }
 
         if (mUseSystemGestures) {
@@ -162,6 +163,48 @@ public class StatusBar implements SystemUIBase {
         setContentBarView(mStatusBarView);
     }
 
+    private void createDL3CDropListTouchWindow() {
+        if ( mWindowManager == null || mContext == null ) return;
+
+        if (mUseSystemGestures) {
+            // Don't need the fake invisible top window to trigger the droplist
+            // as long as using system gestures.
+            return;
+        }
+
+        mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
+        
+        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
+        String package_name = mContext.getPackageName(); 
+        int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height_dl3c", "integer",  package_name);
+        int id_droplist_touch_width = mContext.getResources().getIdentifier("droplist_touch_width_dl3c", "integer",  package_name);
+        int id_down_y = mContext.getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
+        int id_touch_offset = mContext.getResources().getIdentifier("statusbar_touch_offset", "integer",  package_name);
+        if ( id_down_y > 0 ) mTouchDownY = mContext.getResources().getInteger(id_down_y); 
+        if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = mContext.getResources().getInteger(id_droplist_touch_height);
+        if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = mContext.getResources().getInteger(id_droplist_touch_width);
+        if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
+
+        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
+            mDropListTouchWidth,
+            mDropListTouchHeight,
+            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+            PixelFormat.TRANSLUCENT);
+        slp.token = new Binder();
+        slp.gravity = Gravity.TOP|Gravity.RIGHT;
+        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+        slp.setTitle("HmxSystemUI");
+        slp.packageName = package_name;
+        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+
+        mWindowManager.addView(mDropListTouchWindow, slp);
+    }
+
     private void createDropListTouchWindow() {
         if ( mWindowManager == null || mContext == null ) return;
 
@@ -172,6 +215,7 @@ public class StatusBar implements SystemUIBase {
         }
 
         mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
+        
         mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
         String package_name = mContext.getPackageName(); 
         int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
