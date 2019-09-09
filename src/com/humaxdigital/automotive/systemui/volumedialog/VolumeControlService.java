@@ -12,6 +12,9 @@ import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 
+import android.provider.Settings;
+import android.database.ContentObserver;
+
 import android.media.AudioManager; 
 
 import android.app.Service;
@@ -21,6 +24,7 @@ import android.extension.car.CarAudioManagerEx;
 import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
 import android.extension.car.util.AudioTypes;
+import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 import java.util.ArrayList;
@@ -56,6 +60,8 @@ public class VolumeControlService extends Service {
     private ScenarioVCRMLog mVCRMLog = null; 
     private boolean mIsSettingsActivity = false;
     private boolean mIsShow = false; 
+
+    private ContentObserver mUserSwitchingObserver; 
 
     private final int VOLUME_EVENT_BLOCKING_MS_TIME = 4000; 
 /*    private boolean mIsEventBlocking = true;*/
@@ -322,6 +328,8 @@ public class VolumeControlService extends Service {
                 }
             }
 
+            if ( isUserSwitching() ) return; 
+
             broadcastEventVolumeChange(mode, max, volume);
         }
 
@@ -345,9 +353,22 @@ public class VolumeControlService extends Service {
                 return;
             }
             
+            if ( isUserSwitching() ) return; 
+
             broadcastEventMuteChange(mode, max, volume, mute);
         }
     };
+
+    private boolean isUserSwitching() {
+        boolean ret = false; 
+        int isUserSwitching = Settings.Global.getInt(this.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
+            CarExtraSettings.Global.FALSE);
+        if ( isUserSwitching == CarExtraSettings.Global.TRUE ) ret = true;
+        else ret = false; 
+        Log.d(TAG, "isUserSwitching="+ret); 
+        return ret; 
+    }
 
     private boolean isExceptionVolume(VolumeUtil.Type type) {
         boolean isException = false; 
