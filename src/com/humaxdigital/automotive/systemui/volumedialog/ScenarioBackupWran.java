@@ -52,7 +52,7 @@ public class ScenarioBackupWran {
 
     private Timer mTimer = new Timer();
     private TimerTask mChatteringTask = null;
-    private final int CHATTERING_TIME = 300; 
+    private final int CHATTERING_TIME = 600; 
 
     public ScenarioBackupWran(Context context) {
         mContext = context; 
