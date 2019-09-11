@@ -147,6 +147,17 @@ public class ScenarioBackupWran {
         }
     }
 
+    private synchronized void gearScenario(boolean r) {
+        Log.d(TAG, "gearScenario="+r);
+        if ( mIsRGearDetected == r ) return; 
+        mIsRGearDetected = r; 
+        if ( mIsRGearDetected ) {
+            if ( isBackupWarn() ) applyBackupWarn();
+        } else {
+            backupWarnChanged();
+        }
+    }
+
     private void backupWarnChanged() {
         if ( isBackupWarn() ) applyBackupWarn(); 
         else {
@@ -274,18 +285,14 @@ public class ScenarioBackupWran {
                         mChatteringTask = new TimerTask() {
                             @Override
                             public void run() {
-                                Log.d(TAG, "onSensorChanged:applybackupwran:Rgear=" + mIsRGearDetected);
-                                if ( mIsRGearDetected ) return;
-                                mIsRGearDetected = true;
-                                if ( isBackupWarn() ) applyBackupWarn();
+                                Log.d(TAG, "gearScenario start in thread");
+                                gearScenario(true);
                             }
                         };
                         mTimer.schedule(mChatteringTask, CHATTERING_TIME);
                     } else {
                         cancelChattering(); 
-                        if ( !mIsRGearDetected ) break;
-                        mIsRGearDetected = false;
-                        backupWarnChanged();
+                        gearScenario(false);
                     }
                     break;
                 }
