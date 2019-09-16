@@ -40,36 +40,20 @@ public class MuteImpl extends BaseImplement<Boolean> {
 
     @Override
     public Boolean get() {
-        if ( mUserAudio == null ) return false;
+        if ( mCarAudioEx == null ) return false;
         boolean enable = false; 
         enable = mCarAudioEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
-        // TODO : (Audio) enable = mCarAudioEx.getAudioMute(); 
-        /*
-        try {
-            enable = mUserAudio.isMasterMute(); 
-        } catch( RemoteException e ) {
-            Log.e(TAG, "error:"+e);
-        }
-        */
         Log.d(TAG, "get="+enable);
         return enable;
     }
 
     @Override
     public void set(Boolean e) {
-        if ( mUserAudio == null ) return;
+        if ( mCarAudioEx == null ) return;
         Log.d(TAG, "set="+e);
         mCarAudioEx.setAudioMute(AudioTypes.AUDIO_MUTE_ID_USER, 
             ((e==true) ? AudioTypes.AUDIO_MUTE_ON : AudioTypes.AUDIO_MUTE_OFF), 
             AudioTypes.AUDIO_MUTE_SHOW_ICON);
-        // TODO : (Audio) mCarAudioEx.setAudioMute(e); 
-        /*
-        try {
-            mUserAudio.setMasterMute(e); 
-        } catch( RemoteException err ) {
-            Log.e(TAG, "error:"+err);
-        }
-        */
     }
 
     public void fetch(IUserAudio audio) {
@@ -158,23 +142,11 @@ public class MuteImpl extends BaseImplement<Boolean> {
     };
 
     private void sendMuteChangeEvent() {
-        if ( mListener != null && mUserAudio != null )  {
-            boolean mute = false; // mUserAudio.isMasterMute(); 
+        if ( mListener != null && mCarAudioEx != null )  {
+            boolean mute = false; 
             mute = mCarAudioEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
-            // TODO : (Audio) enable = mCarAudioEx.getAudioMute();
             Log.d(TAG, "onMasterMuteChanged="+mute);
             mListener.onChange(mute);
-            /*
-            try {
-                boolean mute = false; // mUserAudio.isMasterMute(); 
-                mute = mCarAudioEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
-                // TODO : (Audio) enable = mCarAudioEx.getAudioMute();
-                Log.d(TAG, "onMasterMuteChanged="+mute);
-                mListener.onChange(mute);
-            } catch( RemoteException e ) {
-                Log.e(TAG, "error:"+e);
-            }
-            */
         }
     }
 }

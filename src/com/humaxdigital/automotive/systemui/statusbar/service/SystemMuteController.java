@@ -105,12 +105,10 @@ public class SystemMuteController extends BaseController<Integer> {
 
     private MuteStatus getCurrentState() {
         MuteStatus state = MuteStatus.NONE; 
-        if ( mUserAudio == null ) return state; 
+        if ( mUserAudio == null || mCarAudioEx == null ) return state; 
         try {
-            //boolean audio_is_mute = mUserAudio.isMasterMute(); 
             boolean audio_is_mute = false; 
             audio_is_mute = mCarAudioEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
-            // TODO : (Audio) mCarAudioEx.getAudioMute();
             boolean naviation_is_mute = mUserAudio.isNavigationMute(); 
             if ( audio_is_mute && naviation_is_mute ) state = MuteStatus.AV_NAV_MUTE; 
             else if ( audio_is_mute ) state = MuteStatus.AV_MUTE; 

@@ -221,26 +221,20 @@ public class VolumeControlService extends Service {
     }
 
     public boolean getCurrentMute() {
-        if ( mAudioManager == null ) return false;
-        // boolean mute = mAudioManager.isMasterMute(); 
+        if ( mCarAudioManagerEx == null ) return false;
         boolean mute = false;
         mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
-        //  TODO: (Audio) mute = mCarAudioManagerEx.getAudioMute(); 
         Log.d(TAG, "getCurrentMute="+mute);
         return mute;
     }
 
     private void setMasterMute(boolean mute) {
-        if ( mAudioManager == null ) return;
+        if ( mCarAudioManagerEx == null ) return;
         int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
         Log.d(TAG, "set="+mute+", flags="+flags);
-        //mAudioManager.adjustSuggestedStreamVolume(
-        //    mute?AudioManager.ADJUST_MUTE:AudioManager.ADJUST_UNMUTE,
-        //    AudioManager.STREAM_MUSIC, flags);
         mCarAudioManagerEx.setAudioMute(AudioTypes.AUDIO_MUTE_ID_USER, 
             ((mute==true) ? AudioTypes.AUDIO_MUTE_ON : AudioTypes.AUDIO_MUTE_OFF), 
             AudioTypes.AUDIO_MUTE_SHOW_ICON);
-        //  TODO: (Audio) mCarAudioManagerEx.setAudioMute(mute); 
     }
 
     public boolean setVolume(VolumeUtil.Type type, int volume) {
