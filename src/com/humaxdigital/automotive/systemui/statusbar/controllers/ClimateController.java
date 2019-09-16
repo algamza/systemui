@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.provider.Settings;
+import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.UserHandle;
 import android.extension.car.settings.CarExtraSettings;
 import android.util.Log; 
 
@@ -84,8 +87,11 @@ public class ClimateController {
     private Boolean mIsDisable = true; 
 
     private ContentResolver mContentResolver;
-    private final String mTypeKey = "com.humaxdigital.automotive.systemui.statusbar.ClimateType";
+    private ContentObserver mClimateObserver;
+    private final String CLIMATE_TYPE_KEY = "com.humaxdigital.automotive.systemui.statusbar.ClimateType";
     private boolean mIsViewInit = false; 
+
+    private View mClimatePanel; 
 
     private final List<View> mClimateViews = new ArrayList<>();
 
@@ -96,6 +102,10 @@ public class ClimateController {
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
         mContentResolver = mContext.getContentResolver();
+        mClimateObserver = createClimateObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CLIMATE_TYPE_KEY), 
+            false, mClimateObserver, UserHandle.USER_CURRENT); 
         initView();
     }
 
@@ -111,12 +121,29 @@ public class ClimateController {
         if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
     }
 
+    private ContentObserver createClimateObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mHandler == null ) return;
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        initView();
+                        update(); 
+                    }
+                });
+            }
+        };
+        return observer; 
+    }
+
     private ClimateType getClimateType() {
         ClimateType _type = ClimateType.NONE; 
         if ( mContentResolver == null ) return _type;
         int type = 0; 
         try {
-            type = Settings.Global.getInt(mContentResolver, mTypeKey);
+            type = Settings.Global.getInt(mContentResolver, CLIMATE_TYPE_KEY);
         } catch(Settings.SettingNotFoundException e) {
             Log.e(TAG, "error : " + e ); 
         }
@@ -149,6 +176,14 @@ public class ClimateController {
     private void initView() {
         if ( mClimate == null || mContext == null ) return;
 
+        if ( mClimatePanel != null ) {
+            removeOnClick();
+            mClimateViews.clear();
+            if ( mClimate != null ) 
+                ((ViewGroup)mClimate).removeAllViews(); 
+            mClimatePanel = null; 
+        }
+
         ClimateType type = getClimateType(); 
         if ( type == ClimateType.NONE ) return;
 
@@ -158,22 +193,21 @@ public class ClimateController {
         boolean support_seat = true; 
         if ( type == ClimateType.NO_SEAT ) support_seat = false; 
 
-        View climate = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
-            climate = inflater.inflate(R.layout.du2_climate, null); 
+            mClimatePanel = inflater.inflate(R.layout.du2_climate, null); 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat )
-                climate = inflater.inflate(R.layout.dn8c_climate, null); 
+            mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
             else 
-                climate = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
+            mClimatePanel = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C )
-            climate = inflater.inflate(R.layout.cn7c_climate, null); 
+            mClimatePanel = inflater.inflate(R.layout.cn7c_climate, null); 
         else 
-            climate = inflater.inflate(R.layout.dn8c_climate, null); 
+            mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
         
-        if ( climate == null ) return; 
-        ((ViewGroup)mClimate).addView(climate); 
+        if ( mClimatePanel == null ) return; 
+        ((ViewGroup)mClimate).addView(mClimatePanel); 
 
         mTempDR = new ClimateMenuTextDec(mContext).inflate(); 
         mSeatDR = new ClimateMenuImg(mContext)
@@ -294,7 +328,7 @@ public class ClimateController {
     private void setClimateType(ClimateType type) {
         if ( mContentResolver == null ) return;
         Log.d(TAG, "setClimateType="+type); 
-        Settings.Global.putInt(mContentResolver, mTypeKey, type.ordinal()); 
+        Settings.Global.putInt(mContentResolver, CLIMATE_TYPE_KEY, type.ordinal()); 
     }
 
     private void updateClimateType() {
