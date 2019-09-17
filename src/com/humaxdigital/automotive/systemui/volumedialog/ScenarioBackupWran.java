@@ -27,8 +27,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ScenarioBackupWran {
     private static final String TAG = "ScenarioBackupWran";
@@ -36,6 +34,7 @@ public class ScenarioBackupWran {
     private Context mContext = null;
     private ContentResolver mContentResolver = null;
     private ContentObserver mModeObserver = null; 
+    private ContentObserver mCameraObserver = null; 
     private final int BACKUP_WRAN_VOLUME = 5; 
     private final int BACKUP_WRAN_BT_MAX = 15; 
     private final int BACKUP_WRAN_BT_MIN = 5; 
@@ -49,10 +48,6 @@ public class ScenarioBackupWran {
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private CarSensorManagerEx mCarSensorManagerEx = null;
     private boolean mIsBackupWranApplying = false;
-
-    private Timer mTimer = new Timer();
-    private TimerTask mChatteringTask = null;
-    private final int CHATTERING_TIME = 600; 
 
     public ScenarioBackupWran(Context context) {
         mContext = context; 
@@ -68,7 +63,23 @@ public class ScenarioBackupWran {
         return observer; 
     }
 
+    private ContentObserver createCameraObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContentResolver == null ) return;
+                int RearOn = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.CAMERA_IS_REARCAMON, CarExtraSettings.Global.FALSE); 
+                Log.d(TAG, "RearOn:"+RearOn); 
+                if ( RearOn == CarExtraSettings.Global.TRUE ) gearScenario(true);
+                else  gearScenario(false);
+            }
+        };
+        return observer; 
+    }
+
     public ScenarioBackupWran init() {
+        if ( mContext == null ) return this;
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_AM);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_FM);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.USB);
@@ -76,13 +87,18 @@ public class ScenarioBackupWran {
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.CARLIFE_MEDIA);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.BT_AUDIO);
 
+        mContentResolver = mContext.getContentResolver(); 
         mModeObserver = createBackupWranObserver(); 
-        if ( mContentResolver != null ) mContentResolver.registerContentObserver(
-            Settings.System.getUriFor(CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON), 
-            false, mModeObserver, UserHandle.USER_CURRENT); 
-    
+        mCameraObserver = createCameraObserver(); 
+        if ( mContentResolver != null ) {
+            mContentResolver.registerContentObserver(
+                Settings.System.getUriFor(CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON), 
+                false, mModeObserver, UserHandle.USER_CURRENT); 
+            mContentResolver.registerContentObserver(
+                Settings.Global.getUriFor(CarExtraSettings.Global.CAMERA_IS_REARCAMON), 
+                false, mCameraObserver, UserHandle.USER_CURRENT);   
+        }
         updateRGearDetectState();
-
         if ( isBackupWarn() ) applyBackupWarn(); 
         return this;
     }
@@ -91,12 +107,16 @@ public class ScenarioBackupWran {
         mBackupWarnAudioChange.clear();
         mBackupWarnLastVolume.clear();
         mBackupWarnAudioTypeList.clear();
-        if ( mContentResolver != null ) 
-            mContentResolver.unregisterContentObserver(mModeObserver); 
+        if ( mContentResolver != null ) {
+            mContentResolver.unregisterContentObserver(mModeObserver);
+            mContentResolver.unregisterContentObserver(mCameraObserver);  
+        }
+            
         if ( mCarSensorManagerEx != null ) 
             mCarSensorManagerEx.unregisterListener(mSensorChangeListener);
         mContentResolver = null;
         mModeObserver = null;
+        mCameraObserver = null; 
         mContext = null;
         mCarAudioManagerEx = null;
         mCarSensorManagerEx = null;
@@ -121,19 +141,25 @@ public class ScenarioBackupWran {
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
-        updateRGearDetectState();
+        updateIGNState();
         if ( isBackupWarn() ) applyBackupWarn(); 
     }
 
     private void updateRGearDetectState() {
+        if ( mContentResolver == null ) return;
+        int RearOn = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.CAMERA_IS_REARCAMON, CarExtraSettings.Global.FALSE); 
+                Log.d(TAG, "RearOn:"+RearOn); 
+        if ( RearOn == CarExtraSettings.Global.TRUE ) mIsRGearDetected = true; 
+        else mIsRGearDetected = false; 
+    }
+
+    private void updateIGNState() {
         if ( mCarSensorManagerEx == null ) return;
         try {
-            CarSensorEvent event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_GEAR);
-            GearData gear = event.getGearData(null);
-            if(gear.gear == CarSensorEventEx.GEAR_R) mIsRGearDetected = true;
             CarSensorEvent ign_event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
             int state = ign_event.intValues[0]; 
-            Log.d(TAG, "updateRGearDetectState:gear=" + gear.gear+", ign="+state);
+            Log.d(TAG, "updateIGNState:ign="+state);
             if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
                 || state == CarSensorEvent.IGNITION_STATE_OFF
                 || state == CarSensorEvent.IGNITION_STATE_ACC ) {
@@ -151,7 +177,7 @@ public class ScenarioBackupWran {
         Log.d(TAG, "gearScenario="+r);
         if ( mIsRGearDetected == r ) return; 
         mIsRGearDetected = r; 
-        if ( mIsRGearDetected ) {
+        if ( r ) {
             if ( isBackupWarn() ) applyBackupWarn();
         } else {
             backupWarnChanged();
@@ -264,38 +290,10 @@ public class ScenarioBackupWran {
         return false; 
     }
 
-    private void cancelChattering() {
-        if ( mChatteringTask == null ) return;
-        if ( mChatteringTask.scheduledExecutionTime() > 0 ) {
-            Log.d(TAG, "cancelChattering");
-            mChatteringTask.cancel();
-            mTimer.purge();
-            mChatteringTask =  null;
-        }
-    }
     private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener =
         new CarSensorManagerEx.OnSensorChangedListenerEx () {
         public void onSensorChanged(final CarSensorEvent event) {
             switch (event.sensorType) {
-                case CarSensorManagerEx.SENSOR_TYPE_GEAR: {
-                    GearData gear = event.getGearData(null);
-                    Log.d(TAG, "onSensorChanged:SENSOR_TYPE_GEAR:gear=" + gear.gear);
-                    if(gear.gear == CarSensorEventEx.GEAR_R) {
-                        cancelChattering(); 
-                        mChatteringTask = new TimerTask() {
-                            @Override
-                            public void run() {
-                                Log.d(TAG, "gearScenario start in thread");
-                                gearScenario(true);
-                            }
-                        };
-                        mTimer.schedule(mChatteringTask, CHATTERING_TIME);
-                    } else {
-                        cancelChattering(); 
-                        gearScenario(false);
-                    }
-                    break;
-                }
                 case CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE: {
                     int state = event.intValues[0];
                     Log.d(TAG, "onSensorChanged:SENSOR_TYPE_IGNITION_STATE="+state);
