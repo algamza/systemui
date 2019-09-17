@@ -203,8 +203,12 @@ public class ClimateController {
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C )
             mClimatePanel = inflater.inflate(R.layout.cn7c_climate, null); 
-        else 
-            mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
+        else {
+            if ( support_seat )
+                mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
+            else 
+                mClimatePanel = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
+        }
         
         if ( mClimatePanel == null ) return; 
         ((ViewGroup)mClimate).addView(mClimatePanel); 
