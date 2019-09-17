@@ -95,8 +95,8 @@ public class VolumeDialogWindowDL3C extends VolumeDialogWindowBase {
     }
     
     @Override
-    public void close() {
-        closeDialog(); 
+    public void close(boolean force) {
+        closeDialog(force);
     }
 
     @Override
@@ -194,6 +194,10 @@ public class VolumeDialogWindowDL3C extends VolumeDialogWindowBase {
         }
     }
 
+    private void closeDialog(boolean force) {
+        if ( force ) mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
+        else closeDialog();
+    }
     
     private void closeDialog() {
         Log.d(TAG, "closeDialog");

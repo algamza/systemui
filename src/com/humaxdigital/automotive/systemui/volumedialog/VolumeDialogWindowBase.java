@@ -14,7 +14,7 @@ public abstract class VolumeDialogWindowBase {
     public void init(Context context) {}
     public void deinit() {}
     public void open() {}
-    public void close() {}
+    public void close(boolean force) {}
     public void registDialogListener(DialogListener listener) {
         if ( listener == null ) return;
         mListener.add(listener);

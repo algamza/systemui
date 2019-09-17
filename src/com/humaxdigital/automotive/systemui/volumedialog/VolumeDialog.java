@@ -187,7 +187,7 @@ public class VolumeDialog implements SystemUIBase {
                 Log.d(TAG, "onChange:lastmode="+lastmode);
                 if ( mLastMode == lastmode ) return;
                 mLastMode = lastmode; 
-                if ( mDialog != null ) mDialog.close();
+                if ( mDialog != null ) mDialog.close(true);
             }
         };
         return observer; 
@@ -203,7 +203,7 @@ public class VolumeDialog implements SystemUIBase {
                     CarExtraSettings.Global.POWER_STATE_NORMAL);
                 Log.d(TAG, "onChange:power="+power);
                 if ( power == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
-                    if ( mDialog != null ) mDialog.close();
+                    if ( mDialog != null ) mDialog.close(true);
                 }
             }
         };
