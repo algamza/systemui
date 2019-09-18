@@ -71,11 +71,13 @@ public class DisplayController implements BaseController {
         @Override
         public void onCallingChanged(boolean on) {
             if ( mHandler == null ) return;
+            /*
             mIsCalling = on; 
             if ( mIsCalling ) 
                 mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
             else 
                 mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+                */
         }
     };
 
