@@ -9,6 +9,8 @@ import android.car.hardware.CarPropertyValue;
 import android.extension.car.CarClusterManager;
 import android.extension.car.CarPropertyFilter;
 
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+
 public class ClusterBrightnessImpl extends BaseImplement<Integer> {
     static final String TAG = "ClusterBrightnessImpl";
     private CarClusterManager mCarCluster; 
@@ -29,7 +31,7 @@ public class ClusterBrightnessImpl extends BaseImplement<Integer> {
         setClusterValue(e); 
     }
 
-    public void fetchEx(CarExtensionClient client) {
+    public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx");
         try {
             if ( client == null ) {

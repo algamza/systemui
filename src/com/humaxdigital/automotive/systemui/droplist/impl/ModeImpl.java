@@ -10,6 +10,8 @@ import android.os.Handler;
 import android.net.Uri;
 import android.os.UserHandle;
 
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+
 public class ModeImpl extends BaseImplement<Integer> {
     public enum Mode {
         AUTOMATIC,
@@ -73,7 +75,7 @@ public class ModeImpl extends BaseImplement<Integer> {
         }
     }
 
-    public void fetchEx(CarExtensionClient client) {
+    public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx");
     }
 

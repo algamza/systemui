@@ -14,7 +14,7 @@ import com.humaxdigital.automotive.systemui.statusbar.ui.UserProfileView;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable; 
 
-import com.humaxdigital.automotive.systemui.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
 public class UserProfileController {
     static final String TAG = "UserProfileController"; 

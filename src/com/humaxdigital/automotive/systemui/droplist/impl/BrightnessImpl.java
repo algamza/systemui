@@ -12,11 +12,12 @@ import android.database.ContentObserver;
 import android.net.Uri;
 
 import android.extension.car.settings.CarExtraSettings;
-import android.extension.car.CarEx;
 import android.extension.car.CarSensorManagerEx;
 import android.car.hardware.CarSensorEvent;
 import android.extension.car.value.CarSensorEventEx;
 import android.car.CarNotConnectedException;
+
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class BrightnessImpl extends BaseImplement<Integer> {
     private final String TAG = "BrightnessImpl"; 
@@ -25,7 +26,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
         DAYLIGHT,
         NIGHT
     };
-    private CarExtensionClient mCarClient = null;
+    private CarExClient mCarClient = null;
     private CarSensorManagerEx mCarSensorEx = null;
     private ContentResolver mContentResolver;
     private ContentObserver mModeObserver; 
@@ -107,7 +108,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             val, UserHandle.USER_CURRENT);
     }
 
-    public void fetchEx(CarExtensionClient client) {
+    public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx");
         mCarClient = client; 
         try {

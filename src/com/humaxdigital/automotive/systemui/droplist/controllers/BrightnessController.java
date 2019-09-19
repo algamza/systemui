@@ -18,7 +18,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar;
 
-import com.humaxdigital.automotive.systemui.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 
 public class BrightnessController implements BaseController {
     private final String TAG = "BrightnessController"; 

@@ -39,9 +39,9 @@ import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarDev;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
-import com.humaxdigital.automotive.systemui.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
-import com.humaxdigital.automotive.systemui.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 

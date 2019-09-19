@@ -1,6 +1,6 @@
-package com.humaxdigital.automotive.systemui.user;
+package com.humaxdigital.automotive.systemui.common.user;
 
-import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 
 interface IUserAudio {
     void registCallback(IUserAudioCallback callback);

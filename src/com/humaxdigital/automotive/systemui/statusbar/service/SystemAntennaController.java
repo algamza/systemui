@@ -4,8 +4,8 @@ import android.os.RemoteException;
 import android.content.Context;
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 
 public class SystemAntennaController extends BaseController<Integer> {
     private static final String TAG = "SystemAntennaController";

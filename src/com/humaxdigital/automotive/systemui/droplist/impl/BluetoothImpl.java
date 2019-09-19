@@ -6,8 +6,8 @@ import android.os.RemoteException;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 
 public class BluetoothImpl extends BaseImplement<Boolean> {
     private final String TAG = "BluetoothImpl"; 

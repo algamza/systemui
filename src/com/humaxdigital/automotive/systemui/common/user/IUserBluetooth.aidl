@@ -1,6 +1,6 @@
-package com.humaxdigital.automotive.systemui.user;
+package com.humaxdigital.automotive.systemui.common.user;
 
-import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 
 interface IUserBluetooth {
     void registCallback(IUserBluetoothCallback callback);

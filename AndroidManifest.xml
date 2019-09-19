@@ -78,7 +78,7 @@
             android:name=".statusbar.service.StatusBarService"
             android:singleUser="true">
         </service>
-        <service android:name=".user.PerUserService" android:exported="false" />
+        <service android:name=".common.user.PerUserService" android:exported="false" />
 
         <!-- for developer's view -->
         <service

@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.user;
+package com.humaxdigital.automotive.systemui.common.user;
 
 oneway interface IUserAudioCallback {
     void onBluetoothMicMuteChanged(boolean mute); 

@@ -8,15 +8,17 @@ import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
 import android.extension.car.CarAudioManagerEx;
 
-import com.humaxdigital.automotive.systemui.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 
 import android.extension.car.util.AudioTypes;
+
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class MuteImpl extends BaseImplement<Boolean> {
     private final String TAG = "MuteImpl"; 
     private IUserAudio mUserAudio = null;
-    private CarExtensionClient mCarClient = null;
+    private CarExClient mCarClient = null;
     private CarAudioManagerEx mCarAudioEx = null;
 
     public MuteImpl(Context context) {
@@ -81,7 +83,7 @@ public class MuteImpl extends BaseImplement<Boolean> {
         sendMuteChangeEvent();
     }
 
-    public void fetchEx(CarExtensionClient client) {
+    public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx="+client);
         if ( client == null ) {
             cleanupAudioManager(); 

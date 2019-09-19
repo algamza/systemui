@@ -1,6 +1,6 @@
-package com.humaxdigital.automotive.systemui.user;
+package com.humaxdigital.automotive.systemui.common.user;
 
-import com.humaxdigital.automotive.systemui.user.IUserWifiCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserWifiCallback;
 
 interface IUserWifi {
     void registCallback(IUserWifiCallback callback);

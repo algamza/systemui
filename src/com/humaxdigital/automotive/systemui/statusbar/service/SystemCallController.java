@@ -15,10 +15,10 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.net.Uri;
 
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.user.IUserBluetoothCallback;
-import com.humaxdigital.automotive.systemui.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";

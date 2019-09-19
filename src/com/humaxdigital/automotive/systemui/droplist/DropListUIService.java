@@ -44,7 +44,7 @@ import java.util.List;
 
 import com.humaxdigital.automotive.systemui.SystemUIBase;
 
-import com.humaxdigital.automotive.systemui.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 

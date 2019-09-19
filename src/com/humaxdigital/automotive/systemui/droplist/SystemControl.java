@@ -42,17 +42,18 @@ import com.humaxdigital.automotive.systemui.droplist.impl.SetupImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.ThemeImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.WifiImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CallingImpl;
-import com.humaxdigital.automotive.systemui.droplist.impl.CarExtensionClient;
 
-import com.humaxdigital.automotive.systemui.user.PerUserService;
-import com.humaxdigital.automotive.systemui.user.IUserService;
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.user.PerUserService;
+import com.humaxdigital.automotive.systemui.common.user.IUserService;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log; 
+
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class SystemControl extends Service {
     public enum SystemAutoMode {
@@ -107,7 +108,6 @@ public class SystemControl extends Service {
     private ThemeImpl mTheme;
     private WifiImpl mWifi;
     private CallingImpl mCalling; 
-    private CarExtensionClient mCarClient; 
     private List<BaseImplement> mImplements = new ArrayList<>();
     private boolean mIsVolumeSettingsActivated = false; 
 
@@ -125,9 +125,7 @@ public class SystemControl extends Service {
         
         Log.d(TAG, "onCreate");
 
-        mCarClient = new CarExtensionClient(this)
-            .registerListener(mCarClientListener)
-            .connect();
+        CarExClient.getInstance().connect(this, mCarClientListener); 
 
         mDisplay =  new DisplayImpl(this);
         mImplements.add(mDisplay);
@@ -202,10 +200,7 @@ public class SystemControl extends Service {
         unregistUserSwicher();
         for ( BaseImplement impl : mImplements ) impl.destroy();
 
-        if ( mCarClient != null ) {
-            mCarClient.unregisterListener(mCarClientListener).disconnect();
-            mCarClient = null;
-        }
+        CarExClient.getInstance().disconnect(mCarClientListener); 
 
         super.onDestroy();
     }
@@ -496,30 +491,29 @@ public class SystemControl extends Service {
         }
     };
 
-    private final CarExtensionClient.CarExClientListener mCarClientListener = 
-        new CarExtensionClient.CarExClientListener() {
+    private final CarExClient.CarExClientListener mCarClientListener = 
+        new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            if ( mBrightness != null ) mBrightness.fetchEx(mCarClient);
-            if ( mAutoMode != null ) mAutoMode.fetchEx(mCarClient);
-            if ( mQuietMode != null ) mQuietMode.fetchEx(mCarClient);
-            if ( mMute != null ) mMute.fetchEx(mCarClient); 
-            if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(mCarClient); 
-            if ( mCarClient != null ) 
-                mCarClient.getTMSManager().registerCallback(mTMSEventListener); 
+            CarExClient client = CarExClient.getInstance(); 
+            if ( client == null ) return;
+            if ( mBrightness != null ) mBrightness.fetchEx(client);
+            if ( mAutoMode != null ) mAutoMode.fetchEx(client);
+            if ( mQuietMode != null ) mQuietMode.fetchEx(client);
+            if ( mMute != null ) mMute.fetchEx(client); 
+            if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(client); 
+            client.getTMSManager().registerCallback(mTMSEventListener); 
             
         }
 
         @Override
         public void onDisconnected() {
-            if ( mCarClient != null ) 
-                mCarClient.getTMSManager().unregisterCallback(mTMSEventListener); 
+            CarExClient.getInstance().getTMSManager().unregisterCallback(mTMSEventListener); 
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
             if ( mMute != null ) mMute.fetchEx(null); 
             if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(null); 
-            mCarClient = null;
         }
     };
 

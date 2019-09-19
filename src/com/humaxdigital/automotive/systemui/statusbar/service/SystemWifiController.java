@@ -12,8 +12,8 @@ import android.net.wifi.WifiManager;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.user.IUserWifiCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.common.user.IUserWifiCallback;
 
 public class SystemWifiController extends BaseController<Integer> {
     private final String TAG = "SystemWifiController"; 

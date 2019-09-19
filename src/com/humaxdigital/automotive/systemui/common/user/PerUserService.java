@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.user;
+package com.humaxdigital.automotive.systemui.common.user;
 
 import android.os.Binder;
 import android.os.IBinder;
@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.app.Service;
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.user.IUserService; 
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth; 
-import com.humaxdigital.automotive.systemui.user.IUserWifi; 
-import com.humaxdigital.automotive.systemui.user.IUserAudio; 
+import com.humaxdigital.automotive.systemui.common.user.IUserService; 
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth; 
+import com.humaxdigital.automotive.systemui.common.user.IUserWifi; 
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio; 
 
 
 public class PerUserService extends Service {

@@ -15,7 +15,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log; 
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 
 import java.util.ArrayList;
 import java.util.List;

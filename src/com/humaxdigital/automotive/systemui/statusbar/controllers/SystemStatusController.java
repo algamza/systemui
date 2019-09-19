@@ -12,7 +12,7 @@ import android.os.Handler;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.SystemView;
 

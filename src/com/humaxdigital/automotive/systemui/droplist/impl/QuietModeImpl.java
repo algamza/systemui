@@ -14,11 +14,13 @@ import android.extension.car.util.AudioTypes;
 
 import android.util.Log;
 
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+
 public class QuietModeImpl extends BaseImplement<Boolean> {
     private static final String TAG = "QuietModeImpl"; 
     private ContentResolver mContentResolver;
     private ContentObserver mQuiteModeObserver;
-    private CarExtensionClient mCarClient = null;
+    private CarExClient mCarClient = null;
     private CarAudioManagerEx mAudioMgrEx = null;
 
     public QuietModeImpl(Context context) {
@@ -48,7 +50,7 @@ public class QuietModeImpl extends BaseImplement<Boolean> {
         setQuiteMode(e);
     }
 
-    public void fetchEx(CarExtensionClient client) {
+    public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx="+client);
         mCarClient = client; 
 

@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.util;
+package com.humaxdigital.automotive.systemui.common.util;
 
 import android.content.Context;
 import android.app.Notification;

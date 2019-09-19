@@ -22,12 +22,14 @@ import android.util.Log;
 import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.util.OSDPopup; 
-import com.humaxdigital.automotive.systemui.user.PerUserService;
-import com.humaxdigital.automotive.systemui.user.IUserService;
-import com.humaxdigital.automotive.systemui.user.IUserBluetooth;
-import com.humaxdigital.automotive.systemui.user.IUserWifi;
-import com.humaxdigital.automotive.systemui.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.user.PerUserService;
+import com.humaxdigital.automotive.systemui.common.user.IUserService;
+import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
+import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
+
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class StatusBarSystem {
     private static final String TAG = "StatusBarSystem";
@@ -52,7 +54,7 @@ public class StatusBarSystem {
 
     private SystemPowerStateController mPowerStateController; 
 
-    private CarExtensionClient mCarExClient = null; 
+    private CarExClient mCarExClient = null; 
     private TMSClient mTMSClient = null; 
 
     private List<BaseController> mControllers = new ArrayList<>(); 
@@ -185,7 +187,7 @@ public class StatusBarSystem {
         mPowerStateController = null; 
     }
 
-    public void fetchCarExClient(CarExtensionClient client) {
+    public void fetchCarExClient(CarExClient client) {
         Log.d(TAG, "fetchCarExClient");
         mCarExClient = client; 
 
@@ -220,7 +222,7 @@ public class StatusBarSystem {
         if ( mPowerStateController != null ) 
             mPowerStateController.fetch(mCarExClient.getSystemManager()); 
         if ( mMuteController != null ) 
-            mMuteController.fetchAudioEx(mCarExClient.getAudioManagerEx());
+            mMuteController.fetchAudioEx(mCarExClient.getAudioManager());
         synchronized (mSystemCallbacks) {
             for ( StatusBarSystemCallback callback : mSystemCallbacks ) {
                 callback.onSystemInitialized();

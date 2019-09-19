@@ -13,8 +13,8 @@ import android.car.CarNotConnectedException;
 import android.car.media.ICarVolumeCallback;
 import android.extension.car.CarAudioManagerEx;
 
-import com.humaxdigital.automotive.systemui.user.IUserAudio;
-import com.humaxdigital.automotive.systemui.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 
 import android.extension.car.util.AudioTypes;
 

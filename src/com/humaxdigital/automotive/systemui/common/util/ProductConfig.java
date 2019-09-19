@@ -1,4 +1,4 @@
-package com.humaxdigital.automotive.systemui.util;
+package com.humaxdigital.automotive.systemui.common.util;
 
 import android.os.Build; 
 import android.util.Log;

@@ -15,14 +15,15 @@ import android.util.Log;
 import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
-import com.humaxdigital.automotive.systemui.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class StatusBarClimate {
     private static final String TAG = "StatusBarClimate";
     private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
     
     private ClimateControllerManager mClimateManager = null;
-    private CarExtensionClient mCarExClient = null; 
+    private CarExClient mCarExClient = null; 
     private List<StatusBarClimateCallback> mClimateCallbacks = new ArrayList<>();
     private DataStore mDataStore = null;
     private Context mContext = null;
@@ -94,16 +95,16 @@ public class StatusBarClimate {
         mClimateManager = null;
     }
 
-    public void fetchCarExClient(CarExtensionClient client) {
+    public void fetchCarExClient(CarExClient client) {
         Log.d(TAG, "fetchCarExClient");
         mCarExClient = client; 
 
         if ( mClimateManager != null ) {
             if ( mCarExClient == null ) mClimateManager.fetch(null, null, null);
             else mClimateManager.fetch(
-                mCarExClient.getHvacManagerEx(), 
+                mCarExClient.getHvacManager(), 
                 mCarExClient.getUsmManager(), 
-                mCarExClient.getSensorManagerEx());
+                mCarExClient.getSensorManager());
         }
     }
 

@@ -40,7 +40,7 @@ import java.util.TimerTask;
 
 import com.humaxdigital.automotive.systemui.SystemUIBase;
 
-import com.humaxdigital.automotive.systemui.util.ProductConfig; 
+import com.humaxdigital.automotive.systemui.common.util.ProductConfig; 
 import com.humaxdigital.automotive.systemui.R; 
 
 import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeDialogWindowDL3C; 

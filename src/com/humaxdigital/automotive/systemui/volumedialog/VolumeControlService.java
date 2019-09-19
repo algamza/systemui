@@ -30,6 +30,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+
 public class VolumeControlService extends Service {
     private static final String TAG = "VolumeControlService";
 
@@ -51,7 +53,6 @@ public class VolumeControlService extends Service {
 
     private ArrayList<VolumeCallback> mCallbacks = new ArrayList<>();
     private Object mServiceReady = new Object();
-    private CarExtensionClient mCarClient; 
     private CarAudioManagerEx mCarAudioManagerEx;
     private AudioManager mAudioManager; 
 
@@ -61,19 +62,13 @@ public class VolumeControlService extends Service {
     private boolean mIsSettingsActivity = false;
     private boolean mIsShow = false; 
 
-    private ContentObserver mUserSwitchingObserver; 
-
-    private final int VOLUME_EVENT_BLOCKING_MS_TIME = 4000; 
-/*    private boolean mIsEventBlocking = true;*/
-
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        mCarClient = new CarExtensionClient(this);
-        if ( mCarClient != null ) 
-            mCarClient.registerListener(mCarClientListener).connect();
+        CarExClient.getInstance().connect(this, mCarClientListener); 
+
         mAudioManager = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE); 
         
         registUserSwicher();
@@ -83,7 +78,6 @@ public class VolumeControlService extends Service {
         mVCRMLog = new ScenarioVCRMLog(); 
 
         registReceiver();
- 
     }
 
     @Override
@@ -96,8 +90,8 @@ public class VolumeControlService extends Service {
         Log.d(TAG, "onDestroy");
         unregistReceiver();
 
-        if ( mCarClient != null ) 
-            mCarClient.unregisterListener().disconnect();
+        CarExClient.getInstance().disconnect(mCarClientListener); 
+        
         unregistUserSwicher();
         cleanupAudioManager();
         
@@ -264,30 +258,33 @@ public class VolumeControlService extends Service {
         mCarAudioManagerEx = null;
     }
 
-    private final CarExtensionClient.CarExClientListener mCarClientListener = 
-        new CarExtensionClient.CarExClientListener() {
+    private void onCarClientConnected() {
+        mCarAudioManagerEx = CarExClient.getInstance().getAudioManager(); 
+        synchronized (mServiceReady) {
+            mServiceReady.notify(); 
+        }
+        try {
+            if ( mCarAudioManagerEx != null ) {
+                mCarAudioManagerEx.registerCallbackForStartupVolume();
+                mCarAudioManagerEx.registerVolumeCallback(mVolumeChangeCallback.asBinder());
+            }
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
+        } 
+
+        if ( mQuiteMode != null ) mQuiteMode.fetchCarAudioManagerEx(mCarAudioManagerEx);
+        if ( mBackupWran != null ) {
+            mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
+            mBackupWran.fetchCarSensorManagerEx(CarExClient.getInstance().getSensorManager()); 
+        }
+        if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
+    }
+
+    private final CarExClient.CarExClientListener mCarClientListener = 
+        new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            if ( mCarClient == null ) return;
-            mCarAudioManagerEx = mCarClient.getAudioManagerEx(); 
-            synchronized (mServiceReady) {
-                mServiceReady.notify(); 
-            }
-            try {
-                if ( mCarAudioManagerEx != null ) {
-                    mCarAudioManagerEx.registerCallbackForStartupVolume();
-                    mCarAudioManagerEx.registerVolumeCallback(mVolumeChangeCallback.asBinder());
-                }
-            } catch (CarNotConnectedException e) {
-                Log.e(TAG, "Car is not connected!", e);
-            } 
-
-            if ( mQuiteMode != null ) mQuiteMode.fetchCarAudioManagerEx(mCarAudioManagerEx);
-            if ( mBackupWran != null ) {
-                mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
-                mBackupWran.fetchCarSensorManagerEx(mCarClient.getSensorManagerEx()); 
-            }
-            if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
+            onCarClientConnected();
         }
         @Override
         public void onDisconnected() {

@@ -29,7 +29,7 @@ import android.extension.car.settings.CarExtraSettings;
 
 import android.util.Log;
 
-import com.humaxdigital.automotive.systemui.statusbar.service.CarExtensionClient.CarExClientListener;
+import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class StatusBarService extends Service {
 
@@ -40,7 +40,6 @@ public class StatusBarService extends Service {
 
     private Context mContext = this; 
     private DataStore mDataStore = new DataStore();
-    private CarExtensionClient mCarExClient = null;
     private final Binder mStatusBarServiceBinder = new StatusBarServiceBinder();  
     private StatusBarClimate mStatusBarClimate = null; 
     private StatusBarSystem mStatusBarSystem = null; 
@@ -95,7 +94,7 @@ public class StatusBarService extends Service {
     public void onDestroy() {
         destroyObserver(); 
         unregistReceiver();
-        if ( mCarExClient != null ) mCarExClient.disconnect(); 
+        CarExClient.getInstance().disconnect(mCarExClientListener); 
         if ( mStatusBarClimate != null ) mStatusBarClimate.destroy();
         if ( mStatusBarSystem != null ) mStatusBarSystem.destroy();
         if ( mStatusBarDev != null ) mStatusBarDev.destroy();
@@ -261,21 +260,20 @@ public class StatusBarService extends Service {
 
     private void createCarExClient() {
         if ( mContext == null ) return; 
-        mCarExClient = new CarExtensionClient(mContext)
-            .registerListener(mCarExClientListener)
-            .connect(); 
+        CarExClient.getInstance().connect(mContext, mCarExClientListener); 
     }
 
-    private CarExtensionClient.CarExClientListener mCarExClientListener = 
-        new CarExtensionClient.CarExClientListener() {
+    private CarExClient.CarExClientListener mCarExClientListener = 
+        new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            if ( mCarExClient == null ) return; 
-            if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(mCarExClient);
-            if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(mCarExClient);
-            mTMSManager = mCarExClient.getTMSManager(); 
+            CarExClient client = CarExClient.getInstance(); 
+            if ( client == null ) return;
+            if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(client);
+            if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(client);
+            mTMSManager = client.getTMSManager(); 
             if ( mTMSManager != null ) mTMSManager.registerCallback(mTMSEventListener); 
-            mSensorManager = mCarExClient.getSensorManagerEx();
+            mSensorManager = client.getSensorManager();
             if ( mSensorManager != null ) {
                 try {
                     mSensorManager.registerListener(
