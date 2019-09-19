@@ -28,7 +28,7 @@ public class SystemUIService extends Service {
 
         SystemUIPolicy.applyPolicies(this);
 
-        mSystemUIs.add(new WallpaperService()); 
+        //mSystemUIs.add(new WallpaperService()); 
         mSystemUIs.add(new StatusBar()); 
         mSystemUIs.add(new DropListUIService()); 
         mSystemUIs.add(new VolumeDialog()); 

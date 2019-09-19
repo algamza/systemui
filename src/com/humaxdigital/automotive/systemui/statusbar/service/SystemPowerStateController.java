@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.car.CarNotConnectedException;
 import android.extension.car.util.PowerState;
 import android.extension.car.CarSystemManager;
+import android.extension.car.CarPropertyFilter;
 import android.car.hardware.CarPropertyValue;
 import android.extension.car.value.CarEventValue;
 
@@ -59,7 +60,9 @@ public class SystemPowerStateController extends BaseController<Integer> {
         mSystemManager = manager; 
         int value = 0; 
         try {
-            mSystemManager.registerCallback(mSystemCallback);
+            CarPropertyFilter filter = new CarPropertyFilter();
+            filter.addId(CarSystemManager.VENDOR_SYSTEM_LASTPOWERSTATE); 
+            mSystemManager.registerCallback(mSystemCallback, filter);
             int state = mSystemManager.getCurrentPowerState(); 
             if ( state == PowerState.POWER_STATE_POWER_OFF ) 
                 mPowerState = State.POWER_OFF; 

@@ -19,6 +19,7 @@ import android.extension.car.value.CarSensorEventEx;
 import android.extension.car.CarHvacManagerEx;
 import android.extension.car.CarUSMManager;
 import android.extension.car.CarSensorManagerEx;
+import android.extension.car.CarPropertyFilter;
 
 import android.util.Log;
 import java.util.ArrayList;
@@ -151,8 +152,21 @@ public class ClimateControllerManager {
         mCarUSMManager = usmMgr; 
         mCarSensorManagerEx = sensorMgr;
         try {
-            mCarHvacManagerEx.registerCallback(mHvacCallback);
-            mCarUSMManager.registerCallback(mUSMCallback); 
+            CarPropertyFilter hvac_filter = new CarPropertyFilter();
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY); 
+            hvac_filter.addId(CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT);
+            hvac_filter.addId(CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON);
+            hvac_filter.addId(CarHvacManagerEx.ID_ZONED_AC_ON);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS);
+            mCarHvacManagerEx.registerCallback(mHvacCallback, hvac_filter);
+            CarPropertyFilter usm_filter = new CarPropertyFilter();
+            usm_filter.addId(CarUSMManager.VENDOR_CANRX_USM_TEMPRATURE_UNIT); 
+            mCarUSMManager.registerCallback(mUSMCallback, usm_filter); 
             mCarSensorManagerEx.registerListener(
                 mSensorChangeListener, 
                 CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE, 

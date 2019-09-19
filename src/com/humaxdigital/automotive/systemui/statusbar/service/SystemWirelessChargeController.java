@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.car.CarNotConnectedException;
 import android.car.hardware.CarPropertyValue;
 import android.extension.car.CarSystemManager;
+import android.extension.car.CarPropertyFilter;
 import android.extension.car.value.CarEventValue;
 
 import android.util.Log;
@@ -47,7 +48,9 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         mManager = manager; 
         int value = 0; 
         try {
-            mManager.registerCallback(mSystemCallback);
+            CarPropertyFilter filter = new CarPropertyFilter();
+            filter.addId(CarSystemManager.VENDOR_CANRX_WPC_STATUS);
+            mManager.registerCallback(mSystemCallback, filter);
             value = mManager.getWirelessChargeStatus();
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!");

@@ -7,6 +7,7 @@ import android.car.CarNotConnectedException;
 import android.car.VehicleAreaType;
 import android.car.hardware.CarPropertyValue;
 import android.extension.car.CarClusterManager;
+import android.extension.car.CarPropertyFilter;
 
 public class ClusterBrightnessImpl extends BaseImplement<Integer> {
     static final String TAG = "ClusterBrightnessImpl";
@@ -41,7 +42,9 @@ public class ClusterBrightnessImpl extends BaseImplement<Integer> {
             }
             mCarCluster = client.getClusterManager();
             if ( mCarCluster == null ) return;
-            mCarCluster.registerCallback(mClusterCallback); 
+            CarPropertyFilter filter = new CarPropertyFilter();
+            filter.addId(CarClusterManager.VENDOR_CANRX_CLU_DISP_BRIGHTNESS); 
+            mCarCluster.registerCallback(mClusterCallback, filter); 
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
