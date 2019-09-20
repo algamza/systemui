@@ -28,10 +28,10 @@ public class SystemUIService extends Service {
 
         SystemUIPolicy.applyPolicies(this);
 
-        //mSystemUIs.add(new WallpaperService()); 
+        mSystemUIs.add(new WallpaperService()); 
         mSystemUIs.add(new StatusBar()); 
         mSystemUIs.add(new DropListUIService()); 
-        //mSystemUIs.add(new VolumeDialog()); 
+        mSystemUIs.add(new VolumeDialog()); 
 
         for ( SystemUIBase ui : mSystemUIs ) ui.onCreate(this);
     }

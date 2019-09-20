@@ -77,15 +77,9 @@ public class StatusBar implements SystemUIBase {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
         startStatusBarService(mContext);
-        /*
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
-            createStatusBarWindow();
-            createDL3CDropListTouchWindow();
-        } else { 
-        */
-            createNaviBarWindow();
-            createDropListTouchWindow();
-        //}
+
+        createNaviBarWindow();
+        createDropListTouchWindow();
 
         if (mUseSystemGestures) {
             registerSystemGestureReceiver();
@@ -281,13 +275,7 @@ public class StatusBar implements SystemUIBase {
             }
         });
 
-        View normalView;
-        //if (ProductConfig.getModel() == ProductConfig.MODEL.DL3C) {
-        //    normalView = mStatusBarView;
-        //} else {
-            normalView = mNavBarView;
-        //}
-
+        View normalView = mNavBarView;
         mDevModeController = new DevModeController(mContext, normalView, mDevNavView);
         mDevModeController.setOnViewChangeListener(new DevModeController.OnViewChangeListener() {
             @Override
@@ -338,15 +326,9 @@ public class StatusBar implements SystemUIBase {
     }
 
     public void setContentBarView(View view) {
-        //if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
-        //    if ( mStatusBarWindow == null ) return;
-        //    mStatusBarWindow.removeAllViews();
-        //    mStatusBarWindow.addView(view); 
-        //} else {
-            if ( mNavBarWindow == null ) return;
-            mNavBarWindow.removeAllViews();
-            mNavBarWindow.addView(view);
-        //}
+        if ( mNavBarWindow == null ) return;
+        mNavBarWindow.removeAllViews();
+        mNavBarWindow.addView(view);
     }
 
     private void startStatusBarService(Context context){
@@ -364,13 +346,8 @@ public class StatusBar implements SystemUIBase {
 
             mStatusBarService = ((StatusBarService.StatusBarServiceBinder)service).getService();
 
-            //if (ProductConfig.getModel() == ProductConfig.MODEL.DL3C) {
-            //    mControllerManager = new ControllerManagerDL3C();
-            //    mControllerManager.create(mContext, mStatusBarView);
-            //} else {
-                mControllerManager = new ControllerManager();
-                mControllerManager.create(mContext, mNavBarView);
-            //}
+            mControllerManager = new ControllerManager();
+            mControllerManager.create(mContext, mNavBarView);
             mControllerManager.init(mStatusBarService); 
         }
 

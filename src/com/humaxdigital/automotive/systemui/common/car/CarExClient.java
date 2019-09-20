@@ -47,17 +47,17 @@ public class CarExClient {
     private CarBLEManager mCarBLEManager = null; 
     private CarUSMManager mUsmManager = null; 
 
-
     private static CarExClient mInstance = null; 
     private CarExClient() {}
-    public static synchronized CarExClient getInstance() {
-        if ( mInstance == null ) 
-            mInstance = new CarExClient(); 
-        return mInstance; 
+    private static class Singleton {
+        private static final CarExClient instance = new CarExClient(); 
+    }
+    public static CarExClient getInstance() {
+        return Singleton.instance;
     }
 
     public synchronized void connect(Context context, CarExClientListener listener) {
-        if ( context == null || listener == null ) 
+        if ( context == null || listener == null ) return;
         mContext = context; 
         mListeners.add(listener); 
         if ( mState == STATE.CONNECTED ) listener.onConnected(); 
@@ -148,6 +148,9 @@ public class CarExClient {
                 mCarSensor = null;
                 mCarTms = null;
                 mCarCluster = null; 
+                mCarHvacManager = null;
+                mCarBLEManager = null; 
+                mUsmManager = null; 
                 mContext = null;
             }
         }
