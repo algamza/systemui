@@ -97,13 +97,15 @@ public class ControllerManager {
                     .setText(res.getString(R.string.STR_BEEP_04_ID))
                     .addIcon(res.getDrawable(R.drawable.dr_btn_beep_n),
                         res.getDrawable(R.drawable.dr_btn_beep_p),
-                        res.getDrawable(R.drawable.dr_btn_beep_d)))); 
+                        res.getDrawable(R.drawable.dr_btn_beep_d))
+                    .setSupportLongClick(false))); 
         mControllers.add(new MuteController()
                 .init(new MenuLayout(mContext)
                     .setText(res.getString(R.string.STR_MUTE_06_ID))
                     .addIcon(res.getDrawable(R.drawable.dr_btn_mute_n),
                         res.getDrawable(R.drawable.dr_btn_mute_p),
-                        res.getDrawable(R.drawable.dr_btn_mute_d)))); 
+                        res.getDrawable(R.drawable.dr_btn_mute_d))
+                    .setSupportLongClick(false))); 
         mControllers.add(new ModeController()
                 .init(new MenuLayout(mContext)
                     .addIconText(ModeController.Mode.AUTOMATIC.ordinal(), 
@@ -142,7 +144,8 @@ public class ControllerManager {
                     .setText(res.getString(R.string.STR_DISPLAY_OFF_01_ID))
                     .addIcon(res.getDrawable(R.drawable.dr_btn_display_n),
                         res.getDrawable(R.drawable.dr_btn_display_p),
-                        res.getDrawable(R.drawable.dr_btn_display_d)))
+                        res.getDrawable(R.drawable.dr_btn_display_d))
+                    .setSupportLongClick(false))
                 .setListener(mControlListener));
 
         for ( int i = 0; i<mControllers.size(); i++ ) {

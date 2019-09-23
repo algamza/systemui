@@ -37,11 +37,12 @@ public class MenuLayout extends LinearLayout {
     private boolean mEnable = true;
     private HashMap<Integer,String> mTexts = new HashMap<>();
     private String mText;
-
+    private boolean mSupportLongClick = true;
+    private boolean mSupportClick = true;  
     private ImageView mIconBG;
     private ImageView mIcon; 
-    
     private TextView mViewText;
+    
 
     public MenuLayout(Context context) {
         super(context);
@@ -58,8 +59,8 @@ public class MenuLayout extends LinearLayout {
 
         if ( mIconBG == null || mIcon == null || mViewText == null ) return this;
 
-        mIconBG.setOnClickListener(mOnClickListener);
-        mIconBG.setOnLongClickListener(mOnLongClickListener);
+        if ( mSupportClick ) mIconBG.setOnClickListener(mOnClickListener);
+        if ( mSupportLongClick ) mIconBG.setOnLongClickListener(mOnLongClickListener);
         enableBG(true);
 
         if ( mResIcon != null ) {
@@ -92,8 +93,8 @@ public class MenuLayout extends LinearLayout {
 
     public MenuLayout setListener(MenuListener listener) {
         if ( mIconBG != null ) {
-            mIconBG.setOnClickListener(null); 
-            mIconBG.setOnLongClickListener(null);
+            if ( mSupportClick ) mIconBG.setOnClickListener(null); 
+            if ( mSupportLongClick ) mIconBG.setOnLongClickListener(null);
             enableBG(false); 
         }
         if ( listener == null ) return this; 
@@ -101,8 +102,8 @@ public class MenuLayout extends LinearLayout {
         mListener = listener;
         if ( mIconBG != null ) {
             enableBG(true); 
-            mIconBG.setOnClickListener(mOnClickListener);
-            mIconBG.setOnLongClickListener(mOnLongClickListener);
+            if ( mSupportClick ) mIconBG.setOnClickListener(mOnClickListener);
+            if ( mSupportLongClick ) mIconBG.setOnLongClickListener(mOnLongClickListener);
         }
         return this;
     }
@@ -174,6 +175,16 @@ public class MenuLayout extends LinearLayout {
         if ( enable ) mIcon.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE)); 
         else mIcon.setImageDrawable(mButtonIcon.get(ButtonState.DISABLE)); 
         mEnable = enable;
+    }
+
+    public MenuLayout setSupportLongClick(boolean support) {
+        mSupportLongClick = support; 
+        return this;
+    }
+
+    public MenuLayout setSupportClick(boolean support) {
+        mSupportClick = support; 
+        return this;
     }
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
