@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.content.Context;
 import android.content.res.Resources;
@@ -23,6 +24,7 @@ public class BeepController implements BaseController {
     public BaseController init(View view) {
         mView = (MenuLayout)view;
         mView.setListener(mMenuCallback);
+        mView.setTouchListener(mTouchListener);
         return this;
     }
 
@@ -72,20 +74,12 @@ public class BeepController implements BaseController {
         }
     };
 
-    private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
+    
+
+    private final MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override
         public boolean onClick() {
-            if ( mSystem == null ) return false;
-            if ( mIsCalling ) return false; 
-            if ( mView.isEnable() ) {
-                mOn = false; 
-                mView.updateEnable(false);
-                mSystem.setBeepOn(false);
-            } else {
-                mOn = true; 
-                mView.updateEnable(true);
-                mSystem.setBeepOn(true);
-            }
+            // move to action up because BHMC-7598
             return true; 
         }
 
@@ -94,6 +88,32 @@ public class BeepController implements BaseController {
             return false; 
         }
     }; 
+
+    private final MenuLayout.MenuTouchListener mTouchListener = new MenuLayout.MenuTouchListener() {
+        @Override
+        public boolean onTouch(MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    break; 
+                }
+                case MotionEvent.ACTION_UP: {
+                    if ( mSystem == null ) return false;
+                    if ( mIsCalling ) return false; 
+                    if ( mView.isEnable() ) {
+                        mOn = false; 
+                        mView.updateEnable(false);
+                        mSystem.setBeepOn(false);
+                    } else {
+                        mOn = true; 
+                        mView.updateEnable(true);
+                        mSystem.setBeepOn(true);
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+    };
 
     private final class UpdateHandler extends Handler {
         private static final int MODE_ON = 1;

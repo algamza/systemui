@@ -21,6 +21,10 @@ public class MenuLayout extends LinearLayout {
         boolean onLongClick();
     }
 
+    public interface MenuTouchListener {
+        boolean onTouch(MotionEvent event);
+    }
+
     private enum ButtonState {
         ENABLE,
         PRESS,
@@ -28,6 +32,7 @@ public class MenuLayout extends LinearLayout {
     }
 
     private MenuListener mListener;
+    private MenuTouchListener mTouchListener; 
     private Context mContext;
 
     private Drawable mResIcon = null;
@@ -39,6 +44,7 @@ public class MenuLayout extends LinearLayout {
     private String mText;
     private boolean mSupportLongClick = true;
     private boolean mSupportClick = true;  
+    private boolean mSupportTouch = false; 
     private ImageView mIconBG;
     private ImageView mIcon; 
     private TextView mViewText;
@@ -61,6 +67,7 @@ public class MenuLayout extends LinearLayout {
 
         if ( mSupportClick ) mIconBG.setOnClickListener(mOnClickListener);
         if ( mSupportLongClick ) mIconBG.setOnLongClickListener(mOnLongClickListener);
+        if ( mSupportTouch ) mIconBG.setOnTouchListener(mOnTouchListener);
         enableBG(true);
 
         if ( mResIcon != null ) {
@@ -105,6 +112,11 @@ public class MenuLayout extends LinearLayout {
             if ( mSupportClick ) mIconBG.setOnClickListener(mOnClickListener);
             if ( mSupportLongClick ) mIconBG.setOnLongClickListener(mOnLongClickListener);
         }
+        return this;
+    }
+
+    public MenuLayout setTouchListener(MenuTouchListener listener) {
+        mTouchListener = listener; 
         return this;
     }
 
@@ -187,6 +199,11 @@ public class MenuLayout extends LinearLayout {
         return this;
     }
 
+    public MenuLayout setSupportTouch(boolean support) {
+        mSupportTouch = support; 
+        return this; 
+    }
+
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -201,6 +218,15 @@ public class MenuLayout extends LinearLayout {
             if ( mListener.onLongClick() ) {
                 return true;
             }
+            return false;
+        }
+    };
+
+    private final View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if ( mTouchListener == null ) return false;
+            if ( mTouchListener.onTouch(event) ) return true;
             return false;
         }
     };

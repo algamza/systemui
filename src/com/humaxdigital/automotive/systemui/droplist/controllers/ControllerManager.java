@@ -98,7 +98,8 @@ public class ControllerManager {
                     .addIcon(res.getDrawable(R.drawable.dr_btn_beep_n),
                         res.getDrawable(R.drawable.dr_btn_beep_p),
                         res.getDrawable(R.drawable.dr_btn_beep_d))
-                    .setSupportLongClick(false))); 
+                    .setSupportLongClick(false)
+                    .setSupportTouch(true))); 
         mControllers.add(new MuteController()
                 .init(new MenuLayout(mContext)
                     .setText(res.getString(R.string.STR_MUTE_06_ID))
