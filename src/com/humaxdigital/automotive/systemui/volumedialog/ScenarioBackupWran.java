@@ -53,31 +53,6 @@ public class ScenarioBackupWran {
         mContext = context; 
     }
 
-    private ContentObserver createBackupWranObserver() {
-        ContentObserver observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange, Uri uri, int userId) {
-                backupWarnChanged();
-            }
-        };
-        return observer; 
-    }
-
-    private ContentObserver createCameraObserver() {
-        ContentObserver observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContentResolver == null ) return;
-                int RearOn = Settings.Global.getInt(mContentResolver, 
-                    CarExtraSettings.Global.CAMERA_IS_REARCAMON, CarExtraSettings.Global.FALSE); 
-                Log.d(TAG, "RearOn:"+RearOn); 
-                if ( RearOn == CarExtraSettings.Global.TRUE ) gearScenario(true);
-                else  gearScenario(false);
-            }
-        };
-        return observer; 
-    }
-
     public ScenarioBackupWran init() {
         if ( mContext == null ) return this;
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_AM);
@@ -145,61 +120,34 @@ public class ScenarioBackupWran {
         if ( isBackupWarn() ) applyBackupWarn(); 
     }
 
-    private void updateRGearDetectState() {
-        if ( mContentResolver == null ) return;
-        int RearOn = Settings.Global.getInt(mContentResolver, 
-                    CarExtraSettings.Global.CAMERA_IS_REARCAMON, CarExtraSettings.Global.FALSE); 
-                Log.d(TAG, "RearOn:"+RearOn); 
-        if ( RearOn == CarExtraSettings.Global.TRUE ) mIsRGearDetected = true; 
-        else mIsRGearDetected = false; 
-    }
+    public boolean checkBackupWarn(int mode, int volume) {
+        if ( !isBackupWarn() ) return false; 
 
-    private void updateIGNState() {
-        if ( mCarSensorManagerEx == null ) return;
-        try {
-            CarSensorEvent ign_event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
-            int state = ign_event.intValues[0]; 
-            Log.d(TAG, "updateIGNState:ign="+state);
-            if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
-                || state == CarSensorEvent.IGNITION_STATE_OFF
-                || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                mIsIGNOff = true;
-            } else if ( state == CarSensorEvent.IGNITION_STATE_ON
-                || state == CarSensorEvent.IGNITION_STATE_START ) {
-                mIsIGNOff = false;
-            }
-        } catch (CarNotConnectedException e) {
-            Log.e(TAG, "Car is not connected!", e);
-        }
-    }
-
-    private synchronized void gearScenario(boolean r) {
-        Log.d(TAG, "gearScenario="+r);
-        if ( mIsRGearDetected == r ) return; 
-        mIsRGearDetected = r; 
-        if ( r ) {
-            if ( isBackupWarn() ) applyBackupWarn();
-        } else {
-            backupWarnChanged();
-        }
-    }
-
-    private void backupWarnChanged() {
-        if ( isBackupWarn() ) applyBackupWarn(); 
-        else {
-            if ( mIsIGNOff ) return;
-            if ( mBackupWarnLastVolume.isEmpty() || mBackupWarnAudioChange.isEmpty() ) return;
-            for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
-                boolean changed = mBackupWarnAudioChange.get(type); 
-                if ( !changed ) {
-                    int volume = mBackupWarnLastVolume.get(type);
-                    setAudioVolume(VolumeUtil.convertToMode(type), volume);
-                    Log.d(TAG, "onChange:type="+type+", volume="+volume);
+        for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
+            if ( mode != VolumeUtil.convertToMode(type) ) continue; 
+            if ( type == VolumeUtil.Type.BT_AUDIO ) {
+                if ( !mIsBackupWranApplying && volume != mBTAudioChangeVolume ) 
+                    mBackupWarnAudioChange.put(type, true);
+            } else {
+                if ( !mIsBackupWranApplying && volume != BACKUP_WRAN_VOLUME ) {
+                    mBackupWarnAudioChange.put(type, true);
+                    if ( type == VolumeUtil.Type.RADIO_AM || type == VolumeUtil.Type.RADIO_FM 
+                    || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC 
+                    || type == VolumeUtil.Type.CARLIFE_MEDIA) {
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_AM, true);
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_FM, true);
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.USB, true);
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.ONLINE_MUSIC, true);
+                        mBackupWarnAudioChange.put(VolumeUtil.Type.CARLIFE_MEDIA, true);
+                    }
                 }
             }
+            Log.d(TAG, "checkBackupWarn:type="+type+", las volume="+volume);
         }
-    }
 
+        return false; 
+    }
+    
     private boolean setAudioVolume(int mode, int volume) {
         if ( mCarAudioManagerEx == null ) return false; 
         try {
@@ -215,13 +163,19 @@ public class ScenarioBackupWran {
         return true; 
     }
 
+    private boolean isBackupWarnOn() {
+        int on = Settings.System.getIntForUser(mContext.getContentResolver(), 
+            CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON,
+            CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON_DEFAULT,
+                UserHandle.USER_CURRENT);
+        if ( on != 0 ) return true;
+        return false; 
+    }
+
     private boolean isBackupWarn() {
         boolean ret = false; 
-        int on = Settings.System.getIntForUser(mContext.getContentResolver(), 
-                CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON,
-                CarExtraSettings.System.SOUND_PRIORITY_BACKUP_WARNING_ON_DEFAULT,
-                        UserHandle.USER_CURRENT);
-        if ( on != 0 && mIsRGearDetected && !mIsIGNOff ) ret = true; 
+        boolean on = isBackupWarnOn();
+        if ( on && mIsRGearDetected && !mIsIGNOff ) ret = true; 
         else ret = false; 
 
         Log.d(TAG, "isBackupWarn="+ret+", settings value="+on+", gearR="+mIsRGearDetected+", ignoff="+mIsIGNOff);
@@ -262,32 +216,73 @@ public class ScenarioBackupWran {
         }
     }
 
-    public boolean checkBackupWarn(int mode, int volume) {
-        if ( !isBackupWarn() ) return false; 
+    private void updateRGearDetectState() {
+        if ( mContentResolver == null ) return;
+        int RearOn = Settings.Global.getInt(mContentResolver, 
+                    CarExtraSettings.Global.CAMERA_IS_REARCAMON, CarExtraSettings.Global.FALSE); 
+                Log.d(TAG, "RearOn:"+RearOn); 
+        if ( RearOn == CarExtraSettings.Global.TRUE ) mIsRGearDetected = true; 
+        else mIsRGearDetected = false; 
+    }
 
-        for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
-            if ( mode != VolumeUtil.convertToMode(type) ) continue; 
-            if ( type == VolumeUtil.Type.BT_AUDIO ) {
-                if ( !mIsBackupWranApplying && volume != mBTAudioChangeVolume ) 
-                    mBackupWarnAudioChange.put(type, true);
-            } else {
-                if ( !mIsBackupWranApplying && volume != BACKUP_WRAN_VOLUME ) {
-                    mBackupWarnAudioChange.put(type, true);
-                    if ( type == VolumeUtil.Type.RADIO_AM || type == VolumeUtil.Type.RADIO_FM 
-                    || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC 
-                    || type == VolumeUtil.Type.CARLIFE_MEDIA) {
-                        mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_AM, true);
-                        mBackupWarnAudioChange.put(VolumeUtil.Type.RADIO_FM, true);
-                        mBackupWarnAudioChange.put(VolumeUtil.Type.USB, true);
-                        mBackupWarnAudioChange.put(VolumeUtil.Type.ONLINE_MUSIC, true);
-                        mBackupWarnAudioChange.put(VolumeUtil.Type.CARLIFE_MEDIA, true);
-                    }
-                }
+    private void updateIGNState() {
+        if ( mCarSensorManagerEx == null ) return;
+        try {
+            CarSensorEvent ign_event = mCarSensorManagerEx.getLatestSensorEvent(CarSensorManagerEx.SENSOR_TYPE_IGNITION_STATE);
+            int state = ign_event.intValues[0]; 
+            Log.d(TAG, "updateIGNState:ign="+state);
+            if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
+                || state == CarSensorEvent.IGNITION_STATE_OFF
+                || state == CarSensorEvent.IGNITION_STATE_ACC ) {
+                mIsIGNOff = true;
+            } else if ( state == CarSensorEvent.IGNITION_STATE_ON
+                || state == CarSensorEvent.IGNITION_STATE_START ) {
+                mIsIGNOff = false;
             }
-            Log.d(TAG, "checkBackupWarn:type="+type+", las volume="+volume);
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Car is not connected!", e);
         }
+    }
 
-        return false; 
+    private ContentObserver createBackupWranObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                backupWarnChanged();
+            }
+        };
+        return observer; 
+    }
+
+    private ContentObserver createCameraObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                updateRGearDetectState();
+                Log.d(TAG, "camera changed : " + mIsRGearDetected); 
+                if ( isBackupWarn() ) applyBackupWarn();
+                else if ( isBackupWarnOn() ) recoveryAudio();
+            }
+        };
+        return observer; 
+    }
+
+    private void recoveryAudio() {
+        if ( mIsIGNOff ) return;
+        if ( mBackupWarnLastVolume.isEmpty() || mBackupWarnAudioChange.isEmpty() ) return;
+        for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
+            boolean changed = mBackupWarnAudioChange.get(type); 
+            if ( !changed ) {
+                int volume = mBackupWarnLastVolume.get(type);
+                setAudioVolume(VolumeUtil.convertToMode(type), volume);
+                Log.d(TAG, "onChange:type="+type+", volume="+volume);
+            }
+        }
+    }
+
+    private void backupWarnChanged() {
+        if ( isBackupWarn() ) applyBackupWarn(); 
+        else if ( mIsRGearDetected ) recoveryAudio();
     }
 
     private final CarSensorManagerEx.OnSensorChangedListenerEx mSensorChangeListener =
