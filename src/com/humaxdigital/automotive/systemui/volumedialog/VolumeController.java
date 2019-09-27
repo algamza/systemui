@@ -109,7 +109,7 @@ public class VolumeController extends VolumeControllerBase {
         mCurrentVolumeMax = mController.getVolumeMax(mCurrentVolumeType); 
         mCurrentVolume = mController.getVolume(mCurrentVolumeType); 
         if ( mImgVolume != null ) 
-            mImgVolume.setImageResource(convertToVolumeIcon(mVolumeMute, mCurrentVolumeType)); 
+            mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
         if ( mTextVolume != null ) 
             mTextVolume.setText(convertToStep(mCurrentVolumeMax, mCurrentVolume));
         if ( mProgress != null ) 
@@ -131,7 +131,7 @@ public class VolumeController extends VolumeControllerBase {
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                   mImgVolume.setImageResource(convertToVolumeIcon(mVolumeMute, mCurrentVolumeType)); 
+                   mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
                 }
             }); 
             mCurrentVolumeMax = max; 
@@ -140,7 +140,7 @@ public class VolumeController extends VolumeControllerBase {
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        volumeDownNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -148,14 +148,11 @@ public class VolumeController extends VolumeControllerBase {
                 }); 
             } 
             else {
-                if ( mCurrentVolume > val ) mIsVolumeUp = false; 
-                else mIsVolumeUp = true;
                 mCurrentVolume = val; 
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if ( mIsVolumeUp ) volumeUpNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        else volumeDownNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -275,18 +272,10 @@ public class VolumeController extends VolumeControllerBase {
         }
     }
 
-    
-    private void volumeUpNoUI(VolumeUtil.Type type, int max, int value) {
+    private void volumeNoUI(VolumeUtil.Type type, int max, int value) {
         Log.d(TAG, "volumeUpNoUI:type="+type+", max="+max+", value="+value); 
-        if ( isVolumeMute() ) setVolumeMute(false);
+        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
         if ( mProgress != null ) mProgress.setProgress(convertToProgressValue(max, value));
-        if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
-    }
-
-    private void volumeDownNoUI(VolumeUtil.Type type, int max, int value) {
-        Log.d(TAG, "volumeDownNoUI:type="+type+", max="+max+", value="+value); 
-        int val = convertToProgressValue(max, value); 
-        if ( mProgress != null ) mProgress.setProgress(val);
         if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
     }
 
@@ -312,8 +301,7 @@ public class VolumeController extends VolumeControllerBase {
 
         mTimer.schedule(mVolumeUpTask, VOLUME_SELECT_TIME);
 
-        if ( isVolumeMute() ) setVolumeMute(false);
-
+        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
         mProgress.setProgress(convertToProgressValue(max, value));
         mTextVolume.setText(convertToStep(max, value));
     }
@@ -340,24 +328,15 @@ public class VolumeController extends VolumeControllerBase {
         mImgMinusN.setVisibility(View.INVISIBLE);
 
         mTimer.schedule(mVolumeDownTask, VOLUME_SELECT_TIME);
-        int val = convertToProgressValue(max, value); 
-        //if ( val == 0 ) if ( !isVolumeMute() ) setVolumeMute(true);
 
-        mProgress.setProgress(val);
+        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
+        mProgress.setProgress(convertToProgressValue(max, value));
         mTextVolume.setText(convertToStep(max, value));
     }
 
     private boolean isVolumeMute() {
         Log.d(TAG, "isVolumeMute="+mVolumeMute);
         return mVolumeMute;
-    }
-
-    private void setVolumeMute(boolean on) {
-        Log.d(TAG, "setVolumeMute="+on);
-        // todo : set volume mute 
-        mVolumeMute = on;
-
-        mImgVolume.setImageResource(convertToVolumeIcon(mVolumeMute, mCurrentVolumeType)); 
     }
 
     private int convertToVolumeIcon(boolean mute, VolumeUtil.Type type) {
