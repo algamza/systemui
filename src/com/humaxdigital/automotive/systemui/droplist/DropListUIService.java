@@ -16,6 +16,10 @@ import android.content.res.Resources;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.content.ContentResolver;
+import android.database.ContentObserver;
+import android.provider.Settings;
+import android.net.Uri;
 
 import android.os.Bundle;
 import android.os.Binder;
@@ -42,8 +46,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.humaxdigital.automotive.systemui.SystemUIBase;
+import android.extension.car.settings.CarExtraSettings;
 
+import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
@@ -77,6 +82,8 @@ public class DropListUIService implements SystemUIBase {
 
     private SystemControl mSystemController;
     private ControllerManager mControllerManager;
+    private ContentResolver mContentResolver = null;
+    private ContentObserver mUserAgreeObserver = null; 
 
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST";
     private BroadcastReceiver mReceiver; 
@@ -183,7 +190,12 @@ public class DropListUIService implements SystemUIBase {
         };
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
 
-        startNotiAnimation();
+        mContentResolver = mContext.getContentResolver(); 
+        mUserAgreeObserver = createUserAgreeObserver(); 
+        mContentResolver.registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT), 
+            false, mUserAgreeObserver, UserHandle.USER_CURRENT); 
+        if ( !isUserAgreement() ) startNotiAnimation();
     }
 
     @Override
@@ -456,6 +468,25 @@ public class DropListUIService implements SystemUIBase {
                         .start();
             }
         }, NOTI_TIME_OUT); 
+    }
+
+    private boolean isUserAgreement() {
+        if ( mContext == null ) return false; 
+        int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
+            CarExtraSettings.Global.FALSE);   
+        if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
+        else return true;
+    }
+
+    private ContentObserver createUserAgreeObserver() {
+        ContentObserver observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( !isUserAgreement() ) startNotiAnimation();
+            }
+        };
+        return observer; 
     }
 
     private Dialog.OnShowListener mNotiShowListener = new Dialog.OnShowListener() {
