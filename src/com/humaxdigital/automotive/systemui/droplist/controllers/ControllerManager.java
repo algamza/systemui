@@ -69,6 +69,8 @@ public class ControllerManager {
     private void init() {
         if ( mContext == null ) return;
         Resources res = mContext.getResources();
+        // NOTE: removed wifi 
+        /*
         if ( ProductConfig.getFeature() != ProductConfig.FEATURE.AVNT ) {
             mControllers.add(new WifiController()
                     .init(new MenuLayout(mContext)
@@ -77,7 +79,7 @@ public class ControllerManager {
                             res.getDrawable(R.drawable.dr_btn_wifi_p),
                             res.getDrawable(R.drawable.dr_btn_wifi_d)))
                     .setListener(mControlListener));
-        }
+        }*/
         mControllers.add(new BluetoothController()
                 .init(new MenuLayout(mContext)
                     .setText(res.getString(R.string.STR_BLUETOOTH_06_ID))
@@ -119,7 +121,8 @@ public class ControllerManager {
                         res.getDrawable(R.drawable.dr_btn_a_night_n),
                         res.getString(R.string.STR_NIGHT_04_ID)))
                 .setListener(mControlListener));
-        if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
+         // NOTE: removed wifi 
+        //if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
             mControllers.add(new SetupController()
                     .init(new MenuLayout(mContext)
                         .setText(res.getString(R.string.STR_SETUP_06_ID))
@@ -127,7 +130,7 @@ public class ControllerManager {
                             res.getDrawable(R.drawable.dr_btn_set_p),
                             res.getDrawable(R.drawable.dr_btn_set_d)))
                     .setListener(mControlListener));
-        }
+        //}
         mControllers.add(new ThemeController()
                 .init(new MenuLayout(mContext)
                     .addIconText(ThemeController.Theme.THEME1.ordinal(), 
