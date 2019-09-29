@@ -305,8 +305,14 @@ public class DevNavigationBar extends FrameLayout {
     }
 
     private void retrievePeriodicData() {
-        mTopActivity = mActivityManager.getRunningTasks(1).get(0).topActivity;
-        if (mCurrentActivityTextView != null) {
+        final List<ActivityManager.RunningTaskInfo> runningTaskInfoList =
+                mActivityManager.getRunningTasks(1);
+        if (!runningTaskInfoList.isEmpty())
+            mTopActivity = runningTaskInfoList.get(0).topActivity;
+        else
+            mTopActivity = null;
+
+        if (mCurrentActivityTextView != null && mTopActivity != null) {
             mCurrentActivityTextView.setText(mTopActivity.flattenToShortString());
         }
 
