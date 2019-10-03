@@ -305,7 +305,7 @@ public class VolumeControlService extends Service {
             if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(mode, volume) ) return;
             if ( mVCRMLog != null ) mVCRMLog.updateLog(mode, volume);
 
-            if ( mIsSettingsActivity ) return;
+            if ( mIsSettingsActivity && mode != AudioTypes.LAS_BAIDU_VR_TTS ) return;
             if ( isExceptionVolume(VolumeUtil.convertToType(mode)) ) return;
 
             if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
