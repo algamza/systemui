@@ -149,7 +149,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mIsPowerOff);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -162,7 +162,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mUserAgreementMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -175,7 +175,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mUserSwitching);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -188,7 +188,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mBTCalling);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -201,7 +201,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mEmergencyMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -214,7 +214,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mBluelinkMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -227,7 +227,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mImmoilizationMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -240,7 +240,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mSlowdownMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
@@ -253,7 +253,7 @@ public class UserProfileController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setUserIconDisable(mRearCameraMode);
+                    checkUserIconDisable(); 
                 }
             }); 
         }
