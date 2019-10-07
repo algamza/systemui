@@ -14,7 +14,11 @@ import android.net.Uri;
 import android.extension.car.settings.CarExtraSettings;
 import android.extension.car.CarSensorManagerEx;
 import android.car.hardware.CarSensorEvent;
+import android.car.hardware.CarPropertyValue;
+import android.car.VehicleAreaType;
+import android.extension.car.CarNaviManagerEx;
 import android.extension.car.value.CarSensorEventEx;
+import android.extension.car.CarPropertyFilter;
 import android.car.CarNotConnectedException;
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
@@ -28,11 +32,13 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     };
     private CarExClient mCarClient = null;
     private CarSensorManagerEx mCarSensorEx = null;
+    private CarNaviManagerEx mCarNaviEx = null; 
     private ContentResolver mContentResolver;
     private ContentObserver mModeObserver; 
     private ContentObserver mBrightnessDayObserver; 
     private ContentObserver mBrightnessNightObserver; 
     private boolean mIsSensorNight = false;
+    private boolean mIsAutoLightActivated = false; 
     private Mode mCurrentMode = Mode.AUTOMATIC; 
     private int mCurrentNightValue = 0;
     private int mCurrentDayValue = 0;
@@ -67,7 +73,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
         int brightness = 0;
         switch(mCurrentMode) {
             case AUTOMATIC: {
-                if ( mIsSensorNight ) brightness = mCurrentNightValue; 
+                if ( isNightMode() ) brightness = mCurrentNightValue; 
                 else brightness = mCurrentDayValue; 
                 break;
             }
@@ -84,7 +90,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
 
         switch(mCurrentMode) {
             case AUTOMATIC: {
-                if ( mIsSensorNight ) setNightBrightness(e); 
+                if ( isNightMode() ) setNightBrightness(e); 
                 else setDayBrightness(e);
                 break;
             }
@@ -121,10 +127,14 @@ public class BrightnessImpl extends BaseImplement<Integer> {
                 return;
             }
             mCarSensorEx = mCarClient.getSensorManager();
-            if ( mCarSensorEx == null ) return;
+            mCarNaviEx = mCarClient.getNaviManager(); 
+            if ( mCarSensorEx == null || mCarNaviEx == null ) return;
             mCarSensorEx.registerListener(mSensorChangeListener, 
                 CarSensorManagerEx.SENSOR_TYPE_NIGHT_MODE, 
                 CarSensorManagerEx.SENSOR_RATE_NORMAL);
+            CarPropertyFilter filter = new CarPropertyFilter();
+            filter.addId(CarNaviManagerEx.VENDOR_CANRX_AUTO_LIGHT_MODE); 
+            mCarNaviEx.registerCallback(mNaviChangeListener, filter);
             CarSensorEventEx evt = mCarSensorEx.getLatestSensorEventEx(
                     CarSensorManagerEx.SENSOR_TYPE_NIGHT_MODE);
             if ( evt != null ) {
@@ -134,9 +144,26 @@ public class BrightnessImpl extends BaseImplement<Integer> {
                     Log.d(TAG, "isNightMode="+night.isNightMode);
                 }
             }
+
+            mIsAutoLightActivated = isAutoLightMode(mCarNaviEx.getIntProperty(
+                CarNaviManagerEx.VENDOR_CANRX_AUTO_LIGHT_MODE, 
+                VehicleAreaType.VEHICLE_AREA_TYPE_GLOBAL)); 
+
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Car is not connected!", e);
         }
+    }
+
+    private boolean isAutoLightMode(int property) {
+        boolean isAutoLightMode = false; 
+        switch(property) {
+            case 0x2: { 
+                isAutoLightMode = true; 
+                break; 
+            }
+        }
+        Log.d(TAG, "isAutoLightMode="+isAutoLightMode+", property="+property); 
+        return isAutoLightMode; 
     }
 
     private void createObserver() {
@@ -225,6 +252,15 @@ public class BrightnessImpl extends BaseImplement<Integer> {
         return mode; 
     }
 
+    private boolean isNightMode() {
+        boolean isNightMode = false; 
+        if ( mIsAutoLightActivated || mIsSensorNight ) {
+            isNightMode = true; 
+        }
+        Log.d(TAG, "isNightMode="+isNightMode); 
+        return isNightMode; 
+    }
+
     private ContentObserver createBrightnessDayObserver() {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
@@ -292,4 +328,21 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             }
         }
     };
+
+    private final CarNaviManagerEx.CarNaviEventCallback mNaviChangeListener =
+        new CarNaviManagerEx.CarNaviEventCallback () {
+        @Override
+        public void onChangeEvent(CarPropertyValue carPropertyValue) {
+            int autoLightMode = (int)carPropertyValue.getValue();
+            mIsAutoLightActivated = isAutoLightMode(autoLightMode); 
+            if ( mCurrentMode != Mode.AUTOMATIC ) return;
+            sendBrightnessChangeEvent();
+        }
+
+        @Override
+        public void onErrorEvent(int i, int i1) {
+
+        }
+    };
+
 }

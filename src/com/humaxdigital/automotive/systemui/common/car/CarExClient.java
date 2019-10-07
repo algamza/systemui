@@ -16,6 +16,7 @@ import android.extension.car.CarClusterManager;
 import android.extension.car.CarHvacManagerEx;
 import android.extension.car.CarBLEManager;
 import android.extension.car.CarUSMManager;
+import android.extension.car.CarNaviManagerEx;
 import android.car.CarNotConnectedException;
 
 import android.util.Log;
@@ -46,6 +47,7 @@ public class CarExClient {
     private CarHvacManagerEx mCarHvacManager = null; 
     private CarBLEManager mCarBLEManager = null; 
     private CarUSMManager mUsmManager = null; 
+    private CarNaviManagerEx mCarNaviMananger = null;
 
     private static CarExClient mInstance = null; 
     private CarExClient() {}
@@ -114,6 +116,11 @@ public class CarExClient {
         return mCarCluster; 
     }
 
+    public synchronized CarNaviManagerEx getNaviManager() {
+        if ( mState != STATE.CONNECTED ) return null; 
+        return mCarNaviMananger; 
+    }
+
     private final ServiceConnection mServiceConnectionListenerClient =
             new ServiceConnection () {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -127,6 +134,7 @@ public class CarExClient {
                     mCarHvacManager = (CarHvacManagerEx) mCarEx.getCarManager(android.car.Car.HVAC_SERVICE);
                     mCarBLEManager = (CarBLEManager) mCarEx.getCarManager(android.extension.car.CarEx.BLE_SERVICE);
                     mUsmManager = (CarUSMManager) mCarEx.getCarManager(android.extension.car.CarEx.USM_SERVICE);
+                    mCarNaviMananger = (CarNaviManagerEx) mCarEx.getCarManager(CarEx.CAR_NAVIGATION_SERVICE);
                     mState = STATE.CONNECTED; 
                     for ( CarExClientListener listener : mListeners ) {
                         if ( listener != null ) listener.onConnected();
