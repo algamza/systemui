@@ -92,9 +92,13 @@ public class MenuLayout extends LinearLayout {
             states.addState(new int[] { android.R.attr.state_enabled},
                     getResources().getDrawable(R.drawable.dr_btn_n));
             mIconBG.setImageDrawable(states);
-            
         } else {
-            mIconBG.setImageDrawable(getResources().getDrawable(R.drawable.dr_btn_n)); 
+            StateListDrawable states = new StateListDrawable();
+            states.addState(new int[] {android.R.attr.state_pressed},
+                getResources().getDrawable(R.drawable.dr_btn_p));
+            states.addState(new int[] { android.R.attr.state_enabled},
+                    getResources().getDrawable(R.drawable.dr_btn_d));
+            mIconBG.setImageDrawable(states); 
         }
     }
 
@@ -184,8 +188,14 @@ public class MenuLayout extends LinearLayout {
     }
 
     public void updateEnable(boolean enable) {
-        if ( enable ) mIcon.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE)); 
-        else mIcon.setImageDrawable(mButtonIcon.get(ButtonState.DISABLE)); 
+        if ( enable ) {
+            mIcon.setImageDrawable(mButtonIcon.get(ButtonState.ENABLE)); 
+            enableBG(true); 
+        }
+        else {
+            mIcon.setImageDrawable(mButtonIcon.get(ButtonState.DISABLE)); 
+            enableBG(false); 
+        }
         mEnable = enable;
     }
 

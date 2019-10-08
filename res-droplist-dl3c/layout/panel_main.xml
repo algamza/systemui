@@ -3,26 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/panel"
     android:layout_width="match_parent"
-    android:layout_height="642px">
+    android:layout_height="match_parent">
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="642px"
+        android:layout_height="590px"
         android:layout_gravity="top|center_horizontal"
-        android:background="@drawable/custom_bg_gradient"
-        android:alpha="0.95" />
+        android:background="@color/colorBackground"
+        android:alpha="0.92" />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="642px"
+        android:layout_height="630px"
         android:orientation="vertical"
-        android:weightSum="642">
+        android:weightSum="630">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="133" />
+            android:layout_weight="83" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="208"
+            android:layout_weight="203"
             android:orientation="horizontal"
             android:weightSum="1920">
             <FrameLayout
@@ -105,18 +105,18 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="78">
+            android:layout_weight="83">
             <FrameLayout
                 android:id="@+id/view_popup"
                 android:layout_width="84px"
                 android:layout_height="57px"
                 android:gravity="center"
                 android:visibility="gone">
-                <View
+                <ImageView
                     android:id="@+id/img_popup"
-                    android:layout_width="84px"
-                    android:layout_height="57px"
-                    android:background="@drawable/set_btn_bubble"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/set_btn_bubble"
                     android:layout_gravity="center_vertical|center_horizontal"/>
                 <TextView
                     android:id="@+id/text_progress"
@@ -125,7 +125,6 @@
                     android:layout_marginTop="5px"
                     android:text="0"
                     android:textSize="33px"
-                    android:textColor="@color/bubble_popup_text"
                     android:gravity="center_horizontal|center_vertical"
                     android:layout_gravity="center_horizontal"/>
             </FrameLayout>
@@ -134,9 +133,9 @@
             android:id="@+id/seekbar_control"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="146"
+            android:layout_weight="147"
             android:orientation="vertical"
-            android:weightSum="146">
+            android:weightSum="147">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -214,7 +213,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="11" />
+                android:layout_weight="12" />
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -247,13 +246,18 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="77"
+            android:layout_weight="74"
             android:orientation="vertical"
-            android:weightSum="77">
+            android:weightSum="74">
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="76"/>
+                android:layout_weight="17"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="56">
+            </FrameLayout>
              <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -265,27 +269,33 @@
                     android:src="@drawable/dr_etc_line"/>
             </FrameLayout>
         </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="40"
+            android:background="@color/colorShadow"
+            android:alpha="0.9" />
     </LinearLayout>
     <FrameLayout
-        android:layout_width="12px"
-        android:layout_height="7px"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="480px">
+        android:layout_marginTop="420px">
         <ImageView
             android:id="@+id/img_center"
-            android:layout_width="12px"
-            android:layout_height="7px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:src="@drawable/dr_ic_center" />
     </FrameLayout>
     <FrameLayout
         android:id="@+id/close"
-        android:layout_width="213px"
-        android:layout_height="56px"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="585px">
+        android:layout_marginTop="514px">
         <FrameLayout
-            android:layout_width="213px"
-            android:layout_height="56px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/close_n">
             <ImageView
                 android:layout_width="wrap_content"
@@ -293,8 +303,8 @@
                 android:src="@drawable/dr_btn_bottom_n"/>
         </FrameLayout>
         <FrameLayout
-            android:layout_width="213px"
-            android:layout_height="56px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/close_p"
             android:visibility="invisible">
             <ImageView

@@ -100,14 +100,8 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         Log.d(TAG, "getUserBitmap"); 
         Bitmap bm = mUserManager.getUserIcon(id);
         if ( bm == null ) {
-            //if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
-            //    bm = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.user_bg_profile_noimg_s_1); 
-            //else 
-                bm = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.co_status_profile_noimg); 
-            //bm = UserIcons.convertToBitmap(UserIcons.getDefaultUserIcon(
-            //    mContext.getResources(), id, false));
+            bm = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.co_status_profile_noimg); 
         }
-        //return bm;
         return mCurrentUserIcon;  
     }
 

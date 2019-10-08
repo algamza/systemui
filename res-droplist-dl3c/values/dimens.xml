@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="text_size_check_illumination">30px</dimen>
-    <dimen name="text_size_menu">32px</dimen>
+    <dimen name="text_size_check_illumination">30sp</dimen>
+    <dimen name="text_size_menu">32sp</dimen>
     <dimen name="checkbox_size">60px</dimen>
 </resources>

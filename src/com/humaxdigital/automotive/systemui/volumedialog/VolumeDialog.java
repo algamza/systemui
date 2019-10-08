@@ -64,17 +64,12 @@ public class VolumeDialog implements SystemUIBase {
         Log.d(TAG, "create"); 
         mContext = context; 
         if ( context == null ) return;
-        //if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
-        //    mDialog = new VolumeDialogWindowDL3C();
-        //else 
-            mDialog = new VolumeDialogWindow();
+
+        mDialog = new VolumeDialogWindow();
         mDialog.init(mContext); 
         mDialog.registDialogListener(mDialogListener); 
 
-        //if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) 
-        //    mController = new VolumeControllerDL3C(); 
-        //else
-            mController = new VolumeController(); 
+        mController = new VolumeController(); 
 
         mController.init(mContext, mDialog.getView()); 
         mController.registVolumeListener(mVolumeListener);

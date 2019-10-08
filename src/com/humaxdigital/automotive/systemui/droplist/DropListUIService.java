@@ -147,14 +147,7 @@ public class DropListUIService implements SystemUIBase {
         lp.width = mScreenWidth;
         lp.height = mScreenBottom - mNavBarHeight;
         lp.windowAnimations = -1;
-        /*
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
-            mWindow.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND); 
-            lp.dimAmount = 0.90f; 
-            int height = mContext.getResources().getIdentifier("dl3c_window_height", "integer",  mContext.getPackageName());
-            if ( height > 0 ) lp.height = mContext.getResources().getInteger(height); 
-        }
-        */
+
         mWindow.setAttributes(lp);
         mWindow.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         

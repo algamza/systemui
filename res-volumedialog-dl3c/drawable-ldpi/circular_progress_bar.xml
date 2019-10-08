@@ -11,8 +11,8 @@
         android:useLevel="true"><!-- this line fixes the issue for lollipop api 21 -->
         <gradient
             android:angle="270"
-            android:endColor="#6b9af2"
-            android:startColor="#6b9af2"
+            android:endColor="#fa1561"
+            android:startColor="#fa1561"
             android:type="sweep"
             android:useLevel="false" />
     </shape>
