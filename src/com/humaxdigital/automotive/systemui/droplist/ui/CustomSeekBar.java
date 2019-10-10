@@ -8,7 +8,10 @@ import android.graphics.RectF;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
 
+import android.util.Log;
+
 public class CustomSeekBar extends AppCompatSeekBar {
+    private static final String TAG = "CustomSeekBar"; 
     final private int COLOR_BACKGROUND = 0xff293342; 
     final private int COLOR_PROGRESS = 0xffffffff; 
     final private int SEEKBAR_HEIGHT = 10;
@@ -50,41 +53,47 @@ public class CustomSeekBar extends AppCompatSeekBar {
         int min = this.getMin(); 
         int range = max - min; 
         int center = (max+min)/2; 
+        int top = 0; 
+        int left =0; 
+        int right = 0; 
+        int bottom = 0; 
+        int progress = getProgress(); 
+        int height = getHeight(); 
+        int width = getWidth(); 
+        int offset = getThumbOffset(); 
 
-        rect.set(0 + getThumbOffset(),
-                (getHeight() / 2) - (SEEKBAR_HEIGHT/2),
-                getWidth()- getThumbOffset(),
-                (getHeight() / 2) + (SEEKBAR_HEIGHT/2));
+        rect.set(0 + offset,
+                (height / 2) - (SEEKBAR_HEIGHT/2),
+                width- offset,
+                (height / 2) + (SEEKBAR_HEIGHT/2));
         paint.setColor(COLOR_BACKGROUND);
         RectF rectf = new RectF(rect);
         canvas.drawRoundRect(rectf, SEEKBAR_RADIUS, SEEKBAR_RADIUS, paint);
 
         if ( mHighlightType == HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT ) {
-            rect.set(0,
-                (getHeight() / 2) - (SEEKBAR_HEIGHT/2),
-                getWidth() / 2 + (getWidth() / (range)) * (getProgress() - center),
-                getHeight() / 2 + (SEEKBAR_HEIGHT/2));
-                paint.setColor(COLOR_PROGRESS);
-                canvas.drawRect(rect, paint);
+            top = 0; 
+            left = (height / 2) - (SEEKBAR_HEIGHT/2); 
+            right = width / 2 + (width / (range+1)) * (progress - center) - 7; 
+            bottom = height / 2 + (SEEKBAR_HEIGHT/2); 
+        } else if (progress > center) {
+            top = width / 2; 
+            left = (height / 2) - (SEEKBAR_HEIGHT/2); 
+            right = width / 2 + (width / range) * (progress - center); 
+            bottom = height / 2 + (SEEKBAR_HEIGHT/2); 
+
         } else {
-            if (this.getProgress() > center) {
-                rect.set(getWidth() / 2,
-                        (getHeight() / 2) - (SEEKBAR_HEIGHT/2),
-                        getWidth() / 2 + (getWidth() / range) * (getProgress() - center),
-                        getHeight() / 2 + (SEEKBAR_HEIGHT/2));
-                paint.setColor(COLOR_PROGRESS);
-                canvas.drawRect(rect, paint);
-            }
-    
-            if (this.getProgress() < center) {
-                rect.set(getWidth() / 2 - ((getWidth() / range) * (center - getProgress())),
-                        (getHeight() / 2) - (SEEKBAR_HEIGHT/2),
-                        getWidth() / 2,
-                        getHeight() / 2 + (SEEKBAR_HEIGHT/2));
-                paint.setColor(COLOR_PROGRESS);
-                canvas.drawRect(rect, paint);
-            }
+            top = (width / 2) - ((width / range) * (center - progress)); 
+            left = (height / 2) - (SEEKBAR_HEIGHT/2); 
+            right = width / 2; 
+            bottom = height / 2 + (SEEKBAR_HEIGHT/2); 
         }
+
+        //Log.d(TAG, "type="+mHighlightType+", center="+center+", range="+range+", progress="+progress+", width="+width+", height="+height+", offset="+offset+", top="+top+", left="+left+", right="+right+", bottom="+bottom); 
+
+        rect.set(top, left, right, bottom);
+        paint.setColor(COLOR_PROGRESS);
+        canvas.drawRect(rect, paint);
+
         super.onDraw(canvas);
     }
 }
