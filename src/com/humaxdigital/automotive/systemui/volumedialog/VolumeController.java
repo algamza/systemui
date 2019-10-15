@@ -62,7 +62,7 @@ public class VolumeController extends VolumeControllerBase {
     private final int VOLUME_LOOP_TIMEOUT = 100; 
     
     private final int PROGRESS_UI_STEP_MAX = 45;
-    private final int PROGRESS_STEP_MAX = 170;
+    private int PROGRESS_STEP_MAX = 170;
     private final String MUTE_VALUE_TEXT = "0"; 
     private boolean mVolumeMute = false;
     private UpdateHandler mHandler = new UpdateHandler();
@@ -90,6 +90,8 @@ public class VolumeController extends VolumeControllerBase {
         Log.d(TAG, "VolumeController"); 
         mContext = context;
         mView = view;
+        int id_progress_max = mContext.getResources().getIdentifier("progress_max", "integer",  mContext.getPackageName());
+        if ( id_progress_max > 0 ) PROGRESS_STEP_MAX = mContext.getResources().getInteger(id_progress_max);
         createViews();
         initViews();
         if ( mContext == null ) return; 

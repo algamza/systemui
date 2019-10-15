@@ -81,5 +81,5 @@
         android:progressDrawable="@drawable/circular_progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
         android:max="360"
-        android:progress="170" />
+        android:progress="@integer/progress_max" />
 </FrameLayout>

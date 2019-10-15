@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rotate xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fromDegrees="85"
-    android:toDegrees="-275"
+    android:fromDegrees="70"
+    android:toDegrees="-290"
     android:pivotX="50%"
     android:pivotY="50%">
     <shape
-        android:innerRadiusRatio="2.36"
+        android:innerRadiusRatio="2.28"
         android:shape="ring"
         android:thickness="8px"
         android:useLevel="true"><!-- this line fixes the issue for lollipop api 21 -->
