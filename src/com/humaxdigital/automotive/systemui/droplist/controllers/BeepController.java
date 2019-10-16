@@ -3,22 +3,27 @@ package com.humaxdigital.automotive.systemui.droplist.controllers;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
+import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 import android.content.Context;
 import android.content.res.Resources;
 
+
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
+import android.util.Log;
+
 public class BeepController implements BaseController {
+    private static final String TAG = "BeepController";
     private MenuLayout mView;
     private SystemControl mSystem;  
     private UpdateHandler mHandler = new UpdateHandler();
     private boolean mOn = false; 
     private boolean mIsCalling = false; 
+    private Rect mButtonRect = new Rect(0,0,0,0); 
 
     @Override
     public BaseController init(View view) {
@@ -91,12 +96,15 @@ public class BeepController implements BaseController {
 
     private final MenuLayout.MenuTouchListener mTouchListener = new MenuLayout.MenuTouchListener() {
         @Override
-        public boolean onTouch(MotionEvent event) {
+        public boolean onTouch(View v, MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
+                    mButtonRect = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
                     break; 
                 }
                 case MotionEvent.ACTION_UP: {
+                    if ( !mButtonRect.contains(v.getLeft() + (int)event.getX(), v.getTop() + (int)event.getY()) ) 
+                        break;
                     if ( mSystem == null ) return false;
                     if ( mIsCalling ) return false; 
                     if ( mView.isEnable() ) {

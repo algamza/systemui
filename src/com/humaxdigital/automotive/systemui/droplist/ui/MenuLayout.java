@@ -22,7 +22,7 @@ public class MenuLayout extends LinearLayout {
     }
 
     public interface MenuTouchListener {
-        boolean onTouch(MotionEvent event);
+        boolean onTouch(View v, MotionEvent event);
     }
 
     private enum ButtonState {
@@ -236,7 +236,7 @@ public class MenuLayout extends LinearLayout {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if ( mTouchListener == null ) return false;
-            if ( mTouchListener.onTouch(event) ) return true;
+            if ( mTouchListener.onTouch(v, event) ) return true;
             return false;
         }
     };
