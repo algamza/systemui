@@ -128,6 +128,8 @@ public class SystemDataController extends BaseController<Integer> {
 
         Log.d(TAG, "fetch:avaliable="+mIsNetworkAvaliable+", connected="+mIsNetworkConnected
             +", avaliable data="+mIsAvaliableActivityType+", type="+mDataType+", status="+mDataStatus);
+            
+        broadcastStatus(mDataStatus); 
     }
 
     public void fetchTMSClient(TMSClient tms) {
