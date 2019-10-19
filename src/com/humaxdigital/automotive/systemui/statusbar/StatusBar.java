@@ -38,7 +38,7 @@ import com.humaxdigital.automotive.systemui.statusbar.dev.DevModeController;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarDev;
-import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
+import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
@@ -54,10 +54,12 @@ public class StatusBar implements SystemUIBase {
     private View mDropListTouchWindow; 
     private View mNavBarView;
     private View mStatusBarView; 
+    private View mDisableView; 
     private DevNavigationBar mDevNavView;
     private DevModeController mDevModeController;
     private ControllerManagerBase mControllerManager; 
     private StatusBarService mStatusBarService;
+    private StatusBarSystem mStatusBarSystem; 
     private boolean mUseSystemGestures;
     private boolean mCollapseDesired = false;
     private int mDropListTouchHeight = 0; 
@@ -66,7 +68,7 @@ public class StatusBar implements SystemUIBase {
     private int mTouchDownY = 0; 
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
-    private int mTouchOffset = 15; 
+    private int mTouchOffset = 15;
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
 
     @Override
@@ -88,6 +90,7 @@ public class StatusBar implements SystemUIBase {
         // Defers creating developers view not to interfere loading of statusbar
         new Handler().postDelayed(() -> {
             createDevelopersWindow();
+            updateDisableWindow();
         }, 1000);
     }
     
@@ -262,6 +265,28 @@ public class StatusBar implements SystemUIBase {
         setContentBarView(mNavBarView);
     }
 
+    private void updateDisableWindow() {
+        if ( isUserSpecialCase() ) disableWindow(true);
+        else disableWindow(false); 
+    }
+
+    private void disableWindow(boolean on) {
+        if ( mNavBarWindow == null ) return; 
+        if ( on ) {
+            mDisableView = View.inflate(mContext, R.layout.disable_window, null);
+            mDisableView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true; 
+                }
+            }); 
+            mNavBarWindow.addView(mDisableView); 
+        } else {
+            if ( mDisableView != null ) mNavBarWindow.removeView(mDisableView); 
+            mDisableView = null ;
+        }
+    }
+
     private void createDevelopersWindow() {
         mDevNavView = (DevNavigationBar) View.inflate(mContext, R.layout.dev_nav_bar, null);
         mDevNavView.init(new DevCommandsProxy(mContext) {
@@ -345,10 +370,14 @@ public class StatusBar implements SystemUIBase {
             }
 
             mStatusBarService = ((StatusBarService.StatusBarServiceBinder)service).getService();
-
+            
             mControllerManager = new ControllerManager();
             mControllerManager.create(mContext, mNavBarView);
             mControllerManager.init(mStatusBarService); 
+
+            mStatusBarSystem = mStatusBarService.getStatusBarSystem(); 
+            if ( mStatusBarSystem != null ) 
+                mStatusBarSystem.registerSystemCallback(mSystemStatusCallback);
         }
 
         @Override
@@ -486,4 +515,22 @@ public class StatusBar implements SystemUIBase {
         Intent intent = new Intent(OPEN_DROPLIST); 
         mContext.sendBroadcast(intent);
     }
+
+    private boolean isUserSpecialCase() {
+        boolean is_special = false; 
+        if ( mStatusBarService == null ) return is_special; 
+        if ( mStatusBarService.isUserAgreement() ) is_special = true;
+        if ( mStatusBarService.isUserSwitching() ) is_special = true; 
+        return is_special; 
+    }
+    private StatusBarSystem.StatusBarSystemCallback mSystemStatusCallback = new StatusBarSystem.StatusBarSystemCallback() {
+        @Override
+        public void onUserAgreementMode(boolean on) {
+            updateDisableWindow(); 
+        }
+        @Override
+        public void onUserSwitching(boolean on) {
+            updateDisableWindow(); 
+        }
+    }; 
 }
