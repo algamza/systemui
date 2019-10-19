@@ -32,7 +32,6 @@ import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManagerBase;
-import com.humaxdigital.automotive.systemui.statusbar.controllers.dl3c.ControllerManagerDL3C;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevCommandsProxy;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevModeController;
 import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
@@ -128,81 +127,6 @@ public class StatusBar implements SystemUIBase {
         if ( mControllerManager != null ) mControllerManager.configurationChange(newConfig);
     }
 
-    private void createStatusBarWindow() {
-        if ( mWindowManager == null || mContext == null ) return;
-        mStatusBarWindow = (ViewGroup) View.inflate(mContext, R.layout.status_bar_window, null);
-        mStatusBarWindow.setOnTouchListener(mStatusBarTouchListener);
-        String package_name = mContext.getPackageName(); 
-        int id_down_y = mContext.getResources().getIdentifier("statusbar_touch_down_y_dl3c", "integer",  package_name);
-        int id_touch_offset= mContext.getResources().getIdentifier("statusbar_touch_offset_dl3c", "integer",  package_name);
-        if ( id_down_y > 0 ) mTouchDownY = mContext.getResources().getInteger(id_down_y); 
-        if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
-
-        int height = mContext.getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
-        Log.d(TAG, "height="+height); 
-        int id_statusbar_height = mContext.getResources().getIdentifier("statusbar_height", "integer",  mContext.getPackageName());
-        if ( id_statusbar_height > 0 ) mStatusBarHeight = mContext.getResources().getInteger(id_statusbar_height);
-        if ( mStatusBarWindow == null ) return;
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                LayoutParams.MATCH_PARENT, mStatusBarHeight,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                PixelFormat.TRANSLUCENT);
-        lp.setTitle("HmxStatusBar");
-        lp.windowAnimations = 0; 
-        lp.gravity = Gravity.TOP;
-
-        mWindowManager.addView(mStatusBarWindow, lp);
-
-        mStatusBarView = inflateStatusBarView();
-        setContentBarView(mStatusBarView);
-    }
-
-    private void createDL3CDropListTouchWindow() {
-        if ( mWindowManager == null || mContext == null ) return;
-
-        if (mUseSystemGestures) {
-            // Don't need the fake invisible top window to trigger the droplist
-            // as long as using system gestures.
-            return;
-        }
-
-        mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
-        
-        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
-        String package_name = mContext.getPackageName(); 
-        int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height_dl3c", "integer",  package_name);
-        int id_droplist_touch_width = mContext.getResources().getIdentifier("droplist_touch_width_dl3c", "integer",  package_name);
-        int id_down_y = mContext.getResources().getIdentifier("statusbar_touch_down_y", "integer",  package_name);
-        int id_touch_offset = mContext.getResources().getIdentifier("statusbar_touch_offset", "integer",  package_name);
-        if ( id_down_y > 0 ) mTouchDownY = mContext.getResources().getInteger(id_down_y); 
-        if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = mContext.getResources().getInteger(id_droplist_touch_height);
-        if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = mContext.getResources().getInteger(id_droplist_touch_width);
-        if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
-
-        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
-            mDropListTouchWidth,
-            mDropListTouchHeight,
-            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-            PixelFormat.TRANSLUCENT);
-        slp.token = new Binder();
-        slp.gravity = Gravity.TOP|Gravity.RIGHT;
-        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        slp.setTitle("HmxSystemUI");
-        slp.packageName = package_name;
-        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-
-        mWindowManager.addView(mDropListTouchWindow, slp);
-    }
-
     private void createDropListTouchWindow() {
         if ( mWindowManager == null || mContext == null ) return;
 
@@ -214,7 +138,7 @@ public class StatusBar implements SystemUIBase {
 
         mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
         
-        mDropListTouchWindow.setOnTouchListener(mStatusBarTouchListener);
+        mDropListTouchWindow.setOnTouchListener(mDroplistTouchListener);
         String package_name = mContext.getPackageName(); 
         int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
         int id_droplist_touch_width = mContext.getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
@@ -325,31 +249,6 @@ public class StatusBar implements SystemUIBase {
         return view;
     }
 
-    public View inflateStatusBarView() {
-        if ( mContext == null ) return null; 
-        View view = View.inflate(mContext, R.layout.dl3c_statusbar, null);
-        return view;
-    }
-
-    public View inflateDevNavBarView() {
-        if ( mContext == null ) return null;
-        final DevNavigationBar devNavBarView = (DevNavigationBar)
-                View.inflate(mContext, R.layout.dev_nav_bar, null);
-
-        devNavBarView.init(new DevCommandsProxy(mContext) {
-            @Override
-            public Bundle invokeDevCommand(String command, Bundle args) {
-                if (mStatusBarService != null) {
-                    StatusBarDev dev = mStatusBarService.getStatusBarDev(); 
-                    if ( dev != null ) return dev.invokeDevCommand(command, args);
-                }
-                return new Bundle();
-            }
-        });
-
-        return devNavBarView;
-    }
-
     public void setContentBarView(View view) {
         if ( mNavBarWindow == null ) return;
         mNavBarWindow.removeAllViews();
@@ -419,7 +318,7 @@ public class StatusBar implements SystemUIBase {
             mContext.unregisterReceiver(mSystemGestureReceiver);
     }
 
-    private final View.OnTouchListener mStatusBarTouchListener = new View.OnTouchListener() {
+    private final View.OnTouchListener mDroplistTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             int y = (int)event.getY(); 
@@ -519,14 +418,14 @@ public class StatusBar implements SystemUIBase {
     private boolean isUserSpecialCase() {
         boolean is_special = false; 
         if ( mStatusBarService == null ) return is_special; 
-        if ( mStatusBarService.isUserAgreement() ) is_special = true;
+        //if ( mStatusBarService.isUserAgreement() ) is_special = true;
         if ( mStatusBarService.isUserSwitching() ) is_special = true; 
         return is_special; 
     }
     private StatusBarSystem.StatusBarSystemCallback mSystemStatusCallback = new StatusBarSystem.StatusBarSystemCallback() {
         @Override
         public void onUserAgreementMode(boolean on) {
-            updateDisableWindow(); 
+            //updateDisableWindow(); 
         }
         @Override
         public void onUserSwitching(boolean on) {
