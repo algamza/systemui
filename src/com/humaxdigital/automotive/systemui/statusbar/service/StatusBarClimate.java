@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.provider.Settings;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
 import android.util.Log;
@@ -31,6 +33,10 @@ public class StatusBarClimate {
     private List<StatusBarClimateCallback> mClimateCallbacks = new ArrayList<>();
     private DataStore mDataStore = null;
     private Context mContext = null;
+    private Timer mTimer = new Timer();
+    private TimerTask mTimerTaskClimateChattering = null;
+    private boolean mTryOpenClimate = false; 
+    private final int OPEN_CLIMATE_CHATTERING_TIME = 1000; 
     
     // special case
     private boolean mRearCamera = false; 
@@ -348,6 +354,17 @@ public class StatusBarClimate {
         }
         if ( !OPEN_HVAC_APP.equals("") ) {
             Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);
+
+            if ( mTryOpenClimate ) return;
+            mTryOpenClimate = true;
+            mTimerTaskClimateChattering = new TimerTask() {
+                @Override
+                public void run() {
+                    mTryOpenClimate = false;
+                }
+            };
+            mTimer.schedule(mTimerTaskClimateChattering, OPEN_CLIMATE_CHATTERING_TIME);
+
             vrCloseRequest();
             Intent intent = new Intent(OPEN_HVAC_APP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
