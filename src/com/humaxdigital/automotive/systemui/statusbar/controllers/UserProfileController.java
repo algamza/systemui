@@ -87,17 +87,18 @@ public class UserProfileController {
 
     private void initView() {
         if ( mParentView == null ) return;
-        mParentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if ( mService == null ) return;
-                mService.openUserProfileSetting(); 
-            }
-        });
-
+        mParentView.setOnClickListener(mOnClickListener);
         mUserProfileView = mParentView.findViewById(R.id.img_useprofile);
         if ( mUserProfileView != null ) mUserProfileView.setImageBitmap(getUserBitmap()); 
     }
+
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if ( mService == null ) return;
+            mService.openUserProfileSetting(); 
+        }
+    }; 
 
     private Bitmap getUserBitmap() {
         if ( mService == null ) return null; 
@@ -108,8 +109,13 @@ public class UserProfileController {
 
     private void setUserIconDisable(boolean disable) {
         if ( mUserProfileView == null ) return; 
-        if ( disable ) mUserProfileView.setAlpha(0.4f); 
-        else mUserProfileView.setAlpha(1.0f); 
+        if ( disable ) {
+            mUserProfileView.setAlpha(0.4f); 
+            if ( mParentView != null ) mParentView.setOnClickListener(null);
+        } else {
+            mUserProfileView.setAlpha(1.0f); 
+            if ( mParentView != null ) mParentView.setOnClickListener(mOnClickListener);
+        }
     }
 
     @Override
