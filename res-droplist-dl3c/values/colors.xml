@@ -7,5 +7,5 @@
     <color name="colorCheckBox">#ffffff</color>
     <color name="colorMenu">#e5eaff</color>
     <color name="colorShadow">#000000</color>
-    <color name="colorBackground">#020d23</color>
+    <color name="colorBackground">#000000</color>
 </resources>
