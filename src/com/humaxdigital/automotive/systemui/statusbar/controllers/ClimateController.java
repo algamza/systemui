@@ -197,12 +197,14 @@ public class ClimateController {
             mClimatePanel = inflater.inflate(R.layout.du2_climate, null); 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat )
-            mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
+                mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
             else 
-            mClimatePanel = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
+                mClimatePanel = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C )
             mClimatePanel = inflater.inflate(R.layout.cn7c_climate, null); 
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C )
+            mClimatePanel = inflater.inflate(R.layout.dn8c_climate_no_seat, null); 
         else {
             if ( support_seat )
                 mClimatePanel = inflater.inflate(R.layout.dn8c_climate, null); 
