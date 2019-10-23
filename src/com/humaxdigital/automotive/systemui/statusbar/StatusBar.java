@@ -240,10 +240,6 @@ public class StatusBar implements SystemUIBase {
         View view = null; 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
             view = View.inflate(mContext, R.layout.du2_navi_overlay, null);
-        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) 
-            view = View.inflate(mContext, R.layout.dn8c_navi_overlay, null);
-        else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) 
-            view = View.inflate(mContext, R.layout.du2_navi_overlay, null);
         else 
             view = View.inflate(mContext, R.layout.dn8c_navi_overlay, null);
         return view;
