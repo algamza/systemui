@@ -36,6 +36,7 @@ LOCAL_STATIC_JAVA_LIBRARIES += jsr305 \
 	android.extension.car
 	  
 LOCAL_RESOURCE_DIR := \
+	$(LOCAL_PATH)/res \
 	$(LOCAL_PATH)/res-wallpaper
 
 ifneq ($(filter dydl_%, $(TARGET_PRODUCT)),)

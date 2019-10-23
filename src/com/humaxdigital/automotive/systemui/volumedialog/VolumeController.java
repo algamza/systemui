@@ -1,6 +1,7 @@
 package com.humaxdigital.automotive.systemui.volumedialog;
 
 import android.content.Context;
+import android.content.ContentResolver;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -10,6 +11,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.FrameLayout;
+import android.provider.Settings;
+import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.UserHandle;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,6 +23,7 @@ import java.util.Map;
 
 import android.util.Log;
 
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 import com.humaxdigital.automotive.systemui.R; 
 
 public class VolumeController extends VolumeControllerBase {
@@ -96,6 +102,7 @@ public class VolumeController extends VolumeControllerBase {
         initViews();
         if ( mContext == null ) return; 
         mUIHandler = new Handler(mContext.getMainLooper());
+        registKeyObserver();
     }
 
     @Override
@@ -595,5 +602,55 @@ public class VolumeController extends VolumeControllerBase {
                 }
             }
         }
+    }
+
+    private void registKeyObserver() {
+        if ( mContext == null ) return;
+        ContentResolver resolver = mContext.getContentResolver(); 
+        ContentObserver observer_volume_up = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContext == null || mUIHandler == null ) return;
+                if ( mCurrentVolume != mCurrentVolumeMax ) return;
+                int on = Settings.Global.getInt(mContext.getContentResolver(), 
+                    CONSTANTS.GLOBAL_KEY_VOLUME_UP, 
+                    CONSTANTS.GLOBAL_KEY_VOLUME_UP_OFF);
+                if ( on != CONSTANTS.GLOBAL_KEY_VOLUME_UP_ON ) return;
+                mUIHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for ( VolumeChangeListener listener : mListener ) {
+                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                        }
+                    }
+                });  
+            }
+        };
+        ContentObserver observer_volume_down = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mContext == null || mUIHandler == null ) return;
+                if ( mCurrentVolume != 0 ) return;
+                int on = Settings.Global.getInt(mContext.getContentResolver(), 
+                    CONSTANTS.GLOBAL_KEY_VOLUME_DOWN, 
+                    CONSTANTS.GLOBAL_KEY_VOLUME_DOWN_OFF);
+                if ( on != CONSTANTS.GLOBAL_KEY_VOLUME_DOWN_ON ) return;
+                mUIHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for ( VolumeChangeListener listener : mListener ) {
+                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                        }
+                    }
+                });  
+            }
+        };
+
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(CONSTANTS.GLOBAL_KEY_VOLUME_UP), 
+            false, observer_volume_up, UserHandle.USER_CURRENT);
+        resolver.registerContentObserver(
+            Settings.Global.getUriFor(CONSTANTS.GLOBAL_KEY_VOLUME_DOWN), 
+            false, observer_volume_down, UserHandle.USER_CURRENT);
     }
 }

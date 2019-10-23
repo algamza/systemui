@@ -98,6 +98,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".common.receiver.GlobalKeyReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.GLOBAL_BUTTON" />
+            </intent-filter>
+
+            <meta-data
+                android:name="com.humaxdigital.metadata.GLOBAL_KEYS"
+                android:resource="@xml/global_keys" />
+        </receiver>
         
     </application>
 
