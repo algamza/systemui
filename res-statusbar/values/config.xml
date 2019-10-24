@@ -25,5 +25,5 @@
     <bool name="config_showCollapsedBars">false</bool>
 
     <!-- Whether or not to use system gestures -->
-    <bool name="config_useSystemGestures">false</bool>
+    <bool name="config_useSystemGestures">true</bool>
 </resources>

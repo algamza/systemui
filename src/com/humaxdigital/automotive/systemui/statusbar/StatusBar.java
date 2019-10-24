@@ -38,9 +38,10 @@ import com.humaxdigital.automotive.systemui.statusbar.dev.DevNavigationBar;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarService;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarDev;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
-import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -69,6 +70,11 @@ public class StatusBar implements SystemUIBase {
     private Boolean mTouchValid = false; 
     private int mTouchOffset = 15;
     private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
+    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
+    public static final String EXTRA_GESTURE = "gesture";
+    private ActivityMonitor mActivityMonitor = null; 
+    private boolean mIsGestureMode = true; 
+    private boolean mIsDroplistTouchEnable = false; 
 
     @Override
     public void onCreate(Context context) {
@@ -78,10 +84,8 @@ public class StatusBar implements SystemUIBase {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
         startStatusBarService(mContext);
-
         createNaviBarWindow();
-        createDropListTouchWindow();
-
+        
         if (mUseSystemGestures) {
             registerSystemGestureReceiver();
         }
@@ -91,6 +95,9 @@ public class StatusBar implements SystemUIBase {
             createDevelopersWindow();
             updateDisableWindow();
         }, 1000);
+
+        initDropListTouchValue();
+        mActivityMonitor = new ActivityMonitor(mContext).init().registerListener(mActivityChangeListener); 
     }
     
     @Override
@@ -127,18 +134,7 @@ public class StatusBar implements SystemUIBase {
         if ( mControllerManager != null ) mControllerManager.configurationChange(newConfig);
     }
 
-    private void createDropListTouchWindow() {
-        if ( mWindowManager == null || mContext == null ) return;
-
-        if (mUseSystemGestures) {
-            // Don't need the fake invisible top window to trigger the droplist
-            // as long as using system gestures.
-            return;
-        }
-
-        mDropListTouchWindow = (View)View.inflate(mContext, R.layout.status_bar_overlay, null);
-        
-        mDropListTouchWindow.setOnTouchListener(mDroplistTouchListener);
+    private void initDropListTouchValue() {
         String package_name = mContext.getPackageName(); 
         int id_droplist_touch_height = mContext.getResources().getIdentifier("droplist_touch_height", "integer",  package_name);
         int id_droplist_touch_width = mContext.getResources().getIdentifier("droplist_touch_width", "integer",  package_name);
@@ -148,25 +144,38 @@ public class StatusBar implements SystemUIBase {
         if ( id_droplist_touch_height > 0 ) mDropListTouchHeight = mContext.getResources().getInteger(id_droplist_touch_height);
         if ( id_droplist_touch_width > 0 ) mDropListTouchWidth = mContext.getResources().getInteger(id_droplist_touch_width);
         if ( id_touch_offset > 0 ) mTouchOffset = mContext.getResources().getInteger(id_touch_offset);
+    }
 
-        WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
-            mDropListTouchWidth,
-            mDropListTouchHeight,
-            WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                    | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                    | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-            PixelFormat.TRANSLUCENT);
-        slp.token = new Binder();
-        slp.gravity = Gravity.TOP|Gravity.LEFT;
-        slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-        slp.setTitle("HmxSystemUI");
-        slp.packageName = package_name;
-        slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-
-        mWindowManager.addView(mDropListTouchWindow, slp);
+    private void enableDropListTouchWindow(boolean enable) {
+        Log.d(TAG, "enableDropListTouchWindow:current="+enable+", old="+mIsDroplistTouchEnable); 
+        if ( mWindowManager == null || mContext == null ) return;
+        if ( enable == mIsDroplistTouchEnable ) return; 
+        mIsDroplistTouchEnable = enable; 
+        if ( mIsDroplistTouchEnable ) {
+            mDropListTouchWindow = (View)View.inflate(mContext, R.layout.droplist_touch, null);
+            mDropListTouchWindow.setOnTouchListener(mDroplistTouchListener);
+            WindowManager.LayoutParams slp = new WindowManager.LayoutParams(
+                mDropListTouchWidth,
+                mDropListTouchHeight,
+                WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                        | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                PixelFormat.TRANSLUCENT);
+            slp.token = new Binder();
+            slp.gravity = Gravity.TOP|Gravity.LEFT;
+            slp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+            slp.setTitle("HmxSystemUI");
+            slp.packageName = mContext.getPackageName();
+            slp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+            mWindowManager.addView(mDropListTouchWindow, slp);
+        } else {
+            if ( mDropListTouchWindow == null ) return;
+            mWindowManager.removeViewImmediate(mDropListTouchWindow);
+            mDropListTouchWindow = null; 
+        }
     }
 
     private void createNaviBarWindow() {
@@ -283,22 +292,6 @@ public class StatusBar implements SystemUIBase {
             });
 
             mStatusBarService = null;
-        }
-    };
-
-    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
-    public static final String EXTRA_GESTURE = "gesture";
-
-    private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(ACTION_SYSTEM_GESTURE)) {
-                String gesture = intent.getStringExtra(EXTRA_GESTURE);
-                if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
-                    openDroplist();
-                }
-            }
         }
     };
 
@@ -426,6 +419,34 @@ public class StatusBar implements SystemUIBase {
         @Override
         public void onUserSwitching(boolean on) {
             updateDisableWindow(); 
+        }
+    }; 
+
+    private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ( !mIsGestureMode ) return;
+            String action = intent.getAction();
+            if (action.equals(ACTION_SYSTEM_GESTURE)) {
+                String gesture = intent.getStringExtra(EXTRA_GESTURE);
+                if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
+                    openDroplist();
+                }
+            }
+        }
+    };
+
+    private final ActivityMonitor.ActivityChangeListener mActivityChangeListener 
+        = new ActivityMonitor.ActivityChangeListener() {
+        @Override
+        public void onActivityChanged(ComponentName topActivity) {
+            if ( topActivity == null ) return;
+            String name = topActivity.getClassName(); 
+            Log.d(TAG, "onActivityChanged="+name); 
+            if ( name == null ) return;
+            if ( name.contains(".MapAutoActivity") ) mIsGestureMode = false;
+            else mIsGestureMode = true; 
+            enableDropListTouchWindow(!mIsGestureMode); 
         }
     }; 
 }
