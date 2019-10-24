@@ -32,6 +32,7 @@
         android:id="@+id/body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:includeFontPadding="false"
         android:lineSpacingExtra="@dimen/notification_body_spacing_margin"
         android:textColor="@color/notification_text"
