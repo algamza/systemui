@@ -619,6 +619,7 @@ public class VolumeController extends VolumeControllerBase {
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        if ( mController.getCurrentMute() ) mController.setMasterMuteShowUI(false);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
@@ -638,6 +639,7 @@ public class VolumeController extends VolumeControllerBase {
                 mUIHandler.post(new Runnable() {
                     @Override
                     public void run() {
+                        if ( mController.getCurrentMute() ) mController.setMasterMuteShowUI(false);
                         for ( VolumeChangeListener listener : mListener ) {
                             listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }

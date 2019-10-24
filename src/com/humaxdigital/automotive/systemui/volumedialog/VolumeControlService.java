@@ -222,13 +222,22 @@ public class VolumeControlService extends Service {
         return mute;
     }
 
-    private void setMasterMute(boolean mute) {
+    public void setMasterMute(boolean mute) {
         if ( mCarAudioManagerEx == null ) return;
         int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
         Log.d(TAG, "set="+mute+", flags="+flags);
         mCarAudioManagerEx.setAudioMute(AudioTypes.AUDIO_MUTE_ID_USER, 
             ((mute==true) ? AudioTypes.AUDIO_MUTE_ON : AudioTypes.AUDIO_MUTE_OFF), 
             AudioTypes.AUDIO_MUTE_SHOW_ICON);
+    }
+
+    public void setMasterMuteShowUI(boolean mute) {
+        if ( mCarAudioManagerEx == null ) return;
+        int flags = AudioManager.FLAG_FROM_KEY | AudioManager.FLAG_SHOW_UI; 
+        Log.d(TAG, "set="+mute+", flags="+flags);
+        mCarAudioManagerEx.setAudioMute(AudioTypes.AUDIO_MUTE_ID_USER, 
+            ((mute==true) ? AudioTypes.AUDIO_MUTE_ON : AudioTypes.AUDIO_MUTE_OFF), 
+            AudioTypes.AUDIO_MUTE_SHOW_UI);
     }
 
     public boolean setVolume(VolumeUtil.Type type, int volume) {
