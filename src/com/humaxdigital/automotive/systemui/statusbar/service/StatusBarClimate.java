@@ -196,6 +196,12 @@ public class StatusBarClimate {
         return status;
     }
 
+    public void setDRSeatStatus(int state) { 
+        if ( mClimateManager == null ) return;  
+        Log.d(TAG, "setDRSeatStatus="+state);
+        mClimateManager.getController(ClimateControllerManager.ControllerType.DRIVER_SEAT).set(state); 
+    }
+
     public int getDRSeatOption() { 
         if ( mClimateManager == null ) return 0; 
         int option = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.DRIVER_SEAT_OPTION).get(); 
@@ -273,6 +279,12 @@ public class StatusBarClimate {
         int status = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT).get(); 
         Log.d(TAG, "getPSSeatStatus="+status);
         return status;  
+    }
+
+    public void setPSSeatStatus(int state) { 
+        if ( mClimateManager == null ) return;  
+        Log.d(TAG, "setPSSeatStatus="+state);
+        mClimateManager.getController(ClimateControllerManager.ControllerType.PASSENGER_SEAT).set(state); 
     }
 
     public int getPSSeatOption() {

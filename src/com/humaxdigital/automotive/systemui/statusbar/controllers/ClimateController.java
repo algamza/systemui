@@ -62,6 +62,7 @@ public class ClimateController {
     private SeatState mSeatDRState = SeatState.NONE;
     private ClimateMenuImg mSeatPS = null;
     private SeatState mSeatPSState = SeatState.NONE;
+    private ArrayList<SeatState> mSeatHeatToggle = new ArrayList<>(); 
 
     private SeatOption mSeatDROption = SeatOption.INVALID; 
     private SeatOption mSeatPSOption = SeatOption.INVALID; 
@@ -106,6 +107,7 @@ public class ClimateController {
         mContentResolver.registerContentObserver(
             Settings.Global.getUriFor(CLIMATE_TYPE_KEY), 
             false, mClimateObserver, UserHandle.USER_CURRENT); 
+        initToggleValue(); 
         initView();
     }
 
@@ -119,6 +121,13 @@ public class ClimateController {
 
     public void deinit() {
         if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
+    }
+
+    private void initToggleValue() {
+        mSeatHeatToggle.add(SeatState.NONE); 
+        mSeatHeatToggle.add(SeatState.HEATER3); 
+        mSeatHeatToggle.add(SeatState.HEATER2); 
+        mSeatHeatToggle.add(SeatState.HEATER1); 
     }
 
     private ContentObserver createClimateObserver() {
@@ -163,6 +172,10 @@ public class ClimateController {
         if ( mIntake != null ) mIntake.setOnClickListener(mClimateIntakeOnClick); 
         if ( mFanDirection != null ) mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         if ( mAirCleaning != null ) mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
+            if ( mSeatDR != null ) mSeatDR.setOnClickListener(mSeatHeaterDROnClick); 
+            if ( mSeatPS != null ) mSeatPS.setOnClickListener(mSeatHeaterPSOnClick); 
+        }
     }
     
     private void removeOnClick() {
@@ -496,13 +509,6 @@ public class ClimateController {
         @Override
         public void onClick(View v) {
             if ( mAC == null || !mIGNOn ) return; 
-            if ( mACState == ACState.ON ) {
-                //mACState = ACState.OFF; 
-                //mAC.update(mACState.ordinal());
-            } else {
-                //mACState = ACState.ON; 
-                //mAC.update(mACState.ordinal());
-            }
 
             if ( mService != null ) 
                 mService.setAirConditionerState(mACState==ACState.ON?false:true);
@@ -514,14 +520,6 @@ public class ClimateController {
         @Override
         public void onClick(View v) {
             if ( mIntake == null || !mIGNOn ) return; 
-            if ( mIntakeState == IntakeState.ON ) {
-                //mIntakeState = IntakeState.OFF; 
-                //mIntake.update(mIntakeState.ordinal());
-            } else {
-                //mIntakeState = IntakeState.ON; 
-                //mIntake.update(mIntakeState.ordinal());
-            }
-
             if ( mService != null ) 
                 mService.setAirCirculationState(mIntakeState==IntakeState.ON?false:true);
         }
@@ -535,15 +533,8 @@ public class ClimateController {
             int next = mFanDirectionState.ordinal() + 1;
 
             if ( next >= (FanDirectionState.values().length-2) ) {
-                //mFanDirectionState = FanDirectionState.values()[0];
                 next = 0; 
             }
-            else {
-                //mFanDirectionState = FanDirectionState.values()[next];
-            }
-                
-            //mFanDirection.update(mFanDirectionState.ordinal()); 
-
             if ( mService != null ) 
                 mService.setFanDirection(next);
         }
@@ -555,15 +546,46 @@ public class ClimateController {
             if ( mAirCleaning == null || !mIGNOn || mIsOperateOn ) return; 
             if ( mService != null ) {
                 if ( mAirCleaningState == AirCleaning.OFF ) {
-                    //mAirCleaningState = AirCleaning.ON;
-                    //mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.ON.ordinal());
                 } else {
-                    //mAirCleaningState = AirCleaning.OFF;
-                    //mAirCleaning.update(mAirCleaningState.ordinal()); 
                     mService.setAirCleaningState(AirCleaning.OFF.ordinal());
                 }
             }
+        }
+    }; 
+
+    private final View.OnClickListener mSeatHeaterDROnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mService == null || !mIGNOn ) return; 
+            SeatState next = mSeatHeatToggle.get(0); 
+            boolean is_next = false; 
+            for ( SeatState state : mSeatHeatToggle ) {
+                if ( is_next ) {
+                    next = state;
+                    break; 
+                } 
+                if ( state == mSeatDRState ) is_next = true; 
+   
+            }
+            mService.setDRSeatStatus(next.ordinal());
+        }
+    }; 
+
+    private final View.OnClickListener mSeatHeaterPSOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mService == null || !mIGNOn ) return; 
+            SeatState next = mSeatHeatToggle.get(0); 
+            boolean is_next = false; 
+            for ( SeatState state : mSeatHeatToggle ) {
+                if ( is_next ) {
+                    next = state;
+                    break; 
+                }
+                if ( state == mSeatPSState ) is_next = true; 
+            }
+            mService.setPSSeatStatus(next.ordinal());
         }
     }; 
 
