@@ -29,4 +29,5 @@
     <app name="HomeLauncher">com.humaxdigital.automotive.dn8clauncher</app>
     <app name="DuerOS">com.baidu.che.codriver</app>
     <app name="sidebar">com.humaxdigital.automotive.sidebarservice</app>
+    <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
 </whitelist>

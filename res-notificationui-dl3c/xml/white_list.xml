@@ -31,4 +31,5 @@
     <app name="sidebar">com.humaxdigital.automotive.sidebarservice</app>
     <app name="climate">com.humaxdigital.automotive.climate</app>
     <app name="ximalaya">com.humaxdigital.automotive.ximalaya</app>
+    <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
 </whitelist>
