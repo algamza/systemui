@@ -265,12 +265,16 @@ public class BrightnessImpl extends BaseImplement<Integer> {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mListener == null ) return;
                 mCurrentDayValue = Settings.System.getIntForUser(mContext.getContentResolver(), 
                     CarExtraSettings.System.DISPLAY_BRIGHTNESS_DAYLIGHT, 
                     CarExtraSettings.System.DISPLAY_BRIGHTNESS_DAYLIGHT_DEFAULT,
                     UserHandle.USER_CURRENT);
-                if ( mCurrentMode != Mode.DAYLIGHT ) return;
-                if ( mListener != null ) mListener.onChange(mCurrentDayValue); 
+                if ( mCurrentMode == Mode.DAYLIGHT 
+                    || ((mCurrentMode == Mode.AUTOMATIC) && !isNightMode()) ) {
+                    mListener.onChange(mCurrentDayValue); 
+                }
+                
             }
         };
         return observer; 
@@ -280,12 +284,15 @@ public class BrightnessImpl extends BaseImplement<Integer> {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( mListener == null ) return;
                 mCurrentNightValue = Settings.System.getIntForUser(mContext.getContentResolver(), 
                     CarExtraSettings.System.DISPLAY_BRIGHTNESS_NIGHT, 
                     CarExtraSettings.System.DISPLAY_BRIGHTNESS_NIGHT_DEFAULT,
                     UserHandle.USER_CURRENT);
-                if ( mCurrentMode != Mode.NIGHT ) return;
-                if ( mListener != null ) mListener.onChange(mCurrentNightValue); 
+                if ( (mCurrentMode == Mode.NIGHT) 
+                    || ((mCurrentMode == Mode.AUTOMATIC) && isNightMode()) ) {
+                    mListener.onChange(mCurrentNightValue); 
+                }
             }
         };
         return observer; 
