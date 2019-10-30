@@ -293,7 +293,16 @@ public class ClimateController {
             mClimateViews.add(mFanDirection);
             mClimateViews.add(mSeatPS);
         } 
-        else {
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mAirCleaning); 
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mTempPS);
+        }
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat ) {
                 mClimateViews.add(mTempDR);
                 mClimateViews.add(mSeatDR);
@@ -313,6 +322,14 @@ public class ClimateController {
                 mClimateViews.add(mFanSpeed);
                 mClimateViews.add(mTempPS);
             }
+        } else {
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mAirCleaning); 
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mTempPS);
         }
 
         for ( int i = 0; i<mClimateViews.size(); i++ ) {
