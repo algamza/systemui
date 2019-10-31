@@ -288,9 +288,9 @@ public class ClimateController {
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
-            mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mFanSpeed);
             mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mSeatPS);
         } 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {

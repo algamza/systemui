@@ -3,22 +3,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="88"
+    android:weightSum="93"
     android:orientation="horizontal">
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="45"
+        android:layout_weight="56"
         android:weightSum="90"
         android:orientation="vertical">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0" />
+            android:layout_weight="5" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="90">
+            android:layout_weight="85">
             <ImageView
                 android:id="@+id/img"
                 android:layout_width="wrap_content"
@@ -33,21 +33,21 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="3" />
+        android:layout_weight="4" />
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="40"
+        android:layout_weight="33"
         android:weightSum="90"
         android:orientation="vertical">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="9" />
+            android:layout_weight="3" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="81">
+            android:layout_weight="87">
             <TextView
                 android:id="@+id/text"
                 android:layout_width="wrap_content"
