@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="text_date"> 36sp </dimen>
-    <dimen name="text_date_noon"> 26sp </dimen>
+    <dimen name="text_date"> 52px </dimen>
+    <dimen name="text_date_noon"> 32px </dimen>
     <dimen name="text_climate_temp_int">48px</dimen>
     <dimen name="text_climate_temp_text">42px</dimen>
     <dimen name="text_climate_temp_dec">30px</dimen>
