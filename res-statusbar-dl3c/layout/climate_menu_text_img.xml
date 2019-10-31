@@ -3,22 +3,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="74"
+    android:weightSum="93"
     android:orientation="horizontal">
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="37"
+        android:layout_weight="56"
         android:weightSum="90"
         android:orientation="vertical">
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="25" />
+            android:layout_weight="5" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="50">
+            android:layout_weight="85">
             <ImageView
                 android:id="@+id/img"
                 android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="15" />
+            android:layout_weight="0" />
     </LinearLayout>
     <FrameLayout
         android:layout_width="0dp"
@@ -43,11 +43,11 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="15" />
+            android:layout_weight="3" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="66">
+            android:layout_weight="87">
             <TextView
                 android:id="@+id/text"
                 android:layout_width="wrap_content"
@@ -59,6 +59,6 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="9" />
+            android:layout_weight="0" />
     </LinearLayout>
 </LinearLayout>

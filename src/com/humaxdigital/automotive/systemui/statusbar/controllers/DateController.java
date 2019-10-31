@@ -88,15 +88,18 @@ public class DateController {
         String noon = "";
 
         if ( type.equals("24") ) {
+            time = time.trim(); 
             mDateVew.setText(time);
             mDateNoonView.setText("");
         } else {
             if ( time.contains("AM") ) {
                 date = time.substring(0, time.indexOf("AM"));
+                date = date.trim();
                 noon = "AM";
             }
             else if ( time.contains("PM") ) {
                 date = time.substring(0, time.indexOf("PM"));
+                date = date.trim();
                 noon = "PM";
             }
             mDateVew.setText(date);
