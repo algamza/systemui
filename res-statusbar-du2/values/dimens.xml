@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_date"> 52px </dimen>
+    <dimen name="text_date_noon"> 32px </dimen>
+    <dimen name="text_climate_temp_int">52px</dimen>
+    <dimen name="text_climate_temp_text">42px</dimen>
+    <dimen name="text_climate_temp_dec">32px</dimen>
+    <dimen name="text_climate_wind">48px</dimen>
+
+    <dimen name="dev_text_size">24sp</dimen>
+    <dimen name="dev_button_margin">1dp</dimen>
+
+    <dimen name="system_icon_right_margin">6dp</dimen>
+    <dimen name="system_icon_height">36px</dimen>
+    <dimen name="system_icon_width">51px</dimen>
+</resources>

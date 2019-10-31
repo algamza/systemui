@@ -1,0 +1,17 @@
+<resources>
+    <string name="STR_MESG_18334_ID">현재 모드에서는 사용하실 수 없습니다.</string>
+    <string name="STR_MESG_14845_ID">통화 중에는 조작하실 수 없습니다.</string>
+    <string name="STR_FEATURE_CURRENTLY_UNAVAILABLE_ID">현재 모드에서는 사용하실 수 없습니다.</string>
+    <string name="STR_JAN_04_ID">1월</string>
+    <string name="STR_FEB_04_ID">2월</string>
+    <string name="STR_MAR_04_ID">3월</string>
+    <string name="STR_APR_04_ID">4월</string>
+    <string name="STR_MAY_09_ID">5월</string>
+    <string name="STR_JUN_04_ID">6월</string>
+    <string name="STR_JUL_04_ID">7월</string>
+    <string name="STR_AUG_04_ID">8월</string>
+    <string name="STR_SEP_04_ID">9월</string>
+    <string name="STR_OCT_04_ID">10월</string>
+    <string name="STR_NOV_04_ID">11월</string>
+    <string name="STR_DEC_04_ID">12월</string>
+</resources>

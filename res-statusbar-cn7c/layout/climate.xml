@@ -42,7 +42,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="18" />
+        android:layout_weight="23" />
     <FrameLayout
         android:id="@+id/climate_menu_4"
         android:layout_width="0dp"
@@ -51,7 +51,7 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="31" />
+        android:layout_weight="26" />
     <FrameLayout
         android:id="@+id/climate_menu_5"
         android:layout_width="0dp"

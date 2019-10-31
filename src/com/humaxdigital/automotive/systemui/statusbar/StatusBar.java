@@ -194,7 +194,7 @@ public class StatusBar implements SystemUIBase {
 
         mWindowManager.addView(mNavBarWindow, lp);
 
-        mNavBarView = inflateNavBarView();
+        mNavBarView = View.inflate(mContext, R.layout.navi_overlay, null);
         setContentBarView(mNavBarView);
     }
 
@@ -242,16 +242,6 @@ public class StatusBar implements SystemUIBase {
                 return true;
             }
         });
-    }
-
-    public View inflateNavBarView() {
-        if ( mContext == null ) return null;
-        View view = null; 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
-            view = View.inflate(mContext, R.layout.du2_navi_overlay, null);
-        else 
-            view = View.inflate(mContext, R.layout.dn8c_navi_overlay, null);
-        return view;
     }
 
     public void setContentBarView(View view) {

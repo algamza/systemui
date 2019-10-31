@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_date"> 47.88sp </dimen>
+    <dimen name="text_date_noon"> 34.58sp </dimen>
+    <dimen name="text_climate_temp_int">48px</dimen>
+    <dimen name="text_climate_temp_text">42px</dimen>
+    <dimen name="text_climate_temp_dec">30px</dimen>
+    <dimen name="text_climate_wind">44px</dimen>
+    <dimen name="system_icon_right_margin">8dp</dimen>
+</resources>

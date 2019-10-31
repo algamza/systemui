@@ -206,9 +206,7 @@ public class ClimateController {
         boolean support_seat = true; 
         if ( type == ClimateType.NO_SEAT ) support_seat = false; 
 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) 
-            mClimatePanel = inflater.inflate(R.layout.du2_climate, null); 
-        else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat ) mClimatePanel = inflater.inflate(R.layout.climate, null); 
             else mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
         } else {
