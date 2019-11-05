@@ -8,7 +8,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/co_bg_title_bar"
+        android:background="@drawable/co_bg_title_bar_cn7"
         />
 
     <LinearLayout
@@ -83,7 +83,7 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="44" />
+            android:layout_weight="50" />
         <FrameLayout
             android:id="@+id/layout_climate"
             android:layout_width="0dp"
@@ -92,7 +92,7 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="52" />
+            android:layout_weight="46" />
         <LinearLayout 
             android:id="@+id/layout_system"
             android:layout_width="0dp"
