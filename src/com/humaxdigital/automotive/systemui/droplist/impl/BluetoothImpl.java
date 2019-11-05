@@ -8,10 +8,10 @@ import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class BluetoothImpl extends BaseImplement<Boolean> {
     private final String TAG = "BluetoothImpl"; 
-    private final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
     private IUserBluetooth mUserBluetooth = null;
 
     public BluetoothImpl(Context context) {
@@ -62,13 +62,13 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
         if ( mContext == null ) return;
         Log.d(TAG, "setBluetoothOn="+on);
         Settings.Global.putInt(mContext.getContentResolver(), 
-            BT_SYSTEM,
+            CONSTANTS.BT_SYSTEM,
             on?1:0); 
     }
 
     private boolean isBluetoothOn() {
         if ( mContext == null ) return false;
-        int on = Settings.Global.getInt(mContext.getContentResolver(), BT_SYSTEM, 1);
+        int on = Settings.Global.getInt(mContext.getContentResolver(), CONSTANTS.BT_SYSTEM, 1);
         Log.d(TAG, "isBluetoothOn="+on);
         return on==0?false:true;
     }

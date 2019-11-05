@@ -12,7 +12,7 @@ import android.extension.car.CarPropertyFilter;
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class ClusterBrightnessImpl extends BaseImplement<Integer> {
-    static final String TAG = "ClusterBrightnessImpl";
+    private static final String TAG = "ClusterBrightnessImpl";
     private CarClusterManager mCarCluster; 
     public ClusterBrightnessImpl(Context context) {
         super(context);

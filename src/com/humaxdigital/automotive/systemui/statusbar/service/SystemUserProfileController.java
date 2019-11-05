@@ -16,15 +16,13 @@ import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
-    public static final String CHANGE_USER_ICON_EVENT = "com.humaxdigital.automotive.app.USERPROFILE.CHANGE_USER_ICON_EVENT";
-    public static final String CHANGE_USER_GET_EXTRA_IMG = "BitmapImage"; 
-    public static final String REQUEST_CURRENT_USER_ICON = "com.humaxdigital.dn8c.REQUEST_CURRENT_USER_ICON";
     private int mCurrentUserID = 0; 
     private UserManager mUserManager; 
     private ActivityManager mActivityManager;
@@ -49,7 +47,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
         //filter.addAction(Intent.ACTION_USER_ADDED);
         filter.addAction(Intent.ACTION_USER_INFO_CHANGED);
         filter.addAction(Intent.ACTION_USER_SWITCHED);
-        filter.addAction(CHANGE_USER_ICON_EVENT);
+        filter.addAction(CONSTANTS.CHANGE_USER_ICON_EVENT);
         //filter.addAction(Intent.ACTION_USER_STOPPED);
         //filter.addAction(Intent.ACTION_USER_UNLOCKED);
         mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
@@ -82,7 +80,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
 
     private void requestUserIcon() {
         if ( mContext == null ) return;
-        Intent intent = new Intent(REQUEST_CURRENT_USER_ICON); 
+        Intent intent = new Intent(CONSTANTS.REQUEST_CURRENT_USER_ICON); 
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
     }
 
@@ -131,9 +129,9 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
                         listener.onEvent(getUserBitmap(mCurrentUserID));
                     break;
                 }
-                case CHANGE_USER_ICON_EVENT: {
+                case CONSTANTS.CHANGE_USER_ICON_EVENT: {
                     if ( intent == null ) break;
-                    mCurrentUserIcon = (Bitmap)intent.getExtras().get(CHANGE_USER_GET_EXTRA_IMG); 
+                    mCurrentUserIcon = (Bitmap)intent.getExtras().get(CONSTANTS.CHANGE_USER_GET_EXTRA_IMG); 
                     for ( Listener<Bitmap> listener : mListeners ) 
                         listener.onEvent(mCurrentUserIcon);
                     break; 

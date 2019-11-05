@@ -18,13 +18,10 @@ import android.extension.car.settings.CarExtraSettings;
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class StatusBarClimate {
     private static final String TAG = "StatusBarClimate";
-    private static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
-    private static final String VR_PACKAGE_NAME = "com.humaxdigital.automotive.baiduadapterservice";
-    private static final String VR_RECEIVER_NAME = "com.humaxdigital.automotive.baiduadapterservice.duerosadapter.VRSpecialCaseReceiver";
-    private static final String VR_DISMISS_ACTION = "com.humaxdigital.automotive.baiduadapterservice.VR_DISMISS_REQ";
 
     private ClimateControllerManager mClimateManager = null;
     private CarExClient mCarExClient = null; 
@@ -358,10 +355,10 @@ public class StatusBarClimate {
             Log.d(TAG, "Current svs on: only climate toggle");
             return;
         }
-        if ( !OPEN_HVAC_APP.equals("") ) {
-            Log.d(TAG, "openClimateSetting="+OPEN_HVAC_APP);
+        if ( !CONSTANTS.OPEN_HVAC_APP.equals("") ) {
+            Log.d(TAG, "openClimateSetting="+CONSTANTS.OPEN_HVAC_APP);
             vrCloseRequest();
-            Intent intent = new Intent(OPEN_HVAC_APP);
+            Intent intent = new Intent(CONSTANTS.OPEN_HVAC_APP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }
@@ -371,9 +368,9 @@ public class StatusBarClimate {
         if ( mContext == null ) return;
         Log.d(TAG, "vrCloseRequest");
         Intent intent = new Intent(); 
-        ComponentName name = new ComponentName(VR_PACKAGE_NAME, VR_RECEIVER_NAME);
+        ComponentName name = new ComponentName(CONSTANTS.VR_PACKAGE_NAME, CONSTANTS.VR_RECEIVER_NAME);
         intent.setComponent(name);
-        intent.setAction(VR_DISMISS_ACTION);
+        intent.setAction(CONSTANTS.VR_DISMISS_ACTION);
         mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 

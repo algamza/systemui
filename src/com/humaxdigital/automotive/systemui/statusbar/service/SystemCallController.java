@@ -19,11 +19,10 @@ import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class SystemCallController extends BaseController<Integer> {
     private final String TAG = "SystemCallController";
-    private final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
-    private final String PBAP_STATE = "android.extension.car.PBAP_STATE"; 
     private TMSClient mTMSClient = null;
     private IUserBluetooth mUserBluetooth = null; 
     private IUserAudio mUserAudio = null;
@@ -57,7 +56,7 @@ public class SystemCallController extends BaseController<Integer> {
         super(context, store);
         if ( mContext == null ) return;
         final IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_CARLIFE_STATE);
+        filter.addAction(CONSTANTS.ACTION_CARLIFE_STATE);
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         mContext.registerReceiverAsUser(mBroadcastReceiver, 
             UserHandle.ALL, filter, null, null);
@@ -241,7 +240,7 @@ public class SystemCallController extends BaseController<Integer> {
         if ( mContentResolver == null ) return; 
         mObserver = createObserver(); 
         mContentResolver.registerContentObserver(
-            Settings.Global.getUriFor(PBAP_STATE), 
+            Settings.Global.getUriFor(CONSTANTS.PBAP_STATE), 
             false, mObserver, UserHandle.USER_ALL); 
     }
 
@@ -257,8 +256,8 @@ public class SystemCallController extends BaseController<Integer> {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
                 if ( mContentResolver == null ) return;
-                int state = Settings.Global.getInt(mContentResolver, PBAP_STATE, 0);
-                Log.d(TAG, "PBAP_STATE="+state);
+                int state = Settings.Global.getInt(mContentResolver, CONSTANTS.PBAP_STATE, 0);
+                Log.d(TAG, "CONSTANTS.PBAP_STATE="+state);
                 if ( mContactDownloadState == state ) return;
                 if ( state == 3 ) {
                     mContactDownloadState = state; 
@@ -343,9 +342,9 @@ public class SystemCallController extends BaseController<Integer> {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             switch(action) {
-                case ACTION_CARLIFE_STATE: {
+                case CONSTANTS.ACTION_CARLIFE_STATE: {
                     mCarlifeConnected = intent.getBooleanExtra("isConnected", false);
-                    Log.d(TAG, "mBroadcastReceiver:ACTION_CARLIFE_STATE="+mCarlifeConnected);
+                    Log.d(TAG, "mBroadcastReceiver:CONSTANTS.ACTION_CARLIFE_STATE="+mCarlifeConnected);
                     broadcastChangeEvent();
                     break;
                 }

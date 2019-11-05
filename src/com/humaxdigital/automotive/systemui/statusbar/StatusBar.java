@@ -42,6 +42,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -69,9 +70,6 @@ public class StatusBar implements SystemUIBase {
     private int mTouchDownValue = 0;
     private Boolean mTouchValid = false; 
     private int mTouchOffset = 15;
-    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
-    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
-    public static final String EXTRA_GESTURE = "gesture";
     private ActivityMonitor mActivityMonitor = null; 
     private boolean mIsGestureMode = true; 
     private boolean mIsDroplistTouchEnable = false; 
@@ -288,7 +286,7 @@ public class StatusBar implements SystemUIBase {
     private void registerSystemGestureReceiver() {
         if ( mContext == null ) return;
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ACTION_SYSTEM_GESTURE);
+        intentFilter.addAction(CONSTANTS.ACTION_SYSTEM_GESTURE);
         mContext.registerReceiver(mSystemGestureReceiver, intentFilter);
     }
 
@@ -390,7 +388,7 @@ public class StatusBar implements SystemUIBase {
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
         if ( mContext == null ) return;
-        Intent intent = new Intent(OPEN_DROPLIST); 
+        Intent intent = new Intent(CONSTANTS.OPEN_DROPLIST); 
         mContext.sendBroadcast(intent);
     }
 
@@ -417,8 +415,8 @@ public class StatusBar implements SystemUIBase {
         public void onReceive(Context context, Intent intent) {
             if ( !mIsGestureMode ) return;
             String action = intent.getAction();
-            if (action.equals(ACTION_SYSTEM_GESTURE)) {
-                String gesture = intent.getStringExtra(EXTRA_GESTURE);
+            if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
+                String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
                 if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
                     openDroplist();
                 }

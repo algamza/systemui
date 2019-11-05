@@ -31,12 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class VolumeControlService extends Service {
     private static final String TAG = "VolumeControlService";
-
-    private static final String ACTION_VOLUME_SETTINGS_STARTED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STARTED";
-    private static final String ACTION_VOLUME_SETTINGS_STOPPED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STOPPED";
 
     public static abstract class VolumeCallback {
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
@@ -115,8 +113,8 @@ public class VolumeControlService extends Service {
     private void registReceiver() {
         Log.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_VOLUME_SETTINGS_STARTED);
-        filter.addAction(ACTION_VOLUME_SETTINGS_STOPPED);
+        filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED);
+        filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED);
         registerReceiverAsUser(mApplicationActionReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -133,12 +131,12 @@ public class VolumeControlService extends Service {
             if ( action == null ) return;
             Log.d(TAG, "mApplicationActionReceiver="+action);
             switch(action) {
-                case ACTION_VOLUME_SETTINGS_STARTED: {
+                case CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED: {
                     mIsSettingsActivity = true;
                     break;
                 }
                 
-                case ACTION_VOLUME_SETTINGS_STOPPED: {
+                case CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED: {
                     mIsSettingsActivity = false;
                     break;
                 }

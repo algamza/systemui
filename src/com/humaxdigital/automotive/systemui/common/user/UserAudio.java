@@ -12,12 +12,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
+
 public class UserAudio extends IUserAudio.Stub {
     private final String TAG = "UserAudio";
     private final PerUserService mService; 
     private AudioManager mManager;
     private Context mContext; 
-    static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
 
     private List<IUserAudioCallback> mListeners = new ArrayList<>(); 
 
@@ -31,7 +32,7 @@ public class UserAudio extends IUserAudio.Stub {
         IntentFilter filter = new IntentFilter(); 
         filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
         filter.addAction(AudioManager.MASTER_MUTE_CHANGED_ACTION);
-        filter.addAction(ACTION_CHANGE_MIC_MUTE); 
+        filter.addAction(CONSTANTS.ACTION_CHANGE_MIC_MUTE); 
         mContext.registerReceiver(mReceiver,filter, null, null);
     }
 
@@ -120,10 +121,10 @@ public class UserAudio extends IUserAudio.Stub {
                     }
                     break;
                 }
-                case ACTION_CHANGE_MIC_MUTE: {
+                case CONSTANTS.ACTION_CHANGE_MIC_MUTE: {
                     try {
                         boolean mute = mManager.isMicrophoneMute();
-                        Log.d(TAG, "ACTION_CHANGE_MIC_MUTE="+mute);
+                        Log.d(TAG, "CONSTANTS.ACTION_CHANGE_MIC_MUTE="+mute);
                         for ( IUserAudioCallback callback : mListeners ) {
                             callback.onBluetoothMicMuteChanged(mute);
                         }

@@ -23,8 +23,8 @@ public class ControllerManager {
         void onCloseDropList();
     }
 
-    static final String TAG = "ControllerManager"; 
-    static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
+    private static final String TAG = "ControllerManager"; 
+    private static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
     private final List<BaseController> mControllers = new ArrayList<>();
     private BrightnessController mBrightnessController;

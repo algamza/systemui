@@ -53,6 +53,7 @@ import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManager;
 
 import com.humaxdigital.automotive.systemui.R; 
+import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
 public class DropListUIService implements SystemUIBase {
     private static final String TAG = "DropListUIService";
@@ -85,7 +86,6 @@ public class DropListUIService implements SystemUIBase {
     private ContentResolver mContentResolver = null;
     private ContentObserver mUserAgreeObserver = null; 
 
-    private final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST";
     private BroadcastReceiver mReceiver; 
 
     private IActivityManager mActivityService = null;
@@ -174,7 +174,7 @@ public class DropListUIService implements SystemUIBase {
         }
 
         final IntentFilter filter = new IntentFilter(); 
-        filter.addAction(OPEN_DROPLIST); 
+        filter.addAction(CONSTANTS.OPEN_DROPLIST); 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {

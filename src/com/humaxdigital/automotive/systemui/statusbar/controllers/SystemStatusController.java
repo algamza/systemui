@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SystemStatusController {
-    static final String TAG = "SystemStatusController"; 
+    private static final String TAG = "SystemStatusController"; 
 
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
     enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }

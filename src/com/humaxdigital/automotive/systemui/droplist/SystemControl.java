@@ -48,6 +48,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserService;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,15 +68,6 @@ public class SystemControl extends Service {
         THEME2,
         THEME3
     };
-
-    private static final String ACTION_OPEN_WIFI_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_WIFI"; 
-    private static final String ACTION_OPEN_BLUETOOTH_SETTING = "com.humaxdigital.dn8c.ACTION_BLUETOOTH_SETTINGS";  
-    private static final String ACTION_OPEN_QUIET_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_SOUND_QUIET_MODE"; 
-    private static final String ACTION_OPEN_AUTOMATIC_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_DISPLAY"; 
-    private static final String ACTION_OPEN_THEME_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_ADVANCED_THEME_STYLE"; 
-    private static final String ACTION_OPEN_SETUP = "com.humaxdigital.dn8c.ACTION_SETTINGS"; 
-    private static final String ACTION_VOLUME_SETTINGS_STARTED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STARTED";
-    private static final String ACTION_VOLUME_SETTINGS_STOPPED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STOPPED";
 
     private static final String TAG = "SystemControl";
     private List<SystemCallback> mCallbacks = new ArrayList<>();
@@ -114,7 +106,6 @@ public class SystemControl extends Service {
     private ContentResolver mContentResolver;
     private ContentObserver mVRObserver;
     private ContentObserver mPowerObserver;
-    private final String SETTINGS_VR = "vr_shown";
 
     private boolean mAVOn = true; 
     private boolean mPowerOn = true;
@@ -261,7 +252,7 @@ public class SystemControl extends Service {
         return mBluetooth == null ? false : mBluetooth.get();
     }
     public void openBluetoothSetting() {
-        openActivity(ACTION_OPEN_BLUETOOTH_SETTING); 
+        openActivity(CONSTANTS.ACTION_OPEN_BLUETOOTH_SETTING); 
     };
 
     public void setWifiOn(boolean isOn) {
@@ -271,7 +262,7 @@ public class SystemControl extends Service {
         return mWifi == null ? false : mWifi.get();
     }
     public void openWifiSetting() {
-        openActivity(ACTION_OPEN_WIFI_SETTING); 
+        openActivity(CONSTANTS.ACTION_OPEN_WIFI_SETTING); 
     };
 
     public void setMuteOn(boolean isOn) {
@@ -288,7 +279,7 @@ public class SystemControl extends Service {
         return mQuietMode == null ? false : mQuietMode.get();
     }
     public void openQuietModeSetting() {
-        openActivity(ACTION_OPEN_QUIET_SETTING); 
+        openActivity(CONSTANTS.ACTION_OPEN_QUIET_SETTING); 
     };
 
     public void setBeepOn(boolean isOn) {
@@ -306,7 +297,7 @@ public class SystemControl extends Service {
         return mAutoMode.get();
     }
     public void openAutomaticSetting() {
-        openActivity(ACTION_OPEN_AUTOMATIC_SETTING); 
+        openActivity(CONSTANTS.ACTION_OPEN_AUTOMATIC_SETTING); 
     };
 
     public void setBrightness(int progress) {
@@ -376,12 +367,12 @@ public class SystemControl extends Service {
     }
     public void openThemeSetting() {
         Log.d(TAG, "openThemeSetting");
-        openActivity(ACTION_OPEN_THEME_SETTING); 
+        openActivity(CONSTANTS.ACTION_OPEN_THEME_SETTING); 
     }
 
     public void openSetup() {
         Log.d(TAG, "openSetup");
-        openActivity(ACTION_OPEN_SETUP); 
+        openActivity(CONSTANTS.ACTION_OPEN_SETUP); 
     }
 
     public void performClick() {
@@ -408,8 +399,8 @@ public class SystemControl extends Service {
     private void registApplicationActionReceiver() {
         Log.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_VOLUME_SETTINGS_STARTED);
-        filter.addAction(ACTION_VOLUME_SETTINGS_STOPPED);
+        filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED);
+        filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED);
         registerReceiverAsUser(mApplicationActionReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -666,7 +657,7 @@ public class SystemControl extends Service {
             if ( action == null ) return;
             Log.d(TAG, "mApplicationActionReceiver="+action);
             switch(action) {
-                case ACTION_VOLUME_SETTINGS_STARTED: {
+                case CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED: {
                     mIsVolumeSettingsActivated = true;
                     synchronized (mCallbacks) {
                         for ( SystemCallback callback : mCallbacks ) 
@@ -675,7 +666,7 @@ public class SystemControl extends Service {
                     break;
                 }
                 
-                case ACTION_VOLUME_SETTINGS_STOPPED: {
+                case CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED: {
                     mIsVolumeSettingsActivated = false;
                     synchronized (mCallbacks) {
                         for ( SystemCallback callback : mCallbacks ) 
@@ -768,7 +759,7 @@ public class SystemControl extends Service {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                int on = Settings.Global.getInt(getContentResolver(), SETTINGS_VR, 0);
+                int on = Settings.Global.getInt(getContentResolver(), CONSTANTS.SETTINGS_VR, 0);
                 Log.d(TAG, "onChange="+on);
                 if ( on == 1 ) {
                     synchronized (mCallbacks) {
@@ -786,7 +777,7 @@ public class SystemControl extends Service {
         if ( mContentResolver == null ) return; 
         mVRObserver = createVRObserver(); 
         mContentResolver.registerContentObserver(
-            Settings.Global.getUriFor(SETTINGS_VR), 
+            Settings.Global.getUriFor(CONSTANTS.SETTINGS_VR), 
             false, mVRObserver, UserHandle.USER_ALL);
         mPowerObserver = createPowerObserver(); 
         mContentResolver.registerContentObserver(

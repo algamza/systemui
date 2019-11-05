@@ -36,9 +36,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
     private BluetoothAdapter mBluetoothAdapter = null;
     private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
     private int mContactsDownloadingState = 0; 
-    //private final String CALL_STATUS = "com.humaxdigital.automotive.btphone.response_call_status"; 
 
-    //private int mCurrentCallingState = 0; 
     private int mCurrentContactsDownloadState = 0;
     private int mCurrentCallHistoryDownloadState = 0;
     private int mCurrentBatteryLevel = 0; 

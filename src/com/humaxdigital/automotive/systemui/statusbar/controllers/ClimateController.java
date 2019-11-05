@@ -33,8 +33,8 @@ import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextImg;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarClimate;
 
 public class ClimateController {
-    static final String TAG = "ClimateController"; 
-    static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
+    private static final String TAG = "ClimateController"; 
+    private static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
     private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
     private enum SeatOption { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }

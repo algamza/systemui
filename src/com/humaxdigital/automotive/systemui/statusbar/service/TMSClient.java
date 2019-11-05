@@ -15,9 +15,10 @@ import android.extension.car.CarTMSManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
+
 public class TMSClient {
     private static final String TAG = "TMSClient";
-    private static final String ACTION_LOCATION_SHARING_COUNT = "com.humaxdigital.automotive.bluelink.LSC_COUNT"; 
     private CarTMSManager mTMSManager = null;
     private List<TMSCallback> mListeners = new ArrayList<>(); 
     private Context mContext; 
@@ -236,7 +237,7 @@ public class TMSClient {
     private void createBroadcastReceiver() {
         if ( mContext == null ) return;
         final IntentFilter filter = new IntentFilter(); 
-        filter.addAction(ACTION_LOCATION_SHARING_COUNT); 
+        filter.addAction(CONSTANTS.ACTION_LOCATION_SHARING_COUNT); 
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -245,9 +246,9 @@ public class TMSClient {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             switch(action) {
-                case ACTION_LOCATION_SHARING_COUNT: {
+                case CONSTANTS.ACTION_LOCATION_SHARING_COUNT: {
                     int count = intent.getExtras().getInt("lsc_count");
-                    Log.d(TAG, "ACTION_LOCATION_SHARING_COUNT="+count); 
+                    Log.d(TAG, "CONSTANTS.ACTION_LOCATION_SHARING_COUNT="+count); 
                     if (count > 0) {
                         LocationSharingStatus status = LocationSharingStatus.LOCATION_SHARING; 
                         if ( mCurrentLocationSharingStatus != status ) {

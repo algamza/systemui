@@ -30,14 +30,12 @@ import android.extension.car.settings.CarExtraSettings;
 import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class StatusBarService extends Service {
 
     private static final String TAG = "StatusBarService";
     
-    private static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
-    private static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
-
     private Context mContext = this; 
     private DataStore mDataStore = new DataStore();
     private final Binder mStatusBarServiceBinder = new StatusBarServiceBinder();  
@@ -309,8 +307,8 @@ public class StatusBarService extends Service {
     private void registReceiver() {
         Log.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(CAMERA_START);
-        filter.addAction(CAMERA_STOP);
+        filter.addAction(CONSTANTS.CAMERA_START);
+        filter.addAction(CONSTANTS.CAMERA_STOP);
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED); 
         if ( mContext != null )
             mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
@@ -328,7 +326,7 @@ public class StatusBarService extends Service {
             if ( action == null || mStatusBarClimate == null || mStatusBarSystem == null ) return;
             Log.d(TAG, "mReceiver="+action);
             switch(action) {
-                case CAMERA_START: {
+                case CONSTANTS.CAMERA_START: {
                     Bundle extras = intent.getExtras();
                     if ( extras == null ) return;
                     if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
@@ -350,8 +348,8 @@ public class StatusBarService extends Service {
                     }
                     break;
                 }
-                case CAMERA_STOP: {
-                    Log.d(TAG, "CAMERA_STOP");
+                case CONSTANTS.CAMERA_STOP: {
+                    Log.d(TAG, "CONSTANTS.CAMERA_STOP");
                     mRearCamera = false;
                     mFrontCamera = false;
                     mStatusBarClimate.onFrontCamera(false); 
