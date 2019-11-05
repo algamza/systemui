@@ -141,6 +141,8 @@ public class VolumeControlService extends Service {
                     break;
                 }
             }
+            if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
+            if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
         }
     };
 

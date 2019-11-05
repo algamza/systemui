@@ -48,6 +48,7 @@ public class ScenarioBackupWran {
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private CarSensorManagerEx mCarSensorManagerEx = null;
     private boolean mIsBackupWranApplying = false;
+    private boolean mIsSettingsActivity = false; 
 
     public ScenarioBackupWran(Context context) {
         mContext = context; 
@@ -309,6 +310,10 @@ public class ScenarioBackupWran {
         public void onSensorChanged(final CarSensorEventEx event) {
         }
     };
+
+    public void setSettingsActivityState(boolean on) {
+        mIsSettingsActivity = on; 
+    }
 
     public void userRefresh() {
         if ( mContentResolver == null ) return; 
