@@ -174,7 +174,7 @@ public class DropListUIService implements SystemUIBase {
         }
 
         final IntentFilter filter = new IntentFilter(); 
-        filter.addAction(CONSTANTS.OPEN_DROPLIST); 
+        filter.addAction(CONSTANTS.ACTION_OPEN_DROPLIST); 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {

@@ -502,10 +502,10 @@ public class StatusBarSystem {
             return;
         }
 
-        if ( !CONSTANTS.OPEN_DATE_SETTING.equals("") ) {
-            Log.d(TAG, "openDateTimeSetting="+CONSTANTS.OPEN_DATE_SETTING);
+        if ( !CONSTANTS.ACTION_OPEN_DATE_SETTING.equals("") ) {
+            Log.d(TAG, "openDateTimeSetting="+CONSTANTS.ACTION_OPEN_DATE_SETTING);
             vrCloseRequest();
-            Intent intent = new Intent(CONSTANTS.OPEN_DATE_SETTING);
+            Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DATE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }
@@ -567,10 +567,10 @@ public class StatusBarSystem {
             return;
         }
 
-        if ( !CONSTANTS.OPEN_USERPROFILE_SETTING.equals("") ) {
-            Log.d(TAG, "openUserProfileSetting="+CONSTANTS.OPEN_USERPROFILE_SETTING);
+        if ( !CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING.equals("") ) {
+            Log.d(TAG, "openUserProfileSetting="+CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING);
             vrCloseRequest();
-            Intent intent = new Intent(CONSTANTS.OPEN_USERPROFILE_SETTING);
+            Intent intent = new Intent(CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }

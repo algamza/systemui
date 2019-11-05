@@ -14,8 +14,6 @@ public class CONSTANTS {
 
     public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
     public static final String EXTRA_GESTURE = "gesture";
-
-    
     public static final String ACTION_OPEN_WIFI_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_WIFI"; 
     public static final String ACTION_OPEN_BLUETOOTH_SETTING = "com.humaxdigital.dn8c.ACTION_BLUETOOTH_SETTINGS";  
     public static final String ACTION_OPEN_QUIET_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_SOUND_QUIET_MODE"; 
@@ -24,28 +22,22 @@ public class CONSTANTS {
     public static final String ACTION_OPEN_SETUP = "com.humaxdigital.dn8c.ACTION_SETTINGS"; 
     public static final String ACTION_VOLUME_SETTINGS_STARTED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STARTED";
     public static final String ACTION_VOLUME_SETTINGS_STOPPED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STOPPED";
-
+    public static final String ACTION_CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
+    public static final String ACTION_CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
+    public static final String ACTION_OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
+    public static final String ACTION_OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
+    public static final String ACTION_LOCATION_SHARING_COUNT = "com.humaxdigital.automotive.bluelink.LSC_COUNT";
     public static final String ACTION_OPEN_SCREEN_SAVER = "com.humaxdigital.dn8c.ACTION_SS_SCREEN_OFF";
+    public static final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
+    public static final String PBAP_STATE = "android.extension.car.PBAP_STATE"; 
+    public static final String ACTION_OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
+    public static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
 
     public static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
     public static final String VR_PACKAGE_NAME = "com.humaxdigital.automotive.baiduadapterservice";
     public static final String VR_RECEIVER_NAME = "com.humaxdigital.automotive.baiduadapterservice.duerosadapter.VRSpecialCaseReceiver";
     public static final String VR_DISMISS_ACTION = "com.humaxdigital.automotive.baiduadapterservice.VR_DISMISS_REQ";
 
-    public static final String CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
-    public static final String CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
-
-    public static final String OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
-    public static final String OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
-
-    public static final String ACTION_LOCATION_SHARING_COUNT = "com.humaxdigital.automotive.bluelink.LSC_COUNT"; 
-
-    public static final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
-    public static final String PBAP_STATE = "android.extension.car.PBAP_STATE"; 
-
-    public static final String OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
     public static final String SETTINGS_VR = "vr_shown";
     public static final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
-
-    public static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
 }

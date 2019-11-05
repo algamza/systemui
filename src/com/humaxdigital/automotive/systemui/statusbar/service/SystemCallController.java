@@ -36,8 +36,7 @@ public class SystemCallController extends BaseController<Integer> {
     private ContentObserver mObserver = null;
     private boolean mCurrentContactDownloading = false; 
     private boolean mCurrentCallHistoryDownloading = false; 
-    private int mContactDownloadState = 0; 
-    private int mCallHistoryDownloadState = 0; 
+    private int mDownloadState = 0; 
 
     private TelephonyManager mTelephony = null;
 
@@ -258,16 +257,26 @@ public class SystemCallController extends BaseController<Integer> {
                 if ( mContentResolver == null ) return;
                 int state = Settings.Global.getInt(mContentResolver, CONSTANTS.PBAP_STATE, 0);
                 Log.d(TAG, "CONSTANTS.PBAP_STATE="+state);
-                if ( mContactDownloadState == state ) return;
+                /*  
+                    PBAP_STATE_DOWNLOADING = 3;
+                    PBAP_STATE_DOWNLOADING_PHONEBOOK = 4;
+                    PBAP_STATE_DOWNLOADING_CALLLOG = 5
+                */
+                if ( mDownloadState == state ) return;
+                mDownloadState = state; 
                 if ( state == 3 ) {
-                    mContactDownloadState = state; 
                     mCurrentContactDownloading = true;
-                    broadcastChangeEvent();
+                    mCurrentCallHistoryDownloading = true;
+                } else if ( state == 4 ) {   
+                    mCurrentContactDownloading = true;
+                } else if ( state == 5 ) {
+                    mCurrentCallHistoryDownloading = true;
                 } else if ( state == 2 ) {
-                    mContactDownloadState = state; 
+                    mDownloadState = state; 
                     mCurrentContactDownloading = false;
-                    broadcastChangeEvent();
-                }
+                    mCurrentCallHistoryDownloading = false;
+                } 
+                broadcastChangeEvent();
             }
         };
         return observer; 

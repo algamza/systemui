@@ -388,7 +388,7 @@ public class StatusBar implements SystemUIBase {
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
         if ( mContext == null ) return;
-        Intent intent = new Intent(CONSTANTS.OPEN_DROPLIST); 
+        Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DROPLIST); 
         mContext.sendBroadcast(intent);
     }
 

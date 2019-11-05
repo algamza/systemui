@@ -307,8 +307,8 @@ public class StatusBarService extends Service {
     private void registReceiver() {
         Log.d(TAG, "registReceiver");
         IntentFilter filter = new IntentFilter();
-        filter.addAction(CONSTANTS.CAMERA_START);
-        filter.addAction(CONSTANTS.CAMERA_STOP);
+        filter.addAction(CONSTANTS.ACTION_CAMERA_START);
+        filter.addAction(CONSTANTS.ACTION_CAMERA_STOP);
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED); 
         if ( mContext != null )
             mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
@@ -326,7 +326,7 @@ public class StatusBarService extends Service {
             if ( action == null || mStatusBarClimate == null || mStatusBarSystem == null ) return;
             Log.d(TAG, "mReceiver="+action);
             switch(action) {
-                case CONSTANTS.CAMERA_START: {
+                case CONSTANTS.ACTION_CAMERA_START: {
                     Bundle extras = intent.getExtras();
                     if ( extras == null ) return;
                     if ( extras.getString("CAM_DISPLAY_MODE").equals("REAR_CAM_MODE") ) {
@@ -348,8 +348,8 @@ public class StatusBarService extends Service {
                     }
                     break;
                 }
-                case CONSTANTS.CAMERA_STOP: {
-                    Log.d(TAG, "CONSTANTS.CAMERA_STOP");
+                case CONSTANTS.ACTION_CAMERA_STOP: {
+                    Log.d(TAG, "CONSTANTS.ACTION_CAMERA_STOP");
                     mRearCamera = false;
                     mFrontCamera = false;
                     mStatusBarClimate.onFrontCamera(false); 
