@@ -61,25 +61,30 @@ public class DevModeController {
 
     private void initViews() {
         if (mNormalView != null) {
-            mNormalView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    if (processTouchEvent(v, event) && mDevView != null) {
-                        dispatchOnViewChange(mDevView);
+            boolean devEnabled = DevUtils.isDevelopmentSettingsEnabled(mContext);
+            if (devEnabled) {
+                mNormalView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        if (processTouchEvent(v, event) && mDevView != null) {
+                            dispatchOnViewChange(mDevView);
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            });
+                });
+            } else {
+                mNormalView.setOnTouchListener(null);
+            }
 
             boolean allowLongClick = true;
-            allowLongClick &= DevUtils.isDevelopmentSettingsEnabled(mContext);
+            allowLongClick &= devEnabled;
             allowLongClick &= DevUtils.isKeepingDevUnlocked(mContext);
 
             if (allowLongClick) {
                 mNormalView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        if (isDevelopmentSettingsEnabled(mContext)) {
+                        if (DevUtils.isDevelopmentSettingsEnabled(mContext)) {
                             dispatchOnViewChange(mDevView);
                         }
                         return false;
@@ -171,16 +176,5 @@ public class DevModeController {
          * @return True if the listener has consumed the event, false otherwise.
          */
         boolean onViewChange(View v);
-    }
-
-    public static boolean isDevelopmentSettingsEnabled(Context context) {
-        final UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
-        final boolean settingEnabled = Settings.Global.getInt(context.getContentResolver(),
-                Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
-                Build.TYPE.equals("eng") ? 1 : 0) != 0;
-        final boolean hasRestriction = um.hasUserRestriction(
-                UserManager.DISALLOW_DEBUGGING_FEATURES);
-        final boolean isAdminOrDemo = um.isAdminUser() || um.isDemoUser();
-        return isAdminOrDemo && !hasRestriction && settingEnabled;
     }
 }
