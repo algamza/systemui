@@ -4,7 +4,7 @@
     <string name="STR_MESG_14967_ID">仪表盘亮度联动</string>
     <string name="STR_WI_FI_08_ID">Wi-Fi</string>
     <string name="STR_MUTE_06_ID">静音</string>
-    <string name="STR_QUIET_MODE_04_ID">安静模式</string>
+    <string name="STR_QUIET_MODE_04_ID">后座静音</string>
     <string name="STR_BEEP_04_ID">按键音</string>
     <string name="STR_AUTOMATIC_04_ID">自动模式</string>
     <string name="STR_DAYLIGHT_04_ID">白天模式</string>
