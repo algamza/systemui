@@ -76,7 +76,7 @@
                         android:id="@+id/btnUser0"
                         android:layout_height="wrap_content"
                         android:layout_width ="wrap_content"
-                        android:text="0"
+                        android:text="zh"
                         android:layout_margin="@dimen/dev_button_margin"
                         android:textSize="12dp"/>
 
@@ -84,7 +84,7 @@
                         android:id="@+id/btnUser1"
                         android:layout_height="wrap_content"
                         android:layout_width ="wrap_content"
-                        android:text="1"
+                        android:text="en"
                         android:layout_margin="@dimen/dev_button_margin"
                         android:textSize="12dp"/>
 
@@ -92,7 +92,7 @@
                         android:id="@+id/btnUser2"
                         android:layout_height="wrap_content"
                         android:layout_width ="wrap_content"
-                        android:text="2"
+                        android:text="ko"
                         android:layout_margin="@dimen/dev_button_margin"
                         android:textSize="12dp"/>
 
@@ -298,6 +298,7 @@
                         android:id="@+id/btnLoad"
                         android:layout_height="wrap_content"
                         android:layout_width ="wrap_content"
+                        android:includeFontPadding="false"
                         android:text="Load"
                         android:layout_margin="0dp"
                         android:textSize="16dp"/>
@@ -306,6 +307,7 @@
                         android:id="@+id/btnSave"
                         android:layout_height="wrap_content"
                         android:layout_width ="wrap_content"
+                        android:includeFontPadding="false"
                         android:text="Save"
                         android:layout_margin="0dp"
                         android:textSize="16dp"/>
@@ -320,6 +322,7 @@
                 android:layout_width ="wrap_content"
                 android:text="Stop\n(Kill)"
                 android:layout_margin="0dp"
+                android:includeFontPadding="false"
                 android:textSize="@dimen/dev_text_size"/>
 
         </LinearLayout>

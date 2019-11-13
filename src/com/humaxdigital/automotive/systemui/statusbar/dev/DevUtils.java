@@ -4,15 +4,22 @@
 package com.humaxdigital.automotive.systemui.statusbar.dev;
 
 import android.app.ActivityManager;
+import android.app.IActivityManager;
+import android.app.backup.BackupManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
+import android.os.LocaleList;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
+
+import java.util.Locale;
 
 public class DevUtils {
     private static final String TAG = DevUtils.class.getSimpleName();
@@ -46,5 +53,36 @@ public class DevUtils {
     public static void setKeepingDevUnlocked(Context context, boolean keepingUnlocked) {
         Settings.Global.putInt(context.getContentResolver(),
                 KEEP_UNLOCKED, keepingUnlocked ? 1 : 0);
+    }
+
+    public static void setLocale(Locale locale) {
+        updateLocales(new LocaleList(locale));
+    }
+
+    public static void updateLocales(LocaleList locales) {
+        try {
+            final IActivityManager am = ActivityManager.getService();
+            final Configuration config = am.getConfiguration();
+
+            config.setLocales(locales);
+            config.userSetLocale = true;
+
+            am.updatePersistentConfiguration(config);
+
+            // Trigger the dirty bit for the Settings Provider.
+            BackupManager.dataChanged("com.android.providers.settings");
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static LocaleList getLocales() {
+        try {
+            return ActivityManager.getService()
+                    .getConfiguration().getLocales();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            return LocaleList.getDefault();
+        }
     }
 }
