@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">droplist</string>
     <string name="STR_MESG_18334_ID">此功能目前不可用</string>
     <string name="STR_MESG_14967_ID">仪表盘亮度联动</string>
     <string name="STR_WI_FI_08_ID">Wi-Fi</string>
@@ -16,4 +15,18 @@
     <string name="STR_DISPLAY_OFF_01_ID">画面关闭</string>
     <string name="STR_BLUETOOTH_06_ID">蓝牙</string>
     <string name="STR_BRIGHTNESS_04_ID">亮度</string>
+    <string name="STR_MESG_14845_ID">通话中无法进行操作</string>
+    <string name="STR_FEATURE_CURRENTLY_UNAVAILABLE_ID">功能当前不可用</string>
+    <string name="STR_JAN_04_ID">1月</string>
+    <string name="STR_FEB_04_ID">2月</string>
+    <string name="STR_MAR_04_ID">3月</string>
+    <string name="STR_APR_04_ID">4月</string>
+    <string name="STR_MAY_09_ID">5月</string>
+    <string name="STR_JUN_04_ID">6月</string>
+    <string name="STR_JUL_04_ID">7月</string>
+    <string name="STR_AUG_04_ID">8月</string>
+    <string name="STR_SEP_04_ID">9月</string>
+    <string name="STR_OCT_04_ID">10月</string>
+    <string name="STR_NOV_04_ID">11月</string>
+    <string name="STR_DEC_04_ID">12月</string>
 </resources>
