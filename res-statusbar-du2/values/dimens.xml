@@ -2,10 +2,10 @@
 <resources>
     <dimen name="text_date"> 52px </dimen>
     <dimen name="text_date_noon"> 32px </dimen>
-    <dimen name="text_climate_temp_int">52px</dimen>
+    <dimen name="text_climate_temp_int">48px</dimen>
     <dimen name="text_climate_temp_text">42px</dimen>
-    <dimen name="text_climate_temp_dec">32px</dimen>
-    <dimen name="text_climate_wind">48px</dimen>
+    <dimen name="text_climate_temp_dec">30px</dimen>
+    <dimen name="text_climate_wind">44px</dimen>
 
     <dimen name="dev_text_size">24sp</dimen>
     <dimen name="dev_button_margin">1dp</dimen>
