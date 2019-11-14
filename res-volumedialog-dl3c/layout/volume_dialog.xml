@@ -45,7 +45,6 @@
         android:id="@+id/text_volume"
         android:layout_width="@dimen/volume_text_area_width"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/volume_text_left_margin"
         android:layout_marginTop="@dimen/volume_text_top_margin"
         android:gravity="center"
         android:textSize="@dimen/volume_text_size"

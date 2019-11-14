@@ -23,7 +23,7 @@
     <dimen name="volume_text_left_margin"> 20px </dimen> <!-- guide = 12px -->
     <dimen name="volume_text_top_margin"> 335px </dimen> <!-- guide = 345px -->
     <dimen name="volume_text_size"> 68px </dimen>
-    <dimen name="volume_text_area_width"> 85px </dimen>
+    <dimen name="volume_text_area_width"> 121px </dimen>
 
     <dimen name="progress_left_margin"> -205px </dimen>
     <dimen name="progress_top_margin"> 155px </dimen>
