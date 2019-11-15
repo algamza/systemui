@@ -11,8 +11,12 @@ import android.util.Log;
 import android.database.ContentObserver;
 import android.net.Uri;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.extension.car.settings.CarExtraSettings;
 import android.extension.car.CarSensorManagerEx;
+import android.extension.car.CarSystemManager;
 import android.car.hardware.CarSensorEvent;
 import android.car.hardware.CarPropertyValue;
 import android.car.VehicleAreaType;
@@ -33,6 +37,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     private CarExClient mCarClient = null;
     private CarSensorManagerEx mCarSensorEx = null;
     private CarNaviManagerEx mCarNaviEx = null; 
+    private CarSystemManager mCarSystem = null; 
     private ContentResolver mContentResolver;
     private ContentObserver mModeObserver; 
     private ContentObserver mBrightnessDayObserver; 
@@ -42,6 +47,8 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     private Mode mCurrentMode = Mode.AUTOMATIC; 
     private int mCurrentNightValue = 0;
     private int mCurrentDayValue = 0;
+    private Timer mTimer = new Timer(); 
+    private TimerTask mStoreTask = null; 
 
     public BrightnessImpl(Context context) {
         super(context);
@@ -98,6 +105,30 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             case NIGHT: setNightBrightness(e); break; 
         }
         Log.d(TAG, "set="+e+", mode="+mCurrentMode);
+
+        sendStoreCommand();
+    }
+
+    private void sendStoreCommand() {
+        if ( mStoreTask != null ) {
+            mStoreTask.cancel(); 
+            mTimer.purge(); 
+            mStoreTask = null; 
+        }
+
+        mStoreTask = new TimerTask(){
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "setLCDSettingStored"); 
+                    if ( mCarSystem != null ) mCarSystem.setLCDSettingStored(); 
+                } catch (CarNotConnectedException err) {
+                    Log.e(TAG, "CarNotConnectedException : "+ err);
+                }
+            }
+        };
+
+        mTimer.schedule(mStoreTask, 1500);
     }
 
     private void setDayBrightness(int val) {
@@ -128,6 +159,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             }
             mCarSensorEx = mCarClient.getSensorManager();
             mCarNaviEx = mCarClient.getNaviManager(); 
+            mCarSystem = mCarClient.getSystemManager(); 
             if ( mCarSensorEx == null || mCarNaviEx == null ) return;
             mCarSensorEx.registerListener(mSensorChangeListener, 
                 CarSensorManagerEx.SENSOR_TYPE_NIGHT_MODE, 
