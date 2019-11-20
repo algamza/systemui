@@ -116,7 +116,7 @@ public class NotificationUI extends LinearLayout {
             if ( mFlags.get(Flag.TEXT) ) {
                 mBody.setVisibility(View.VISIBLE); 
                 mBody.setText(mDataText);
-                mBody.setMarqueeDPPerSecond(100); 
+                //mBody.setMarqueeDPPerSecond(100); 
                 mBody.setSelected(true);
             } else {
                 mBody.setVisibility(View.GONE);
@@ -125,7 +125,7 @@ public class NotificationUI extends LinearLayout {
             if ( mFlags.get(Flag.SUB_TEXT) ) {
                 mSubBody.setVisibility(View.VISIBLE); 
                 mSubBody.setText(mSubDataText);
-                mSubBody.setMarqueeDPPerSecond(100); 
+                //mSubBody.setMarqueeDPPerSecond(100); 
                 mSubBody.setSelected(true);
             } else {
                 mSubBody.setVisibility(View.GONE);
