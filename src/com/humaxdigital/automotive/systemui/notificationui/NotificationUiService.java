@@ -186,8 +186,10 @@ public class NotificationUiService extends Service {
                     if ( remote_view != null ) ui.setRemoteViews(remote_view); 
                     if ( title != null && !title.equals("") ) ui.setTitle(title); 
                     else ui.setTitle(""); 
-                    if ( text != null ) ui.setBody(text.toString()); 
-                    else ui.setBody(""); 
+                    if ( text != null ) ui.setText(text.toString()); 
+                    else ui.setText(""); 
+                    if ( subText != null ) ui.setSubText(subText.toString()); 
+                    else ui.setSubText(""); 
 
                     if ( icon != null ) {
                         if ( icon.getType() == Icon.TYPE_RESOURCE ) {

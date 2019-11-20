@@ -22,14 +22,15 @@ public class NotificationUI extends LinearLayout {
     private enum Flag {
         TITLE,
         TEXT,
+        SUB_TEXT,
         ICON,
-        DOUBLE_LINE,
         VIEWS
     }
 
     private Context mContext;
     private TextView mTitle;
     private TextView mBody;
+    private TextView mSubBody; 
     private ImageView mIcon;
     private ImageView mLine;
     private FrameLayout mViews;
@@ -37,6 +38,7 @@ public class NotificationUI extends LinearLayout {
 
     private String mDataTitle = ""; 
     private String mDataText = ""; 
+    private String mSubDataText = ""; 
     private Icon mDataIcon = null;
     private RemoteViews mDataRemoteViews = null; 
 
@@ -49,8 +51,8 @@ public class NotificationUI extends LinearLayout {
     private void initFlags() {
         mFlags.put(Flag.TITLE, false);
         mFlags.put(Flag.TEXT, false);
+        mFlags.put(Flag.SUB_TEXT, false); 
         mFlags.put(Flag.ICON, false);
-        mFlags.put(Flag.DOUBLE_LINE, false);
         mFlags.put(Flag.VIEWS, false); 
     }
 
@@ -59,17 +61,27 @@ public class NotificationUI extends LinearLayout {
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if ( mFlags.get(Flag.VIEWS)) {
             inflater.inflate(R.layout.notification_remote_view, this, true);
-        }
-        else if ( mFlags.get(Flag.TITLE) ) {
-            if ( mFlags.get(Flag.DOUBLE_LINE) ) 
-                inflater.inflate(R.layout.notification_left_double_line, this, true);
-            else 
-                inflater.inflate(R.layout.notification_left, this, true);
+        } else if ( mFlags.get(Flag.TITLE) ) {
+            if ( mFlags.get(Flag.SUB_TEXT) ) {
+                if ( mFlags.get(Flag.ICON) ) {
+                    inflater.inflate(R.layout.notification_icon_subtext, this, true);
+                } else {
+                    inflater.inflate(R.layout.notification_subtext, this, true);
+                }
+            } else {
+                if ( mFlags.get(Flag.ICON) ) {
+                    inflater.inflate(R.layout.notification_icon_title, this, true);
+                } else {
+                    inflater.inflate(R.layout.notification_title, this, true);
+                }
+            } 
         } else {
-            if ( mFlags.get(Flag.DOUBLE_LINE) ) 
-                inflater.inflate(R.layout.notification_double_line, this, true);
-            else 
-                inflater.inflate(R.layout.notification, this, true);
+            if ( mFlags.get(Flag.ICON) ) {
+                inflater.inflate(R.layout.notification_icon_text, this, true);
+            } else {
+                inflater.inflate(R.layout.notification_text, this, true);
+            }
+            
         }
        
         if ( mFlags.get(Flag.VIEWS) ) {
@@ -86,10 +98,11 @@ public class NotificationUI extends LinearLayout {
         } else {
             mTitle = (TextView)this.findViewById(R.id.title);
             mBody = (TextView)this.findViewById(R.id.body);
+            mSubBody = (TextView)this.findViewById(R.id.subbody); 
             mIcon = (ImageView)this.findViewById(R.id.icon);
             mLine = (ImageView)this.findViewById(R.id.line);
             
-            if ( mTitle == null || mBody == null || mIcon == null || mLine == null ) return; 
+            if ( mTitle == null || mBody == null || mIcon == null || mLine == null || mSubBody == null ) return; 
 
             if ( mFlags.get(Flag.TITLE) ) {
                 mTitle.setVisibility(View.VISIBLE); 
@@ -103,8 +116,19 @@ public class NotificationUI extends LinearLayout {
             if ( mFlags.get(Flag.TEXT) ) {
                 mBody.setVisibility(View.VISIBLE); 
                 mBody.setText(mDataText);
+                mBody.setMarqueeDPPerSecond(100); 
+                mBody.setSelected(true);
             } else {
                 mBody.setVisibility(View.GONE);
+            }
+
+            if ( mFlags.get(Flag.SUB_TEXT) ) {
+                mSubBody.setVisibility(View.VISIBLE); 
+                mSubBody.setText(mSubDataText);
+                mSubBody.setMarqueeDPPerSecond(100); 
+                mSubBody.setSelected(true);
+            } else {
+                mSubBody.setVisibility(View.GONE);
             }
     
             if ( mFlags.get(Flag.ICON) ) {
@@ -124,13 +148,19 @@ public class NotificationUI extends LinearLayout {
         return this;
     }
 
-    public NotificationUI setBody(String body) {
+    public NotificationUI setText(String body) {
         if ( body == null || body.equals("") ) return this;
-        Log.d(TAG, "setBody="+body); 
+        Log.d(TAG, "setText="+body); 
         mDataText = body; 
         mFlags.put(Flag.TEXT, true);
-        if ( mDataText.contains("\n") )
-            mFlags.put(Flag.DOUBLE_LINE, true);
+        return this;
+    }
+
+    public NotificationUI setSubText(String body) {
+        if ( body == null || body.equals("") ) return this;
+        Log.d(TAG, "setSubText="+body); 
+        mSubDataText = body; 
+        mFlags.put(Flag.SUB_TEXT, true);
         return this;
     }
 
@@ -152,7 +182,7 @@ public class NotificationUI extends LinearLayout {
 
     public void updateBody(String body) {
         if ( body == null || mBody == null || mDataText == null ) return; 
-        setBody(body); 
+        setText(body); 
         if ( mFlags.get(Flag.TEXT) ) {
             mBody.setVisibility(View.VISIBLE); 
             mBody.setText(mDataText);

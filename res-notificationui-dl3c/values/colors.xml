@@ -4,5 +4,5 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="notification_bg">#d4d4d4</color>
-    <color name="notification_text">#000000</color>
+    <color name="notification_text">#1e1e1e</color>
 </resources>
