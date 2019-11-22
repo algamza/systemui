@@ -86,6 +86,7 @@ public class ClimateController {
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
+    private Boolean mClimateOn = false; 
 
     private ContentResolver mContentResolver;
     private ContentObserver mClimateObserver;
@@ -340,6 +341,102 @@ public class ClimateController {
         updateDisable(true);
     }
 
+    private void update() {
+        if ( mService == null ) return; 
+
+        updateClimateType();
+
+        if ( !mIsViewInit ) {
+            mIsViewInit = true; 
+            initView(); 
+        }
+
+        updateDisable(false);
+
+        mIGNOn = mService.getIGNStatus() == 1 ? true:false;
+        mIsOperateOn = mService.isOperateOn(); 
+        mTempDRState = mService.getDRTemperature();
+        mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
+        mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
+        mIntakeState = mService.getAirCirculationState() ? IntakeState.ON:IntakeState.OFF; 
+        mFanSpeedState = FanSpeedState.values()[mService.getBlowerSpeed()]; 
+        mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
+        mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
+        mTempPSState = mService.getPSTemperature();
+        mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
+        mModeOff = mService.isModeOff(); 
+        mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
+
+        if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
+        if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
+        if ( mAC != null ) updateAC();
+        if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
+        if ( mFanDirection != null ) updateFanDirection();
+        if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
+        if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
+        if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
+        if ( mFanSpeed != null ) {
+            if ( mFanSpeedState == FanSpeedState.STEPOFF ) climateOff();
+            else {
+                updateFanSpeed(mFanSpeedState);
+                climateOn();
+            }
+        }
+        
+        updateIGOnChange(mIGNOn); 
+        updateOperateOnChange(mIsOperateOn); 
+        updateModeOff(mModeOff); 
+    }
+
+    private boolean isClimateOn() {
+        Log.d(TAG, "isClimateOn="+mClimateOn); 
+        return mClimateOn; 
+    }
+
+    private void climateOn() {
+        Log.d(TAG, "climateOn="+mClimateOn); 
+        if ( mClimateOn || (mFanSpeed == null) ) return; 
+        mClimateOn = true; 
+        updateFanSpeed(mFanSpeedState); 
+        updateTempOn(true); 
+        updateModeOff(false);
+        updateAC();
+    }
+
+    private void climateOff() {
+        Log.d(TAG, "climateOff="+mClimateOn); 
+        if ( !mClimateOn || (mFanSpeed == null) ) return; 
+        mClimateOn = false; 
+        updateFanSpeed(FanSpeedState.STEP0); 
+        updateTempOn(false); 
+        updateModeOff(true);
+        updateAC();
+    }
+
+    private void updateAC() {
+        Log.d(TAG, "updateAC:climateon="+mClimateOn); 
+        if ( mAC == null ) return;
+        if ( !mClimateOn ) mAC.update(ACState.OFF.ordinal()); 
+        else mAC.update(mACState.ordinal()); 
+    }
+
+    private void updateFanDirection() {
+        if ( mFanDirection == null ) return;
+        if ( mModeOff || !mClimateOn ) {
+            mFanDirection.update(FanDirectionState.OFF.ordinal()); 
+        } else {
+            if ( mFrontDefogState == FrontDefogState.ON ) 
+                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
+            else 
+                mFanDirection.update(mFanDirectionState.ordinal()); 
+        }
+    }
+
+    private void updateFanSpeed(FanSpeedState state) {
+        if ( mFanSpeed == null ) return;
+        mFanSpeed.update(0, false, String.valueOf(state.ordinal()-1));
+    }
+
     private void fanOn() {
         if ( (mFanSpeed != null) 
             && ( (mFanSpeedState == FanSpeedState.STEPOFF) 
@@ -369,61 +466,6 @@ public class ClimateController {
         } else {
             setClimateType(ClimateType.DEFAULT); 
         }
-    }
-
-    private void update() {
-        if ( mService == null ) return; 
-
-        updateClimateType();
-
-        if ( !mIsViewInit ) {
-            mIsViewInit = true; 
-            initView(); 
-        }
-
-        updateDisable(false);
-
-        mIGNOn = mService.getIGNStatus() == 1 ? true:false;
-        mIsOperateOn = mService.isOperateOn(); 
-        mTempDRState = mService.getDRTemperature();
-        mSeatDRState = SeatState.values()[mService.getDRSeatStatus()]; 
-        mACState = mService.getAirConditionerState() ? ACState.ON:ACState.OFF; 
-        mIntakeState = mService.getAirCirculationState() ? IntakeState.ON:IntakeState.OFF; 
-        mFanSpeedState = FanSpeedState.values()[mService.getBlowerSpeed()]; 
-        mFanDirectionState = FanDirectionState.values()[mService.getFanDirection()]; 
-        mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
-        mTempPSState = mService.getPSTemperature();
-        mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
-        mModeOff = mService.isModeOff(); 
-        mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
-
-        if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
-        if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
-        if ( mAC != null ) mAC.update(mACState.ordinal()); 
-        if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
-        if ( mFanDirection != null ) {
-            if ( mFrontDefogState == FrontDefogState.ON ) {
-                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
-            } else {
-                mFanDirection.update(mFanDirectionState.ordinal());
-            } 
-        }
-        if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
-        if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
-        if ( mFanSpeed != null ) {
-            if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                updateTempOn(false); 
-            } else {
-                mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-                updateTempOn(true); 
-            }
-        }
-        if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
-        
-        updateIGOnChange(mIGNOn); 
-        updateOperateOnChange(mIsOperateOn); 
-        updateModeOff(mModeOff); 
     }
 
     private void updateTempOn(boolean on) {
@@ -463,18 +505,10 @@ public class ClimateController {
 
     private void updateModeOff(boolean off) {
         Log.d(TAG, "updateModeOff="+off);
-        if ( mIsOperateOn || !mIGNOn ) return;   
+        if ( mIsOperateOn ) return;   
         if ( mModeOff == off ) return; 
-        mModeOff = off; 
-        if ( mFanDirection == null ) return;
-        if ( mModeOff ) {
-            mFanDirection.update(FanDirectionState.OFF.ordinal()); 
-        } else {
-            if ( mFrontDefogState == FrontDefogState.ON ) 
-                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
-            else 
-                mFanDirection.update(mFanDirectionState.ordinal()); 
-        }
+        mModeOff = off;     
+        updateFanDirection();
     }
 
     private void updateIGOnChange(boolean on) {
@@ -662,7 +696,7 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAC.update(mACState.ordinal());
+                    updateAC();
                 }
             });    
         }
@@ -687,7 +721,7 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mFanDirection.update(mFanDirectionState.ordinal()); 
+                    updateFanDirection();
                 }
             }); 
         }
@@ -699,12 +733,10 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) {
-                        mFanSpeed.update(0, false, String.valueOf(FanSpeedState.STEP0.ordinal()-1)); 
-                        updateTempOn(false); 
-                    } else {
-                        mFanSpeed.update(0, false, String.valueOf(mFanSpeedState.ordinal()-1));
-                        updateTempOn(true); 
+                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) climateOff();
+                    else {
+                        updateFanSpeed(mFanSpeedState);
+                        climateOn();
                     } 
                 }
             }); 
@@ -743,21 +775,12 @@ public class ClimateController {
         public void onFrontDefogStatusChanged(int state) {
             mFrontDefogState = FrontDefogState.values()[state]; 
             if ( mHandler == null ) return; 
-            if ( mFrontDefogState == FrontDefogState.ON ) {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
-                    }
-                }); 
-            } else {
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mFanDirection.update(mFanDirectionState.ordinal()); 
-                    }
-                }); 
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateFanDirection();
+                }
+            }); 
         }
 
         @Override
