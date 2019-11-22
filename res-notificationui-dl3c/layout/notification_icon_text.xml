@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:maxWidth="@dimen/notification_body_icon_width"
         android:textColor="@color/notification_text"
-        android:textSize="@dimen/notification_body_text_size"
+        android:textSize="@dimen/notification_icon_body_text_size"
         android:marqueeRepeatLimit="marquee_forever"
         android:ellipsize="marquee"
         android:singleLine="true" />

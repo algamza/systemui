@@ -5,35 +5,42 @@
     android:layout_height="match_parent"
     android:gravity="left|center_vertical"
     android:background="@color/notification_bg">
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="@dimen/notification_title_subtext_width"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/notification_default_margin"
-        android:textColor="@color/notification_text"
-        android:textStyle="bold"
-        android:textSize="@dimen/notification_title_text_size" />
-    <ImageView
-        android:id="@+id/line"
-        android:layout_width="@dimen/line_width"
-        android:layout_height="@dimen/line_height"
-        android:layout_marginLeft="@dimen/notification_default_margin"
-        android:src="@drawable/co_bg_osd_line" />
-    <ImageView
-        android:id="@+id/icon"
-        android:layout_width="@dimen/icon_width"
-        android:layout_height="@dimen/icon_height"
-        android:layout_marginLeft="@dimen/notification_line_left_margin" />
-    <TextView
-        android:id="@+id/body"
-        android:layout_width="@dimen/notification_title_body_icon_subtitle_width"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/notification_icon_margin"
-        android:textColor="@color/notification_text"
-        android:textSize="@dimen/notification_body_text_size"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:ellipsize="marquee"
-        android:singleLine="true" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="@dimen/notification_subbody_flexible_frame"
+        android:layout_height="match_parent"
+        android:gravity="left|center_vertical">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/notification_default_margin"
+            android:textColor="@color/notification_text"
+            android:textStyle="bold"
+            android:textSize="@dimen/notification_title_text_size" />
+        <ImageView
+            android:id="@+id/line"
+            android:layout_width="@dimen/line_width"
+            android:layout_height="@dimen/line_height"
+            android:layout_marginLeft="@dimen/notification_default_margin"
+            android:src="@drawable/co_bg_osd_line" />
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="@dimen/icon_width"
+            android:layout_height="@dimen/icon_height"
+            android:layout_marginLeft="@dimen/notification_line_left_margin" />
+        <TextView
+            android:id="@+id/body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/notification_icon_margin"
+            android:layout_marginRight="@dimen/notification_default_margin"
+            android:textColor="@color/notification_text"
+            android:textSize="@dimen/notification_icon_body_text_size"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="marquee"
+            android:singleLine="true" />
+    </LinearLayout>
     <TextView
         android:id="@+id/subbody"
         android:layout_width="@dimen/notification_subbody_width"

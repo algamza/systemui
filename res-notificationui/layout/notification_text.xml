@@ -16,8 +16,7 @@
     <ImageView
         android:id="@+id/icon"
         android:layout_width="@dimen/icon_width"
-        android:layout_height="@dimen/icon_height"
-        android:layout_marginRight="@dimen/notification_default_margin"/>
+        android:layout_height="@dimen/icon_height" />
     <TextView
         android:id="@+id/body"
         android:layout_width="wrap_content"

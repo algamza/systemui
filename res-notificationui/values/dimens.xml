@@ -5,6 +5,7 @@
     
     <dimen name="notification_title_text_size"> 42px </dimen>
     <dimen name="notification_body_text_size"> 42px </dimen>
+    <dimen name="notification_icon_body_text_size"> 36px </dimen>
     
     <dimen name="icon_width"> 80px </dimen>
     <dimen name="icon_height"> 80px </dimen>
@@ -18,6 +19,7 @@
     <dimen name="notification_title_body_subtitle_width"> 1127px </dimen>
     <dimen name="notification_title_body_icon_subtitle_width"> 1061px </dimen>
     <dimen name="notification_subbody_width"> 420px </dimen>
+    <dimen name="notification_subbody_flexible_frame"> 1470px </dimen>
 
     <dimen name="notification_title_width"> 216px </dimen>
     <dimen name="notification_title_subtext_width"> 220px </dimen>
