@@ -62,7 +62,9 @@ public class DropListUIService implements SystemUIBase {
 
     private WindowManager mWindowManager;
 
-    private final int DROP_MOVE_TIME_MS = 200;
+    private final int DROP_OPEN_TIME_MS = 200;
+    private final int DROP_CLOSE_TIME_MS = 300; 
+    private final int DROP_CLOSE_DELAY_MS = 400; 
     private View mPanelBody;
     private Window mWindow;
 
@@ -286,7 +288,8 @@ public class DropListUIService implements SystemUIBase {
         mPanelBody.animate()
                 .alpha(0)
                 .translationY(-mScreenBottom+mNavBarHeight)
-                .setDuration(DROP_MOVE_TIME_MS)
+                .setDuration(DROP_CLOSE_TIME_MS)
+                .setStartDelay(DROP_CLOSE_DELAY_MS)
                 .withEndAction(new Runnable() {
                     @Override
                     public void run() {
@@ -297,7 +300,7 @@ public class DropListUIService implements SystemUIBase {
                                 mShowing = false; 
                                 mStartedDismiss = false;
                             }
-                        }, DROP_MOVE_TIME_MS/2);
+                        }, DROP_CLOSE_TIME_MS/2);
                     }
                 })
                 .start();
@@ -387,7 +390,7 @@ public class DropListUIService implements SystemUIBase {
             mPanelBody.animate()
                     .alpha(1)
                     .translationY(0)
-                    .setDuration(DROP_MOVE_TIME_MS)
+                    .setDuration(DROP_OPEN_TIME_MS)
                     .withEndAction(new Runnable() {
                         @Override
                         public void run() {
@@ -396,7 +399,7 @@ public class DropListUIService implements SystemUIBase {
                                 public void run() {
                                     mShowing = true;
                                 }
-                            }, DROP_MOVE_TIME_MS/2);
+                            }, DROP_OPEN_TIME_MS/2);
                         }
                     })
                     .start();
