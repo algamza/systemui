@@ -20,6 +20,7 @@ public class BluetoothController implements BaseController {
     private UpdateHandler mHandler = new UpdateHandler();
     private boolean mOn = false; 
     private boolean mIsCalling = false; 
+    private boolean mIsCarlifeConnected = false; 
 
     @Override
     public BaseController init(View view) {
@@ -69,7 +70,16 @@ public class BluetoothController implements BaseController {
         @Override
         public void onCallingChanged(boolean on) {
             mIsCalling = on; 
-            if ( mIsCalling ) 
+            if ( mIsCalling || mIsCarlifeConnected ) 
+                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+            else 
+                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+        }
+
+        @Override
+        public void onCarlifeConnectionChanged(boolean connect) {
+            mIsCarlifeConnected = connect; 
+            if ( mIsCarlifeConnected || mIsCalling ) 
                 mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
             else 
                 mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 

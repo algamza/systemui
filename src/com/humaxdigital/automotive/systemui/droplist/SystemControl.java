@@ -222,6 +222,7 @@ public class SystemControl extends Service {
         public void onBluelinkCallModeChanged(boolean enable) {}
         public void onImmobilizationModeChanged(boolean enable) {}
         public void onSlowdownModeChanged(boolean enable) {}
+        public void onCarlifeConnectionChanged(boolean connect) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {
@@ -401,6 +402,7 @@ public class SystemControl extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED);
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED);
+        filter.addAction(CONSTANTS.ACTION_CARLIFE_STATE); 
         registerReceiverAsUser(mApplicationActionReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -674,6 +676,17 @@ public class SystemControl extends Service {
                     }
                     break;
                 }
+
+                case CONSTANTS.ACTION_CARLIFE_STATE: {
+                    boolean connected = intent.getBooleanExtra("isConnected", false);
+                    Log.d(TAG, "ACTION_CARLIFE_STATE="+connected);
+                    synchronized (mCallbacks) {
+                        for ( SystemCallback callback : mCallbacks ) 
+                            callback.onCarlifeConnectionChanged(connected);
+                    }
+                    break;
+                }
+                default: break; 
             }
         }
     };
