@@ -207,7 +207,8 @@ public class ClimateController {
         boolean support_seat = true; 
         if ( type == ClimateType.NO_SEAT ) support_seat = false; 
 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C 
+            || ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
             if ( support_seat ) mClimatePanel = inflater.inflate(R.layout.climate, null); 
             else mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
         } else {
@@ -283,14 +284,23 @@ public class ClimateController {
             mClimateViews.add(mAirCleaning);
         } 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
-            mClimateViews.add(mSeatDR);
-            mClimateViews.add(mAC);
-            mClimateViews.add(mIntake);
-            mClimateViews.add(mTempDR);
-            mClimateViews.add(mFanSpeed);
-            mClimateViews.add(mFanDirection);
-            mClimateViews.add(mAirCleaning); 
-            mClimateViews.add(mSeatPS);
+            if ( support_seat ) {
+                mClimateViews.add(mSeatDR);
+                mClimateViews.add(mAC);
+                mClimateViews.add(mIntake);
+                mClimateViews.add(mTempDR);
+                mClimateViews.add(mFanSpeed);
+                mClimateViews.add(mFanDirection);
+                mClimateViews.add(mAirCleaning); 
+                mClimateViews.add(mSeatPS);
+            } else {
+                mClimateViews.add(mAC);
+                mClimateViews.add(mIntake);
+                mClimateViews.add(mTempDR);
+                mClimateViews.add(mFanSpeed);
+                mClimateViews.add(mFanDirection);
+                mClimateViews.add(mAirCleaning); 
+            }
         } 
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DL3C ) {
             mClimateViews.add(mTempDR);
