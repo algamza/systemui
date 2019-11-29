@@ -405,7 +405,6 @@ public class ClimateController {
 
     private void climateOn() {
         Log.d(TAG, "climateOn="+mClimateOn); 
-        if ( mClimateOn || (mFanSpeed == null) ) return; 
         mClimateOn = true; 
         updateFanSpeed(mFanSpeedState); 
         updateTempOn(true); 
@@ -415,7 +414,6 @@ public class ClimateController {
 
     private void climateOff() {
         Log.d(TAG, "climateOff="+mClimateOn); 
-        if ( !mClimateOn || (mFanSpeed == null) ) return; 
         mClimateOn = false; 
         updateFanSpeed(FanSpeedState.STEP0); 
         updateTempOn(false); 
@@ -479,7 +477,6 @@ public class ClimateController {
     }
 
     private void updateTempOn(boolean on) {
-        if ( mTempOn == on ) return; 
         mTempOn = on; 
         if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
@@ -516,7 +513,6 @@ public class ClimateController {
     private void updateModeOff(boolean off) {
         Log.d(TAG, "updateModeOff="+off);
         if ( mIsOperateOn ) return;   
-        if ( mModeOff == off ) return; 
         mModeOff = off;     
         updateFanDirection();
     }
