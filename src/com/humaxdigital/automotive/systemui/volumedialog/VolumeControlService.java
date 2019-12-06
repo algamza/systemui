@@ -26,6 +26,8 @@ import android.car.media.ICarVolumeCallback;
 import android.extension.car.util.AudioTypes;
 import android.extension.car.settings.CarExtraSettings;
 
+import android.telephony.TelephonyManager;
+
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +55,7 @@ public class VolumeControlService extends Service {
     private Object mServiceReady = new Object();
     private CarAudioManagerEx mCarAudioManagerEx;
     private AudioManager mAudioManager; 
+    private TelephonyManager mTelephonyManager;
 
     private ScenarioQuiteMode mQuiteMode = null;
     private ScenarioBackupWran mBackupWran = null;
@@ -68,7 +71,7 @@ public class VolumeControlService extends Service {
         CarExClient.getInstance().connect(this, mCarClientListener); 
 
         mAudioManager = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE); 
-        
+        mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         registUserSwicher();
 
         mQuiteMode = new ScenarioQuiteMode(this).init();
@@ -217,7 +220,14 @@ public class VolumeControlService extends Service {
     public boolean getCurrentMute() {
         if ( mCarAudioManagerEx == null ) return false;
         boolean mute = false;
-        mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
+		if(mTelephonyManager.getCallState() == mTelephonyManager.CALL_STATE_RINGING)
+		{
+			mute = mCarAudioManagerEx.getAudioMutePathStatus(AudioTypes.AUDIO_MUTE_PATH_PHONE);
+		}
+		else
+		{
+			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
+		}
         Log.d(TAG, "getCurrentMute="+mute);
         return mute;
     }
