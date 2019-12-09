@@ -25,6 +25,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ClimateControllerManager {
     private static final String TAG = "ClimateControllerManager";
 
@@ -94,6 +97,9 @@ public class ClimateControllerManager {
     private List<ClimateBaseController> mControllers = new ArrayList<>(); 
     private boolean mIGNOn = true; 
     private boolean mOperateStateOn = false; 
+    private Timer mTimer = new Timer(); 
+    private TimerTask mIGNOnTask = null; 
+    private final int IGN_ON_DELAY_MS = 550; 
 
     public interface ClimateListener {
         public void onInitialized();
@@ -191,10 +197,10 @@ public class ClimateControllerManager {
                         if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
                             || state == CarSensorEvent.IGNITION_STATE_OFF
                             || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                            mIGNOn = false;
+                            setIGNStatus(false);
                         } else if ( state == CarSensorEvent.IGNITION_STATE_ON
                             || state == CarSensorEvent.IGNITION_STATE_START ) {
-                            mIGNOn = true;
+                            setIGNStatus(true);
                         }
                     }
 
@@ -229,6 +235,44 @@ public class ClimateControllerManager {
         return mIGNOn?1:0;
     }
 
+    private void setIGNStatus(boolean on) {
+        Log.d(TAG, "setIGNStatus="+on);
+        if ( on ) delayIGNOn();
+        else IGNOff();
+    }
+    
+    private void IGNOff() {
+        if ( mIGNOnTask != null ) {
+            mIGNOnTask.cancel(); 
+            mTimer.purge(); 
+            mIGNOnTask = null; 
+        }
+        
+        mIGNOn = false; 
+        if ( mListener != null ) 
+            mListener.onIGNOnChanged(mIGNOn);
+    }
+
+    private void delayIGNOn() {
+        Log.d(TAG, "delayIGNOn");
+        if ( mIGNOnTask != null ) {
+            mIGNOnTask.cancel(); 
+            mTimer.purge(); 
+            mIGNOnTask = null; 
+        }
+
+        mIGNOnTask = new TimerTask(){
+            @Override
+            public void run() {
+                mIGNOn = true; 
+                if ( mListener != null ) 
+                    mListener.onIGNOnChanged(mIGNOn);
+            }
+        };
+
+        mTimer.schedule(mIGNOnTask, IGN_ON_DELAY_MS);
+    }
+
     public boolean isOperateOn() {
         Log.d(TAG, "isOperateOn = "+mOperateStateOn);
         return mOperateStateOn;
@@ -247,16 +291,11 @@ public class ClimateControllerManager {
                     if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
                         || state == CarSensorEvent.IGNITION_STATE_OFF
                         || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                        if ( mIGNOn ) {
-                            mIGNOn = false;
-                            mListener.onIGNOnChanged(mIGNOn);
-                        }
+                        if ( mIGNOn ) setIGNStatus(false);
+                        
                     } else if ( state == CarSensorEvent.IGNITION_STATE_ON
                         || state == CarSensorEvent.IGNITION_STATE_START ) {
-                        if ( !mIGNOn ) {
-                            mIGNOn = true;
-                            mListener.onIGNOnChanged(mIGNOn);
-                        }
+                        if ( !mIGNOn ) setIGNStatus(true);
                     }
                     break;
                 }  
