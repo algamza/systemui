@@ -342,6 +342,7 @@ public class StatusBar implements SystemUIBase {
         }
         if ( mStatusBarService.isUserSwitching() ) {
             Log.d(TAG, "is special case : user switching"); 
+            OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return true;
         }
         if ( mStatusBarService.isFrontCamera() ) {
