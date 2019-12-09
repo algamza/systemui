@@ -128,7 +128,7 @@ public class BrightnessImpl extends BaseImplement<Integer> {
             }
         };
 
-        mTimer.schedule(mStoreTask, 1500);
+        mTimer.schedule(mStoreTask, 1000);
     }
 
     private void setDayBrightness(int val) {

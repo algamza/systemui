@@ -9,6 +9,11 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.net.Uri;
 import android.os.UserHandle;
+import android.car.CarNotConnectedException;
+import android.extension.car.CarSystemManager;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
@@ -22,6 +27,10 @@ public class ModeImpl extends BaseImplement<Integer> {
     private ContentResolver mContentResolver;
     private ContentObserver mModeTypeObserver; 
     private Mode mCurrentMode; 
+    private CarExClient mCarClient = null;
+    private CarSystemManager mCarSystem = null; 
+    private Timer mTimer = new Timer(); 
+    private TimerTask mStoreTask = null; 
 
     public ModeImpl(Context context) {
         super(context);
@@ -73,10 +82,14 @@ public class ModeImpl extends BaseImplement<Integer> {
                 break; 
             }
         }
+
+        sendStoreCommand();
     }
 
     public void fetchEx(CarExClient client) {
         Log.d(TAG, "fetchEx");
+        mCarClient = client; 
+        mCarSystem = mCarClient.getSystemManager(); 
     }
 
     private void cleanup() {
@@ -107,6 +120,28 @@ public class ModeImpl extends BaseImplement<Integer> {
         mContentResolver.registerContentObserver(
             Settings.System.getUriFor(CarExtraSettings.System.DISPLAY_MODE_TYPE), 
             false, mModeTypeObserver, UserHandle.USER_CURRENT); 
+    }
+
+    private void sendStoreCommand() {
+        if ( mStoreTask != null ) {
+            mStoreTask.cancel(); 
+            mTimer.purge(); 
+            mStoreTask = null; 
+        }
+
+        mStoreTask = new TimerTask(){
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "setLCDSettingStored"); 
+                    if ( mCarSystem != null ) mCarSystem.setLCDSettingStored(); 
+                } catch (CarNotConnectedException err) {
+                    Log.e(TAG, "CarNotConnectedException : "+ err);
+                }
+            }
+        };
+
+        mTimer.schedule(mStoreTask, 1000);
     }
 
     private Mode convertToMode(int type) {
