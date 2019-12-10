@@ -205,9 +205,9 @@ public class SystemDateTimeController extends BaseController<String> {
 
         DateFormat df; 
         if ( mCurrentTimeType == TimeType.TYPE_24 ) {
-            df = new SimpleDateFormat("H:mm", Locale.ENGLISH);
+            df = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
         } else {
-            df = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
+            df = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
         }
 
         String time = df.format(Calendar.getInstance().getTime());
