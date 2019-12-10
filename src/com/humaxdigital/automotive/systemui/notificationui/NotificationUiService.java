@@ -219,7 +219,7 @@ public class NotificationUiService extends Service {
                     ui.inflate();
 
                     if ( isBlockOSD(key) ) return false; 
-                    if ( isUpdateOSD(key, title, text) ) return true;
+                    if ( isUpdateOSD(key, title, text, subText) ) return true;
                     
                     if ( mCurrentNotificationUI != null ) {
                         ((ViewGroup)mPanel).addView(ui); 
@@ -259,7 +259,7 @@ public class NotificationUiService extends Service {
         }, 1000);
     }
 
-    private boolean isUpdateOSD(String key, String title, CharSequence text) {
+    private boolean isUpdateOSD(String key, String title, CharSequence text, CharSequence sub) {
         boolean ret = false;
         if ( mCurrentKey.equals(key) ) {
             Log.d(TAG, "isUpdateOSD equals(key)="+key); 
@@ -267,7 +267,13 @@ public class NotificationUiService extends Service {
                 if ( text != null ) {
                     if ( mCurrentNotificationUI != null ) 
                         mCurrentNotificationUI.updateBody(text.toString()); 
-                    Log.d(TAG, "only update body"); 
+                    Log.d(TAG, "update body"); 
+                    ret = true;
+                }
+                if ( sub != null ) {
+                    if ( mCurrentNotificationUI != null ) 
+                        mCurrentNotificationUI.updateSubBody(sub.toString()); 
+                    Log.d(TAG, "update sub"); 
                     ret = true;
                 }
             }
