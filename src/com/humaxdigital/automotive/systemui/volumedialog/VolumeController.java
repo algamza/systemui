@@ -64,7 +64,7 @@ public class VolumeController extends VolumeControllerBase {
     private ProgressBar mProgress;
     private FrameLayout mPlus;
     private FrameLayout mMinus;
-    private final int VOLUME_SELECT_TIME = 100;
+    private final int VOLUME_SELECT_TIME = 150;
     private final int VOLUME_LOOP_TIMEOUT = 100; 
     
     private final int PROGRESS_UI_STEP_MAX = 45;
