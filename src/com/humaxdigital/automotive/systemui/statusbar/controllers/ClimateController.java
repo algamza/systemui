@@ -148,20 +148,6 @@ public class ClimateController {
         return observer; 
     }
 
-    private ClimateType getClimateType() {
-        ClimateType _type = ClimateType.NONE; 
-        if ( mContentResolver == null ) return _type;
-        int type = 0; 
-        try {
-            type = Settings.Global.getInt(mContentResolver, CLIMATE_TYPE_KEY);
-        } catch(Settings.SettingNotFoundException e) {
-            Log.e(TAG, "error : " + e ); 
-        }
-        _type = ClimateType.values()[type]; 
-        Log.d(TAG, "getClimateType="+_type); 
-        return _type; 
-    }
-
     private void openClimateSetting() {
         if ( mService == null ) return; 
         mService.openClimateSetting();
@@ -457,6 +443,20 @@ public class ClimateController {
         }
     }
 
+    private ClimateType getClimateType() {
+        ClimateType _type = ClimateType.NO_SEAT; 
+        if ( mContentResolver == null ) return _type;
+        int type = 0; 
+        try {
+            type = Settings.Global.getInt(mContentResolver, CLIMATE_TYPE_KEY);
+        } catch(Settings.SettingNotFoundException e) {
+            Log.e(TAG, "error : " + e ); 
+        }
+        _type = ClimateType.values()[type]; 
+        Log.d(TAG, "getClimateType="+_type); 
+        return _type; 
+    }
+
     private void setClimateType(ClimateType type) {
         if ( mContentResolver == null ) return;
         Log.d(TAG, "setClimateType="+type); 
@@ -473,7 +473,7 @@ public class ClimateController {
 
         if ( SeatOption.values()[ps_seat_op] == SeatOption.INVALID 
             || SeatOption.values()[dr_seat_op] == SeatOption.INVALID ) {
-            setClimateType(ClimateType.NO_SEAT); 
+            // setClimateType(ClimateType.NO_SEAT); 
         } else {
             setClimateType(ClimateType.DEFAULT); 
         }
