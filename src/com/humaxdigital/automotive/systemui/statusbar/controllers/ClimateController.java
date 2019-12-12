@@ -176,6 +176,9 @@ public class ClimateController {
         if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
             if ( mSeatDR != null ) mSeatDR.setOnClickListener(mSeatHeaterDROnClick); 
             if ( mSeatPS != null ) mSeatPS.setOnClickListener(mSeatHeaterPSOnClick); 
+        } else {
+            if ( mSeatDR != null ) mSeatDR.setOnClickListener(mClimateOnClickWidhoutFanOn); 
+            if ( mSeatPS != null ) mSeatPS.setOnClickListener(mClimateOnClickWidhoutFanOn); 
         }
     }
     
@@ -556,6 +559,14 @@ public class ClimateController {
         public void onClick(View view) {
             if ( !mIGNOn || mIsOperateOn || mIsDisable ) return; 
             fanOn(); 
+            openClimateSetting();
+        }
+    }; 
+
+    private View.OnClickListener mClimateOnClickWidhoutFanOn = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if ( !mIGNOn || mIsOperateOn || mIsDisable ) return; 
             openClimateSetting();
         }
     }; 
