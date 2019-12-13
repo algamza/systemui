@@ -446,12 +446,7 @@ public class ClimateController {
     private ClimateType getClimateType() {
         ClimateType _type = ClimateType.NO_SEAT; 
         if ( mContentResolver == null ) return _type;
-        int type = 0; 
-        try {
-            type = Settings.Global.getInt(mContentResolver, CLIMATE_TYPE_KEY);
-        } catch(Settings.SettingNotFoundException e) {
-            Log.e(TAG, "error : " + e ); 
-        }
+        int type = Settings.Global.getInt(mContentResolver, CLIMATE_TYPE_KEY, 2);
         _type = ClimateType.values()[type]; 
         Log.d(TAG, "getClimateType="+_type); 
         return _type; 
