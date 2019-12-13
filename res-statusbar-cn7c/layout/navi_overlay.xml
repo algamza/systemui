@@ -83,16 +83,16 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="50" />
+            android:layout_weight="40" />
         <FrameLayout
             android:id="@+id/layout_climate"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1020" />
+            android:layout_weight="1040" />
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="46" />
+            android:layout_weight="36" />
         <LinearLayout 
             android:id="@+id/layout_system"
             android:layout_width="0dp"

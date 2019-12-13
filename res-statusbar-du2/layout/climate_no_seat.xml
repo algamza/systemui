@@ -1,61 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/layout_climate"
+    android:id="@+id/climate_menu"
     android:layout_width="0dp"
     android:layout_height="match_parent"
-    android:weightSum="1012"
+    android:weightSum="837"
     android:orientation="horizontal">
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="24" />
     <FrameLayout
         android:id="@+id/climate_menu_0"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="90" />
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="32" />
+        android:layout_weight="142" />
     <FrameLayout
         android:id="@+id/climate_menu_1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="144" />
+        android:layout_weight="167" />
     <FrameLayout
         android:id="@+id/climate_menu_2"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="144" />
+        android:layout_weight="141" />
     <FrameLayout
         android:id="@+id/climate_menu_3"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="158" />
+        android:layout_weight="123" />
     <FrameLayout
         android:id="@+id/climate_menu_4"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="120" />
+        android:layout_weight="144" />
     <FrameLayout
         android:id="@+id/climate_menu_5"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="139" />
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="32" />
-    <FrameLayout
-        android:id="@+id/climate_menu_6"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="90" />
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="39" />
+        android:layout_weight="121" />
 </LinearLayout>
