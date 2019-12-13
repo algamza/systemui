@@ -590,8 +590,11 @@ public class ClimateController {
         @Override
         public void onClick(View v) {
             if ( mFanDirection == null || !mIGNOn ) return; 
+            
+            int next = 0; 
 
-            int next = mFanDirectionState.ordinal() + 1;
+            if ( isClimateOn() ) next = mFanDirectionState.ordinal() + 1;
+            else next = mFanDirectionState.ordinal();
 
             if ( next >= (FanDirectionState.values().length-2) ) {
                 next = 0; 
