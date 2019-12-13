@@ -393,7 +393,6 @@ public class StatusBarClimate {
         mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
-    
     private boolean isUserAgreement() {
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
