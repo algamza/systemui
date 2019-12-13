@@ -345,10 +345,12 @@ public class StatusBarClimate {
             Log.d(TAG, "Current UserSwitching"); 
             return; 
         }
+        /*
         if ( mBluelinkCall ) {
             Log.d(TAG, "Current bluelink call on: only climate toggle");
             return;
         }
+        */
         if ( mEmergencyCall ) {
             Log.d(TAG, "Current emergency call on: only climate toggle");
             return;
