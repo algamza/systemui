@@ -10,9 +10,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 public class DevCommandsServer implements DevCommands {
     private static final String TAG = "DevCommandsServer";
     private Context mContext;
@@ -75,22 +72,6 @@ public class DevCommandsServer implements DevCommands {
     }
 
     public String execShellCommand(String commandLine) {
-        try {
-            java.lang.Process process = Runtime.getRuntime().exec(commandLine);
-            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            int read;
-            char[] buffer = new char[1024];
-            StringBuffer output = new StringBuffer();
-            while ((read = in.read(buffer)) > 0) {
-                output.append(buffer, 0, read);
-            }
-            in.close();
-
-            return output.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
+        return DevUtils.runShellScript(commandLine);
     }
 }

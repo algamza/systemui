@@ -58,13 +58,17 @@ public class DevNavigationBar extends FrameLayout {
     private final IActivityManager mActivityManagerService;
 
     private final Handler mRetrieveHandler;
-    private final Runnable mRetrieveRunnable = this::retrievePeriodicData;
+    private final Runnable mRetrieveTopActivityRunnable = this::retrieveTopActivity;
+    private final Runnable mRetrieveThermalRunnable = this::retrieveThermalTemp;
+
     private ComponentName mTopActivity;
+    private float mLastThermalTemp;
 
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
     private TextView mStartTimeTextView;
     private TextView mUserSwitchTimeTextView;
+    private TextView mThermalTempTextView;
 
     private CheckBox mCpuUsageCheckBox;
     private CheckBox mUsbDebuggingCheckBox;
@@ -99,19 +103,19 @@ public class DevNavigationBar extends FrameLayout {
     private class ProcessObserver extends IProcessObserver.Stub {
         @Override
         public void onForegroundActivitiesChanged(int pid, int uid, boolean foregroundActivities) {
-            mRetrieveHandler.post(mRetrieveRunnable);
+            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
         }
 
         @Override
         public void onProcessDied(int pid, int uid) {
-            mRetrieveHandler.post(mRetrieveRunnable);
+            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
         }
     }
 
     private class TaskListener extends TaskStackListener {
         @Override
         public void onTaskStackChanged() {
-            mRetrieveHandler.post(mRetrieveRunnable);
+            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
         }
     }
 
@@ -157,6 +161,7 @@ public class DevNavigationBar extends FrameLayout {
         mSavedActivityTextView = (TextView) findViewById(R.id.txtSavedActivity);
         mStartTimeTextView = (TextView) findViewById(R.id.txtStartTime);
         mUserSwitchTimeTextView = (TextView) findViewById(R.id.txtUserSwitchTime);
+        mThermalTempTextView = (TextView) findViewById(R.id.txtThermalTemp);
 
         mCpuUsageCheckBox = (CheckBox) findViewById(R.id.chkCpuUsage);
         mCpuUsageCheckBox.setOnClickListener(view -> { writeCpuUsageOptions(); });
@@ -224,13 +229,14 @@ public class DevNavigationBar extends FrameLayout {
             throw new RuntimeException(e);
         }
 
-        retrievePeriodicData();
+        retrieveTopActivity();
+        retrieveThermalTemp();
 
         updateSavedActivityText();
     }
 
     public void onDetached() {
-        mRetrieveHandler.removeCallbacks(mRetrieveRunnable);
+        mRetrieveHandler.removeCallbacksAndMessages(null);
 
         try {
             mActivityManagerService.unregisterProcessObserver(mProcessObserver);
@@ -302,7 +308,7 @@ public class DevNavigationBar extends FrameLayout {
                 "com.humaxdigital.automotive.systemui.statusbar.dev.BOOT_COMPLETED_TIME", 0);
     }
 
-    private void retrievePeriodicData() {
+    private void retrieveTopActivity() {
         final List<ActivityManager.RunningTaskInfo> runningTaskInfoList =
                 mActivityManager.getRunningTasks(1);
         if (!runningTaskInfoList.isEmpty())
@@ -321,6 +327,26 @@ public class DevNavigationBar extends FrameLayout {
                 updateBootCompletedTimeText();
             }
         }
+    }
+
+    private void retrieveThermalTemp() {
+        final String cmdLine = "cat /sys/devices/virtual/thermal/thermal_zone0/temp";
+        String outText = DevUtils.runShellScript(cmdLine).trim();
+        float temp = 0.0f;
+        try {
+            int parsedInt = Integer.parseInt(outText);
+            temp = parsedInt / 1000;
+            temp /= 10.0f; // Making as a fake value
+            if (Math.abs(temp - mLastThermalTemp) >= 0.1f) {
+                mLastThermalTemp = temp;
+                mThermalTempTextView.setText("T:" + String.format("%.1f", temp));
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        // reschedule time to get thermal temperature
+        mRetrieveHandler.postDelayed(mRetrieveThermalRunnable, 2000);
     }
 
     private void updateSavedActivityText() {

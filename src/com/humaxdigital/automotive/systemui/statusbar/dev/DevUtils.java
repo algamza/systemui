@@ -19,6 +19,8 @@ import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Locale;
 
 public class DevUtils {
@@ -84,5 +86,25 @@ public class DevUtils {
             e.printStackTrace();
             return LocaleList.getDefault();
         }
+    }
+
+    public static String runShellScript(String shellScript) {
+        try {
+            java.lang.Process process = Runtime.getRuntime().exec(shellScript);
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            int read;
+            char[] buffer = new char[1024];
+            StringBuffer output = new StringBuffer();
+            while ((read = in.read(buffer)) > 0) {
+                output.append(buffer, 0, read);
+            }
+            in.close();
+
+            return output.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }
