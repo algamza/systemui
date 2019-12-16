@@ -5,9 +5,6 @@ package com.humaxdigital.automotive.systemui.statusbar.dev;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.app.IActivityManager;
-import android.app.IProcessObserver;
-import android.app.TaskStackListener;
 import android.app.Instrumentation;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -40,6 +37,7 @@ import android.widget.TextView;
 import com.android.settingslib.development.SystemPropPoker;
 
 import com.humaxdigital.automotive.systemui.R;
+import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 
 import java.util.List;
 import java.util.Locale;
@@ -49,16 +47,12 @@ public class DevNavigationBar extends FrameLayout {
     private static final String TAG = DevNavigationBar.class.getSimpleName();
 
     private Context mContext;
+    private ActivityManager mActivityManager;
     private DevCommands mDevCommands;
+    private ActivityMonitor mActivityMonitor;
     private ContentResolver mContentResolver;
 
-    private final ProcessObserver mProcessObserver;
-    private final TaskListener mTaskListener;
-    private ActivityManager mActivityManager;
-    private final IActivityManager mActivityManagerService;
-
     private final Handler mRetrieveHandler;
-    private final Runnable mRetrieveTopActivityRunnable = this::retrieveTopActivity;
     private final Runnable mRetrieveThermalRunnable = this::retrieveThermalTemp;
 
     private ComponentName mTopActivity;
@@ -100,34 +94,21 @@ public class DevNavigationBar extends FrameLayout {
         }
     };
 
-    private class ProcessObserver extends IProcessObserver.Stub {
+    private ActivityMonitor.ActivityChangeListener mActivityChangeListener =
+            new ActivityMonitor.ActivityChangeListener() {
         @Override
-        public void onForegroundActivitiesChanged(int pid, int uid, boolean foregroundActivities) {
-            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
+        public void onActivityChanged(ComponentName topActivity) {
+            mTopActivity = topActivity;
+            updateTopActivity(topActivity);
         }
-
-        @Override
-        public void onProcessDied(int pid, int uid) {
-            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
-        }
-    }
-
-    private class TaskListener extends TaskStackListener {
-        @Override
-        public void onTaskStackChanged() {
-            mRetrieveHandler.post(mRetrieveTopActivityRunnable);
-        }
-    }
+    };
 
     public DevNavigationBar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         mContext = context;
         mContentResolver = context.getContentResolver();
-        mProcessObserver = new ProcessObserver();
-        mTaskListener = new TaskListener();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
-        mActivityManagerService = ActivityManager.getService();
         mRetrieveHandler = new Handler(context.getMainLooper());
         mStartTime = mUserSwitchTime = SystemClock.uptimeMillis();
 
@@ -202,8 +183,10 @@ public class DevNavigationBar extends FrameLayout {
         findViewById(R.id.btnLoad).setOnClickListener(view -> { loadSavedActivity(); });
     }
 
-    public void init(DevCommands devCommands) {
+    public void init(DevCommands devCommands, ActivityMonitor activityMonitor) {
         mDevCommands = devCommands;
+        mActivityMonitor = activityMonitor;
+
         resetBootCompletedTime();
         updateStartTimeText();
         updateCpuUsageOptions();
@@ -222,28 +205,15 @@ public class DevNavigationBar extends FrameLayout {
     }
 
     public void onAttached() {
-        try {
-            mActivityManagerService.registerProcessObserver(mProcessObserver);
-            mActivityManagerService.registerTaskStackListener(mTaskListener);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-
+        mActivityMonitor.registerListener(mActivityChangeListener);
         retrieveTopActivity();
         retrieveThermalTemp();
-
         updateSavedActivityText();
     }
 
     public void onDetached() {
         mRetrieveHandler.removeCallbacksAndMessages(null);
-
-        try {
-            mActivityManagerService.unregisterProcessObserver(mProcessObserver);
-            mActivityManagerService.unregisterTaskStackListener(mTaskListener);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+        mActivityMonitor.unregisterListener(mActivityChangeListener);
     }
 
     public void goHome() {
@@ -317,7 +287,7 @@ public class DevNavigationBar extends FrameLayout {
             mTopActivity = null;
 
         if (mCurrentActivityTextView != null && mTopActivity != null) {
-            mCurrentActivityTextView.setText(mTopActivity.flattenToShortString());
+            updateTopActivity(mTopActivity);
         }
 
         if (mBootCompletedTime == 0 && Process.myUserHandle().equals(UserHandle.SYSTEM)) {
@@ -327,6 +297,10 @@ public class DevNavigationBar extends FrameLayout {
                 updateBootCompletedTimeText();
             }
         }
+    }
+
+    private void updateTopActivity(ComponentName topActivity) {
+        mCurrentActivityTextView.setText(topActivity.flattenToShortString());
     }
 
     private void retrieveThermalTemp() {
