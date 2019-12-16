@@ -13,7 +13,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.UserInfo;
+import android.database.ContentObserver;
+import android.extension.car.settings.CarExtraSettings;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.FileObserver;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -39,12 +43,16 @@ import com.android.settingslib.development.SystemPropPoker;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 public class DevNavigationBar extends FrameLayout {
     private static final String TAG = DevNavigationBar.class.getSimpleName();
+
+    private static final String ANR_DIR_PATH = "/data/anr";
+    private static final String TOMBSTONES_DIR_PATH = "/data/tombstones";
 
     private Context mContext;
     private ActivityManager mActivityManager;
@@ -53,6 +61,7 @@ public class DevNavigationBar extends FrameLayout {
     private ContentResolver mContentResolver;
 
     private final Handler mRetrieveHandler;
+    private final Runnable mRetrieveErrorsRunnable = this::retrieveErrorCounts;
     private final Runnable mRetrieveThermalRunnable = this::retrieveThermalTemp;
 
     private ComponentName mTopActivity;
@@ -60,8 +69,8 @@ public class DevNavigationBar extends FrameLayout {
 
     private TextView mCurrentActivityTextView;
     private TextView mSavedActivityTextView;
-    private TextView mStartTimeTextView;
-    private TextView mUserSwitchTimeTextView;
+    private TextView mSystemStateTextView;
+    private TextView mErrorCountsTextView;
     private TextView mThermalTempTextView;
 
     private CheckBox mCpuUsageCheckBox;
@@ -75,31 +84,36 @@ public class DevNavigationBar extends FrameLayout {
     private Switch mShowUpdatesSwitch;
     private Switch mDebugLayoutSwitch;
 
-    private long mStartTime;
-    private long mUserSwitchTime;
-    private long mBootCompletedTime;
-
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(Intent.ACTION_USER_SWITCHED)) {
-                mUserSwitchTime = SystemClock.uptimeMillis();
-                mBootCompletedTime = 0;
-                updateBootCompletedTimeText();
-            } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-                mBootCompletedTime = SystemClock.uptimeMillis();
-                updateBootCompletedTimeText();
-            }
-        }
-    };
-
     private ActivityMonitor.ActivityChangeListener mActivityChangeListener =
             new ActivityMonitor.ActivityChangeListener() {
         @Override
         public void onActivityChanged(ComponentName topActivity) {
             mTopActivity = topActivity;
             updateTopActivity(topActivity);
+        }
+    };
+
+    private ContentObserver mSystemStateSettingsObserver =
+            new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange, Uri uri, int userId) {
+            retrieveSystemStates();
+        }
+    };
+
+    private FileObserver mAnrDirObserver =
+            new FileObserver(ANR_DIR_PATH, FileObserver.CREATE|FileObserver.DELETE) {
+        @Override
+        public void onEvent(int event, String path) {
+            mRetrieveHandler.post(mRetrieveErrorsRunnable);
+        }
+    };
+
+    private FileObserver mTombstonesDirObserver =
+            new FileObserver(TOMBSTONES_DIR_PATH, FileObserver.CREATE|FileObserver.DELETE) {
+        @Override
+        public void onEvent(int event, String path) {
+            mRetrieveHandler.post(mRetrieveErrorsRunnable);
         }
     };
 
@@ -110,7 +124,6 @@ public class DevNavigationBar extends FrameLayout {
         mContentResolver = context.getContentResolver();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
         mRetrieveHandler = new Handler(context.getMainLooper());
-        mStartTime = mUserSwitchTime = SystemClock.uptimeMillis();
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
@@ -122,26 +135,13 @@ public class DevNavigationBar extends FrameLayout {
                 onDetached();
             }
         });
-
-        final IntentFilter userSwitchIntentFiilter = new IntentFilter();
-        userSwitchIntentFiilter.addAction(Intent.ACTION_USER_SWITCHED);
-        mContext.registerReceiverAsUser(
-                mBroadcastReceiver, UserHandle.ALL, userSwitchIntentFiilter,
-                null, null);
-
-        final IntentFilter bootCompletedIntentFiilter = new IntentFilter();
-        bootCompletedIntentFiilter.addAction(Intent.ACTION_BOOT_COMPLETED);
-        bootCompletedIntentFiilter.setPriority(-100000); // Same as DevBootReceiver
-        mContext.registerReceiverAsUser(
-                mBroadcastReceiver, UserHandle.ALL, bootCompletedIntentFiilter,
-                android.Manifest.permission.RECEIVE_BOOT_COMPLETED, null);
     }
 
     protected void onFinishInflate () {
         mCurrentActivityTextView = (TextView) findViewById(R.id.txtCurrentActivity);
         mSavedActivityTextView = (TextView) findViewById(R.id.txtSavedActivity);
-        mStartTimeTextView = (TextView) findViewById(R.id.txtStartTime);
-        mUserSwitchTimeTextView = (TextView) findViewById(R.id.txtUserSwitchTime);
+        mSystemStateTextView = (TextView) findViewById(R.id.txtSystemState);
+        mErrorCountsTextView = (TextView) findViewById(R.id.txtErrorCounts);
         mThermalTempTextView = (TextView) findViewById(R.id.txtThermalTemp);
 
         mCpuUsageCheckBox = (CheckBox) findViewById(R.id.chkCpuUsage);
@@ -187,8 +187,6 @@ public class DevNavigationBar extends FrameLayout {
         mDevCommands = devCommands;
         mActivityMonitor = activityMonitor;
 
-        resetBootCompletedTime();
-        updateStartTimeText();
         updateCpuUsageOptions();
         updateUsbDebuggingOptions();
         writeCpuUsageOptions();
@@ -206,13 +204,30 @@ public class DevNavigationBar extends FrameLayout {
 
     public void onAttached() {
         mActivityMonitor.registerListener(mActivityChangeListener);
+
+        mContentResolver.registerContentObserver(
+                Settings.Global.getUriFor(CarExtraSettings.Global.POWER_STATE),
+                false, mSystemStateSettingsObserver);
+        mContentResolver.registerContentObserver(
+                Settings.Global.getUriFor(CarExtraSettings.Global.LAST_MEDIA_MODE),
+                false, mSystemStateSettingsObserver);
+
+        mAnrDirObserver.startWatching();
+        mTombstonesDirObserver.startWatching();
+
         retrieveTopActivity();
+        retrieveSystemStates();
+        retrieveErrorCounts();
         retrieveThermalTemp();
+
         updateSavedActivityText();
     }
 
     public void onDetached() {
         mRetrieveHandler.removeCallbacksAndMessages(null);
+        mAnrDirObserver.stopWatching();
+        mTombstonesDirObserver.stopWatching();
+        mContentResolver.unregisterContentObserver(mSystemStateSettingsObserver);
         mActivityMonitor.unregisterListener(mActivityChangeListener);
     }
 
@@ -268,16 +283,6 @@ public class DevNavigationBar extends FrameLayout {
         }
     }
 
-    public long getBootCompletedTime() {
-        return Settings.Global.getLong(mContext.getContentResolver(),
-                "com.humaxdigital.automotive.systemui.statusbar.dev.BOOT_COMPLETED_TIME", 0);
-    }
-
-    public void resetBootCompletedTime() {
-        Settings.Global.putLong(mContext.getContentResolver(),
-                "com.humaxdigital.automotive.systemui.statusbar.dev.BOOT_COMPLETED_TIME", 0);
-    }
-
     private void retrieveTopActivity() {
         final List<ActivityManager.RunningTaskInfo> runningTaskInfoList =
                 mActivityManager.getRunningTasks(1);
@@ -289,18 +294,35 @@ public class DevNavigationBar extends FrameLayout {
         if (mCurrentActivityTextView != null && mTopActivity != null) {
             updateTopActivity(mTopActivity);
         }
-
-        if (mBootCompletedTime == 0 && Process.myUserHandle().equals(UserHandle.SYSTEM)) {
-            long bootCompletedTime = getBootCompletedTime();
-            if (bootCompletedTime > mUserSwitchTime) {
-                mBootCompletedTime = bootCompletedTime;
-                updateBootCompletedTimeText();
-            }
-        }
     }
 
     private void updateTopActivity(ComponentName topActivity) {
         mCurrentActivityTextView.setText(topActivity.flattenToShortString());
+    }
+
+    private void retrieveSystemStates() {
+        int powerState = Settings.Global.getInt(
+                mContentResolver, CarExtraSettings.Global.POWER_STATE, -1);
+        int mediaMode = Settings.Global.getInt(
+                mContentResolver, CarExtraSettings.Global.LAST_MEDIA_MODE, -1);
+
+        String outText = String.format("S:%d,%d", powerState, mediaMode);
+        if (!outText.equals(mSystemStateTextView.getText())) {
+            mSystemStateTextView.setText(outText);
+        }
+    }
+
+    private void retrieveErrorCounts() {
+        try {
+            int anrCnt = new File(ANR_DIR_PATH).list().length;
+            int tbsCnt = new File(TOMBSTONES_DIR_PATH).list().length;
+
+            String outText = String.format("E:%d,%d", anrCnt, tbsCnt);
+            if (!outText.equals(mErrorCountsTextView.getText())) {
+                mErrorCountsTextView.setText(outText);
+            }
+        } catch (Exception e) {
+        }
     }
 
     private void retrieveThermalTemp() {
@@ -329,20 +351,6 @@ public class DevNavigationBar extends FrameLayout {
             if (mSavedActivityTextView != null) {
                 mSavedActivityTextView.setText(savedActivity);
             }
-        }
-    }
-
-    private void updateStartTimeText() {
-        if (mStartTimeTextView != null) {
-            mStartTimeTextView.setText("A:" + toSecString(mStartTime));
-        }
-    }
-
-    private void updateBootCompletedTimeText() {
-        if (mStartTimeTextView != null) {
-            long elapsed = mBootCompletedTime - mUserSwitchTime;
-            elapsed = (elapsed < 0) ? 0 : elapsed;
-            mUserSwitchTimeTextView.setText("B:" + toSecString(elapsed));
         }
     }
 
