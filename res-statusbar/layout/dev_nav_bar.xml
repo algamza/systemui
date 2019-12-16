@@ -273,6 +273,17 @@
                         android:checked="false" />
 
                     <Switch
+                        android:id="@+id/swTrackTouch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:background="#222222"
+                        android:text="Track Touch"
+                        android:textSize="18sp"
+                        android:textColor="#aaaaaa"
+                        android:checked="false" />
+
+                    <Switch
                         android:id="@+id/swShowUpdates"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

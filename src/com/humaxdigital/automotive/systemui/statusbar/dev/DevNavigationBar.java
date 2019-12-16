@@ -73,6 +73,7 @@ public class DevNavigationBar extends FrameLayout {
     private CheckBox mMapAutoCheckBox;
 
     private Switch mKeepUnlockedSwitch;
+    private Switch mTrackTouchSwitch;
     private Switch mShowUpdatesSwitch;
     private Switch mDebugLayoutSwitch;
 
@@ -175,6 +176,9 @@ public class DevNavigationBar extends FrameLayout {
         mKeepUnlockedSwitch = (Switch) findViewById(R.id.swKeepUnlocked);
         mKeepUnlockedSwitch.setOnClickListener(view -> { writeKeepUnlockedOptions(); });
 
+        mTrackTouchSwitch = (Switch) findViewById(R.id.swTrackTouch);
+        mTrackTouchSwitch.setOnClickListener(view -> { writeTrackTouchOptions(); });
+
         mShowUpdatesSwitch = (Switch) findViewById(R.id.swShowUpdates);
         mShowUpdatesSwitch.setOnClickListener(view -> { writeShowUpdatesOption(); });
 
@@ -207,6 +211,7 @@ public class DevNavigationBar extends FrameLayout {
         updateMapAutoOptions();
         writeMapAutoOptions();
         updateKeepUnlockedOptions();
+        updateTrackTouchOptions();
         updateShowUpdatesOption();
         updateDebugLayoutOptions();
     }
@@ -428,6 +433,17 @@ public class DevNavigationBar extends FrameLayout {
 
     private void writeKeepUnlockedOptions() {
         DevUtils.setKeepingDevUnlocked(mContext, mKeepUnlockedSwitch.isChecked());
+    }
+
+    private void updateTrackTouchOptions() {
+        final boolean checked = (Settings.System.getInt(
+                mContentResolver, Settings.System.POINTER_LOCATION, 0) != 0);
+        mTrackTouchSwitch.setChecked(checked);
+    }
+
+    private void writeTrackTouchOptions() {
+        Settings.System.putInt(mContentResolver,
+                Settings.System.POINTER_LOCATION, mTrackTouchSwitch.isChecked() ? 1 : 0);
     }
 
     private void updateShowUpdatesOption() {
