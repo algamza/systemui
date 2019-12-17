@@ -33,7 +33,7 @@ public class StatusBarClimate {
     private Timer mTimer = new Timer();
     private TimerTask mTimerTaskClimateChattering = null;
     private boolean mTryOpenClimate = false; 
-    private final int OPEN_CLIMATE_CHATTERING_TIME = 1000; 
+    private final int OPEN_CLIMATE_CHATTERING_TIME = 2000; 
     
     // special case
     private boolean mRearCamera = false; 
