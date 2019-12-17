@@ -91,15 +91,6 @@
             android:singleUser="true" />
 
         <receiver
-            android:name=".statusbar.dev.DevBootReceiver"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-            <intent-filter android:priority="-100000">
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
             android:name=".common.receiver.GlobalKeyReceiver"
             android:exported="true">
             <intent-filter>

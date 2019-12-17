@@ -107,29 +107,29 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/txtStartTime"
+                    android:id="@+id/txtSystemState"
                     android:layout_height="wrap_content"
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
-                    android:text="A:"
+                    android:text="S:"
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:id="@+id/txtUserSwitchTime"
+                    android:id="@+id/txtErrorCounts"
                     android:layout_height="wrap_content"
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
-                    android:text="B:"
+                    android:text="E:"
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:id="@+id/txtUserSwitchTime"
+                    android:id="@+id/txtThermalTemp"
                     android:layout_height="wrap_content"
                     android:layout_width ="wrap_content"
                     android:layout_margin="1dp"
-                    android:text="C:"
+                    android:text="T:"
                     android:textColor="#a0a0a0"
                     android:textSize="16sp"/>
 
@@ -270,6 +270,17 @@
                         android:text="Keep Unlocked"
                         android:textSize="18sp"
                         android:textColor="#cccccc"
+                        android:checked="false" />
+
+                    <Switch
+                        android:id="@+id/swTrackTouch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:background="#222222"
+                        android:text="Track Touch"
+                        android:textSize="18sp"
+                        android:textColor="#aaaaaa"
                         android:checked="false" />
 
                     <Switch

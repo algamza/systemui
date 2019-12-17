@@ -229,7 +229,7 @@ public class StatusBar implements SystemUIBase {
                 }
                 return new Bundle();
             }
-        });
+        }, mActivityMonitor);
 
         View normalView = mNavBarView;
         mDevModeController = new DevModeController(mContext, normalView, mDevNavView);
