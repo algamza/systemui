@@ -86,7 +86,6 @@ public class ClimateController {
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
-    private Boolean mClimateOn = false; 
 
     private ContentResolver mContentResolver;
     private ContentObserver mClimateObserver;
@@ -375,10 +374,10 @@ public class ClimateController {
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
         if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
         if ( mFanSpeed != null ) {
-            if ( mFanSpeedState == FanSpeedState.STEPOFF ) climateOff();
+            if ( isClimateOff() ) updateClimate(false); 
             else {
                 updateFanSpeed(mFanSpeedState);
-                climateOn();
+                updateClimate(true); 
             }
         }
         
@@ -387,39 +386,28 @@ public class ClimateController {
         updateModeOff(mModeOff); 
     }
 
-    private boolean isClimateOn() {
-        Log.d(TAG, "isClimateOn="+mClimateOn); 
-        return mClimateOn; 
+    private boolean isClimateOff() {
+        return mFanSpeedState == FanSpeedState.STEPOFF ? true:false; 
     }
 
-    private void climateOn() {
-        Log.d(TAG, "climateOn="+mClimateOn); 
-        mClimateOn = true; 
-        updateFanSpeed(mFanSpeedState); 
-        updateTempOn(true); 
-        updateModeOff(false);
-        updateAC();
-    }
-
-    private void climateOff() {
-        Log.d(TAG, "climateOff="+mClimateOn); 
-        mClimateOn = false; 
-        updateFanSpeed(FanSpeedState.STEP0); 
-        updateTempOn(false); 
-        updateModeOff(true);
+    private void updateClimate(boolean on) {
+        Log.d(TAG, "updateClimate="+on);
+        if ( on ) updateFanSpeed(mFanSpeedState); 
+        else updateFanSpeed(FanSpeedState.STEP0); 
+        updateTempOn(on); 
+        updateModeOff(!on);
         updateAC();
     }
 
     private void updateAC() {
-        Log.d(TAG, "updateAC:climateon="+mClimateOn); 
         if ( mAC == null ) return;
-        if ( !mClimateOn ) mAC.update(ACState.OFF.ordinal()); 
+        if ( isClimateOff() ) mAC.update(ACState.OFF.ordinal()); 
         else mAC.update(mACState.ordinal()); 
     }
 
     private void updateFanDirection() {
         if ( mFanDirection == null ) return;
-        if ( mModeOff || !mClimateOn ) {
+        if ( mModeOff || isClimateOff() ) {
             mFanDirection.update(FanDirectionState.OFF.ordinal()); 
         } else {
             if ( mFrontDefogState == FrontDefogState.ON ) 
@@ -436,8 +424,7 @@ public class ClimateController {
 
     private void fanOn() {
         if ( (mFanSpeed != null) 
-            && ( (mFanSpeedState == FanSpeedState.STEPOFF) 
-            || (mFanSpeedState == FanSpeedState.STEP0) ) ) {
+            && ( isClimateOff() || (mFanSpeedState == FanSpeedState.STEP0) ) ) {
             if ( mService != null )
                 mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
         }
@@ -483,7 +470,7 @@ public class ClimateController {
     private void updateTemp(ClimateMenuTextDec view, float temp) { 
         if ( mContext == null ) return; 
 
-        if ( !mTempOn ) {
+        if ( !mTempOn && isClimateOff() ) {
             view.update(mContext.getResources().getString(R.string.temp_off)); 
             return; 
         }
@@ -593,7 +580,7 @@ public class ClimateController {
             
             int next = 0; 
 
-            if ( isClimateOn() ) next = mFanDirectionState.ordinal() + 1;
+            if ( !isClimateOff() ) next = mFanDirectionState.ordinal() + 1;
             else next = mFanDirectionState.ordinal();
 
             if ( next >= (FanDirectionState.values().length-2) ) {
@@ -748,11 +735,11 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( mFanSpeedState == FanSpeedState.STEPOFF ) climateOff();
+                    if ( isClimateOff() ) updateClimate(false); 
                     else {
                         updateFanSpeed(mFanSpeedState);
-                        climateOn();
-                    } 
+                        updateClimate(true);
+                    }
                 }
             }); 
         }
