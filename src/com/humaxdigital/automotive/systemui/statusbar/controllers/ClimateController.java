@@ -824,11 +824,6 @@ public class ClimateController {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( isClimateOff() ) updateClimate(false); 
-                    else {
-                        updateFanSpeed(mFanSpeedState);
-                        updateClimate(true);
-                    }
                     updateIGOnChange(on); 
                 }
             }); 
