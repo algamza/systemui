@@ -117,6 +117,7 @@ public class ClimateControllerManager {
         public void onFrontDefogStatusChanged(int status); 
         public void onModeOffChanged(boolean on);
         public void onIGNOnChanged(boolean on);
+        public void onIGNOnDelay(); 
         public void onOperateOnChanged(boolean on);
     }
     
@@ -261,6 +262,7 @@ public class ClimateControllerManager {
             mIGNOnTask = null; 
         }
 
+        if ( mListener != null ) mListener.onIGNOnDelay();
         mIGNOnTask = new TimerTask(){
             @Override
             public void run() {

@@ -82,11 +82,7 @@ public class ClimateMenuImgTimeout extends LinearLayout {
         }
         return this;
     }
-
-    public Boolean isDisable() {
-        return mDisable; 
-    }
-
+    
     private void updateTimeout() {
         if ( mRunnable != null ) mHandler.removeCallbacks(mRunnable);
         startTimeout(); 

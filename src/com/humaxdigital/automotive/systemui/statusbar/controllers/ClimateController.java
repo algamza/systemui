@@ -26,7 +26,6 @@ import com.humaxdigital.automotive.systemui.R;
 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImg;
-import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImgTimeout;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextDec;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextImg;
 
@@ -86,6 +85,7 @@ public class ClimateController {
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
+    private Boolean mWaitDisplayUpdate = false; 
 
     private ContentResolver mContentResolver;
     private ContentObserver mClimateObserver;
@@ -98,6 +98,7 @@ public class ClimateController {
 
     public ClimateController(Context context, View view) {
         if ( view == null || context == null ) return;
+        Log.d(TAG, "ClimateController()"); 
         mContext = context;
         mClimate = view;
         mRes = mContext.getResources();
@@ -112,6 +113,7 @@ public class ClimateController {
     }
 
     public void init(StatusBarClimate service) {
+        Log.d(TAG, "init()"); 
         mService = service; 
         if ( mService != null ) {
             mService.registerClimateCallback(mClimateCallback); 
@@ -176,6 +178,7 @@ public class ClimateController {
     }
 
     private void initView() {
+        Log.d(TAG, "initView()"); 
         if ( mClimate == null || mContext == null ) return;
 
         if ( mClimatePanel != null ) {
@@ -340,6 +343,9 @@ public class ClimateController {
     }
 
     private void update() {
+        
+        Log.d(TAG, "update()"); 
+
         if ( mService == null ) return; 
 
         updateClimateType();
@@ -400,6 +406,7 @@ public class ClimateController {
     }
 
     private void updateAC() {
+        Log.d(TAG, "updateAC()"); 
         if ( mAC == null ) return;
         if ( isClimateOff() ) mAC.update(ACState.OFF.ordinal()); 
         else mAC.update(mACState.ordinal()); 
@@ -407,6 +414,7 @@ public class ClimateController {
 
     private void updateFanDirection() {
         if ( mFanDirection == null ) return;
+        Log.d(TAG, "updateFanDirection="+mFanDirectionState); 
         if ( mModeOff || isClimateOff() ) {
             mFanDirection.update(FanDirectionState.OFF.ordinal()); 
         } else {
@@ -419,10 +427,12 @@ public class ClimateController {
 
     private void updateFanSpeed(FanSpeedState state) {
         if ( mFanSpeed == null ) return;
-        mFanSpeed.update(0, false, String.valueOf(state.ordinal()-1));
+        Log.d(TAG, "updateFanSpeed="+state); 
+        mFanSpeed.update(0, String.valueOf(state.ordinal()-1));
     }
 
     private void fanOn() {
+        Log.d(TAG, "fanOn()"); 
         if ( (mFanSpeed != null) 
             && ( isClimateOff() || (mFanSpeedState == FanSpeedState.STEP0) ) ) {
             if ( mService != null )
@@ -535,6 +545,16 @@ public class ClimateController {
         if ( mTempPS != null ) mTempPS.updateDisable(disable);
         if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
     } 
+
+    private boolean getWaitDisplayUpdate() {
+        Log.d(TAG, "getWaitDisplayUpdate="+mWaitDisplayUpdate); 
+        return mWaitDisplayUpdate;
+    }
+
+    private void setWaitDisplayUpdate(boolean on) {
+        Log.d(TAG, "setWaitDisplayUpdate="+on); 
+        mWaitDisplayUpdate = on;
+    }
 
     private View.OnClickListener mClimateOnClick = new View.OnClickListener() {
         @Override
@@ -729,9 +749,9 @@ public class ClimateController {
         }
         @Override
         public void onBlowerSpeedChanged(int status) {
-            if ( mFanSpeed == null ) return; 
             mFanSpeedState = FanSpeedState.values()[status]; 
             if ( mHandler == null ) return; 
+            if ( getWaitDisplayUpdate() ) return;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -800,13 +820,23 @@ public class ClimateController {
         @Override
         public void onIGNOnChanged(boolean on) {
             if ( mHandler == null ) return; 
-
+            setWaitDisplayUpdate(false); 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if ( isClimateOff() ) updateClimate(false); 
+                    else {
+                        updateFanSpeed(mFanSpeedState);
+                        updateClimate(true);
+                    }
                     updateIGOnChange(on); 
                 }
             }); 
+        }
+
+        @Override
+        public void onIGNOnDelay() {
+            setWaitDisplayUpdate(true);
         }
 
         @Override

@@ -65,8 +65,4 @@ public class ClimateMenuImg extends LinearLayout {
         }
         return this;
     }
-
-    public Boolean isDisable() {
-        return mDisable; 
-    }
 }
