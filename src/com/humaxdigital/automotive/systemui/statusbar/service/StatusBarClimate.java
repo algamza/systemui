@@ -61,7 +61,6 @@ public class StatusBarClimate {
         public void onFrontDefogStatusChanged(int status) {}
         public void onModeOffChanged(boolean off) {}
         public void onIGNOnChanged(boolean on) {}
-        public void onIGNOnDelay() {}
         public void onOperateOnChanged(boolean on) {}
         public void onRearCameraOn(boolean on) {}  
     }
@@ -546,15 +545,6 @@ public class StatusBarClimate {
             synchronized (mClimateCallbacks) {
                 for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onIGNOnChanged(on); 
-            }
-        }
-
-        @Override
-        public void onIGNOnDelay() {
-            Log.d(TAG, "onIGNOnDelay");
-            synchronized (mClimateCallbacks) {
-                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
-                    callback.onIGNOnDelay(); 
             }
         }
 

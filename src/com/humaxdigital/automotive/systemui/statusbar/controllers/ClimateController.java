@@ -85,7 +85,6 @@ public class ClimateController {
     private Boolean mIGNOn = true; 
     private Boolean mIsOperateOn = false; 
     private Boolean mIsDisable = true; 
-    private Boolean mWaitDisplayUpdate = false; 
 
     private ContentResolver mContentResolver;
     private ContentObserver mClimateObserver;
@@ -546,16 +545,6 @@ public class ClimateController {
         if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
     } 
 
-    private boolean getWaitDisplayUpdate() {
-        Log.d(TAG, "getWaitDisplayUpdate="+mWaitDisplayUpdate); 
-        return mWaitDisplayUpdate;
-    }
-
-    private void setWaitDisplayUpdate(boolean on) {
-        Log.d(TAG, "setWaitDisplayUpdate="+on); 
-        mWaitDisplayUpdate = on;
-    }
-
     private View.OnClickListener mClimateOnClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -751,7 +740,6 @@ public class ClimateController {
         public void onBlowerSpeedChanged(int status) {
             mFanSpeedState = FanSpeedState.values()[status]; 
             if ( mHandler == null ) return; 
-            if ( getWaitDisplayUpdate() ) return;
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -820,7 +808,6 @@ public class ClimateController {
         @Override
         public void onIGNOnChanged(boolean on) {
             if ( mHandler == null ) return; 
-            setWaitDisplayUpdate(false); 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -828,12 +815,7 @@ public class ClimateController {
                 }
             }); 
         }
-
-        @Override
-        public void onIGNOnDelay() {
-            setWaitDisplayUpdate(true);
-        }
-
+        
         @Override
         public void onOperateOnChanged(boolean on) {
             if ( mHandler == null ) return; 
