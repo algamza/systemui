@@ -98,8 +98,9 @@ public class ClimateControllerManager {
     private boolean mIGNOn = true; 
     private boolean mOperateStateOn = false; 
     private Timer mTimer = new Timer(); 
-    private TimerTask mIGNOnTask = null; 
-    private final int IGN_ON_DELAY_MS = 550; 
+    private TimerTask mChatteringTask = null; 
+    private boolean mChatteringWrongSignal = false; 
+    private final int CHATTERING_WRONG_SIGNAL = 1000; 
 
     public interface ClimateListener {
         public void onInitialized();
@@ -197,10 +198,10 @@ public class ClimateControllerManager {
                         if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
                             || state == CarSensorEvent.IGNITION_STATE_OFF
                             || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                            setIGNStatus(false);
+                            updateIGNStatus(false);
                         } else if ( state == CarSensorEvent.IGNITION_STATE_ON
                             || state == CarSensorEvent.IGNITION_STATE_START ) {
-                            setIGNStatus(true);
+                            updateIGNStatus(true);
                         }
                     }
 
@@ -230,47 +231,38 @@ public class ClimateControllerManager {
         task.execute(); 
     }
 
-    public int getIGNStatus() {
-        Log.d(TAG, "getIGNStatus = "+mIGNOn);
-        return mIGNOn?1:0;
-    }
-
-    private void setIGNStatus(boolean on) {
-        Log.d(TAG, "setIGNStatus="+on);
-        if ( on ) delayIGNOn();
-        else IGNOff();
-    }
-    
-    private void IGNOff() {
-        if ( mIGNOnTask != null ) {
-            mIGNOnTask.cancel(); 
+    private void chatteringWrongSignal() {
+        Log.d(TAG, "wrong signal chattering start");
+        if ( mChatteringTask != null ) {
+            mChatteringWrongSignal = false; 
+            mChatteringTask.cancel(); 
             mTimer.purge(); 
-            mIGNOnTask = null; 
+            mChatteringTask = null; 
         }
-        
-        mIGNOn = false; 
-        if ( mListener != null ) 
-            mListener.onIGNOnChanged(mIGNOn);
-    }
-
-    private void delayIGNOn() {
-        Log.d(TAG, "delayIGNOn");
-        if ( mIGNOnTask != null ) {
-            mIGNOnTask.cancel(); 
-            mTimer.purge(); 
-            mIGNOnTask = null; 
-        }
-
-        mIGNOnTask = new TimerTask(){
+        mChatteringWrongSignal = true; 
+        mChatteringTask = new TimerTask(){
             @Override
             public void run() {
-                mIGNOn = true; 
-                if ( mListener != null ) 
-                    mListener.onIGNOnChanged(mIGNOn);
+                Log.d(TAG, "wrong signal chattering end"); 
+                mChatteringWrongSignal = false; 
             }
         };
 
-        mTimer.schedule(mIGNOnTask, IGN_ON_DELAY_MS);
+        mTimer.schedule(mChatteringTask, CHATTERING_WRONG_SIGNAL);
+    }
+
+    public int getIGNStatus() {
+        return mIGNOn?1:0; 
+    }
+
+    private void updateIGNStatus(boolean on) {
+        Log.d(TAG, "updateIGNStatus="+on);
+        mIGNOn = on; 
+        
+        if ( on ) chatteringWrongSignal(); 
+
+        if ( mListener != null ) 
+            mListener.onIGNOnChanged(mIGNOn);
     }
 
     public boolean isOperateOn() {
@@ -291,11 +283,11 @@ public class ClimateControllerManager {
                     if ( state == CarSensorEvent.IGNITION_STATE_LOCK 
                         || state == CarSensorEvent.IGNITION_STATE_OFF
                         || state == CarSensorEvent.IGNITION_STATE_ACC ) {
-                        if ( mIGNOn ) setIGNStatus(false);
+                        if ( mIGNOn ) updateIGNStatus(false);
                         
                     } else if ( state == CarSensorEvent.IGNITION_STATE_ON
                         || state == CarSensorEvent.IGNITION_STATE_START ) {
-                        if ( !mIGNOn ) setIGNStatus(true);
+                        if ( !mIGNOn ) updateIGNStatus(true);
                     }
                     break;
                 }  
@@ -358,6 +350,30 @@ public class ClimateControllerManager {
         mControllers.add(mModeOff); 
     }
 
+    private boolean isWrongSingnal(int id, CarPropertyValue val) {
+        if ( !mChatteringWrongSignal ) return false; 
+        switch (id) {
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
+            case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS:
+            case CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS: {
+                if ( (int)getValue(val) == 0 ) return true;
+                break; 
+            }
+            case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
+            case CarHvacManagerEx.ID_ZONED_AC_ON: {
+                if ( (boolean)getValue(val) ) return true;
+                break; 
+            }
+            default: break; 
+        }
+        return false; 
+    }
+
     private final CarHvacManager.CarHvacEventCallback mHvacCallback =
         new CarHvacManager.CarHvacEventCallback () {
             @Override
@@ -365,6 +381,10 @@ public class ClimateControllerManager {
                 int id = val.getPropertyId(); 
                 int areaId = val.getAreaId();
                 Log.d(TAG, "HVAC event, id: " + id + ", area: " + areaId);
+                if ( isWrongSingnal(id, val) ) {
+                    Log.d(TAG, "Wrong Signal !! "); 
+                    return;
+                }
                 switch (id) {
                     case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
                         handleFanPositionUpdate(getValue(val));
