@@ -32,10 +32,13 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Checkable;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.Switch;
+import android.widget.Toast;
 import android.widget.TextView;
 
 import com.android.settingslib.development.SystemPropPoker;
@@ -44,6 +47,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -53,6 +57,7 @@ public class DevNavigationBar extends FrameLayout {
 
     private static final String ANR_DIR_PATH = "/data/anr";
     private static final String TOMBSTONES_DIR_PATH = "/data/tombstones";
+    private static final int KEEP_DEV_TIMEOUT_MS = 5 * 60 * 1000;
 
     private Context mContext;
     private ActivityManager mActivityManager;
@@ -60,6 +65,7 @@ public class DevNavigationBar extends FrameLayout {
     private ActivityMonitor mActivityMonitor;
     private ContentResolver mContentResolver;
 
+    private final Handler mResetHandler;
     private final Handler mRetrieveHandler;
     private final Runnable mRetrieveErrorsRunnable = this::retrieveErrorCounts;
     private final Runnable mRetrieveThermalRunnable = this::retrieveThermalTemp;
@@ -123,6 +129,7 @@ public class DevNavigationBar extends FrameLayout {
         mContext = context;
         mContentResolver = context.getContentResolver();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        mResetHandler = new Handler(context.getMainLooper());
         mRetrieveHandler = new Handler(context.getMainLooper());
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -137,7 +144,7 @@ public class DevNavigationBar extends FrameLayout {
         });
     }
 
-    protected void onFinishInflate () {
+    protected void onFinishInflate() {
         mCurrentActivityTextView = (TextView) findViewById(R.id.txtCurrentActivity);
         mSavedActivityTextView = (TextView) findViewById(R.id.txtSavedActivity);
         mSystemStateTextView = (TextView) findViewById(R.id.txtSystemState);
@@ -145,31 +152,31 @@ public class DevNavigationBar extends FrameLayout {
         mThermalTempTextView = (TextView) findViewById(R.id.txtThermalTemp);
 
         mCpuUsageCheckBox = (CheckBox) findViewById(R.id.chkCpuUsage);
-        mCpuUsageCheckBox.setOnClickListener(view -> { writeCpuUsageOptions(); });
+        mCpuUsageCheckBox.setOnCheckedChangeListener((v, c) -> { writeCpuUsageOptions(); });
 
         mUsbDebuggingCheckBox = (CheckBox) findViewById(R.id.chkUsbDebugging);
-        mUsbDebuggingCheckBox.setOnClickListener(view -> { writeUsbDebuggingOptions(); });
+        mUsbDebuggingCheckBox.setOnCheckedChangeListener((v, c) -> { writeUsbDebuggingOptions(); });
 
         mDropCacheCheckBox = (CheckBox) findViewById(R.id.chkDropCache);
-        mDropCacheCheckBox.setOnClickListener(view -> { writeDropCacheOptions(); });
+        mDropCacheCheckBox.setOnCheckedChangeListener((v, c) -> { writeDropCacheOptions(); });
 
         mUsbHubCheckBox = (CheckBox) findViewById(R.id.chkUsbHub);
-        mUsbHubCheckBox.setOnClickListener(view -> { writeUsbHubOptions(); });
+        mUsbHubCheckBox.setOnCheckedChangeListener((v, c) -> { writeUsbHubOptions(); });
 
         mMapAutoCheckBox = (CheckBox) findViewById(R.id.chkMapAuto);
-        mMapAutoCheckBox.setOnClickListener(view -> { writeMapAutoOptions(); });
+        mMapAutoCheckBox.setOnCheckedChangeListener((v, c) -> { writeMapAutoOptions(); });
 
         mKeepUnlockedSwitch = (Switch) findViewById(R.id.swKeepUnlocked);
-        mKeepUnlockedSwitch.setOnClickListener(view -> { writeKeepUnlockedOptions(); });
+        mKeepUnlockedSwitch.setOnCheckedChangeListener((v, c) -> { writeKeepUnlockedOptions(); });
 
         mTrackTouchSwitch = (Switch) findViewById(R.id.swTrackTouch);
-        mTrackTouchSwitch.setOnClickListener(view -> { writeTrackTouchOptions(); });
+        mTrackTouchSwitch.setOnCheckedChangeListener((v, c) -> { writeTrackTouchOptions(); });
 
         mShowUpdatesSwitch = (Switch) findViewById(R.id.swShowUpdates);
-        mShowUpdatesSwitch.setOnClickListener(view -> { writeShowUpdatesOption(); });
+        mShowUpdatesSwitch.setOnCheckedChangeListener((v, c) -> { writeShowUpdatesOption(); });
 
         mDebugLayoutSwitch = (Switch) findViewById(R.id.swDebugLayout);
-        mDebugLayoutSwitch.setOnClickListener(view -> { writeDebugLayoutOptions(); });
+        mDebugLayoutSwitch.setOnCheckedChangeListener((v, c) -> { writeDebugLayoutOptions(); });
 
         findViewById(R.id.btnGoHome).setOnClickListener(view -> { goHome(); });
         findViewById(R.id.btnGoBack).setOnClickListener(view -> { goBack(); });
@@ -200,9 +207,18 @@ public class DevNavigationBar extends FrameLayout {
         updateTrackTouchOptions();
         updateShowUpdatesOption();
         updateDebugLayoutOptions();
+
+        // Schedule time to release the developer mode.
+        mResetHandler.postDelayed(() -> {
+            DevUtils.setDevelopmentSettingsEnabled(mContext, false);
+        }, KEEP_DEV_TIMEOUT_MS);
     }
 
     public void onAttached() {
+        Log.d(TAG, "Developer view has been attached!");
+        // Stop timer of releasing the developer mode, keep current.
+        mResetHandler.removeCallbacksAndMessages(null);
+
         mActivityMonitor.registerListener(mActivityChangeListener);
 
         mContentResolver.registerContentObserver(
@@ -224,11 +240,25 @@ public class DevNavigationBar extends FrameLayout {
     }
 
     public void onDetached() {
-        mRetrieveHandler.removeCallbacksAndMessages(null);
+        Log.d(TAG, "Developer view has been detached!");
         mAnrDirObserver.stopWatching();
         mTombstonesDirObserver.stopWatching();
         mContentResolver.unregisterContentObserver(mSystemStateSettingsObserver);
         mActivityMonitor.unregisterListener(mActivityChangeListener);
+    }
+
+    public void resetOptions() {
+        Log.d(TAG, "Reset all the developer options!");
+
+        // Clear the cool tool's user data
+        mActivityManager.clearApplicationUserData("ds.cpuoverlay", null);
+
+        // Unchecks all the checkable views
+        ArrayList<Checkable> checkables = new ArrayList<Checkable>();
+        DevUtils.findAllChildrenOfType(Checkable.class, this, checkables);
+        for (Checkable chk : checkables) {
+            chk.setChecked(false);
+        }
     }
 
     public void goHome() {

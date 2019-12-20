@@ -18,9 +18,12 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Locale;
 
 public class DevUtils {
@@ -106,5 +109,16 @@ public class DevUtils {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static <T> void findAllChildrenOfType(Class<T> clazz, ViewGroup viewGroup, List<T> result) {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (clazz.isInstance(child)) {
+                result.add((T)child);
+            } else if (child instanceof ViewGroup) {
+                findAllChildrenOfType(clazz, (ViewGroup) child, result);
+            }
+        }
     }
 }

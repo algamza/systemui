@@ -22,7 +22,7 @@ public class DevModeController {
 
     private Context mContext;
     private View mNormalView;
-    private View mDevView;
+    private DevNavigationBar mDevView;
     private OnViewChangeListener mOnViewChangeListener;
     private Handler mHandler = new Handler();
 
@@ -34,11 +34,16 @@ public class DevModeController {
     private final ContentObserver mSettingsObserver = new ContentObserver(new Handler()) {
         @Override
         public void onChange(boolean selfChange) {
-            initViews();
+            updateViewState();
+
+            final Context context = DevModeController.this.mContext;
+            if (mDevView != null && !DevUtils.isDevelopmentSettingsEnabled(context)) {
+                mDevView.resetOptions();
+            }
         }
     };
 
-    public DevModeController(Context context, View normalView, View devView) {
+    public DevModeController(Context context, View normalView, DevNavigationBar devView) {
         mContext = context;
 
         mNormalView = normalView;
@@ -52,14 +57,14 @@ public class DevModeController {
                 Settings.Global.getUriFor(DevUtils.KEEP_UNLOCKED),
                 false, mSettingsObserver);
 
-        initViews();
+        updateViewState();
     }
 
     public void setOnViewChangeListener(OnViewChangeListener l) {
         mOnViewChangeListener = l;
     }
 
-    private void initViews() {
+    private void updateViewState() {
         if (mNormalView != null) {
             boolean devEnabled = DevUtils.isDevelopmentSettingsEnabled(mContext);
             if (devEnabled) {
@@ -74,6 +79,9 @@ public class DevModeController {
                 });
             } else {
                 mNormalView.setOnTouchListener(null);
+                if (mDevView != null && mDevView.isAttachedToWindow()) {
+                    dispatchOnViewChange(mNormalView);
+                }
             }
 
             boolean allowLongClick = true;
