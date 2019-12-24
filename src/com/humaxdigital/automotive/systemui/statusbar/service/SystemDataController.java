@@ -28,6 +28,8 @@ public class SystemDataController extends BaseController<Integer> {
     private TMSClient mTMSClient = null;
     private Timer mTimer = new Timer();
     private TimerTask mNetworkCheckTask = null;
+    private TimerTask mNetworkDisconnectTask = null; 
+    private boolean isWaitingNetworkDisconnection = false; 
     private final int LOOP_TIME = 500;
     private long mTotalRx = 0; 
     private long mTotalTx = 0;
@@ -37,6 +39,7 @@ public class SystemDataController extends BaseController<Integer> {
     private boolean mIsAvaliableActivityType = false; 
     private int mDataType = 0;
     private DataStatus mDataStatus = DataStatus.NONE;
+    private final int MAINTAIN_TIME_MS = 20000;
 
     public SystemDataController(Context context, DataStore store) {
         super(context, store);
@@ -71,11 +74,8 @@ public class SystemDataController extends BaseController<Integer> {
                         mUsing = true; 
                         Log.d(TAG, "r_old="+mTotalRx+", rx="+rx+" ("+(rx-mTotalRx)+"), t_old="+mTotalTx+", tx="+tx+" ("+(tx-mTotalTx)+")"); 
                         DataStatus status = convertToStatus(mIsNetworkAvaliable 
-                            && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
-                        if ( mDataStatus != status ) {
-                            mDataStatus = status; 
-                            broadcastStatus(mDataStatus); 
-                        }
+                            && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing);
+                        updateDataStatus(status);
                     } 
                 } else {
                     if ( mUsing ) {
@@ -83,10 +83,7 @@ public class SystemDataController extends BaseController<Integer> {
                         Log.d(TAG, "r_old="+mTotalRx+", rx="+rx+" ("+(rx-mTotalRx)+"), t_old="+mTotalTx+", tx="+tx+" ("+(tx-mTotalTx)+")"); 
                         DataStatus status = convertToStatus(mIsNetworkAvaliable 
                             && mIsNetworkConnected, mDataType, mUsing);// && mIsAvaliableActivityType, mDataType, mUsing); 
-                        if ( mDataStatus != status ) {
-                            mDataStatus = status; 
-                            broadcastStatus(mDataStatus); 
-                        }
+                        updateDataStatus(status); 
                     }
                 }
                 mTotalRx = rx; 
@@ -167,6 +164,38 @@ public class SystemDataController extends BaseController<Integer> {
         return avaliable; 
     }
 
+    private void updateDataStatus(DataStatus status) {
+        Log.d(TAG, "updateDataStatus="+status+" current="+mDataStatus+", wait="+isWaitingNetworkDisconnection);
+        if ( status == DataStatus.NONE && mDataStatus != DataStatus.NONE ) {
+            if ( isWaitingNetworkDisconnection ) return;
+            mNetworkDisconnectTask = new TimerTask() {
+                @Override
+                public void run() {
+                    isWaitingNetworkDisconnection = false;
+                    mNetworkDisconnectTask = null; 
+                    mDataStatus = DataStatus.NONE;
+                    broadcastStatus(mDataStatus); 
+                }
+            };
+            isWaitingNetworkDisconnection = true;
+            mTimer.schedule(mNetworkDisconnectTask, MAINTAIN_TIME_MS);
+            return;
+        } else {
+            if ( mNetworkDisconnectTask != null ) {
+                if ( mNetworkDisconnectTask.scheduledExecutionTime() > 0 ) {
+                    mNetworkDisconnectTask.cancel();
+                    mTimer.purge();
+                    mNetworkDisconnectTask =  null;
+                    isWaitingNetworkDisconnection = false;
+                }
+            }
+        }
+        if ( status != mDataStatus ) {
+            mDataStatus = status;
+            broadcastStatus(mDataStatus); 
+        }
+    }
+
     private DataStatus convertToStatus(boolean on, int type, boolean using) {
         DataStatus status = DataStatus.NONE; 
         if ( !on ) return status;
@@ -219,10 +248,7 @@ public class SystemDataController extends BaseController<Integer> {
             // todo : Check status when wifi is connected
             DataStatus status = convertToStatus(mIsNetworkAvaliable 
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
-            if ( status != mDataStatus ) {
-                mDataStatus = status;
-                broadcastStatus(mDataStatus); 
-            }
+            updateDataStatus(status);
         }
     };
 
@@ -234,10 +260,7 @@ public class SystemDataController extends BaseController<Integer> {
             mIsAvaliableActivityType = isAvaliableData(mTelephony.getDataActivity()); 
             DataStatus status = convertToStatus(mIsNetworkAvaliable 
                 && mIsNetworkConnected, mDataType, mUsing); // && mIsAvaliableActivityType, mDataType, mUsing); 
-            if ( status != mDataStatus ) {
-                mDataStatus = status;
-                broadcastStatus(mDataStatus); 
-            }
+            updateDataStatus(status);
         }
     };
 
