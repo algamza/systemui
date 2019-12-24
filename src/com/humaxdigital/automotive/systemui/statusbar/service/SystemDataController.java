@@ -39,7 +39,7 @@ public class SystemDataController extends BaseController<Integer> {
     private boolean mIsAvaliableActivityType = false; 
     private int mDataType = 0;
     private DataStatus mDataStatus = DataStatus.NONE;
-    private final int MAINTAIN_TIME_MS = 20000;
+    private final int MAINTAIN_TIME_MS = 40000;
 
     public SystemDataController(Context context, DataStore store) {
         super(context, store);
