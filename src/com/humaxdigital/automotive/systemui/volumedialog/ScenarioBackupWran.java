@@ -269,7 +269,7 @@ public class ScenarioBackupWran {
     }
 
     private void recoveryAudio() {
-        if ( mIsIGNOff ) return;
+        //if ( mIsIGNOff ) return;
         if ( mBackupWarnLastVolume.isEmpty() || mBackupWarnAudioChange.isEmpty() ) return;
         for ( VolumeUtil.Type type : mBackupWarnAudioTypeList ) {
             boolean changed = mBackupWarnAudioChange.get(type); 
