@@ -30,12 +30,11 @@ public class TMSClient {
     private CallingStatus mCurrentCallingStatus = CallingStatus.CALL_DISCONNECTED; 
     private DataUsingStatus mCurrentDataUsingStatus = DataUsingStatus.DATA_NO_PACKET; 
     private LocationSharingStatus mCurrentLocationSharingStatus = LocationSharingStatus.LOCATION_SHARING_CANCEL; 
-    private final int MAINTAIN_TIME_MS = 20000;
+
     private Timer mTimer = new Timer();
-    private TimerTask mDisconnectionTask;
-    private TimerTask mDeactiveTask; 
-    private boolean isWaitDisconnect = false; 
-    private boolean isWaitDeactive = false; 
+    private TimerTask mNetworkDisconnectTask = null; 
+    private boolean isWaitingNetworkDisconnection = false; 
+    private final int MAINTAIN_TIME_MS = 40000;
 
     public enum ConnectionStatus {
         DISCONNECTED,
@@ -141,6 +140,43 @@ public class TMSClient {
         return mCurrentLocationSharingStatus; 
     }
 
+    private void updateDataStatus(ConnectionStatus status) {
+        Log.d(TAG, "updateDataStatus="+status+" current="+mCurrentConnectionStatus
+            +", wait="+isWaitingNetworkDisconnection);
+        if ( status == ConnectionStatus.DISCONNECTED 
+            && mCurrentConnectionStatus != ConnectionStatus.DISCONNECTED ) {
+            if ( isWaitingNetworkDisconnection ) return;
+            mNetworkDisconnectTask = new TimerTask() {
+                @Override
+                public void run() {
+                    isWaitingNetworkDisconnection = false;
+                    mNetworkDisconnectTask = null; 
+                    mCurrentConnectionStatus = ConnectionStatus.DISCONNECTED;
+                    for ( TMSCallback callback : mListeners ) 
+                        callback.onConnectionChanged(mCurrentConnectionStatus);
+                }
+            };
+            isWaitingNetworkDisconnection = true;
+            mTimer.schedule(mNetworkDisconnectTask, MAINTAIN_TIME_MS);
+            return;
+        } else {
+            if ( mNetworkDisconnectTask != null ) {
+                if ( mNetworkDisconnectTask.scheduledExecutionTime() > 0 ) {
+                    mNetworkDisconnectTask.cancel();
+                    mTimer.purge();
+                    mNetworkDisconnectTask =  null;
+                    isWaitingNetworkDisconnection = false;
+                }
+            }
+        }
+
+        if ( status != mCurrentConnectionStatus ) {
+            mCurrentConnectionStatus = status;
+            for ( TMSCallback callback : mListeners ) 
+                callback.onConnectionChanged(mCurrentConnectionStatus);
+        }
+    }
+
     private final CarTMSManager.CarTMSEventCallback mTMSMgrCallback =
         new CarTMSManager.CarTMSEventCallback () {
         @Override
@@ -176,73 +212,21 @@ public class TMSClient {
                         status = ConnectionStatus.CONNECTED; 
                     else 
                         status = ConnectionStatus.DISCONNECTED; 
-                    if ( status != mCurrentConnectionStatus ) {
-                        if ( status == ConnectionStatus.CONNECTED ) {
-                            if ( mDisconnectionTask != null ) {
-                                if ( mDisconnectionTask.scheduledExecutionTime() > 0 ) {
-                                    mDisconnectionTask.cancel();
-                                    mTimer.purge();
-                                    mDisconnectionTask =  null;
-                                    isWaitDisconnect = false;
-                                }
-                            }
-                            mCurrentConnectionStatus = status;
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onConnectionChanged(mCurrentConnectionStatus);
-                        } else {
-                            if ( mDisconnectionTask == null ) {
-                                mDisconnectionTask = new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        mCurrentConnectionStatus = ConnectionStatus.DISCONNECTED;
-                                        for ( TMSCallback callback : mListeners ) 
-                                            callback.onConnectionChanged(mCurrentConnectionStatus);
-                                        mTimer.purge();
-                                        mDisconnectionTask = null;
-                                        isWaitDisconnect = false;
-                                    }
-                                };
-                                isWaitDisconnect = true;
-                                mTimer.schedule(mDisconnectionTask, MAINTAIN_TIME_MS);
-                            }
-                        }
-                    }
+                    
+                    updateDataStatus(status); 
+
                     if ( rssiSignal != mCurrentSignalLevel ) {
-                        if ( !isWaitDeactive && !isWaitDisconnect ) {
-                            mCurrentSignalLevel = rssiSignal; 
-                            for ( TMSCallback callback : mListeners ) 
-                                callback.onSignalLevelChanged(mCurrentSignalLevel); 
-                        }
+                        mCurrentSignalLevel = rssiSignal; 
+                        for ( TMSCallback callback : mListeners ) 
+                            callback.onSignalLevelChanged(mCurrentSignalLevel); 
                     }
-                    if ( active == 0 ) {
-                        if ( mDeactiveTask == null ) {
-                            mDeactiveTask = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
-                                    mTimer.purge();
-                                    mDeactiveTask = null;
-                                    isWaitDeactive = false;
-                                }
-                            };
-                            isWaitDeactive = true;
-                            mTimer.schedule(mDeactiveTask, MAINTAIN_TIME_MS);
-                        }
-                    }   
-                    else {
-                        if ( mDeactiveTask != null ) {
-                            if ( mDeactiveTask.scheduledExecutionTime() > 0 ) {
-                                mDeactiveTask.cancel();
-                                mTimer.purge();
-                                mDeactiveTask =  null;
-                                isWaitDeactive = false;
-                            }
-                        }
+                    if ( active == 0 ) 
+                        mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
+                    else 
                         mCurrentActiveStatus = ActiveStatus.ACTIVE; 
-                    }
 
                     Log.d(TAG, "APP_TMS_MODEM_LIVE_SIGNAL_1SEC:active="+active
-                        +", signal="+rssiSignal+", stauts="+networkStatus+", connection="+mCurrentConnectionStatus);
+                        +", signal="+rssiSignal+", stauts="+networkStatus);
 
                     break;
                 }
@@ -279,6 +263,7 @@ public class TMSClient {
             Log.w(TAG, "error : id = "+propertyId+", zone="+zone);
         }
     };
+
     private CarTMSManager.CarTMSEventListener mTMSEventListener = new CarTMSManager.CarTMSEventListener(){
         @Override
         public void onEmergencyMode(boolean enabled) {
