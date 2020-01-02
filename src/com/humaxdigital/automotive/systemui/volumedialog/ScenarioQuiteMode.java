@@ -17,11 +17,13 @@ import android.extension.car.settings.CarExtraSettings;
 import android.extension.car.CarAudioManagerEx;
 import android.car.CarNotConnectedException;
 
+import com.humaxdigital.automotive.systemui.R; 
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
+
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
-
 
 public class ScenarioQuiteMode {
     private static final String TAG = "ScenarioQuiteMode";
@@ -343,7 +345,10 @@ public class ScenarioQuiteMode {
             
             if ( volume > QUITE_MODE_MAX ) {
                 setAudioVolume(mode, QUITE_MODE_MAX); 
+                if ( mContext != null ) 
+                    OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_21268_ID));
                 Log.d(TAG, "checkQuietMode:type="+type+", las volume="+volume);
+
                 return true; 
             }
         }
