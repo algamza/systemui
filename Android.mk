@@ -57,6 +57,12 @@ LOCAL_RESOURCE_DIR += \
 	$(LOCAL_PATH)/res-notificationui \
 	$(LOCAL_PATH)/res-volumedialog \
 	$(LOCAL_PATH)/res-statusbar-du2
+else ifneq ($(filter bhdue_%, $(TARGET_PRODUCT)),)
+LOCAL_RESOURCE_DIR += \
+	$(LOCAL_PATH)/res-droplist \
+	$(LOCAL_PATH)/res-notificationui \
+	$(LOCAL_PATH)/res-volumedialog \
+	$(LOCAL_PATH)/res-statusbar-du2
 else
 LOCAL_RESOURCE_DIR += \
 	$(LOCAL_PATH)/res-droplist \
