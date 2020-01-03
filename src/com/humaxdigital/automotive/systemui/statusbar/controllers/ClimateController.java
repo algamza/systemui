@@ -265,7 +265,8 @@ public class ClimateController {
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
             .inflate(); 
 
-        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 ) {
+        if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 
+            || ProductConfig.getModel() == ProductConfig.MODEL.DU2EV ) {
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
             mClimateViews.add(mTempDR);
