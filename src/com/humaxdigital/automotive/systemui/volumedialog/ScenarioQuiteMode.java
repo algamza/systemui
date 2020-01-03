@@ -219,8 +219,9 @@ public class ScenarioQuiteMode {
     private void quitetModeChanged() {
         Log.d(TAG, "quitetModeChanged"); 
         if ( isUserSwiching() ) return; 
-        if ( isQuiteMode() ) applyQuiteMode();
-        else {
+        if ( isQuiteMode() ) {
+            applyQuiteMode();
+        } else {
             if ( !hasQuiteModeLastVolume() ) return; 
             for ( VolumeUtil.Type type : mAudioTypeList ) {
                 boolean changed = isQuiteModeLastVolumeChanged(type); 
@@ -268,7 +269,7 @@ public class ScenarioQuiteMode {
     }
 
     private void applyQuiteMode() {
-        if ( mCarAudioManagerEx == null ) return;
+        if ( mCarAudioManagerEx == null ) return; 
         try {
             for ( VolumeUtil.Type type : mAudioTypeList ) {
                 int mode = VolumeUtil.convertToMode(type);
@@ -285,24 +286,41 @@ public class ScenarioQuiteMode {
                     setAudioVolume(mode, QUITE_MODE_VOLUME); 
                 }
             }
+            storeSettingsModeVolume();
             mIsQuiteModeApplying = false;
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Failed to get current volume", e);
         }
     }
 
+    private void storeSettingsModeVolume() {
+        if ( mCarAudioManagerEx == null || !mIsSettingsActivity ) return;
+        try{
+            mCurrentMediaVolume = mCarAudioManagerEx.getVolumeForLas(VolumeUtil.convertToMode(VolumeUtil.Type.ONLINE_MUSIC));
+            mCurrentBTAudioVolume = mCarAudioManagerEx.getVolumeForLas(VolumeUtil.convertToMode(VolumeUtil.Type.BT_AUDIO));
+        } catch (CarNotConnectedException e) {
+            Log.e(TAG, "Failed to get current volume", e);
+        }
+
+        Log.d(TAG, "storeSettingsModeVolume:audio="+mCurrentMediaVolume+", bt="+mCurrentBTAudioVolume);
+    }
+
     private void checkSettingsMode(int mode) {
-        if ( !mIsSettingsActivity ) return;
+        if ( mCarAudioManagerEx == null || !mIsSettingsActivity ) return;
         if ( mode != VolumeUtil.convertToMode(VolumeUtil.Type.SETUP_GUIDE) ) return;
-        if ( mCarAudioManagerEx == null ) return;
+
         int media_volume = 0; 
-        int bt_audio_volume = 0; 
+        int bt_audio_volume = 0;
         try{
             media_volume = mCarAudioManagerEx.getVolumeForLas(VolumeUtil.convertToMode(VolumeUtil.Type.ONLINE_MUSIC));
             bt_audio_volume = mCarAudioManagerEx.getVolumeForLas(VolumeUtil.convertToMode(VolumeUtil.Type.BT_AUDIO));
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Failed to get current volume", e);
         }
+
+        Log.d(TAG, "checkSettingsMode:old audio="+mCurrentMediaVolume+", old bt="+mCurrentBTAudioVolume);
+        Log.d(TAG, "checkSettingsMode:audio="+media_volume+", bt="+bt_audio_volume);
+
         if ( media_volume != mCurrentMediaVolume ) {
             mCurrentMediaVolume = media_volume; 
             updateQuiteModeLastVolumeChanged(VolumeUtil.Type.RADIO_AM, true);
@@ -312,7 +330,7 @@ public class ScenarioQuiteMode {
             updateQuiteModeLastVolumeChanged(VolumeUtil.Type.CARLIFE_MEDIA, true);
         }
         if ( bt_audio_volume != mCurrentBTAudioVolume ) {
-            bt_audio_volume = mCurrentBTAudioVolume; 
+            mCurrentBTAudioVolume = bt_audio_volume; 
             updateQuiteModeLastVolumeChanged(VolumeUtil.Type.BT_AUDIO, true);
         }
     }
@@ -322,13 +340,13 @@ public class ScenarioQuiteMode {
 
         mNeedToShowUI = false;
 
-        checkSettingsMode(mode); 
+        if ( !mIsQuiteModeApplying && volume != QUITE_MODE_VOLUME ) 
+            checkSettingsMode(mode); 
 
         for ( VolumeUtil.Type type : mAudioTypeList ) {
             if ( mode != VolumeUtil.convertToMode(type) ) continue; 
 
             if ( !mIsQuiteModeApplying && volume != QUITE_MODE_VOLUME ) {
-
                 updateQuiteModeLastVolumeChanged(type, true);
                 if ( type == VolumeUtil.Type.RADIO_AM || type == VolumeUtil.Type.RADIO_FM 
                 || type == VolumeUtil.Type.USB || type == VolumeUtil.Type.ONLINE_MUSIC 
