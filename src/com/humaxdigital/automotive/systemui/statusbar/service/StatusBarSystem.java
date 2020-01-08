@@ -658,7 +658,7 @@ public class StatusBarSystem {
         }
     }
 
-    private void vrCloseRequest() {
+    public void vrCloseRequest() {
         if ( mContext == null ) return;
         Log.d(TAG, "vrCloseRequest");
         Intent intent = new Intent(); 

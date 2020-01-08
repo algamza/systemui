@@ -71,7 +71,7 @@ public class StatusBar implements SystemUIBase {
     private Boolean mTouchValid = false; 
     private int mTouchOffset = 15;
     private ActivityMonitor mActivityMonitor = null; 
-    private boolean mIsGestureMode = true; 
+    private boolean mIsSwipeGestureMode = true;
     private boolean mIsDroplistTouchEnable = false; 
 
     @Override
@@ -414,12 +414,29 @@ public class StatusBar implements SystemUIBase {
     private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ( !mIsGestureMode ) return;
             String action = intent.getAction();
             if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
                 String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
-                if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
-                    openDroplist();
+
+                // swipe-from-top - open the drop list.
+                if (CONSTANTS.SYSTEM_GESTURE_SWIPE_FROM_TOP.equals(gesture)){
+                    if (mIsSwipeGestureMode && !isSpecialCase()) {
+                        openDroplist();
+                    }
+                }
+
+                // hold-by-fingers - trigger home to perform some action.
+                if (CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS.equals(gesture)) {
+                    if (!isSpecialCase()) {
+                        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                        homeIntent.addCategory(Intent.CATEGORY_HOME);
+                        homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
+                        context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+
+                        if (mStatusBarSystem != null) {
+                            mStatusBarSystem.vrCloseRequest();
+                        }
+                    }
                 }
             }
         }
@@ -433,9 +450,9 @@ public class StatusBar implements SystemUIBase {
             String name = topActivity.getClassName(); 
             Log.d(TAG, "onActivityChanged="+name); 
             if ( name == null ) return;
-            if ( name.contains(".MapAutoActivity") ) mIsGestureMode = false;
-            else mIsGestureMode = true; 
-            enableDropListTouchWindow(!mIsGestureMode); 
+            if ( name.contains(".MapAutoActivity") ) mIsSwipeGestureMode = false;
+            else mIsSwipeGestureMode = true;
+            enableDropListTouchWindow(!mIsSwipeGestureMode);
         }
     }; 
 }

@@ -12,8 +12,6 @@ public class CONSTANTS {
     public static final String CHANGE_USER_GET_EXTRA_IMG = "BitmapImage"; 
     public static final String REQUEST_CURRENT_USER_ICON = "com.humaxdigital.dn8c.REQUEST_CURRENT_USER_ICON";
 
-    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
-    public static final String EXTRA_GESTURE = "gesture";
     public static final String ACTION_OPEN_WIFI_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_WIFI"; 
     public static final String ACTION_OPEN_BLUETOOTH_SETTING = "com.humaxdigital.dn8c.ACTION_BLUETOOTH_SETTINGS";  
     public static final String ACTION_OPEN_QUIET_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_SOUND_QUIET_MODE"; 
@@ -40,4 +38,10 @@ public class CONSTANTS {
 
     public static final String SETTINGS_VR = "vr_shown";
     public static final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
+
+    // System gestures (defined in 'frameworks/base/.../policy/SystemGesturesDetector.java')
+    public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
+    public static final String EXTRA_GESTURE = "gesture";
+    public static final String SYSTEM_GESTURE_SWIPE_FROM_TOP = "swipe-from-top";
+    public static final String SYSTEM_GESTURE_HOLD_BY_FINGERS = "hold-by-fingers";
 }
