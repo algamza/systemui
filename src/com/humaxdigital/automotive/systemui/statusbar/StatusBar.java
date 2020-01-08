@@ -432,6 +432,10 @@ public class StatusBar implements SystemUIBase {
                         homeIntent.addCategory(Intent.CATEGORY_HOME);
                         homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
                         context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+
+                        if (mStatusBarSystem != null) {
+                            mStatusBarSystem.vrCloseRequest();
+                        }
                     }
                 }
             }
