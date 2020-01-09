@@ -42,6 +42,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
@@ -433,9 +434,7 @@ public class StatusBar implements SystemUIBase {
                         homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
                         context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
 
-                        if (mStatusBarSystem != null) {
-                            mStatusBarSystem.vrCloseRequest();
-                        }
+                        if (mStatusBarSystem != null) CommonMethod.closeVR(mContext); 
                     }
                 }
             }

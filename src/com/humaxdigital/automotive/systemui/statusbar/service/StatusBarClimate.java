@@ -19,6 +19,7 @@ import android.extension.car.settings.CarExtraSettings;
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod; 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
@@ -376,21 +377,11 @@ public class StatusBarClimate {
                 }
             };
             mTimer.schedule(mTimerTaskClimateChattering, OPEN_CLIMATE_CHATTERING_TIME);
-            vrCloseRequest();
+            CommonMethod.closeVR(mContext);
             Intent intent = new Intent(CONSTANTS.OPEN_HVAC_APP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }
-    }
-
-    private void vrCloseRequest() {
-        if ( mContext == null ) return;
-        Log.d(TAG, "vrCloseRequest");
-        Intent intent = new Intent(); 
-        ComponentName name = new ComponentName(CONSTANTS.VR_PACKAGE_NAME, CONSTANTS.VR_RECEIVER_NAME);
-        intent.setComponent(name);
-        intent.setAction(CONSTANTS.VR_DISMISS_ACTION);
-        mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
     private boolean isUserAgreement() {

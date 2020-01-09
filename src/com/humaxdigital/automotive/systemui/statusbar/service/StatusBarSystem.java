@@ -30,6 +30,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class StatusBarSystem {
@@ -504,7 +505,7 @@ public class StatusBarSystem {
 
         if ( !CONSTANTS.ACTION_OPEN_DATE_SETTING.equals("") ) {
             Log.d(TAG, "openDateTimeSetting="+CONSTANTS.ACTION_OPEN_DATE_SETTING);
-            vrCloseRequest();
+            CommonMethod.closeVR(mContext); 
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DATE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
@@ -569,7 +570,7 @@ public class StatusBarSystem {
 
         if ( !CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING.equals("") ) {
             Log.d(TAG, "openUserProfileSetting="+CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING);
-            vrCloseRequest();
+            CommonMethod.closeVR(mContext); 
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_USERPROFILE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
@@ -657,17 +658,6 @@ public class StatusBarSystem {
             }
         }
     }
-
-    public void vrCloseRequest() {
-        if ( mContext == null ) return;
-        Log.d(TAG, "vrCloseRequest");
-        Intent intent = new Intent(); 
-        ComponentName name = new ComponentName(CONSTANTS.VR_PACKAGE_NAME, CONSTANTS.VR_RECEIVER_NAME);
-        intent.setComponent(name);
-        intent.setAction(CONSTANTS.VR_DISMISS_ACTION);
-        mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
-    }
-
     private BaseController.Listener mDateTimeListener = new BaseController.Listener<String>() {
         @Override
         public void onEvent(String date) {

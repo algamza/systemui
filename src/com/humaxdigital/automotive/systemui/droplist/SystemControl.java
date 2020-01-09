@@ -44,6 +44,7 @@ import com.humaxdigital.automotive.systemui.droplist.impl.WifiImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CallingImpl;
 
 import com.humaxdigital.automotive.systemui.common.user.PerUserService;
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.user.IUserService;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
@@ -253,7 +254,7 @@ public class SystemControl extends Service {
         return mBluetooth == null ? false : mBluetooth.get();
     }
     public void openBluetoothSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_BLUETOOTH_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_BLUETOOTH_SETTING); 
     };
 
     public void setWifiOn(boolean isOn) {
@@ -263,7 +264,7 @@ public class SystemControl extends Service {
         return mWifi == null ? false : mWifi.get();
     }
     public void openWifiSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_WIFI_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_WIFI_SETTING); 
     };
 
     public void setMuteOn(boolean isOn) {
@@ -280,7 +281,7 @@ public class SystemControl extends Service {
         return mQuietMode == null ? false : mQuietMode.get();
     }
     public void openQuietModeSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_QUIET_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_QUIET_SETTING); 
     };
 
     public void setBeepOn(boolean isOn) {
@@ -298,7 +299,7 @@ public class SystemControl extends Service {
         return mAutoMode.get();
     }
     public void openAutomaticSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_AUTOMATIC_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_AUTOMATIC_SETTING); 
     };
 
     public void setBrightness(int progress) {
@@ -368,12 +369,12 @@ public class SystemControl extends Service {
     }
     public void openThemeSetting() {
         Log.d(TAG, "openThemeSetting");
-        openActivity(CONSTANTS.ACTION_OPEN_THEME_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_THEME_SETTING); 
     }
 
     public void openSetup() {
         Log.d(TAG, "openSetup");
-        openActivity(CONSTANTS.ACTION_OPEN_SETUP); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_SETUP); 
     }
 
     public void performClick() {
@@ -509,6 +510,11 @@ public class SystemControl extends Service {
             if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(null); 
         }
     };
+
+    private void openActivityAndCloseVR(String action) {
+        CommonMethod.closeVR(this); 
+        openActivity(action); 
+    }
 
     private void openActivity(String action) {
         if ( !action.equals("") ) {
