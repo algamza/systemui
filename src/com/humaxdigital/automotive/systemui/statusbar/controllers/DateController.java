@@ -25,6 +25,11 @@ public class DateController {
     private String mType = "12";
     private Boolean mIsValidTime = true; 
 
+    private boolean mIsPowerOff; 
+    private boolean mUserAgreementMode;
+    private boolean mUserSwitching; 
+    private boolean mRearCameraMode; 
+
     private Handler mHandler; 
 
     public DateController(Context context, View view) {
@@ -39,6 +44,7 @@ public class DateController {
         mService = service; 
         mService.registerSystemCallback(mDateTimeCallback); 
         if ( mService.isDateTimeInitialized() ) initView(); 
+        checkSpecialCase();
     }
 
     public void deinit() {
@@ -48,14 +54,7 @@ public class DateController {
 
     private void initView() {
         if ( mParentView == null || mService == null ) return;
-        mParentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if ( mService == null ) return;
-                if ( mIsValidTime ) 
-                    mService.openDateTimeSetting(); 
-            }
-        });
+        mParentView.setOnClickListener(mOnClickListener);
 
         mDateVew = mParentView.findViewById(R.id.text_date_time);
         mDateNoonView = mParentView.findViewById(R.id.text_date_noon);
@@ -65,6 +64,15 @@ public class DateController {
         
         updateClockUI(mTime, mType);
     }
+
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if ( mService == null ) return;
+            if ( mIsValidTime ) 
+                mService.openDateTimeSetting(); 
+        }
+    }; 
 
     private Boolean isValidTime(String time) {
         if ( time.contains("error") ) return false;
@@ -113,6 +121,34 @@ public class DateController {
         super.finalize();
     }
 
+    private void checkSpecialCase() {
+        if ( mService == null ) return;
+
+        if ( mService.isPowerOff() ) mIsPowerOff = true;
+        if ( mService.isUserAgreement() ) mUserAgreementMode = true;
+        if ( mService.isUserSwitching() ) mUserSwitching = true;
+        if ( mService.isRearCamera() ) mRearCameraMode = true;
+
+        Log.d(TAG, "checkUserIconDisable:mIsPowerOff="+mIsPowerOff+
+            ", mUserAgreementMode="+mUserAgreementMode+
+            ", mUserSwitching="+mUserSwitching+
+            ", mRearCameraMode="+mRearCameraMode); 
+        if ( mIsPowerOff || mUserAgreementMode 
+            || mUserSwitching || mRearCameraMode ) 
+            setUsable(true);
+        else 
+            setUsable(false);
+    }
+    
+    private void setUsable(boolean usable) {
+        if ( mParentView == null ) return;
+        if ( usable ) {
+            mParentView.setOnClickListener(null);
+        } else {
+            mParentView.setOnClickListener(mOnClickListener);
+        }
+    }
+
     private final StatusBarSystem.StatusBarSystemCallback mDateTimeCallback = new StatusBarSystem.StatusBarSystemCallback() {
         @Override
         public void onDateTimeInitialized() {
@@ -147,6 +183,58 @@ public class DateController {
                 @Override
                 public void run() {
                     updateClockUI(mTime, mType);
+                }
+            }); 
+        }
+
+        @Override
+        public void onPowerStateChanged(int state) {
+            if ( mHandler == null ) return; 
+            Log.d(TAG, "onPowerStateChanged="+state);
+            mIsPowerOff = (state == 2)?true:false;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onUserAgreementMode(boolean on) {
+            if ( mHandler == null ) return; 
+            Log.d(TAG, "onUserAgreementMode="+on);
+            mUserAgreementMode = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onUserSwitching(boolean on) {
+            if ( mHandler == null ) return; 
+            Log.d(TAG, "onUserSwitching="+on);
+            mUserSwitching = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onRearCamera(boolean on) {
+            if ( mHandler == null ) return; 
+            Log.d(TAG, "onRearCamera="+on);
+            mRearCameraMode = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
                 }
             }); 
         }

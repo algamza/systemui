@@ -20,7 +20,6 @@ public class ProductConfig {
             else if ( array[0].contains("BHDU") ) model = MODEL.DU2; 
             else if ( array[0].contains("BHCN") ) model = MODEL.CN7C; 
             else if ( array[0].contains("DYDL") ) model = MODEL.DL3C; 
-            
         }
         Log.d(TAG, "name="+name+", model="+model); 
         return model; 
