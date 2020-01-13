@@ -255,7 +255,7 @@ public class BrightnessController implements BaseController {
                 mClusterBrightnessProgress = convertValidClusterBrightness(progress); 
                 if ( mText != null ) 
                     mText.setText(Integer.toString(progress)); 
-                if ( fromUser ) mSystem.setClusterBrightness(mClusterBrightnessProgress);
+                // if ( fromUser ) mSystem.setClusterBrightness(mClusterBrightnessProgress);
             } else {
                 mBrightnessProgress = convertLevelToBrightness(progress, mBrightnessMin, mBrightnessMax);
                 if ( mText != null ) 
@@ -287,6 +287,9 @@ public class BrightnessController implements BaseController {
                 case MotionEvent.ACTION_UP: {
                     if ( mSystem != null ) mSystem.performClick();
                     if ( mPopupView != null ) mPopupView.setVisibility(View.GONE);
+                    if ( mCheckbox.isChecked() ) {
+                        mSystem.setClusterBrightness(mClusterBrightnessProgress);
+                    }
                     break;
                 }
             }
