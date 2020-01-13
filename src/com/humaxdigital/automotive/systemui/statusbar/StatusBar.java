@@ -426,13 +426,22 @@ public class StatusBar implements SystemUIBase {
                     }
                 }
 
-                // hold-by-fingers - trigger home to perform some action.
+                // hold-by-fingers - trigger some actions depends on counter of fingers
                 if (CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS.equals(gesture)) {
                     if (!isSpecialCase()) {
-                        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                        homeIntent.addCategory(Intent.CATEGORY_HOME);
-                        homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
-                        context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+                        final int fingers = intent.getIntExtra("fingers", 0);
+                        if (fingers == 3) {         // 3: go to all menu
+                            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                            homeIntent.addCategory(Intent.CATEGORY_HOME);
+                            homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
+                            context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+                        } else if (fingers == 4) {  // 4: go home (3-widgets)
+                            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                            homeIntent.addCategory(Intent.CATEGORY_HOME);
+                            context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+                        } else if (fingers == 5) {  // 5: enter display-off mode
+                            context.startActivity(new Intent(CONSTANTS.ACTION_DISPLAY_OFF));
+                        }
 
                         if (mStatusBarSystem != null) CommonMethod.closeVR(mContext); 
                     }
