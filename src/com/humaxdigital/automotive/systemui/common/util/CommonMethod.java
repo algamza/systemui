@@ -1,19 +1,30 @@
 package com.humaxdigital.automotive.systemui.common.util;
 
-import android.os.UserHandle;
-
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ComponentName;
-
+import android.content.ContentResolver;
+import android.os.Bundle;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Log;
+
+import java.util.List;
 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class CommonMethod {
     private static final String TAG = "CommonMethod"; 
 
-    static public void closeVR(Context context) {
+    public static ComponentName getTopActivity(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
+        if (tasks.isEmpty()) return null;
+        return tasks.get(0).topActivity;
+    }
+
+    public static void closeVR(Context context) {
         if ( context == null ) return;
         Log.d(TAG, "closeVR");
         Intent intent = new Intent(); 
@@ -21,5 +32,32 @@ public class CommonMethod {
         intent.setComponent(name);
         intent.setAction(CONSTANTS.VR_DISMISS_ACTION);
         context.sendBroadcastAsUser(intent, UserHandle.CURRENT);
+    }
+
+    public static void goHome(Context context) {
+        goHome(context, null);
+    }
+
+    public static void goHome(Context context, Bundle extras) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        if (extras != null) {
+            intent.putExtras(extras);
+        }
+        context.startActivityAsUser(intent, UserHandle.CURRENT);
+    }
+
+    public static void turnOffDisplay(Context context) {
+        context.startActivity(new Intent(CONSTANTS.ACTION_DISPLAY_OFF));
+    } 
+
+    public static int getShowingHomePageOrNegative(Context context) {
+        ComponentName topActivity = getTopActivity(context);
+        if (topActivity == null)
+            return -1;
+        if (!CONSTANTS.HOME_ACTIVITY_NAME.equals(topActivity.flattenToShortString()))
+            return -1;
+        final ContentResolver contentResolver = context.getContentResolver();
+        return Settings.Global.getInt(contentResolver, CONSTANTS.KEY_CURRENT_HOME_PAGE, -1);
     }
 }
