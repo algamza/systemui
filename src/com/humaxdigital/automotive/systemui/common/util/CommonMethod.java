@@ -18,6 +18,7 @@ public class CommonMethod {
     private static final String TAG = "CommonMethod"; 
 
     public static ComponentName getTopActivity(Context context) {
+        if ( context == null ) return null;
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
         if (tasks.isEmpty()) return null;
@@ -26,7 +27,6 @@ public class CommonMethod {
 
     public static void closeVR(Context context) {
         if ( context == null ) return;
-        Log.d(TAG, "closeVR");
         Intent intent = new Intent(); 
         ComponentName name = new ComponentName(CONSTANTS.VR_PACKAGE_NAME, CONSTANTS.VR_RECEIVER_NAME);
         intent.setComponent(name);
@@ -35,10 +35,12 @@ public class CommonMethod {
     }
 
     public static void goHome(Context context) {
+        if ( context == null ) return;
         goHome(context, null);
     }
 
     public static void goHome(Context context, Bundle extras) {
+        if ( context == null ) return;
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         if (extras != null) {
@@ -48,10 +50,12 @@ public class CommonMethod {
     }
 
     public static void turnOffDisplay(Context context) {
+        if ( context == null ) return;
         context.startActivity(new Intent(CONSTANTS.ACTION_DISPLAY_OFF));
     } 
 
     public static int getShowingHomePageOrNegative(Context context) {
+        if ( context == null ) return 0;
         ComponentName topActivity = getTopActivity(context);
         if (topActivity == null)
             return -1;
