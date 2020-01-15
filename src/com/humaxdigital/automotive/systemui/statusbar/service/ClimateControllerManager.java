@@ -359,14 +359,8 @@ public class ClimateControllerManager {
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT:
-            case CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS: {
                 if ( (int)getValue(val) == 0 ) return true;
-                break; 
-            }
-            case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
-            case CarHvacManagerEx.ID_ZONED_AC_ON: {
-                if ( (boolean)getValue(val) ) return true;
                 break; 
             }
             default: break; 
