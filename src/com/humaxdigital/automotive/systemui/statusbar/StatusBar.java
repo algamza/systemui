@@ -13,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.BroadcastReceiver;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +51,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 public class StatusBar implements SystemUIBase {
     private static final String TAG = "StatusBar";
     private WindowManager mWindowManager;
+    private AudioManager mAudioManager;
     private Context mContext = null; 
     private ViewGroup mNavBarWindow;
     private ViewGroup mStatusBarWindow;
@@ -81,6 +83,7 @@ public class StatusBar implements SystemUIBase {
         mContext = context; 
         if ( mContext == null ) return;
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
         startStatusBarService(mContext);
         createNaviBarWindow();
@@ -394,6 +397,34 @@ public class StatusBar implements SystemUIBase {
         mContext.sendBroadcast(intent);
     }
 
+    private boolean checkAndGoToAllMenu() {
+        if (CommonMethod.getShowingHomePageOrNegative(mContext) != 1) {
+            // TODO: Should define dedicated extra instead of gesture's.
+            CommonMethod.goHome(mContext, Bundle.forPair(
+                    CONSTANTS.EXTRA_GESTURE, CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkAndGoToHomeWidgets() {
+        if (CommonMethod.getShowingHomePageOrNegative(mContext) != 0) {
+            CommonMethod.goHome(mContext);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkAndTurnOffDisplay() {
+        ComponentName topActivity = CommonMethod.getTopActivity(mContext);
+        if (topActivity == null)
+            return false;
+        if (CONSTANTS.SCREENSAVER_ACTIVITY_NAME.equals(topActivity.flattenToShortString()))
+            return false;
+        CommonMethod.turnOffDisplay(mContext);
+        return true;
+    }
+
     private boolean isUserSpecialCase() {
         boolean is_special = false; 
         if ( mStatusBarService == null ) return is_special; 
@@ -429,21 +460,21 @@ public class StatusBar implements SystemUIBase {
                 // hold-by-fingers - trigger some actions depends on counter of fingers
                 if (CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS.equals(gesture)) {
                     if (!isSpecialCase()) {
-                        final int fingers = intent.getIntExtra("fingers", 0);
+                        boolean didAction = false;
+                        final int fingers = intent.getIntExtra(CONSTANTS.EXTRA_FINGERS, 0);
+
                         if (fingers == 3) {         // 3: go to all menu
-                            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                            homeIntent.addCategory(Intent.CATEGORY_HOME);
-                            homeIntent.putExtra(CONSTANTS.EXTRA_GESTURE, gesture);
-                            context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+                            didAction = checkAndGoToAllMenu();
                         } else if (fingers == 4) {  // 4: go home (3-widgets)
-                            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                            homeIntent.addCategory(Intent.CATEGORY_HOME);
-                            context.startActivityAsUser(homeIntent, UserHandle.CURRENT);
+                            didAction = checkAndGoToHomeWidgets();
                         } else if (fingers == 5) {  // 5: enter display-off mode
-                            context.startActivity(new Intent(CONSTANTS.ACTION_DISPLAY_OFF));
+                            didAction = checkAndTurnOffDisplay();
                         }
 
-                        if (mStatusBarSystem != null) CommonMethod.closeVR(mContext); 
+                        if (didAction) {
+                            mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
+                            if (mStatusBarSystem != null) CommonMethod.closeVR(mContext);
+                        }
                     }
                 }
             }

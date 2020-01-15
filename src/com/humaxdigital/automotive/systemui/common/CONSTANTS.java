@@ -43,6 +43,11 @@ public class CONSTANTS {
     // System gestures (defined in 'frameworks/base/.../policy/SystemGesturesDetector.java')
     public static final String ACTION_SYSTEM_GESTURE = "android.intent.action.SYSTEM_GESTURE";
     public static final String EXTRA_GESTURE = "gesture";
+    public static final String EXTRA_FINGERS = "fingers";
     public static final String SYSTEM_GESTURE_SWIPE_FROM_TOP = "swipe-from-top";
     public static final String SYSTEM_GESTURE_HOLD_BY_FINGERS = "hold-by-fingers";
+
+    public static final String HOME_ACTIVITY_NAME = "com.humaxdigital.automotive.dn8clauncher/.HomeActivity";
+    public static final String SCREENSAVER_ACTIVITY_NAME = "com.humaxdigital.automotive.screensaver/.MainActivity";
+    public static final String KEY_CURRENT_HOME_PAGE = "com.humaxdigital.dn8c.KEY_CURRENT_HOME_PAGE";
 }
