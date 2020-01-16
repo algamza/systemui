@@ -20,6 +20,8 @@ public class CONSTANTS {
     public static final String ACTION_OPEN_SETUP = "com.humaxdigital.dn8c.ACTION_SETTINGS"; 
     public static final String ACTION_VOLUME_SETTINGS_STARTED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STARTED";
     public static final String ACTION_VOLUME_SETTINGS_STOPPED = "com.humaxdigital.setup.ACTION_VOLUME_SETTINGS_STOPPED";
+    public static final String ACTION_DEFAULT_SOUND_SETTINGS_STARTED = "com.humaxdigital.setup.ACTION_DEFAULT_SOUND_SETTINGS_STARTED"; 
+    public static final String ACTION_DEFAULT_SOUND_SETTINGS_STOPPED = "com.humaxdigital.setup.ACTION_DEFAULT_SOUND_SETTINGS_STOPPED"; 
     public static final String ACTION_CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
     public static final String ACTION_CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
     public static final String ACTION_OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";

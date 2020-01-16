@@ -49,6 +49,7 @@ public class ScenarioBackupWran {
     private CarSensorManagerEx mCarSensorManagerEx = null;
     private boolean mIsBackupWranApplying = false;
     private boolean mIsSettingsActivity = false; 
+    private boolean mIsSettingsDefault = false; 
 
     public ScenarioBackupWran(Context context) {
         mContext = context; 
@@ -313,6 +314,10 @@ public class ScenarioBackupWran {
 
     public void setSettingsActivityState(boolean on) {
         mIsSettingsActivity = on; 
+    }
+
+    public void setSettingsDefaultState(boolean on) {
+        mIsSettingsDefault = on; 
     }
 
     public void userRefresh() {

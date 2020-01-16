@@ -40,6 +40,7 @@ public class ScenarioQuiteMode {
     private boolean mIsQuiteModeApplying = false; 
     private boolean mNeedToShowUI = false; 
     private boolean mIsSettingsActivity = false; 
+    private boolean mIsSettingsDefault = false; 
 
     private int mCurrentMediaVolume = 0; 
     private int mCurrentBTAudioVolume = 0; 
@@ -87,7 +88,8 @@ public class ScenarioQuiteMode {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                Log.d(TAG, "mode changed"); 
+                Log.d(TAG, "mode changed : is default activity ? "+mIsSettingsDefault); 
+                if ( mIsSettingsDefault ) return;
                 quitetModeChanged();
             }
         };
@@ -400,5 +402,9 @@ public class ScenarioQuiteMode {
         } catch (CarNotConnectedException e) {
             Log.e(TAG, "Failed to get current volume", e);
         }
+    }
+
+    public void setSettingsDefaultState(boolean on) {
+        mIsSettingsDefault = on; 
     }
 }

@@ -61,6 +61,7 @@ public class VolumeControlService extends Service {
     private ScenarioBackupWran mBackupWran = null;
     private ScenarioVCRMLog mVCRMLog = null; 
     private boolean mIsSettingsActivity = false;
+    private boolean mIsSettingsDefault = false; 
     private boolean mIsShow = false; 
 
     @Override
@@ -118,6 +119,8 @@ public class VolumeControlService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED);
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED);
+        filter.addAction(CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STARTED); 
+        filter.addAction(CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STOPPED); 
         registerReceiverAsUser(mApplicationActionReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -130,22 +133,34 @@ public class VolumeControlService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Bundle extras = intent.getExtras();
             if ( action == null ) return;
             Log.d(TAG, "mApplicationActionReceiver="+action);
             switch(action) {
                 case CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED: {
                     mIsSettingsActivity = true;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
                     break;
                 }
-                
                 case CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED: {
                     mIsSettingsActivity = false;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
+                    break;
+                }
+                case CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STARTED: {
+                    mIsSettingsDefault = true;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsDefaultState(mIsSettingsDefault);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsDefaultState(mIsSettingsDefault);  
+                    break;
+                }
+                case CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STOPPED: {
+                    mIsSettingsDefault = false;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsDefaultState(mIsSettingsDefault);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsDefaultState(mIsSettingsDefault);  
                     break;
                 }
             }
-            if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
-            if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
         }
     };
 
