@@ -397,6 +397,13 @@ public class StatusBar implements SystemUIBase {
         mContext.sendBroadcast(intent);
     }
 
+    private void closeDroplist() {
+        Log.d(TAG, "closeDroplist");
+        if ( mContext == null ) return;
+        Intent intent = new Intent(CONSTANTS.ACTION_CLOSE_DROPLIST);
+        mContext.sendBroadcast(intent);
+    }
+
     private boolean checkAndGoToAllMenu() {
         if (CommonMethod.getShowingHomePageOrNegative(mContext) != 1) {
             // TODO: Should define dedicated extra instead of gesture's.
@@ -449,6 +456,7 @@ public class StatusBar implements SystemUIBase {
             String action = intent.getAction();
             if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
                 String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
+                Log.d(TAG, "system gesture received: " + gesture);
 
                 // swipe-from-top - open the drop list.
                 if (CONSTANTS.SYSTEM_GESTURE_SWIPE_FROM_TOP.equals(gesture)){
@@ -471,9 +479,12 @@ public class StatusBar implements SystemUIBase {
                             didAction = checkAndTurnOffDisplay();
                         }
 
+                        Log.d(TAG, fingers + " fingers did action? " + didAction);
+
                         if (didAction) {
                             mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
                             if (mStatusBarSystem != null) CommonMethod.closeVR(mContext);
+                            closeDroplist();
                         }
                     }
                 }
