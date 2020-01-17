@@ -25,6 +25,20 @@ public class CommonMethod {
         return tasks.get(0).topActivity;
     }
 
+    public static boolean isDropListShown(Context context) {
+        if ( context == null ) return false;
+        int shown = Settings.Global.getInt(
+                context.getContentResolver(), CONSTANTS.SETTINGS_DROPLIST, 0);
+        return (shown != 0);
+    }
+
+    public static boolean isVRShown(Context context) {
+        if ( context == null ) return false;
+        int shown = Settings.Global.getInt(
+                context.getContentResolver(), CONSTANTS.SETTINGS_VR, 0);
+        return (shown != 0);
+    }
+
     public static void closeVR(Context context) {
         if ( context == null ) return;
         Intent intent = new Intent(); 

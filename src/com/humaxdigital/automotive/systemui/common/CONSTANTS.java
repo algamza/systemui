@@ -40,6 +40,7 @@ public class CONSTANTS {
     public static final String VR_RECEIVER_NAME = "com.humaxdigital.automotive.baiduadapterservice.duerosadapter.VRSpecialCaseReceiver";
     public static final String VR_DISMISS_ACTION = "com.humaxdigital.automotive.baiduadapterservice.VR_DISMISS_REQ";
 
+    public static final String SETTINGS_DROPLIST = "droplist_shown";
     public static final String SETTINGS_VR = "vr_shown";
     public static final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
 

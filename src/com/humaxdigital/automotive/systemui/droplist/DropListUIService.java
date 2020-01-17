@@ -160,6 +160,8 @@ public class DropListUIService implements SystemUIBase {
         mDialog.setContentView(R.layout.panel_main);
         
         mDialog.setOnShowListener(mShowListener);
+
+        updateShownStateSettings();
  
         mPanelBody = mDialog.findViewById(R.id.panel);
         mPanelBody.setTranslationY(0);
@@ -276,6 +278,7 @@ public class DropListUIService implements SystemUIBase {
         mHandler.removeMessages(DialogHandler.SHOW);
         mHandler.removeMessages(DialogHandler.DISMISS);
         mDialog.show();
+        updateShownStateSettings();
     }
 
     private void dismissH() {
@@ -309,6 +312,13 @@ public class DropListUIService implements SystemUIBase {
                     }
                 })
                 .start();
+
+        updateShownStateSettings();
+    }
+
+    private void updateShownStateSettings() {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                CONSTANTS.SETTINGS_DROPLIST, mDialog.isShowing() ? 1 : 0);
     }
 
     private void cancelPressedStateRecursively(ViewGroup viewGroup) {

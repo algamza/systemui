@@ -469,6 +469,7 @@ public class StatusBar implements SystemUIBase {
                 if (CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS.equals(gesture)) {
                     if (!isSpecialCase()) {
                         boolean didAction = false;
+                        boolean didClose = false;
                         final int fingers = intent.getIntExtra(CONSTANTS.EXTRA_FINGERS, 0);
 
                         if (fingers == 3) {         // 3: go to all menu
@@ -479,12 +480,20 @@ public class StatusBar implements SystemUIBase {
                             didAction = checkAndTurnOffDisplay();
                         }
 
-                        Log.d(TAG, fingers + " fingers did action? " + didAction);
+                        if (CommonMethod.isVRShown(mContext)) {
+                            CommonMethod.closeVR(mContext);
+                            didClose = true;
+                        }
 
-                        if (didAction) {
-                            mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
-                            if (mStatusBarSystem != null) CommonMethod.closeVR(mContext);
+                        if (CommonMethod.isDropListShown(mContext)) {
                             closeDroplist();
+                            didClose = true;
+                        }
+
+                        Log.d(TAG, fingers + " fingers did action? " + didAction + ", did close? " + didClose);
+
+                        if (didAction || didClose) {
+                            mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
                         }
                     }
                 }
