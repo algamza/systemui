@@ -267,11 +267,11 @@ public class NotificationUiService extends Service {
         if ( sub != null ) _sub = sub.toString(); 
         if ( text != null ) _text = text.toString(); 
 
-        if ( mCurrentNotificationUI == null || title == null ) return false; 
+        if ( mCurrentNotificationUI == null ) return false; 
 
         if ( mCurrentKey.equals(key) ) {
             Log.d(TAG, "isUpdateOSD equals(key)="+key); 
-            if ( !_text.equals("") && title.equals(mCurrentTitle) ) {
+            if ( !_text.equals("") && title != null && title.equals(mCurrentTitle) ) {
                 if ( !_sub.equals("") && mCurrentSub.equals("") ) {
                     Log.d(TAG, "changed ui"); 
                 } else {
