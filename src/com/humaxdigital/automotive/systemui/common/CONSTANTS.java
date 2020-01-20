@@ -34,7 +34,6 @@ public class CONSTANTS {
     public static final String ACTION_CLOSE_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.CLOSE_DROPLIST";
     public static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
     public static final String ACTION_DISPLAY_OFF = "com.humaxdigital.dn8c.ACTION_SS_SCREEN_OFF";
-    public static final String ACTION_POWER_OFF_MODE_EXIT = "com.humaxdigital.automotive.ACTION_POWER_OFF_MODE_EXIT"; 
 
     public static final String OPEN_HVAC_APP = "com.humaxdigital.automotive.climate.CLIMATE";
     public static final String VR_PACKAGE_NAME = "com.humaxdigital.automotive.baiduadapterservice";

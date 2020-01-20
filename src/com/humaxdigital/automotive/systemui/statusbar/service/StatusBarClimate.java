@@ -339,7 +339,8 @@ public class StatusBarClimate {
             return;
         }
         if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
+            if ( isPowerOff() ) powerOn();
+            Log.d(TAG, "Current UserAgreement, set power on"); 
             return; 
         }
         if ( isUserSwitching() ) {
@@ -388,6 +389,7 @@ public class StatusBarClimate {
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
+        Log.d(TAG, "isUserAgreement="+is_agreement);
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
     }
@@ -397,8 +399,25 @@ public class StatusBarClimate {
         int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
             CarExtraSettings.Global.FALSE);
+        Log.d(TAG, "isUserSwitching="+isUserSwitching);
         if ( isUserSwitching == CarExtraSettings.Global.TRUE ) return true; 
         else return false;
+    }
+
+    private boolean isPowerOff() {
+        int is_power_off = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.POWER_OFF_MODE,
+            CarExtraSettings.Global.POWER_OFF_MODE_DEFAULT);   
+        Log.d(TAG, "isPowerOff="+is_power_off);
+        if ( is_power_off == CarExtraSettings.Global.POWER_OFF_MODE_ON ) return true; 
+        else return false;
+    }
+
+    private void powerOn() {
+        Log.d(TAG, "powerOn");
+        Settings.Global.putInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.POWER_OFF_MODE,
+            CarExtraSettings.Global.POWER_OFF_MODE_OFF_TO_AV_OFF); 
     }
 
     private ClimateControllerManager.ClimateListener mClimateManagerListener = 
