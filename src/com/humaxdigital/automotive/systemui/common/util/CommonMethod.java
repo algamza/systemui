@@ -48,6 +48,12 @@ public class CommonMethod {
         context.sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
+    public static void powerOn(Context context) {
+        if ( context == null ) return;
+        Intent intent = new Intent(CONSTANTS.ACTION_POWER_OFF_MODE_EXIT); 
+        context.sendBroadcastAsUser(intent, UserHandle.ALL);
+    }
+
     public static void goHome(Context context) {
         if ( context == null ) return;
         goHome(context, null);
