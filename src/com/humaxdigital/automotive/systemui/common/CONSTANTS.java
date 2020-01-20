@@ -31,6 +31,7 @@ public class CONSTANTS {
     public static final String ACTION_CARLIFE_STATE = "com.humaxdigital.automotive.carlife.CONNECTED"; 
     public static final String PBAP_STATE = "android.extension.car.PBAP_STATE"; 
     public static final String ACTION_OPEN_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.OPEN_DROPLIST"; 
+    public static final String ACTION_CLOSE_DROPLIST = "com.humaxdigital.automotive.systemui.droplist.action.CLOSE_DROPLIST";
     public static final String ACTION_CHANGE_MIC_MUTE = "com.humaxdigital.automotive.btphone.change_mute";
     public static final String ACTION_DISPLAY_OFF = "com.humaxdigital.dn8c.ACTION_SS_SCREEN_OFF";
 
@@ -39,6 +40,7 @@ public class CONSTANTS {
     public static final String VR_RECEIVER_NAME = "com.humaxdigital.automotive.baiduadapterservice.duerosadapter.VRSpecialCaseReceiver";
     public static final String VR_DISMISS_ACTION = "com.humaxdigital.automotive.baiduadapterservice.VR_DISMISS_REQ";
 
+    public static final String SETTINGS_DROPLIST = "droplist_shown";
     public static final String SETTINGS_VR = "vr_shown";
     public static final String BT_SYSTEM = "android.extension.car.BT_SYSTEM";
 

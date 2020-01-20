@@ -160,6 +160,8 @@ public class DropListUIService implements SystemUIBase {
         mDialog.setContentView(R.layout.panel_main);
         
         mDialog.setOnShowListener(mShowListener);
+
+        updateShownStateSettings();
  
         mPanelBody = mDialog.findViewById(R.id.panel);
         mPanelBody.setTranslationY(0);
@@ -177,10 +179,15 @@ public class DropListUIService implements SystemUIBase {
 
         final IntentFilter filter = new IntentFilter(); 
         filter.addAction(CONSTANTS.ACTION_OPEN_DROPLIST); 
+        filter.addAction(CONSTANTS.ACTION_CLOSE_DROPLIST);
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                openDropList(); 
+                final String action = intent.getAction();
+                if (CONSTANTS.ACTION_OPEN_DROPLIST.equals(action))
+                    openDropList();
+                else if (CONSTANTS.ACTION_CLOSE_DROPLIST.equals(action))
+                    closeDropList();
             }
         };
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);
@@ -271,6 +278,7 @@ public class DropListUIService implements SystemUIBase {
         mHandler.removeMessages(DialogHandler.SHOW);
         mHandler.removeMessages(DialogHandler.DISMISS);
         mDialog.show();
+        updateShownStateSettings();
     }
 
     private void dismissH() {
@@ -304,6 +312,30 @@ public class DropListUIService implements SystemUIBase {
                     }
                 })
                 .start();
+
+        updateShownStateSettings();
+    }
+
+    private void updateShownStateSettings() {
+        Settings.Global.putInt(mContext.getContentResolver(),
+                CONSTANTS.SETTINGS_DROPLIST, mDialog.isShowing() ? 1 : 0);
+    }
+
+    private void cancelPressedStateRecursively(ViewGroup viewGroup) {
+        for (int i = 0; i<viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (child.isPressed() && (child.isClickable() || child.isLongClickable()))
+                child.setPressed(false);
+            if (child instanceof ViewGroup) {
+                cancelPressedStateRecursively((ViewGroup)child);
+            }
+        }
+    }
+
+    private void cancelAllPressedStates() {
+        if (mPanelBody != null) {
+            cancelPressedStateRecursively((ViewGroup)mPanelBody);
+        }
     }
 
     private final class DialogHandler extends Handler {
@@ -332,7 +364,7 @@ public class DropListUIService implements SystemUIBase {
         @Override
         public boolean dispatchTouchEvent(MotionEvent ev) {
             int y = (int)ev.getY(); 
-            switch(ev.getAction()) {
+            switch(ev.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN: {
                     mTouchValid = true; 
                     mTouchDownValue = y; 
@@ -353,6 +385,12 @@ public class DropListUIService implements SystemUIBase {
                             mTouchValid = false; 
                             closeDropList();
                         }
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_POINTER_DOWN: {
+                    if (ev.getPointerCount() > 1) {
+                        cancelAllPressedStates();
                     }
                     break;
                 }
