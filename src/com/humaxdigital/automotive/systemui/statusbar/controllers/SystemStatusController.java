@@ -26,7 +26,7 @@ public class SystemStatusController {
     private static final String TAG = "SystemStatusController"; 
 
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-    enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }
+    enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL, BLE_DISCONNECTED }
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
     enum CallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
@@ -179,6 +179,7 @@ public class SystemStatusController {
                 add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null));
             }})
             .addIcon(BLEStatus.BLE_CONNECTION_FAIL.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_error, null))
+            .addIcon(BLEStatus.BLE_DISCONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_no, null))
             .inflate(); 
         mSystemViews.add(mBle);
 

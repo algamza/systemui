@@ -12,7 +12,7 @@ import android.extension.car.CarBLEManager;
 import android.util.Log;
 public class SystemBLEController extends BaseController<Integer> {
     private static final String TAG = "SystemBLEController";
-    private enum BLEStatus { NONE, CONNECTED, CONNECTING, CONNECTION_FAIL }
+    private enum BLEStatus { NONE, CONNECTED, CONNECTING, CONNECTION_FAIL, DISCONNECTED }
     private CarBLEManager mManager;
 
     public SystemBLEController(Context context, DataStore store) {
