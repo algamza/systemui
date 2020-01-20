@@ -14,6 +14,7 @@ public class SystemBLEController extends BaseController<Integer> {
     private static final String TAG = "SystemBLEController";
     private enum BLEStatus { NONE, CONNECTED, CONNECTING, CONNECTION_FAIL, DISCONNECTED }
     private CarBLEManager mManager;
+    private boolean isRegistered = false;
 
     public SystemBLEController(Context context, DataStore store) {
         super(context, store);
@@ -47,6 +48,7 @@ public class SystemBLEController extends BaseController<Integer> {
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
         mDataStore.setBLEState(state.ordinal());
+        cmdRequest(CarBLEManager.CMD_BLE_REQ_REGISTRATION_STATUS, 0, null);
         cmdRequest(CarBLEManager.CMD_BLE_REQ_CONNECTION_STATUS, 0, null);
     }
 
@@ -122,12 +124,18 @@ public class SystemBLEController extends BaseController<Integer> {
                         byte[] eventData = new byte[dataLength];
                         System.arraycopy(data, 8, eventData, 0, dataLength);
                         
-                        Log.d(TAG, "eventdata:length="+dataLength+", data="+eventData[0]); 
-
+                        Log.d(TAG, "EVT_BLE_CONNECTION_STATUS:eventdata:length="+dataLength+", data="+eventData[0]+", isRegistered="+isRegistered);
                         if ( eventData[0] == 0 ) {
-                            if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
-                                for ( Listener listener : mListeners ) 
-                                    listener.onEvent(BLEStatus.NONE.ordinal());
+                            if ( isRegistered ) {
+                                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.DISCONNECTED.ordinal()) ) {
+                                    for ( Listener listener : mListeners ) 
+                                        listener.onEvent(BLEStatus.DISCONNECTED.ordinal());
+                                }
+                            } else {
+                                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
+                                    for ( Listener listener : mListeners ) 
+                                        listener.onEvent(BLEStatus.NONE.ordinal());
+                                }
                             }
                         } else if ( eventData[0] == 1 ) {
                             if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTING.ordinal()) ) {
@@ -158,12 +166,31 @@ public class SystemBLEController extends BaseController<Integer> {
                         byte[] eventData = new byte[dataLength];
                         System.arraycopy(data, 8, eventData, 0, dataLength);
                         
-                        Log.d(TAG, "eventdata:length="+dataLength+", data="+eventData[0]); 
+                        Log.d(TAG, "EVT_BLE_CONNECTED_PHONE_INFO:eventdata:length="+dataLength+", data="+eventData[0]); 
 
                         BLEStatus state = BLEStatus.NONE;  
+                        if ( isRegistered ) state = BLEStatus.DISCONNECTED; 
                         if ((eventData[0] & 1) > 0) {
                             state = BLEStatus.CONNECTED; 
                         }
+                        Log.d(TAG, "fetch="+state); 
+                        mDataStore.setBLEState(state.ordinal());
+                    } else if ( id == CarBLEManager.EVT_BLE_REGISTRATION_STATUS ) {
+                        int dataLength = ((data[4] & 0xff) << 24) 
+                                        | ((data[5] & 0xff) << 16) 
+                                        | ((data[6] & 0xff) << 8) 
+                                        | (data[7] & 0xff);
+                        if ( dataLength < 0 ) break; 
+                        byte[] eventData = new byte[dataLength];
+                        System.arraycopy(data, 8, eventData, 0, dataLength);
+                        
+                        Log.d(TAG, "EVT_BLE_REGISTRATION_STATUS:eventdata:length="+dataLength+", data="+eventData[0]); 
+
+                        BLEStatus state = BLEStatus.NONE;  
+                        if ( eventData[0] == 1 ) {
+                            state = BLEStatus.DISCONNECTED; 
+                            isRegistered = true;
+                        } 
                         Log.d(TAG, "fetch="+state); 
                         mDataStore.setBLEState(state.ordinal());
                     }
