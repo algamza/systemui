@@ -39,6 +39,7 @@ public abstract class VolumeControllerBase {
         void onVolumeUp(Type type, int max, int value);
         void onVolumeDown(Type type, int max, int value);
         void onMuteChanged(Type type, boolean mute);
+        void onShowUI(boolean show); 
     }
 
     public void init(Context context, View view) {}

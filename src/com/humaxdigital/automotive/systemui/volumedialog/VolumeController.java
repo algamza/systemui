@@ -192,6 +192,13 @@ public class VolumeController extends VolumeControllerBase {
                 listener.onMuteChanged(convertToType(type), mute);
             }
         }
+
+        @Override
+        public void onShowUI(boolean show) {
+            for ( VolumeChangeListener listener : mListener ) {
+                listener.onShowUI(show);
+            }
+        }
     };
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {

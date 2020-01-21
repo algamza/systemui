@@ -41,6 +41,7 @@ public class VolumeControlService extends Service {
     public static abstract class VolumeCallback {
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
         public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute) {}
+        public void onShowUI(boolean show) {};
     }
 
     public class LocalBinder extends Binder {
@@ -375,6 +376,7 @@ public class VolumeControlService extends Service {
 
             if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
                 Log.d(TAG, "SKIP onMasterMuteChanged");
+                broadcastEventShowUI(false); 
                 return;
             }
             
@@ -422,6 +424,15 @@ public class VolumeControlService extends Service {
         synchronized (mCallbacks) {
             for (VolumeCallback callback : mCallbacks) {
                 callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
+            }
+        }
+    }
+
+    private void broadcastEventShowUI(boolean show) {
+        Log.d(TAG, "broadcastEventShowUI:show=" + show);
+        synchronized (mCallbacks) {
+            for (VolumeCallback callback : mCallbacks) {
+                callback.onShowUI(show);
             }
         }
     }

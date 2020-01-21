@@ -135,6 +135,15 @@ public class VolumeDialog implements SystemUIBase {
         public void onMuteChanged(VolumeControllerBase.VolumeChangeListener.Type type, boolean mute) {
             if ( mDialog != null ) mDialog.open();
         }
+
+        @Override
+        public void onShowUI(boolean show) {
+            if ( show ) {
+                mDialog.open();
+            } else {
+                mDialog.close(true);
+            }
+        }
     };
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
