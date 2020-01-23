@@ -18,6 +18,7 @@
     <string name="STR_MESG_14845_ID">통화 중에는 조작하실 수 없습니다.</string>
     <string name="STR_FEATURE_CURRENTLY_UNAVAILABLE_ID">현재 모드에서는 사용하실 수 없습니다.</string>
     <string name="STR_MESG_21268_ID">후석 취침 모드 설정 시에는 시스템 음량 값이 20으로 제한됩니다.</string>
+    <string name="STR_WIRELESS_CHARGING_SYSTEM_04_ID">Wireless Charging</string>
     <string name="STR_JAN_04_ID">1월</string>
     <string name="STR_FEB_04_ID">2월</string>
     <string name="STR_MAR_04_ID">3월</string>

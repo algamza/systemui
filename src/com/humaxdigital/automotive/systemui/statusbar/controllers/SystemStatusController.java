@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.SystemView;
 
@@ -324,14 +325,18 @@ public class SystemStatusController {
         public void onWirelessChargeStatusChanged(int status) {
             if ( mWirelessCharging == null ) return;
             if ( mHandler == null ) return; 
+            if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
+                OSDPopup.send(mContext, 
+                    mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_SYSTEM_04_ID), 
+                    R.drawable.co_ic_osd_battery_charging);
+            }
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.d(TAG, "onWirelessChargeStatusChanged="+status); 
                     mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
                 }
-            }); 
-            
+            });
         }
         @Override
         public void onModeStatusChanged(int status) {

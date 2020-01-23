@@ -12,13 +12,28 @@ public class OSDPopup {
         if ( context == null || text == null ) return;
         String channelid =  "SystemUIPopup";
         NotificationChannel channel = 
-            new NotificationChannel(channelid,  "SystemUIPopup", NotificationManager.IMPORTANCE_LOW);
+            new NotificationChannel(channelid,  channelid, NotificationManager.IMPORTANCE_LOW);
         NotificationManager notificationManager = 
             (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.createNotificationChannel(channel);
         Notification noti = new Notification.Builder(context, channelid)
             .setContentText(text)
             .setSmallIcon(-1)
+            .build();
+        notificationManager.notify(0, noti);
+    }
+
+    static public void send(Context context, String text, int icon) {
+        if ( context == null || text == null ) return;
+        String channelid =  "SystemUIPopup";
+        NotificationChannel channel = 
+            new NotificationChannel(channelid,  channelid, NotificationManager.IMPORTANCE_LOW);
+        NotificationManager notificationManager = 
+            (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(channel);
+        Notification noti = new Notification.Builder(context, channelid)
+            .setContentText(text)
+            .setSmallIcon(icon)
             .build();
         notificationManager.notify(0, noti);
     }
