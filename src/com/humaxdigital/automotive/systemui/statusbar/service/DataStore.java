@@ -51,6 +51,8 @@ public class DataStore {
     private SparseIntArray mSeatWarmerLevel = new SparseIntArray();
     @GuardedBy("mAirCirculationState")
     private Boolean mAirCirculationState = false;
+    @GuardedBy("mSyncState")
+    private Boolean mSyncState = false;
     @GuardedBy("mAirConditionerState")
     private Boolean mAirConditionerState = false;
     @GuardedBy("mAirCleaningState")
@@ -104,6 +106,8 @@ public class DataStore {
     private SparseLongArray mLastSeatWarmerLevel = new SparseLongArray();
     @GuardedBy("mAirCirculationState")
     private long mAirCirculationLastSet;
+    @GuardedBy("mSyncState")
+    private long mSyncStateLastSet;
     @GuardedBy("mAirConditionerState")
     private long mAirConditionerLastSet;
     @GuardedBy("mAirCleaningState")
@@ -455,6 +459,30 @@ public class DataStore {
             }
             if ( mAirCirculationState == airCirculationState ) return false; 
             mAirCirculationState = airCirculationState;
+        }
+        return true;
+    }
+
+    public boolean getSyncState() {
+        synchronized (mSyncState) {
+            return mSyncState;
+        }
+    }
+
+    public void setSyncState(boolean syncState) {
+        synchronized (mSyncState) {
+            mSyncState = syncState;
+            mSyncStateLastSet = SystemClock.uptimeMillis();
+        }
+    }
+
+    public boolean shouldPropagateSyncStateUpdate(boolean state) {
+        synchronized (mSyncState) {
+            if (SystemClock.uptimeMillis() - mSyncStateLastSet < COALESCE_TIME_MS) {
+                return false;
+            }
+            if ( mSyncState == state ) return false; 
+            mSyncState = state;
         }
         return true;
     }

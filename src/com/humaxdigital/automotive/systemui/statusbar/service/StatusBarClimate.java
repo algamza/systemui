@@ -54,6 +54,7 @@ public class StatusBarClimate {
         public void onAirCirculationChanged(boolean isOn) {}
         public void onAirConditionerChanged(boolean isOn) {}
         public void onAirCleaningChanged(int status) {}
+        public void onSyncChanged(boolean sync) {}
         public void onFanDirectionChanged(int direction) {}
         public void onBlowerSpeedChanged(int status) {}
         public void onPSSeatStatusChanged(int status) {}
@@ -252,6 +253,19 @@ public class StatusBarClimate {
         mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CLEANING).set(state); 
     }
 
+    public boolean getSyncState() { 
+        if ( mClimateManager == null ) return false; 
+        boolean status = (boolean)mClimateManager.getController(ClimateControllerManager.ControllerType.SYNC).get();
+        Log.d(TAG, "getSyncState="+status);
+        return status;  
+    }
+    
+    public void setSyncState(boolean state) { 
+        if ( mClimateManager == null ) return;  
+        Log.d(TAG, "setSyncState="+state);
+        mClimateManager.getController(ClimateControllerManager.ControllerType.SYNC).set(state); 
+    }
+ 
     public int getFanDirection() {
         if ( mClimateManager == null ) return 0; 
         int status = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.FAN_DIRECTION).get();
@@ -483,6 +497,15 @@ public class StatusBarClimate {
             synchronized (mClimateCallbacks) {
                 for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onAirCleaningChanged(status); 
+            }
+        }
+
+        @Override
+        public void onSyncChanged(boolean sync) {
+            Log.d(TAG, "onSyncChanged="+sync);
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onSyncChanged(sync); 
             }
         }
 
