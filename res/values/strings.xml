@@ -18,7 +18,7 @@
     <string name="STR_MESG_14845_ID">Feature Unavailable During a Call.</string>
     <string name="STR_FEATURE_CURRENTLY_UNAVAILABLE_ID">Feature Currently Unavailable.</string>
     <string name="STR_MESG_21268_ID">Quiet mode is activated, maximum system volume is 20.</string>
-    <string name="STR_WIRELESS_CHARGING_SYSTEM_04_ID">Wireless Charging</string>
+    <string name="STR_WIRELESS_CHARGING_ID">Wireless Charging</string>
     <string name="STR_JAN_04_ID">Jan.</string>
     <string name="STR_FEB_04_ID">Feb.</string>
     <string name="STR_MAR_04_ID">Mar.</string>

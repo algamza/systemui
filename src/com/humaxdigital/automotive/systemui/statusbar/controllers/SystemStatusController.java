@@ -327,7 +327,7 @@ public class SystemStatusController {
             if ( mHandler == null ) return; 
             if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
                 OSDPopup.send(mContext, 
-                    mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_SYSTEM_04_ID), 
+                    mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_ID), 
                     R.drawable.co_ic_osd_battery_charging);
             }
             mHandler.post(new Runnable() {
