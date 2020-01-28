@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
+import java.util.Objects; 
 
 
 public class SystemDateTimeController extends BaseController<String> {
@@ -117,12 +118,12 @@ public class SystemDateTimeController extends BaseController<String> {
     }
 
     public void addTimeTypeListener(SystemTimeTypeListener listener) {
-        mTimeTypeListeners.add(listener); 
+        mTimeTypeListeners.add(Objects.requireNonNull(listener)); 
     }
 
     public void removeTimeTypeListener(SystemTimeTypeListener listener) {
         if ( mTimeTypeListeners.isEmpty() ) return;
-        mTimeTypeListeners.remove(listener);
+        mTimeTypeListeners.remove(Objects.requireNonNull(listener));
     }
 
     public void refresh() {

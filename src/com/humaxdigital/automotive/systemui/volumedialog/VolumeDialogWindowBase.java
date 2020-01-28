@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Objects; 
 
 public abstract class VolumeDialogWindowBase {
     protected ArrayList<DialogListener> mListener = new ArrayList<>();
@@ -16,12 +17,10 @@ public abstract class VolumeDialogWindowBase {
     public void open() {}
     public void close(boolean force) {}
     public void registDialogListener(DialogListener listener) {
-        if ( listener == null ) return;
-        mListener.add(listener);
+        mListener.add(Objects.requireNonNull(listener));
     }
     public void unregistDialogListener(DialogListener listener) {
-        if ( listener == null ) return;
-        mListener.remove(listener);
+        mListener.remove(Objects.requireNonNull(listener));
     }
     public View getView() { return null; }
 }

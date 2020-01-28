@@ -53,7 +53,7 @@ public class ClimateMenuImgTimeout extends LinearLayout {
     }
 
     public ClimateMenuImgTimeout registTimeoutListener(ClimateDrawableTimout listener) {
-        mListeners.add(listener);
+        mListeners.add(Objects.requireNonNull(listener));
         return this; 
     }
 

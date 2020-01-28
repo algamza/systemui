@@ -20,6 +20,7 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
@@ -68,13 +69,11 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     }
 
     public void registerUserChangeCallback(UserChangeListener listener) {
-        if ( listener == null ) return; 
-        mUserChangeListeners.add(listener); 
+        mUserChangeListeners.add(Objects.requireNonNull(listener)); 
     }
 
     public void unregisterUserChangeCallback(UserChangeListener listener) {
-        if ( listener == null ) return; 
-        mUserChangeListeners.remove(listener);
+        mUserChangeListeners.remove(Objects.requireNonNull(listener));
     }
 
     private void requestUserIcon() {

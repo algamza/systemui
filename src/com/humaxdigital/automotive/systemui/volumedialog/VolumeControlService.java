@@ -31,6 +31,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
@@ -167,20 +168,16 @@ public class VolumeControlService extends Service {
 
 
     public void registerCallback(VolumeCallback callback) {
-        if (callback == null)
-            return;
         Log.d(TAG, "registerCallback");
         synchronized (mCallbacks) {
-            mCallbacks.add(callback);
+            mCallbacks.add(Objects.requireNonNull(callback));
         }
     }
 
     public void unregisterCallback(VolumeCallback callback) {
-        if (callback == null)
-            return;
         Log.d(TAG, "unregisterCallback");
         synchronized (mCallbacks) {
-            mCallbacks.remove(callback);
+            mCallbacks.remove(Objects.requireNonNull(callback));
         }
     }
 

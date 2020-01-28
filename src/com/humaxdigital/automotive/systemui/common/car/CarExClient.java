@@ -64,8 +64,7 @@ public enum CarExClient {
     }
 
     public synchronized void disconnect(CarExClientListener listener) {
-        if ( listener == null ) return;
-        mListeners.remove(listener);
+        mListeners.remove(Objects.requireNonNull(listener));
     }
 
     public synchronized CarHvacManagerEx getHvacManager() {

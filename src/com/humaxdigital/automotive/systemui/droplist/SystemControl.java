@@ -53,6 +53,7 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 import android.util.Log; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
@@ -243,7 +244,7 @@ public class SystemControl extends Service {
 
     public void registerCallback(SystemCallback callback) {
         synchronized (mCallbacks) {
-            mCallbacks.add(callback);
+            mCallbacks.add(Objects.requireNonNull(callback));
         }
     }
 
