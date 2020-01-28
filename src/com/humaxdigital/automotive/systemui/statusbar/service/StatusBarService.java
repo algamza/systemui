@@ -92,7 +92,7 @@ public class StatusBarService extends Service {
     public void onDestroy() {
         destroyObserver(); 
         unregistReceiver();
-        CarExClient.getInstance().disconnect(mCarExClientListener); 
+        CarExClient.INSTANCE.disconnect(mCarExClientListener); 
         if ( mStatusBarClimate != null ) mStatusBarClimate.destroy();
         if ( mStatusBarSystem != null ) mStatusBarSystem.destroy();
         if ( mStatusBarDev != null ) mStatusBarDev.destroy();
@@ -258,14 +258,14 @@ public class StatusBarService extends Service {
 
     private void createCarExClient() {
         if ( mContext == null ) return; 
-        CarExClient.getInstance().connect(mContext, mCarExClientListener); 
+        CarExClient.INSTANCE.connect(mContext, mCarExClientListener); 
     }
 
     private CarExClient.CarExClientListener mCarExClientListener = 
         new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            CarExClient client = CarExClient.getInstance(); 
+            CarExClient client = CarExClient.INSTANCE; 
             if ( client == null ) return;
             if ( mStatusBarClimate != null ) mStatusBarClimate.fetchCarExClient(client);
             if ( mStatusBarSystem != null ) mStatusBarSystem.fetchCarExClient(client);

@@ -70,7 +70,7 @@ public class VolumeControlService extends Service {
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        CarExClient.getInstance().connect(this, mCarClientListener); 
+        CarExClient.INSTANCE.connect(this, mCarClientListener); 
 
         mAudioManager = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE); 
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
@@ -93,7 +93,7 @@ public class VolumeControlService extends Service {
         Log.d(TAG, "onDestroy");
         unregistReceiver();
 
-        CarExClient.getInstance().disconnect(mCarClientListener); 
+        CarExClient.INSTANCE.disconnect(mCarClientListener); 
         
         unregistUserSwicher();
         cleanupAudioManager();
@@ -293,7 +293,7 @@ public class VolumeControlService extends Service {
     }
 
     private void onCarClientConnected() {
-        mCarAudioManagerEx = CarExClient.getInstance().getAudioManager(); 
+        mCarAudioManagerEx = CarExClient.INSTANCE.getAudioManager(); 
         synchronized (mServiceReady) {
             mServiceReady.notify(); 
         }
@@ -309,7 +309,7 @@ public class VolumeControlService extends Service {
         if ( mQuiteMode != null ) mQuiteMode.fetchCarAudioManagerEx(mCarAudioManagerEx);
         if ( mBackupWran != null ) {
             mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
-            mBackupWran.fetchCarSensorManagerEx(CarExClient.getInstance().getSensorManager()); 
+            mBackupWran.fetchCarSensorManagerEx(CarExClient.INSTANCE.getSensorManager()); 
         }
         if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
     }

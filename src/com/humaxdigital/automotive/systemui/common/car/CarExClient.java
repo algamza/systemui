@@ -22,9 +22,8 @@ import android.car.CarNotConnectedException;
 import android.util.Log;
 import java.util.ArrayList;
 
-public class CarExClient {
-    private static final String TAG = "CarExClient";
-
+public enum CarExClient {
+    INSTANCE; 
     private enum STATE {
         IDLE, 
         CONNECTED, 
@@ -48,15 +47,6 @@ public class CarExClient {
     private CarBLEManager mCarBLEManager = null; 
     private CarUSMManager mUsmManager = null; 
     private CarNaviManagerEx mCarNaviMananger = null;
-
-    private static CarExClient mInstance = null; 
-    private CarExClient() {}
-    private static class Singleton {
-        private static final CarExClient instance = new CarExClient(); 
-    }
-    public static CarExClient getInstance() {
-        return Singleton.instance;
-    }
 
     public synchronized void connect(Context context, CarExClientListener listener) {
         if ( context == null || listener == null ) return;
@@ -140,7 +130,7 @@ public class CarExClient {
                         if ( listener != null ) listener.onConnected();
                     }
                 } catch (CarNotConnectedException e) {
-                    Log.e(TAG, "Car is not connected!", e);
+                    //Log.e(TAG, "Car is not connected!", e);
                 }
             }
         }

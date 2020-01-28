@@ -117,7 +117,7 @@ public class SystemControl extends Service {
         
         Log.d(TAG, "onCreate");
 
-        CarExClient.getInstance().connect(this, mCarClientListener); 
+        CarExClient.INSTANCE.connect(this, mCarClientListener); 
 
         mDisplay =  new DisplayImpl(this);
         mImplements.add(mDisplay);
@@ -192,7 +192,7 @@ public class SystemControl extends Service {
         unregistUserSwicher();
         for ( BaseImplement impl : mImplements ) impl.destroy();
 
-        CarExClient.getInstance().disconnect(mCarClientListener); 
+        CarExClient.INSTANCE.disconnect(mCarClientListener); 
 
         super.onDestroy();
     }
@@ -489,7 +489,7 @@ public class SystemControl extends Service {
         new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            CarExClient client = CarExClient.getInstance(); 
+            CarExClient client = CarExClient.INSTANCE; 
             if ( client == null ) return;
             if ( mBrightness != null ) mBrightness.fetchEx(client);
             if ( mAutoMode != null ) mAutoMode.fetchEx(client);
@@ -502,7 +502,7 @@ public class SystemControl extends Service {
 
         @Override
         public void onDisconnected() {
-            CarExClient.getInstance().getTMSManager().unregisterCallback(mTMSEventListener); 
+            CarExClient.INSTANCE.getTMSManager().unregisterCallback(mTMSEventListener); 
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
