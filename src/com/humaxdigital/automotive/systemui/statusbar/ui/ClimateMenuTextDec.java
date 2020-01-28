@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.Objects; 
+
 import com.humaxdigital.automotive.systemui.R;
 
 public class ClimateMenuTextDec extends LinearLayout {
@@ -21,7 +23,7 @@ public class ClimateMenuTextDec extends LinearLayout {
 
     public ClimateMenuTextDec(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public ClimateMenuTextDec inflate() {
@@ -52,7 +54,6 @@ public class ClimateMenuTextDec extends LinearLayout {
     }
 
     public ClimateMenuTextDec updateDisable(boolean disable) {
-        if ( mContext == null ) return this; 
         if ( mTextViewDec == null || 
             mTextViewInt == null ||
             mTextView == null ) return this; 

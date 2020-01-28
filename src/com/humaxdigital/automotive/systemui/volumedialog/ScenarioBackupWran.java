@@ -27,6 +27,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Objects; 
 
 public class ScenarioBackupWran {
     private static final String TAG = "ScenarioBackupWran";
@@ -52,11 +53,10 @@ public class ScenarioBackupWran {
     private boolean mIsSettingsDefault = false; 
 
     public ScenarioBackupWran(Context context) {
-        mContext = context; 
+        mContext = Objects.requireNonNull(context); 
     }
 
     public ScenarioBackupWran init() {
-        if ( mContext == null ) return this;
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_AM);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.RADIO_FM);
         mBackupWarnAudioTypeList.add(VolumeUtil.Type.USB);

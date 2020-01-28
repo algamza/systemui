@@ -14,12 +14,12 @@ import android.content.BroadcastReceiver;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.provider.Settings;
+import android.util.Log;
+import android.extension.car.settings.CarExtraSettings;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.util.Log;
-
-import android.extension.car.settings.CarExtraSettings;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
@@ -28,7 +28,6 @@ import com.humaxdigital.automotive.systemui.common.user.IUserService;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
-
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
@@ -105,13 +104,11 @@ public class StatusBarSystem {
     }
 
     public StatusBarSystem(Context context, DataStore datastore) {
-        if ( context == null || datastore == null ) return;
         Log.d(TAG, "StatusBarSystem");
         
-        mContext = context; 
-        mDataStore = datastore; 
+        mContext = Objects.requireNonNull(context); 
+        mDataStore = Objects.requireNonNull(datastore); 
 
-        
         mTMSClient = new TMSClient(mContext); 
         mTMSClient.connect(); 
 
@@ -122,18 +119,16 @@ public class StatusBarSystem {
     }
 
     public void registerSystemCallback(StatusBarSystemCallback callback) {
-        if ( callback == null ) return;
         Log.d(TAG, "registerSystemCallback");
         synchronized (mSystemCallbacks) {
-            mSystemCallbacks.add(callback); 
+            mSystemCallbacks.add(Objects.requireNonNull(callback)); 
         }
     }
 
     public void unregisterSystemCallback(StatusBarSystemCallback callback) {
-        if ( callback == null ) return;
         Log.d(TAG, "unregisterSystemCallback");
         synchronized (mSystemCallbacks) {
-            mSystemCallbacks.remove(callback); 
+            mSystemCallbacks.remove(Objects.requireNonNull(callback)); 
         }
     }
 
@@ -464,8 +459,7 @@ public class StatusBarSystem {
         return date;
     } 
     
-    public void openDateTimeSetting() {
-        if ( mContext == null ) return;        
+    public void openDateTimeSetting() {      
         if ( mPowerStateController != null && (mPowerStateController.get() 
             == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
             Log.d(TAG, "Current Power Off"); 
@@ -579,7 +573,6 @@ public class StatusBarSystem {
 
     
     public boolean isUserAgreement() {
-        if ( mContext == null ) return false; 
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
@@ -588,7 +581,6 @@ public class StatusBarSystem {
     }
 
     public boolean isUserSwitching() {
-        if ( mContext == null ) return false; 
         int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
             CarExtraSettings.Global.FALSE);
@@ -598,7 +590,7 @@ public class StatusBarSystem {
 
     private void createSystemManager() {
         Log.d(TAG, "createSystemManager");
-        if ( mContext == null || mDataStore == null ) return; 
+
         mDateTimeController = new SystemDateTimeController(mContext, mDataStore); 
         mDateTimeController.addListener(mDateTimeListener);
         mDateTimeController.addTimeTypeListener(mTimeTypeListener); 
@@ -820,13 +812,12 @@ public class StatusBarSystem {
         Log.d(TAG, "registUserSwicher");
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_SWITCHED);
-        if ( mContext != null ) 
-            mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
+        mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
     }
 
     private void unregistUserSwicher() {
         Log.d(TAG, "unregistUserSwicher");
-        if ( mContext != null ) mContext.unregisterReceiver(mUserChangeReceiver);
+        mContext.unregisterReceiver(mUserChangeReceiver);
     }
     
     private final BroadcastReceiver mUserChangeReceiver = new BroadcastReceiver() {
@@ -841,12 +832,11 @@ public class StatusBarSystem {
 
     private void bindToUserService() {
         Log.d(TAG, "bindToUserService");
-        if ( mContext == null ) return;
         Intent intent = new Intent(mContext, PerUserService.class); 
         synchronized (mServiceBindLock) {
             mBound = true;
             boolean result = false; 
-            if ( mContext != null ) result = mContext.bindServiceAsUser(intent, mUserServiceConnection,
+            result = mContext.bindServiceAsUser(intent, mUserServiceConnection,
                     Context.BIND_AUTO_CREATE, UserHandle.CURRENT);
             if ( result == false ) {
                 Log.e(TAG, "bindToUserService() failed to get valid connection");
@@ -859,8 +849,7 @@ public class StatusBarSystem {
         Log.d(TAG, "unbindToUserService");
         synchronized (mServiceBindLock) {
             if (mBound) {
-                if ( mContext != null ) 
-                    mContext.unbindService(mUserServiceConnection);
+                mContext.unbindService(mUserServiceConnection);
                 mBound = false;
             }
         }

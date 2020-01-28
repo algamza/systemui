@@ -56,7 +56,6 @@ public class BrightnessImpl extends BaseImplement<Integer> {
 
     @Override
     public void create() {
-        if ( mContext == null ) return;
         createObserver();
         updateValue();
     }
@@ -69,14 +68,12 @@ public class BrightnessImpl extends BaseImplement<Integer> {
 
     @Override
     public Integer get() {
-        if ( mContext == null ) return 0; 
         int brightness = getCurrentBrightness();
         Log.d(TAG, "get="+brightness+", mode="+mCurrentMode);
         return brightness;
     }
 
     private int getCurrentBrightness() {
-        if ( mContext == null ) return 0; 
         int brightness = 0;
         switch(mCurrentMode) {
             case AUTOMATIC: {
@@ -93,8 +90,6 @@ public class BrightnessImpl extends BaseImplement<Integer> {
 
     @Override
     public void set(Integer e) {
-        if ( mContext == null ) return; 
-
         switch(mCurrentMode) {
             case AUTOMATIC: {
                 if ( isNightMode() ) setNightBrightness(e); 
@@ -199,7 +194,6 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     }
 
     private void createObserver() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         mModeObserver = createModeObserver(); 
         mBrightnessDayObserver = createBrightnessDayObserver();
@@ -228,7 +222,6 @@ public class BrightnessImpl extends BaseImplement<Integer> {
     }
 
     private void updateValue() {
-        if ( mContext == null ) return;
         int mode = Settings.System.getIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.DISPLAY_MODE_TYPE, 
             CarExtraSettings.System.DISPLAY_MODE_TYPE_DEFAULT, 
@@ -275,7 +268,6 @@ public class BrightnessImpl extends BaseImplement<Integer> {
 
     private int getCurrentMode() {
         int mode = 0; 
-        if ( mContext == null ) return mode; 
         mode = Settings.System.getIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.DISPLAY_MODE_TYPE, 
             CarExtraSettings.System.DISPLAY_MODE_TYPE_DEFAULT, 

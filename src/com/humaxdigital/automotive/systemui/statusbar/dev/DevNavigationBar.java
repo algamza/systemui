@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Objects; 
 
 public class DevNavigationBar extends FrameLayout {
     private static final String TAG = DevNavigationBar.class.getSimpleName();
@@ -126,11 +127,11 @@ public class DevNavigationBar extends FrameLayout {
     public DevNavigationBar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        mContext = context;
-        mContentResolver = context.getContentResolver();
+        mContext = Objects.requireNonNull(context);
+        mContentResolver = mContext.getContentResolver();
         mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
-        mResetHandler = new Handler(context.getMainLooper());
-        mRetrieveHandler = new Handler(context.getMainLooper());
+        mResetHandler = new Handler(mContext.getMainLooper());
+        mRetrieveHandler = new Handler(mContext.getMainLooper());
 
         addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override

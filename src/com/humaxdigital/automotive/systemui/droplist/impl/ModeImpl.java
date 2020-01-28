@@ -54,7 +54,6 @@ public class ModeImpl extends BaseImplement<Integer> {
 
     @Override
     public void set(Integer e) {
-        if ( mContext == null ) return;
         Mode mode = Mode.values()[e]; 
         Log.d(TAG, "set="+mode+", user="+UserHandle.USER_CURRENT); 
         // (Value = 0: Auto, 1: Day, 2: Night)
@@ -101,7 +100,6 @@ public class ModeImpl extends BaseImplement<Integer> {
     }
 
     private void init() {
-        if ( mContext == null ) return;
         Log.d(TAG, "init"); 
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
@@ -165,7 +163,6 @@ public class ModeImpl extends BaseImplement<Integer> {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContext == null ) return;
                 int mode = getCurrentMode(); 
                 
                 if ( mListener != null ) {
@@ -182,7 +179,6 @@ public class ModeImpl extends BaseImplement<Integer> {
 
     private int getCurrentMode() {
         int mode = 0; 
-        if ( mContext == null ) return mode; 
         try {
             mode = Settings.System.getIntForUser(mContext.getContentResolver(), 
                 CarExtraSettings.System.DISPLAY_MODE_TYPE,

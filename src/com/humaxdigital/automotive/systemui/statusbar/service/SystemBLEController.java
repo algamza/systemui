@@ -23,7 +23,6 @@ public class SystemBLEController extends BaseController<Integer> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
     }
 
     @Override
@@ -38,7 +37,6 @@ public class SystemBLEController extends BaseController<Integer> {
     public void fetch(CarBLEManager manager) {
         if ( manager == null ) return; 
         mManager = manager; 
-        if ( mDataStore == null ) return; 
         try {
             mManager.registerCallback(mBLECallback);
         } catch (CarNotConnectedException e) {
@@ -55,7 +53,6 @@ public class SystemBLEController extends BaseController<Integer> {
 
     @Override
     public Integer get() {
-        if ( mDataStore == null ) return 0; 
         int val = mDataStore.getBLEState();
         Log.d(TAG, "get="+val); 
         return val; 
@@ -175,7 +172,6 @@ public class SystemBLEController extends BaseController<Integer> {
     }; 
 
     private void updateStatus(boolean regist, int state) {
-        if ( mDataStore == null ) return; 
         Log.d(TAG, "updateStatus:regist="+regist+", state="+state);
         switch(state) {
             case 0: {

@@ -41,7 +41,6 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         //filter.addAction(Intent.ACTION_USER_REMOVED);
         //filter.addAction(Intent.ACTION_USER_ADDED);
@@ -79,7 +78,6 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     }
 
     private void requestUserIcon() {
-        if ( mContext == null ) return;
         Intent intent = new Intent(CONSTANTS.REQUEST_CURRENT_USER_ICON); 
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
     }
@@ -94,7 +92,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     }
 
     private Bitmap getUserBitmap(int id) {
-        if ( mUserManager == null || mContext == null ) return null;
+        if ( mUserManager == null ) return null;
         Log.d(TAG, "getUserBitmap"); 
         Bitmap bm = mUserManager.getUserIcon(id);
         if ( bm == null ) {

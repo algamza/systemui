@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import com.humaxdigital.automotive.systemui.R;
 
 import java.util.HashMap;
+import java.util.Objects; 
 
 public class ClimateMenuImg extends LinearLayout {
     private Context mContext;
@@ -21,7 +22,7 @@ public class ClimateMenuImg extends LinearLayout {
 
     public ClimateMenuImg(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public ClimateMenuImg inflate() {

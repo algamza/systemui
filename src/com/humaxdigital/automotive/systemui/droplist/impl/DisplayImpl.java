@@ -14,7 +14,6 @@ public class DisplayImpl extends BaseImplement<Boolean> {
     
     @Override
     public void set(Boolean e) {
-        if ( mContext == null ) return; 
         if ( e == false ) {
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_SCREEN_SAVER);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

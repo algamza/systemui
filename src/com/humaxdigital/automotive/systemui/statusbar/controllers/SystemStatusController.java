@@ -22,6 +22,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class SystemStatusController {
     private static final String TAG = "SystemStatusController"; 
@@ -58,10 +59,9 @@ public class SystemStatusController {
     private StatusBarSystem mService; 
 
     public SystemStatusController(Context context, View view) {
-        if ( (view == null) || (context == null) ) return;
-        mContext = context;
-        if ( mContext != null ) mRes = mContext.getResources();
-        mStatusBar = view;  
+        mContext = Objects.requireNonNull(context);
+        mRes = mContext.getResources();
+        mStatusBar = Objects.requireNonNull(view);  
         mHandler = new Handler(mContext.getMainLooper());
         initView();
     }
@@ -83,8 +83,6 @@ public class SystemStatusController {
     }
 
     private void initView() {
-        if ( (mStatusBar == null) || (mRes == null) ) return;
-
         Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_clear, null);
 
         if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
@@ -239,7 +237,6 @@ public class SystemStatusController {
         }
         @Override
         public void onMuteStatusChanged(int status) {
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -251,7 +248,6 @@ public class SystemStatusController {
         @Override
         public void onBLEStatusChanged(int status) {
             if ( mBle == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -263,7 +259,6 @@ public class SystemStatusController {
         @Override
         public void onBTBatteryStatusChanged(int status) {
             if ( mBtBattery == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -275,7 +270,6 @@ public class SystemStatusController {
         @Override
         public void onCallStatusChanged(int status) {
             if ( mPhone == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -286,8 +280,7 @@ public class SystemStatusController {
         }
         @Override
         public void onAntennaStatusChanged(int status) {
-            if ( mAntenna == null ) return;
-            if ( mHandler == null ) return;             
+            if ( mAntenna == null ) return;           
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -300,7 +293,6 @@ public class SystemStatusController {
         @Override
         public void onDataStatusChanged(int status) {
             if ( mPhoneData == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -312,7 +304,6 @@ public class SystemStatusController {
         @Override
         public void onWifiStatusChanged(int status) {
             if ( mWifi == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -324,7 +315,6 @@ public class SystemStatusController {
         @Override
         public void onWirelessChargeStatusChanged(int status) {
             if ( mWirelessCharging == null ) return;
-            if ( mHandler == null ) return; 
             if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
                 OSDPopup.send(mContext, 
                     mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_ID), 
@@ -341,7 +331,6 @@ public class SystemStatusController {
         @Override
         public void onModeStatusChanged(int status) {
             if ( mLocationSharing == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {

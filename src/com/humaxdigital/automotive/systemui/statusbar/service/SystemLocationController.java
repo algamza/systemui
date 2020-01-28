@@ -23,7 +23,6 @@ public class SystemLocationController extends BaseController<Integer> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
     }
 
     @Override

@@ -45,6 +45,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import android.extension.car.settings.CarExtraSettings;
 
@@ -101,8 +102,8 @@ public class DropListUIService implements SystemUIBase {
     @Override
     public void onCreate(Context context) {
         Log.d(TAG, "create"); 
-        mContext = context; 
-        if ( mContext == null ) return;
+        mContext = Objects.requireNonNull(context); 
+
         mActivityService = ActivityManager.getService();
         try {
             mActivityService.registerTaskStackListener(mTaskStackListener); 

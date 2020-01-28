@@ -87,7 +87,6 @@ public class QuietModeImpl extends BaseImplement<Boolean> {
     }
 
     private void init() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
         mQuiteModeObserver = createObserver(); 
@@ -97,7 +96,6 @@ public class QuietModeImpl extends BaseImplement<Boolean> {
     }
 
     private void setQuiteMode(boolean on) {
-        if ( mContext == null ) return;
         Log.d(TAG, "setQuiteMode="+on);
         sendQuietModeCommand(on);
         Settings.System.putIntForUser(mContext.getContentResolver(), 
@@ -113,7 +111,6 @@ public class QuietModeImpl extends BaseImplement<Boolean> {
     }
 
     private boolean isQuiteMode() {
-        if ( mContext == null ) return false;
         int on = CarExtraSettings.System.SOUND_QUIET_MODE_ON_DEFAULT; 
         try {
             on = Settings.System.getIntForUser(mContext.getContentResolver(), 

@@ -24,6 +24,7 @@ import android.extension.car.CarPropertyFilter;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -130,15 +131,14 @@ public class ClimateControllerManager {
     }
 
     public ClimateControllerManager(Context context, DataStore store) {
-        if ( context == null || store == null ) return;
-        mContext = context; 
-        mDataStore = store; 
+        mContext = Objects.requireNonNull(context); 
+        mDataStore = Objects.requireNonNull(store); 
 
         createControllers(); 
     }
 
     public ClimateControllerManager registerListener(ClimateListener listener) {
-        mListener = listener; 
+        mListener = Objects.requireNonNull(listener); 
         return this; 
     }
 

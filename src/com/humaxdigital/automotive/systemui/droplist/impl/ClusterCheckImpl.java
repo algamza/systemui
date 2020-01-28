@@ -23,7 +23,6 @@ public class ClusterCheckImpl extends BaseImplement<Boolean> {
 
     @Override
     public void create() {
-        if ( mContext == null ) return;
         createObserver();
     }
 
@@ -35,7 +34,6 @@ public class ClusterCheckImpl extends BaseImplement<Boolean> {
 
     @Override
     public Boolean get() {
-        if ( mContext == null ) return true; 
         int check = getCurrentCheck();
         Log.d(TAG, "get="+check);
         return check == 1 ? true:false;
@@ -43,7 +41,6 @@ public class ClusterCheckImpl extends BaseImplement<Boolean> {
 
     @Override
     public void set(Boolean e) {
-        if ( mContext == null ) return; 
         Log.d(TAG, "set="+e);
         Settings.System.putIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.DISPLAY_BRIGHTNESS_LINK_CLUSTER, 
@@ -51,7 +48,6 @@ public class ClusterCheckImpl extends BaseImplement<Boolean> {
     }
 
     private void createObserver() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         mObserver = createCheckObserver(); 
         mContentResolver.registerContentObserver(
@@ -80,7 +76,6 @@ public class ClusterCheckImpl extends BaseImplement<Boolean> {
     }
 
     private int getCurrentCheck() {
-        if ( mContext == null ) return 0; 
         int check = Settings.System.getIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.DISPLAY_BRIGHTNESS_LINK_CLUSTER, 
             CarExtraSettings.System.DISPLAY_BRIGHTNESS_LINK_CLUSTER_DEFAULT, 

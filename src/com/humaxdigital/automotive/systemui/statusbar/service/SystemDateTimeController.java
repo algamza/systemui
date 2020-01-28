@@ -46,7 +46,6 @@ public class SystemDateTimeController extends BaseController<String> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_TIME_TICK);
         filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
@@ -148,8 +147,6 @@ public class SystemDateTimeController extends BaseController<String> {
 
     public String getTimeType() {
         String type = "12"; 
-        if ( mContext == null ) return type;
-        
         String _type = Settings.System.getStringForUser(mContext.getContentResolver(), 
                     Settings.System.TIME_12_24,
                     UserHandle.USER_CURRENT);

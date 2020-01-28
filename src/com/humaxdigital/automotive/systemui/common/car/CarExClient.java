@@ -21,6 +21,7 @@ import android.car.CarNotConnectedException;
 
 import android.util.Log;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public enum CarExClient {
     INSTANCE; 
@@ -50,11 +51,11 @@ public enum CarExClient {
     private CarNaviManagerEx mCarNaviMananger = null;
 
     public synchronized void connect(Context context, CarExClientListener listener) {
-        if ( context == null || listener == null ) return;
-        mContext = context; 
-        mListeners.add(listener); 
-        if ( mState == STATE.CONNECTED ) listener.onConnected(); 
-        if ( (mState == STATE.IDLE) 
+        mContext = Objects.requireNonNull(context); 
+        mListeners.add(Objects.requireNonNull(listener)); 
+        if ( mState == STATE.CONNECTED ) 
+            Objects.requireNonNull(listener).onConnected(); 
+        if ( ( mState == STATE.IDLE) 
             && mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE) ) {
             mCarEx = CarEx.createCar(mContext, mServiceConnectionListenerClient);
             mState = STATE.CONNECTING; 

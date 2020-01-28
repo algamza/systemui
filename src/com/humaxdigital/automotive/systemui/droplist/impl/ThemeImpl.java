@@ -44,7 +44,6 @@ public class ThemeImpl extends BaseImplement<Integer> {
 
     @Override
     public void set(Integer e) {
-        if ( mContext == null ) return;
         Theme theme = Theme.values()[e]; 
         Log.d(TAG, "set="+theme); 
         switch(theme) {
@@ -81,7 +80,6 @@ public class ThemeImpl extends BaseImplement<Integer> {
     }
 
     private void init() {
-        if ( mContext == null ) return;
         Log.d(TAG, "init"); 
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
@@ -122,7 +120,6 @@ public class ThemeImpl extends BaseImplement<Integer> {
         ContentObserver observer = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContext == null ) return;
                 Log.d(TAG, "onChange:userId="+userId+", current="+UserHandle.USER_CURRENT); 
                 Theme current = convertToTheme(getCurrentTheme()); 
                 Log.d(TAG, "onChange : current = "+current+", old = "+mCurrentTheme); 
@@ -136,7 +133,6 @@ public class ThemeImpl extends BaseImplement<Integer> {
 
     private int getCurrentTheme() {
         int theme = 0; 
-        if ( mContext == null ) return theme; 
         try {
             theme = Settings.System.getIntForUser(mContext.getContentResolver(), 
                 CarExtraSettings.System.ADVANCED_THEME_STYLE, UserHandle.USER_CURRENT);

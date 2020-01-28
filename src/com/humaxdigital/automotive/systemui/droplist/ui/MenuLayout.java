@@ -14,6 +14,7 @@ import android.graphics.drawable.StateListDrawable;
 import com.humaxdigital.automotive.systemui.R;
 
 import java.util.HashMap;
+import java.util.Objects; 
 
 public class MenuLayout extends LinearLayout {
     public interface MenuListener {
@@ -52,7 +53,7 @@ public class MenuLayout extends LinearLayout {
 
     public MenuLayout(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public MenuLayout inflate() {

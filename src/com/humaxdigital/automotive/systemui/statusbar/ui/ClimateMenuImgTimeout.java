@@ -12,6 +12,7 @@ import com.humaxdigital.automotive.systemui.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects; 
 
 public class ClimateMenuImgTimeout extends LinearLayout {
     private Context mContext;
@@ -39,7 +40,7 @@ public class ClimateMenuImgTimeout extends LinearLayout {
 
     public ClimateMenuImgTimeout(Context context) {
         super(context);
-        mContext = context;
+        mContext =  Objects.requireNonNull(context);
         mHandler = new Handler();
     }
 
@@ -89,7 +90,7 @@ public class ClimateMenuImgTimeout extends LinearLayout {
     }
 
     private void startTimeout() {
-        if ( mView == null || mIcons.size() <= 0 || mHandler == null ) return;
+        if ( mView == null || mIcons.size() <= 0 ) return;
         DrawableTimeout timeout = mIcons.get(mStatus);
         if ( timeout == null ) return; 
         mView.setImageDrawable(timeout.mImg);

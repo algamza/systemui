@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Objects; 
 
 import android.util.Log; 
 
@@ -36,7 +37,6 @@ public class SystemView extends FrameLayout {
         public void run() {
             if ( this.mParent == null || this.mIcons.size() == 0 ) return;
             if ( ++this.mStatus >= this.mIcons.size() ) this.mStatus = 0;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -62,13 +62,11 @@ public class SystemView extends FrameLayout {
 
     public SystemView(Context context) {
         super(context);
-        mContext = context;
-        if ( mContext == null ) return; 
+        mContext = Objects.requireNonNull(context);
         mHandler = new Handler(mContext.getMainLooper());
     }
 
     public SystemView inflate() {
-        if ( mContext == null ) return null; 
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.system_menu, this, true);
         mView = (ImageView)this.findViewById(R.id.system_menu);

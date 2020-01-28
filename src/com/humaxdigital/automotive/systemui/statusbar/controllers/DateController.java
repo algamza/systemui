@@ -12,7 +12,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 
 import android.util.Log; 
-
+import java.util.Objects; 
 
 public class DateController {
     private static String TAG = "DateController"; 
@@ -33,9 +33,8 @@ public class DateController {
     private Handler mHandler; 
 
     public DateController(Context context, View view) {
-        if ( context == null || view == null ) return;
-        mContext = context;
-        mParentView = view;
+        mContext = Objects.requireNonNull(context);
+        mParentView = Objects.requireNonNull(view);
         mHandler = new Handler(mContext.getMainLooper());
     }
 
@@ -53,14 +52,15 @@ public class DateController {
     }
 
     private void initView() {
-        if ( mParentView == null || mService == null ) return;
         mParentView.setOnClickListener(mOnClickListener);
 
         mDateVew = mParentView.findViewById(R.id.text_date_time);
         mDateNoonView = mParentView.findViewById(R.id.text_date_noon);
         
-        mTime = mService.getDateTime(); 
-        mType = mService.getTimeType();
+        if ( mService != null ) {
+            mTime = mService.getDateTime(); 
+            mType = mService.getTimeType();
+        }
         
         updateClockUI(mTime, mType);
     }
@@ -141,7 +141,6 @@ public class DateController {
     }
     
     private void setUsable(boolean usable) {
-        if ( mParentView == null ) return;
         if ( usable ) {
             mParentView.setOnClickListener(null);
         } else {
@@ -161,7 +160,6 @@ public class DateController {
         }
         @Override
         public void onDateTimeChanged(String time) {
-            if ( mHandler == null ) return; 
             mTime = time; 
             mHandler.post(new Runnable() {
                 @Override
@@ -173,7 +171,6 @@ public class DateController {
 
         @Override
         public void onTimeTypeChanged(String type) {
-            if ( mHandler == null ) return; 
             mType = type; 
             mTime = mService.getDateTime(); 
 
@@ -189,7 +186,6 @@ public class DateController {
 
         @Override
         public void onPowerStateChanged(int state) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onPowerStateChanged="+state);
             mIsPowerOff = (state == 2)?true:false;
             mHandler.post(new Runnable() {
@@ -202,7 +198,6 @@ public class DateController {
 
         @Override
         public void onUserAgreementMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onUserAgreementMode="+on);
             mUserAgreementMode = on; 
             mHandler.post(new Runnable() {
@@ -215,7 +210,6 @@ public class DateController {
 
         @Override
         public void onUserSwitching(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onUserSwitching="+on);
             mUserSwitching = on; 
             mHandler.post(new Runnable() {
@@ -228,7 +222,6 @@ public class DateController {
 
         @Override
         public void onRearCamera(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onRearCamera="+on);
             mRearCameraMode = on; 
             mHandler.post(new Runnable() {

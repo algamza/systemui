@@ -8,12 +8,12 @@ import android.os.Handler;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import java.util.Objects; 
+
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.UserProfileView;
-
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable; 
-
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
 public class UserProfileController {
@@ -34,9 +34,8 @@ public class UserProfileController {
     private boolean mRearCameraMode; 
 
     public UserProfileController(Context context, View view) {
-        if ( context == null || view == null ) return;
-        mContext = context;
-        mParentView = view; 
+        mContext = Objects.requireNonNull(context);
+        mParentView = Objects.requireNonNull(view); 
         mHandler = new Handler(mContext.getMainLooper());
     }
 
@@ -86,10 +85,10 @@ public class UserProfileController {
     }
 
     private void initView() {
-        if ( mParentView == null ) return;
         mParentView.setOnClickListener(mOnClickListener);
         mUserProfileView = mParentView.findViewById(R.id.img_useprofile);
-        if ( mUserProfileView != null ) mUserProfileView.setImageBitmap(getUserBitmap()); 
+        if ( mUserProfileView != null ) 
+            mUserProfileView.setImageBitmap(getUserBitmap()); 
     }
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -111,10 +110,10 @@ public class UserProfileController {
         if ( mUserProfileView == null ) return; 
         if ( disable ) {
             mUserProfileView.setAlpha(0.4f); 
-            if ( mParentView != null ) mParentView.setOnClickListener(null);
+            mParentView.setOnClickListener(null);
         } else {
             mUserProfileView.setAlpha(1.0f); 
-            if ( mParentView != null ) mParentView.setOnClickListener(mOnClickListener);
+            mParentView.setOnClickListener(mOnClickListener);
         }
     }
 
@@ -137,7 +136,6 @@ public class UserProfileController {
         }
         @Override
         public void onUserChanged(BitmapParcelable data) {
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -149,7 +147,6 @@ public class UserProfileController {
 
         @Override
         public void onPowerStateChanged(int state) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onPowerStateChanged="+state);
             mIsPowerOff = (state == 2)?true:false;
             mHandler.post(new Runnable() {
@@ -162,7 +159,6 @@ public class UserProfileController {
 
         @Override
         public void onUserAgreementMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onUserAgreementMode="+on);
             mUserAgreementMode = on; 
             mHandler.post(new Runnable() {
@@ -175,7 +171,6 @@ public class UserProfileController {
 
         @Override
         public void onUserSwitching(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onUserSwitching="+on);
             mUserSwitching = on; 
             mHandler.post(new Runnable() {
@@ -188,7 +183,6 @@ public class UserProfileController {
 
         @Override
         public void onBTCalling(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onBTCalling="+on);
             mBTCalling = on; 
             mHandler.post(new Runnable() {
@@ -201,7 +195,6 @@ public class UserProfileController {
 
         @Override
         public void onEmergencyMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onEmergencyMode="+on);
             mEmergencyMode = on; 
             mHandler.post(new Runnable() {
@@ -214,7 +207,6 @@ public class UserProfileController {
 
         @Override
         public void onBluelinkMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onBluelinkMode="+on);
             mBluelinkMode = on; 
             mHandler.post(new Runnable() {
@@ -227,7 +219,6 @@ public class UserProfileController {
 
         @Override
         public void onImmoilizationMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onImmoilizationMode="+on);
             mImmoilizationMode = on; 
             mHandler.post(new Runnable() {
@@ -240,7 +231,6 @@ public class UserProfileController {
 
         @Override
         public void onSlowdownMode(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onSlowdownMode="+on);
             mSlowdownMode = on; 
             mHandler.post(new Runnable() {
@@ -253,7 +243,6 @@ public class UserProfileController {
 
         @Override
         public void onRearCamera(boolean on) {
-            if ( mHandler == null ) return; 
             Log.d(TAG, "onRearCamera="+on);
             mRearCameraMode = on; 
             mHandler.post(new Runnable() {

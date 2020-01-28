@@ -94,7 +94,6 @@ public class WifiImpl extends BaseImplement<Boolean> {
     }
 
     private void init() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
         mWifiObserver = createObserver(); 
@@ -104,7 +103,6 @@ public class WifiImpl extends BaseImplement<Boolean> {
     }
 
     private void setWifiOn(boolean on) {
-        if ( mContext == null ) return;
         Log.d(TAG, "setWifiOn="+on);
         Settings.Global.putInt(mContext.getContentResolver(), 
             Settings.Global.WIFI_ON, on?1:0); 
@@ -117,7 +115,6 @@ public class WifiImpl extends BaseImplement<Boolean> {
     }
 
     private boolean isWifiOn() {
-        if ( mContext == null ) return false;
         int on = 0; 
         try {
             on = Settings.Global.getInt(mContext.getContentResolver(), 

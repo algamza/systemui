@@ -22,8 +22,9 @@ import android.os.UserHandle;
 import android.extension.car.settings.CarExtraSettings;
 import android.util.Log; 
 
-import com.humaxdigital.automotive.systemui.R;
+import java.util.Objects; 
 
+import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImg;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextDec;
@@ -100,10 +101,9 @@ public class ClimateController {
     private final List<View> mClimateViews = new ArrayList<>();
 
     public ClimateController(Context context, View view) {
-        if ( view == null || context == null ) return;
         Log.d(TAG, "ClimateController()"); 
-        mContext = context;
-        mClimate = view;
+        mContext = Objects.requireNonNull(context);
+        mClimate = Objects.requireNonNull(view);
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
         mContentResolver = mContext.getContentResolver();
@@ -117,15 +117,14 @@ public class ClimateController {
 
     public void init(StatusBarClimate service) {
         Log.d(TAG, "init()"); 
-        mService = service; 
-        if ( mService != null ) {
-            mService.registerClimateCallback(mClimateCallback); 
-            if ( mService.isInitialized() ) update(); 
-        }
+        mService = Objects.requireNonNull(service); 
+        mService.registerClimateCallback(mClimateCallback); 
+        if ( mService.isInitialized() ) update(); 
     }
 
     public void deinit() {
-        if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
+        if ( mService != null ) 
+            mService.unregisterClimateCallback(mClimateCallback); 
     }
 
     private void initToggleValue() {
@@ -184,8 +183,6 @@ public class ClimateController {
 
     private void initView() {
         Log.d(TAG, "initView()"); 
-        if ( mClimate == null || mContext == null ) return;
-
         if ( mClimatePanel != null ) {
             removeOnClick();
             mClimateViews.clear();
@@ -492,8 +489,6 @@ public class ClimateController {
     }
 
     private void updateTemp(ClimateMenuTextDec view, float temp) { 
-        if ( mContext == null ) return; 
-
         if ( !mTempOn && isClimateOff() ) {
             view.update(mContext.getResources().getString(R.string.temp_off)); 
             return; 

@@ -29,6 +29,8 @@ import android.view.MotionEvent;
 import android.view.Gravity;
 import android.widget.ImageView;
 
+import java.util.Objects; 
+
 import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
@@ -80,8 +82,7 @@ public class StatusBar implements SystemUIBase {
     @Override
     public void onCreate(Context context) {
         Log.d(TAG, "onCreate");
-        mContext = context; 
-        if ( mContext == null ) return;
+        mContext = Objects.requireNonNull(context); 
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
@@ -131,7 +132,6 @@ public class StatusBar implements SystemUIBase {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if ( mContext == null ) return;
         mContext.getResources().updateConfiguration(newConfig, null);
         if ( mControllerManager != null ) mControllerManager.configurationChange(newConfig);
     }
@@ -150,7 +150,7 @@ public class StatusBar implements SystemUIBase {
 
     private void enableDropListTouchWindow(boolean enable) {
         Log.d(TAG, "enableDropListTouchWindow:current="+enable+", old="+mIsDroplistTouchEnable); 
-        if ( mWindowManager == null || mContext == null ) return;
+        if ( mWindowManager == null ) return;
         if ( enable == mIsDroplistTouchEnable ) return; 
         mIsDroplistTouchEnable = enable; 
         if ( mIsDroplistTouchEnable ) {
@@ -181,7 +181,7 @@ public class StatusBar implements SystemUIBase {
     }
 
     private void createNaviBarWindow() {
-        if ( mWindowManager == null || mContext == null ) return;
+        if ( mWindowManager == null ) return;
         mNavBarWindow = (ViewGroup) View.inflate(mContext, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
@@ -288,15 +288,13 @@ public class StatusBar implements SystemUIBase {
     };
 
     private void registerSystemGestureReceiver() {
-        if ( mContext == null ) return;
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(CONSTANTS.ACTION_SYSTEM_GESTURE);
         mContext.registerReceiver(mSystemGestureReceiver, intentFilter);
     }
 
     private void unregisterSystemGestureReceiver() {
-        if ( mContext != null ) 
-            mContext.unregisterReceiver(mSystemGestureReceiver);
+        mContext.unregisterReceiver(mSystemGestureReceiver);
     }
 
     private final View.OnTouchListener mDroplistTouchListener = new View.OnTouchListener() {
@@ -339,7 +337,7 @@ public class StatusBar implements SystemUIBase {
     }; 
 
     private boolean isSpecialCase() {
-        if ( mStatusBarService == null || mContext == null ) return false; 
+        if ( mStatusBarService == null ) return false; 
         if ( mStatusBarService.isUserAgreement() ) {
             Log.d(TAG, "is special case : user agreement"); 
             return true;
@@ -385,21 +383,19 @@ public class StatusBar implements SystemUIBase {
     }
 
     private void updateUIController(Runnable r) {
-        if ( mControllerManager == null || mContext == null ) return;
+        if ( mControllerManager == null ) return;
         Handler handler = new Handler(mContext.getMainLooper()); 
         handler.post(r); 
     }
 
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
-        if ( mContext == null ) return;
         Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DROPLIST); 
         mContext.sendBroadcast(intent);
     }
 
     private void closeDroplist() {
         Log.d(TAG, "closeDroplist");
-        if ( mContext == null ) return;
         Intent intent = new Intent(CONSTANTS.ACTION_CLOSE_DROPLIST);
         mContext.sendBroadcast(intent);
     }

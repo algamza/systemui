@@ -8,15 +8,15 @@ import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.provider.Settings;
+import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
-import android.util.Log;
+import java.util.Objects; 
 
 import android.extension.car.settings.CarExtraSettings;
-
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod; 
@@ -68,10 +68,9 @@ public class StatusBarClimate {
     }
 
     public StatusBarClimate(Context context, DataStore datastore) {
-        if ( context == null || datastore == null ) return;
         Log.d(TAG, "StatusBarClimate");
-        mContext = context; 
-        mDataStore = datastore; 
+        mContext = Objects.requireNonNull(context); 
+        mDataStore = Objects.requireNonNull(datastore); 
 
         mClimateManager = new ClimateControllerManager(mContext, mDataStore)
             .registerListener(mClimateManagerListener); 
@@ -79,23 +78,20 @@ public class StatusBarClimate {
     
     public void registerClimateCallback(StatusBarClimateCallback callback) {
         Log.d(TAG, "registerClimateCallback");
-        if ( callback == null ) return;
         synchronized (mClimateCallbacks) {
-            mClimateCallbacks.add(callback); 
+            mClimateCallbacks.add(Objects.requireNonNull(callback)); 
         }
     }
 
     public void unregisterClimateCallback(StatusBarClimateCallback callback) {
         Log.d(TAG, "unregisterClimateCallback");
-        if ( callback == null ) return;
         synchronized (mClimateCallbacks) {
-            mClimateCallbacks.remove(callback); 
+            mClimateCallbacks.remove(Objects.requireNonNull(callback)); 
         }
     }
 
     public void destroy() {
         Log.d(TAG, "destroy");
-        
         mContext = null;
         mDataStore = null;
         mCarExClient = null;

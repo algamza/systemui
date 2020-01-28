@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap; 
 import java.util.Map;
 import java.util.List;
+import java.util.Objects; 
 import android.util.Log;
 
 public class UserBluetooth extends IUserBluetooth.Stub {
@@ -46,8 +47,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
 
     public UserBluetooth(PerUserService service) {
         Log.d(TAG, "UserBluetooth");
-        mService = service; 
-        if ( service == null ) return;
+        mService = Objects.requireNonNull(service); 
         mContext = mService.getApplicationContext(); 
         if ( mContext == null ) return;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -64,13 +64,13 @@ public class UserBluetooth extends IUserBluetooth.Stub {
     @Override
     public void registCallback(IUserBluetoothCallback callback) throws RemoteException {
         Log.d(TAG, "registCallback");
-        mListeners.add(callback);
+        mListeners.add(Objects.requireNonNull(callback));
     }
 
     @Override
     public void unregistCallback(IUserBluetoothCallback callback) throws RemoteException {
         Log.d(TAG, "unregistCallback");
-        mListeners.remove(callback); 
+        mListeners.remove(Objects.requireNonNull(callback)); 
     }
 
     @Override

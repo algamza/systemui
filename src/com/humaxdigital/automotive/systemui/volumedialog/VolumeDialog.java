@@ -30,19 +30,16 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import android.graphics.PixelFormat;
-
 import android.extension.car.settings.CarExtraSettings;
-
 import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.SystemUIBase;
-
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig; 
 import com.humaxdigital.automotive.systemui.R; 
-
 import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeDialogWindowDL3C; 
 import com.humaxdigital.automotive.systemui.volumedialog.dl3c.VolumeControllerDL3C; 
 
@@ -62,8 +59,7 @@ public class VolumeDialog implements SystemUIBase {
     @Override
     public void onCreate(Context context) {
         Log.d(TAG, "create"); 
-        mContext = context; 
-        if ( context == null ) return;
+        mContext = Objects.requireNonNull(context); 
 
         mDialog = new VolumeDialogWindow();
         mDialog.init(mContext); 
@@ -100,10 +96,8 @@ public class VolumeDialog implements SystemUIBase {
             mController.unregistVolumeListener(mVolumeListener); 
             mController = null; 
         }
-        if ( mDialog != null ) {
-            mDialog.unregistDialogListener(mDialogListener); 
-            mDialog.deinit();
-        }
+        mDialog.unregistDialogListener(mDialogListener); 
+        mDialog.deinit();
     }
 
     @Override
@@ -111,7 +105,6 @@ public class VolumeDialog implements SystemUIBase {
     }
 
     private void startVolumeControlService() {
-        if ( mContext == null ) return;
         Log.d(TAG, "startVolumeControlService");
         Intent bindIntent = new Intent(mContext, VolumeControlService.class);
         if ( !mContext.bindService(bindIntent, mServiceConnection, Context.BIND_AUTO_CREATE) ) {
@@ -123,17 +116,17 @@ public class VolumeDialog implements SystemUIBase {
         new VolumeControllerBase.VolumeChangeListener() {
         @Override
         public void onVolumeUp(VolumeControllerBase.VolumeChangeListener.Type type, int max, int value) {
-            if ( mDialog != null ) mDialog.open();
+            mDialog.open();
         }
 
         @Override
         public void onVolumeDown(VolumeControllerBase.VolumeChangeListener.Type type, int max, int value) {
-            if ( mDialog != null ) mDialog.open();
+            mDialog.open();
         }
 
         @Override
         public void onMuteChanged(VolumeControllerBase.VolumeChangeListener.Type type, boolean mute) {
-            if ( mDialog != null ) mDialog.open();
+            mDialog.open();
         }
 
         @Override
@@ -191,7 +184,7 @@ public class VolumeDialog implements SystemUIBase {
                 Log.d(TAG, "onChange:lastmode="+lastmode);
                 if ( mLastMode == lastmode ) return;
                 mLastMode = lastmode; 
-                if ( mDialog != null ) mDialog.close(true);
+                mDialog.close(true);
             }
         };
         return observer; 
@@ -207,7 +200,7 @@ public class VolumeDialog implements SystemUIBase {
                     CarExtraSettings.Global.POWER_STATE_NORMAL);
                 Log.d(TAG, "onChange:power="+power);
                 if ( power == CarExtraSettings.Global.POWER_STATE_POWER_OFF ) {
-                    if ( mDialog != null ) mDialog.close(true);
+                    mDialog.close(true);
                 }
             }
         };

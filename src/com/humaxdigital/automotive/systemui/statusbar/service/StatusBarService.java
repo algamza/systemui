@@ -184,7 +184,6 @@ public class StatusBarService extends Service {
     }
 
     private void createObserver() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         mUserAgreementObserver = new ContentObserver(new Handler()) {
             @Override
@@ -239,7 +238,6 @@ public class StatusBarService extends Service {
     }
 
     private boolean _isUserAgreement() {
-        if ( mContext == null ) return false; 
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
@@ -248,7 +246,6 @@ public class StatusBarService extends Service {
     }
 
     private boolean _isUserSwitching() {
-        if ( mContext == null ) return false; 
         int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
             CarExtraSettings.Global.FALSE);
@@ -257,7 +254,6 @@ public class StatusBarService extends Service {
     }
 
     private void createCarExClient() {
-        if ( mContext == null ) return; 
         CarExClient.INSTANCE.connect(mContext, mCarExClientListener); 
     }
 

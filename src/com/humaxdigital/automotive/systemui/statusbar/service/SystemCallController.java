@@ -53,7 +53,6 @@ public class SystemCallController extends BaseController<Integer> {
 
     public SystemCallController(Context context, DataStore store) {
         super(context, store);
-        if ( mContext == null ) return;
         final IntentFilter filter = new IntentFilter();
         filter.addAction(CONSTANTS.ACTION_CARLIFE_STATE);
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
@@ -234,7 +233,6 @@ public class SystemCallController extends BaseController<Integer> {
     }
 
     private void initObserver() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
         mObserver = createObserver(); 

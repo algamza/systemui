@@ -24,6 +24,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Objects; 
 
 public class ScenarioQuiteMode {
     private static final String TAG = "ScenarioQuiteMode";
@@ -63,8 +64,7 @@ public class ScenarioQuiteMode {
 
 
     public ScenarioQuiteMode(Context context) {
-        if ( context == null ) return;
-        mContext = context; 
+        mContext = Objects.requireNonNull(context); 
         mContentResolver = mContext.getContentResolver();
     }
 

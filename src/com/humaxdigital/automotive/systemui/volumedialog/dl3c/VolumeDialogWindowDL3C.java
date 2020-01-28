@@ -24,6 +24,7 @@ import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeDialogWindowBase; 
@@ -43,8 +44,7 @@ public class VolumeDialogWindowDL3C extends VolumeDialogWindowBase {
 
     @Override
     public void init(Context context) {
-        if ( context == null ) return;
-        mContext = context; 
+        mContext = Objects.requireNonNull(context); 
         mShowing = false;
         mDialog = new VolumeDialogUI(mContext);
         mWindow = mDialog.getWindow();
