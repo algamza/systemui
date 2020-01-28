@@ -3,11 +3,14 @@ package com.humaxdigital.automotive.systemui.common.util;
 import android.os.Build; 
 import android.util.Log;
 
+// Noninstantiable utility class
 public class ProductConfig {
     private static final String TAG = "ProductConfig"; 
 
     public enum MODEL { DN8C, DU2, CN7C, DL3C, DU2EV }
     public enum FEATURE { AV, AVC, AVN, AVNT }
+
+    private ProductConfig() {}
     
     static public MODEL getModel() {
         MODEL model = MODEL.DN8C; 

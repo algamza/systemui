@@ -5,8 +5,11 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 
+// Noninstantiable utility class
 public class OSDPopup {
     private static final String TAG = "OSDPopup"; 
+
+    private OSDPopup() {}
     
     static public void send(Context context, String text) {
         if ( context == null || text == null ) return;

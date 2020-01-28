@@ -1,5 +1,6 @@
 package com.humaxdigital.automotive.systemui.common;
 
+// Noninstantiable utility class
 public class CONSTANTS {
     public static final String GLOBAL_KEY_VOLUME_UP ="com.humaxdigital.automotive.systemui.common.GLOBAL_KEY_VOLUME_UP";
     public static final int GLOBAL_KEY_VOLUME_UP_ON = 1;
@@ -54,4 +55,6 @@ public class CONSTANTS {
     public static final String HOME_ACTIVITY_NAME = "com.humaxdigital.automotive.dn8clauncher/.HomeActivity";
     public static final String SCREENSAVER_ACTIVITY_NAME = "com.humaxdigital.automotive.screensaver/.MainActivity";
     public static final String KEY_CURRENT_HOME_PAGE = "com.humaxdigital.dn8c.KEY_CURRENT_HOME_PAGE";
+
+    private CONSTANTS() {}
 }

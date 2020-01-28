@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 public enum CarExClient {
     INSTANCE; 
+    private static final String TAG = CarExClient.class.getSimpleName();
     private enum STATE {
         IDLE, 
         CONNECTED, 
@@ -130,7 +131,7 @@ public enum CarExClient {
                         if ( listener != null ) listener.onConnected();
                     }
                 } catch (CarNotConnectedException e) {
-                    //Log.e(TAG, "Car is not connected!", e);
+                    Log.e(TAG, "Car is not connected!", e);
                 }
             }
         }

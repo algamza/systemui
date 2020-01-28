@@ -14,8 +14,11 @@ import java.util.List;
 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
+// Noninstantiable utility class
 public class CommonMethod {
     private static final String TAG = "CommonMethod"; 
+
+    private CommonMethod() {}
 
     public static ComponentName getTopActivity(Context context) {
         if ( context == null ) return null;
