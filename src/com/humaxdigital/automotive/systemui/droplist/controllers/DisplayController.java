@@ -31,7 +31,6 @@ public class DisplayController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
     }
 
     @Override
@@ -66,20 +65,6 @@ public class DisplayController implements BaseController {
             return false; 
         }
     }; 
-
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onCallingChanged(boolean on) {
-            if ( mHandler == null ) return;
-            /*
-            mIsCalling = on; 
-            if ( mIsCalling ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-                */
-        }
-    };
 
     private final class UpdateHandler extends Handler {
         private static final int MODE_DISABLE = 1; 

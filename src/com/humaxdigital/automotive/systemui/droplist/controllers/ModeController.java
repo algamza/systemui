@@ -13,7 +13,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
-public class ModeController implements BaseController {
+public class ModeController implements BaseController, SystemControl.SystemCallback {
     public enum Mode {
         AUTOMATIC,
         DAYLIGHT,
@@ -36,7 +36,7 @@ public class ModeController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         int mode = mSystem.getAutomaticMode(); 
         mView.updateState(convertToMode(mode).ordinal()); 
     }
@@ -72,24 +72,22 @@ public class ModeController implements BaseController {
         return mode; 
     }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onAutomaticModeChanged(SystemControl.SystemAutoMode mode) {
-            if ( mView == null ) return;
-            switch(mode) {
-                case AUTOMATIC: 
-                    mHandler.obtainMessage(UpdateHandler.MODE_AUTO, 0).sendToTarget(); 
-                    break;
-                case DAYLIGHT: 
-                    mHandler.obtainMessage(UpdateHandler.MODE_DAYLIGHT, 0).sendToTarget(); 
-                    break; 
-                case NIGHT: 
-                    mHandler.obtainMessage(UpdateHandler.MODE_NIGHT, 0).sendToTarget(); 
-                    break; 
-                default: break; 
-            }
+    @Override
+    public void onAutomaticModeChanged(SystemControl.SystemAutoMode mode) {
+        if ( mView == null ) return;
+        switch(mode) {
+            case AUTOMATIC: 
+                mHandler.obtainMessage(UpdateHandler.MODE_AUTO, 0).sendToTarget(); 
+                break;
+            case DAYLIGHT: 
+                mHandler.obtainMessage(UpdateHandler.MODE_DAYLIGHT, 0).sendToTarget(); 
+                break; 
+            case NIGHT: 
+                mHandler.obtainMessage(UpdateHandler.MODE_NIGHT, 0).sendToTarget(); 
+                break; 
+            default: break; 
         }
-    };
+    }
     
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override

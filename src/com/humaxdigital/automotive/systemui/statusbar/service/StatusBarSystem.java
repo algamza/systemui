@@ -76,31 +76,31 @@ public class StatusBarSystem {
     private boolean mSVIOn = false;
     private boolean mSVSOn = false; 
 
-    public static abstract class StatusBarSystemCallback {
-        public void onSystemInitialized() {}
-        public void onUserProfileInitialized() {}
-        public void onDateTimeInitialized() {}
-        public void onMuteStatusChanged(int status) {}
-        public void onBLEStatusChanged(int status) {}
-        public void onBTBatteryStatusChanged(int status) {}
-        public void onCallStatusChanged(int status) {}
-        public void onAntennaStatusChanged(int status) {}
-        public void onDataStatusChanged(int status) {}
-        public void onWifiStatusChanged(int status) {}
-        public void onWirelessChargeStatusChanged(int status) {}
-        public void onModeStatusChanged(int status) {}
-        public void onDateTimeChanged(String time) {}
-        public void onTimeTypeChanged(String type) {}
-        public void onUserChanged(BitmapParcelable bitmap) {}
-        public void onPowerStateChanged(int state) {}
-        public void onUserAgreementMode(boolean on) {}
-        public void onUserSwitching(boolean on) {}
-        public void onBTCalling(boolean on) {}
-        public void onEmergencyMode(boolean on) {}
-        public void onBluelinkMode(boolean on) {}
-        public void onImmoilizationMode(boolean on) {}
-        public void onSlowdownMode(boolean on) {}
-        public void onRearCamera(boolean on) {}
+    public interface StatusBarSystemCallback {
+        default public void onSystemInitialized() {}
+        default public void onUserProfileInitialized() {}
+        default public void onDateTimeInitialized() {}
+        default public void onMuteStatusChanged(int status) {}
+        default public void onBLEStatusChanged(int status) {}
+        default public void onBTBatteryStatusChanged(int status) {}
+        default public void onCallStatusChanged(int status) {}
+        default public void onAntennaStatusChanged(int status) {}
+        default public void onDataStatusChanged(int status) {}
+        default public void onWifiStatusChanged(int status) {}
+        default public void onWirelessChargeStatusChanged(int status) {}
+        default public void onModeStatusChanged(int status) {}
+        default public void onDateTimeChanged(String time) {}
+        default public void onTimeTypeChanged(String type) {}
+        default public void onUserChanged(BitmapParcelable bitmap) {}
+        default public void onPowerStateChanged(int state) {}
+        default public void onUserAgreementMode(boolean on) {}
+        default public void onUserSwitching(boolean on) {}
+        default public void onBTCalling(boolean on) {}
+        default public void onEmergencyMode(boolean on) {}
+        default public void onBluelinkMode(boolean on) {}
+        default public void onImmoilizationMode(boolean on) {}
+        default public void onSlowdownMode(boolean on) {}
+        default public void onRearCamera(boolean on) {}
     }
 
     public StatusBarSystem(Context context, DataStore datastore) {

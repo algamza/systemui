@@ -46,25 +46,24 @@ public class StatusBarClimate {
     private boolean mSVIOn = false;
     private boolean mSVSOn = false; 
 
-    public static abstract class StatusBarClimateCallback {
-        public void onInitialized() {}
-        public void onDRTemperatureChanged(float temp) {}
-        public void onDRSeatStatusChanged(int status) {}
-        public void onDRSeatOptionChanged(int option) {}
-        public void onAirCirculationChanged(boolean isOn) {}
-        public void onAirConditionerChanged(boolean isOn) {}
-        public void onAirCleaningChanged(int status) {}
-        public void onSyncChanged(boolean sync) {}
-        public void onFanDirectionChanged(int direction) {}
-        public void onBlowerSpeedChanged(int status) {}
-        public void onPSSeatStatusChanged(int status) {}
-        public void onPSSeatOptionChanged(int option) {}
-        public void onPSTemperatureChanged(float temp) {}
-        public void onFrontDefogStatusChanged(int status) {}
-        public void onModeOffChanged(boolean off) {}
-        public void onIGNOnChanged(boolean on) {}
-        public void onOperateOnChanged(boolean on) {}
-        public void onRearCameraOn(boolean on) {}  
+    public interface StatusBarClimateCallback {
+        public void onInitialized(); 
+        public void onDRTemperatureChanged(float temp); 
+        public void onDRSeatStatusChanged(int status); 
+        public void onDRSeatOptionChanged(int option); 
+        public void onAirCirculationChanged(boolean isOn); 
+        public void onAirConditionerChanged(boolean isOn); 
+        public void onAirCleaningChanged(int status); 
+        public void onSyncChanged(boolean sync); 
+        public void onFanDirectionChanged(int direction); 
+        public void onBlowerSpeedChanged(int status); 
+        public void onPSSeatStatusChanged(int status); 
+        public void onPSSeatOptionChanged(int option); 
+        public void onPSTemperatureChanged(float temp); 
+        public void onFrontDefogStatusChanged(int status); 
+        public void onModeOffChanged(boolean off); 
+        public void onIGNOnChanged(boolean on); 
+        public void onOperateOnChanged(boolean on); 
     }
 
     public StatusBarClimate(Context context, DataStore datastore) {

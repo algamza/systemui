@@ -39,10 +39,10 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 public class VolumeControlService extends Service {
     private static final String TAG = "VolumeControlService";
 
-    public static abstract class VolumeCallback {
-        public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
-        public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute) {}
-        public void onShowUI(boolean show) {};
+    public interface VolumeCallback {
+        public void onVolumeChanged(VolumeUtil.Type type, int max, int val); 
+        public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute); 
+        default public void onShowUI(boolean show) {};
     }
 
     public class LocalBinder extends Binder {

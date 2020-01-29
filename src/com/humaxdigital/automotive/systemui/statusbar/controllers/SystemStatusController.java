@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects; 
 
-public class SystemStatusController {
+public class SystemStatusController implements StatusBarSystem.StatusBarSystemCallback {
     private static final String TAG = "SystemStatusController"; 
 
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
@@ -69,12 +69,13 @@ public class SystemStatusController {
     public void init(StatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
-        mService.registerSystemCallback(mSystemCallback); 
+        mService.registerSystemCallback(this); 
         if ( mService.isSystemInitialized() ) fetch(); 
     }
 
     public void deinit() {
-        if ( mService != null ) mService.unregisterSystemCallback(mSystemCallback); 
+        if ( mService != null ) 
+            mService.unregisterSystemCallback(this); 
     }
 
     @Override
@@ -224,120 +225,117 @@ public class SystemStatusController {
         }
     }
 
-    private final StatusBarSystem.StatusBarSystemCallback mSystemCallback 
-        = new StatusBarSystem.StatusBarSystemCallback() {
-        @Override
-        public void onSystemInitialized() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    fetch(); 
-                }
-            });  
-        }
-        @Override
-        public void onMuteStatusChanged(int status) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onMuteStatusChanged="+status); 
-                    updateMute(status);
-                }
-            }); 
-        }
-        @Override
-        public void onBLEStatusChanged(int status) {
-            if ( mBle == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onBLEStatusChanged="+status); 
-                    mBle.update(BLEStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onBTBatteryStatusChanged(int status) {
-            if ( mBtBattery == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onBTBatteryStatusChanged="+status); 
-                    mBtBattery.update(BTBatteryStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onCallStatusChanged(int status) {
-            if ( mPhone == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onCallStatusChanged="+status); 
-                    mPhone.update(CallStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onAntennaStatusChanged(int status) {
-            if ( mAntenna == null ) return;           
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onAntennaStatusChanged="+status); 
-                    mAntenna.update(AntennaStatus.values()[status].ordinal());
-                }
-            }); 
-            
-        }
-        @Override
-        public void onDataStatusChanged(int status) {
-            if ( mPhoneData == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onDataStatusChanged="+status); 
-                    mPhoneData.update(DataStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onWifiStatusChanged(int status) {
-            if ( mWifi == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onWifiStatusChanged="+status); 
-                    mWifi.update(WifiStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onWirelessChargeStatusChanged(int status) {
-            if ( mWirelessCharging == null ) return;
-            if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
-                OSDPopup.send(mContext, 
-                    mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_ID), 
-                    R.drawable.co_ic_osd_battery_charging);
+    @Override
+    public void onSystemInitialized() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                fetch(); 
             }
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onWirelessChargeStatusChanged="+status); 
-                    mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
-                }
-            });
+        });  
+    }
+    @Override
+    public void onMuteStatusChanged(int status) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onMuteStatusChanged="+status); 
+                updateMute(status);
+            }
+        }); 
+    }
+    @Override
+    public void onBLEStatusChanged(int status) {
+        if ( mBle == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onBLEStatusChanged="+status); 
+                mBle.update(BLEStatus.values()[status].ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onBTBatteryStatusChanged(int status) {
+        if ( mBtBattery == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onBTBatteryStatusChanged="+status); 
+                mBtBattery.update(BTBatteryStatus.values()[status].ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onCallStatusChanged(int status) {
+        if ( mPhone == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onCallStatusChanged="+status); 
+                mPhone.update(CallStatus.values()[status].ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onAntennaStatusChanged(int status) {
+        if ( mAntenna == null ) return;           
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onAntennaStatusChanged="+status); 
+                mAntenna.update(AntennaStatus.values()[status].ordinal());
+            }
+        }); 
+        
+    }
+    @Override
+    public void onDataStatusChanged(int status) {
+        if ( mPhoneData == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onDataStatusChanged="+status); 
+                mPhoneData.update(DataStatus.values()[status].ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onWifiStatusChanged(int status) {
+        if ( mWifi == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onWifiStatusChanged="+status); 
+                mWifi.update(WifiStatus.values()[status].ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onWirelessChargeStatusChanged(int status) {
+        if ( mWirelessCharging == null ) return;
+        if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_ID), 
+                R.drawable.co_ic_osd_battery_charging);
         }
-        @Override
-        public void onModeStatusChanged(int status) {
-            if ( mLocationSharing == null ) return;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "onModeStatusChanged="+status); 
-                    mLocationSharing.update(ModeStatus.values()[status].ordinal());
-                }
-            }); 
-        }
-    };
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onWirelessChargeStatusChanged="+status); 
+                mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
+            }
+        });
+    }
+    @Override
+    public void onModeStatusChanged(int status) {
+        if ( mLocationSharing == null ) return;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "onModeStatusChanged="+status); 
+                mLocationSharing.update(ModeStatus.values()[status].ordinal());
+            }
+        }); 
+    }
 }

@@ -56,7 +56,7 @@ import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManag
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
-public class DropListUIService implements SystemUIBase {
+public class DropListUIService implements SystemUIBase, SystemControl.SystemCallback {
     private static final String TAG = "DropListUIService";
 
     private final List<View> mAddedViews = new ArrayList<>();
@@ -98,6 +98,7 @@ public class DropListUIService implements SystemUIBase {
     private final int TOUCH_OFFSET = -100; 
 
     private Context mContext; 
+    private DropListUIService mThis = this; 
 
     @Override
     public void onCreate(Context context) {
@@ -236,7 +237,7 @@ public class DropListUIService implements SystemUIBase {
                 mSystemController.requestRefresh(r, new Handler(context.getMainLooper()));
             }
 
-            mSystemController.registerCallback(mSystemCallback); 
+            mSystemController.registerCallback(mThis); 
         }
 
         @Override
@@ -575,40 +576,36 @@ public class DropListUIService implements SystemUIBase {
         }
     };
 
-    private SystemControl.SystemCallback mSystemCallback = 
-        new SystemControl.SystemCallback() {
-        @Override
-        public void onVRStateChanged(boolean on) {
-            Log.d(TAG, "onVRStateChanged="+on);
-            if ( !on ) return;
-            closeDropList();
-        }
-        @Override
-        public void onPowerOnChanged(boolean on) {
-            Log.d(TAG, "onPowerOnChanged="+on);
-            if ( on ) return;
-            closeDropList();
-        }
+    @Override
+    public void onVRStateChanged(boolean on) {
+        Log.d(TAG, "onVRStateChanged="+on);
+        if ( !on ) return;
+        closeDropList();
+    }
+    @Override
+    public void onPowerOnChanged(boolean on) {
+        Log.d(TAG, "onPowerOnChanged="+on);
+        if ( on ) return;
+        closeDropList();
+    }
 
-        @Override
-        public void onEmergencyModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onEmergencyModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onBluelinkCallModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onBluelinkCallModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onImmobilizationModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onImmobilizationModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onSlowdownModeChanged(boolean enable) {
-            closeDropList();
-        }
-    };
-
+    @Override
+    public void onSlowdownModeChanged(boolean enable) {
+        closeDropList();
+    }
 }

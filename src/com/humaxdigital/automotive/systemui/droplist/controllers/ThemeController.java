@@ -13,7 +13,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
-public class ThemeController implements BaseController {
+public class ThemeController implements BaseController, SystemControl.SystemCallback {
     public enum Theme {
         THEME1,
         THEME2,
@@ -35,7 +35,7 @@ public class ThemeController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         int mode = mSystem.getThemeMode(); 
         mView.updateState(convertToTheme(mode).ordinal()); 
     }
@@ -71,24 +71,22 @@ public class ThemeController implements BaseController {
         return theme; 
     }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onThemeChanged(SystemControl.SystemTheme theme) {
-            if ( mView == null ) return;
-            switch(theme) {
-                case THEME1: 
-                    mHandler.obtainMessage(UpdateHandler.H_THEME1, 0).sendToTarget(); 
-                    break;
-                case THEME2: 
-                    mHandler.obtainMessage(UpdateHandler.H_THEME2, 0).sendToTarget(); 
-                    break; 
-                case THEME3: 
-                    mHandler.obtainMessage(UpdateHandler.H_THEME3, 0).sendToTarget(); 
-                    break; 
-                default: break; 
-            }
+    @Override
+    public void onThemeChanged(SystemControl.SystemTheme theme) {
+        if ( mView == null ) return;
+        switch(theme) {
+            case THEME1: 
+                mHandler.obtainMessage(UpdateHandler.H_THEME1, 0).sendToTarget(); 
+                break;
+            case THEME2: 
+                mHandler.obtainMessage(UpdateHandler.H_THEME2, 0).sendToTarget(); 
+                break; 
+            case THEME3: 
+                mHandler.obtainMessage(UpdateHandler.H_THEME3, 0).sendToTarget(); 
+                break; 
+            default: break; 
         }
-    };
+    }
 
     private final class UpdateHandler extends Handler {
         private static final int H_THEME1 = 1;

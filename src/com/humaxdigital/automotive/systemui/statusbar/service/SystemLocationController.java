@@ -10,7 +10,7 @@ import android.extension.car.CarTMSManager;
 import android.util.Log; 
 import java.util.Arrays;
 
-public class SystemLocationController extends BaseController<Integer> {
+public class SystemLocationController extends BaseController<Integer> implements TMSClient.TMSCallback {
     private static final String TAG = "SystemLocationController";
     private TMSClient mTMSClient = null; 
     private LocationStatus mCurrentStatus = LocationStatus.NONE; 
@@ -28,13 +28,13 @@ public class SystemLocationController extends BaseController<Integer> {
     @Override
     public void disconnect() {
         if ( mTMSClient != null ) 
-            mTMSClient.unregisterCallback(mTMSCallback);
+            mTMSClient.unregisterCallback(this);
     }
 
     public void fetchTMSClient(TMSClient tms) {
         mTMSClient = tms; 
         if ( mTMSClient != null ) 
-            mTMSClient.registerCallback(mTMSCallback);
+            mTMSClient.registerCallback(this);
         mCurrentStatus = getCurrentStatus(); 
     }
 
@@ -65,17 +65,15 @@ public class SystemLocationController extends BaseController<Integer> {
             listener.onEvent(mCurrentStatus.ordinal());
     }
 
-    private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
-        @Override
-        public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
-            Log.d(TAG, "onConnectionChanged="+connection); 
-            broadcastChangeEvent();
-        }
+    @Override
+    public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
+        Log.d(TAG, "onConnectionChanged="+connection); 
+        broadcastChangeEvent();
+    }
 
-        @Override
-        public void onLocationSharingChanged(TMSClient.LocationSharingStatus status) {
-            Log.d(TAG, "onLocationSharingChanged="+status); 
-            broadcastChangeEvent();
-        }
-    }; 
+    @Override
+    public void onLocationSharingChanged(TMSClient.LocationSharingStatus status) {
+        Log.d(TAG, "onLocationSharingChanged="+status); 
+        broadcastChangeEvent();
+    }
 }

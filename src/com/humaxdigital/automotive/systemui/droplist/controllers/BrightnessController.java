@@ -22,7 +22,7 @@ import com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar;
 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 
-public class BrightnessController implements BaseController {
+public class BrightnessController implements BaseController, SystemControl.SystemCallback {
     private final String TAG = "BrightnessController"; 
     private enum TYPE {
         BRIGHTNESS,
@@ -87,7 +87,7 @@ public class BrightnessController implements BaseController {
     public void fetch(SystemControl system) {
         
         mSystem = Objects.requireNonNull(system);
-        mSystem.registerCallback(mBrightnessListener);
+        mSystem.registerCallback(this);
 
         mBrightnessProgress = mSystem.getBrightness();
         mClusterChecked = mSystem.getClusterCheck();
@@ -176,45 +176,42 @@ public class BrightnessController implements BaseController {
         return (int)val;
     }
 
-    private final SystemControl.SystemCallback mBrightnessListener =
-            new SystemControl.SystemCallback() {
-        @Override
-        public void onBrightnessChanged(int brightness) {
-            if ( !mCheckbox.isChecked() ) {
-                mBrightnessProgress = brightness;
-                int progress = convertBrightnessToLevel(brightness, mBrightnessMin, mBrightnessMax); 
-                mSeekbar.setProgress(progress);
-                Log.d(TAG, "onBrightnessChanged="+progress+", brightness="+brightness);
-            } else {
-                mBrightnessProgress = brightness;
-            }
+    @Override
+    public void onBrightnessChanged(int brightness) {
+        if ( !mCheckbox.isChecked() ) {
+            mBrightnessProgress = brightness;
+            int progress = convertBrightnessToLevel(brightness, mBrightnessMin, mBrightnessMax); 
+            mSeekbar.setProgress(progress);
+            Log.d(TAG, "onBrightnessChanged="+progress+", brightness="+brightness);
+        } else {
+            mBrightnessProgress = brightness;
         }
-        @Override
-        public void onClusterBrightnessChanged(int brightness) {
-            if ( mCheckbox.isChecked() ) {
-                mClusterBrightnessProgress = convertValidClusterBrightness(brightness); 
-                mSeekbar.setProgress(mClusterBrightnessProgress);
-                Log.d(TAG, "onClusterBrightnessChanged="+mClusterBrightnessProgress);
-            } else {
-                mClusterBrightnessProgress = brightness;
-            }
+    }
+    @Override
+    public void onClusterBrightnessChanged(int brightness) {
+        if ( mCheckbox.isChecked() ) {
+            mClusterBrightnessProgress = convertValidClusterBrightness(brightness); 
+            mSeekbar.setProgress(mClusterBrightnessProgress);
+            Log.d(TAG, "onClusterBrightnessChanged="+mClusterBrightnessProgress);
+        } else {
+            mClusterBrightnessProgress = brightness;
         }
-        @Override
-        public void onClusterChecked(boolean checked) {
-            if ( mCheckbox == null || mImgCenter == null || mSeekbar == null ) return;
-            mCheckbox.setChecked(checked); 
-            mClusterChecked = checked; 
-            if ( checked ) {
-                mImgCenter.setVisibility(View.GONE);
-                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT); 
-            }
-            else {
-                mImgCenter.setVisibility(View.VISIBLE);
-                mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_CENTER); 
-            }
-            
+    }
+    @Override
+    public void onClusterChecked(boolean checked) {
+        if ( mCheckbox == null || mImgCenter == null || mSeekbar == null ) return;
+        mCheckbox.setChecked(checked); 
+        mClusterChecked = checked; 
+        if ( checked ) {
+            mImgCenter.setVisibility(View.GONE);
+            mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_RIGHT); 
         }
-    };
+        else {
+            mImgCenter.setVisibility(View.VISIBLE);
+            mSeekbar.setHighlightType(CustomSeekBar.HIGHLIGHT_TYPE.HIGHLIGHT_CENTER); 
+        }
+        
+    }
 
     private final CheckBox.OnCheckedChangeListener mCheckListener =
             new CheckBox.OnCheckedChangeListener() {

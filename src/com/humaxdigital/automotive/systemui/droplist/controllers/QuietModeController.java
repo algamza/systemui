@@ -13,7 +13,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
-public class QuietModeController implements BaseController {
+public class QuietModeController implements BaseController, SystemControl.SystemCallback {
     private MenuLayout mView;
     private SystemControl mSystem;  
     private Listener mListener; 
@@ -33,7 +33,7 @@ public class QuietModeController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         mOn = mSystem.getQuietModeOn();
         mView.updateEnable(mOn);
         mIsAVOn = mSystem.isAVOn(); 
@@ -66,31 +66,29 @@ public class QuietModeController implements BaseController {
         }
     }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onQuietModeOnChanged(boolean isOn) {
-            if ( mView == null ) return;
-            if ( isOn ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
-        }
-        
-        @Override
-        public void onCallingChanged(boolean on) {
-            mIsCalling = on; 
-            if ( mIsCalling ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-        }
+    @Override
+    public void onQuietModeOnChanged(boolean isOn) {
+        if ( mView == null ) return;
+        if ( isOn ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
+    }
+    
+    @Override
+    public void onCallingChanged(boolean on) {
+        mIsCalling = on; 
+        if ( mIsCalling ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+    }
 
-        @Override
-        public void onAVOnChanged(boolean on) {
-            mIsAVOn = on; 
-            updateModeEnable(mIsAVOn); 
-        }
-    };
+    @Override
+    public void onAVOnChanged(boolean on) {
+        mIsAVOn = on; 
+        updateModeEnable(mIsAVOn); 
+    }
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override

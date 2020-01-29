@@ -7,7 +7,7 @@ import android.util.Log;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 
-public class SystemAntennaController extends BaseController<Integer> {
+public class SystemAntennaController extends BaseController<Integer> implements TMSClient.TMSCallback {
     private static final String TAG = "SystemAntennaController";
     private IUserBluetooth mUserBluetooth = null; 
     private TMSClient mTMSClient = null;
@@ -44,7 +44,7 @@ public class SystemAntennaController extends BaseController<Integer> {
             Log.e(TAG, "error:"+e);
         } 
         if ( mTMSClient != null ) 
-             mTMSClient.unregisterCallback(mTMSCallback);
+             mTMSClient.unregisterCallback(this);
         mTMSClient = null;
     }
 
@@ -56,7 +56,7 @@ public class SystemAntennaController extends BaseController<Integer> {
         if ( tms == null ) return; 
         Log.d(TAG, "fetchTMSClient"); 
         mTMSClient = tms; 
-        mTMSClient.registerCallback(mTMSCallback);
+        mTMSClient.registerCallback(this);
         mCurrentAntennaStatus = getCurrentStatus();
     }
 
@@ -147,19 +147,17 @@ public class SystemAntennaController extends BaseController<Integer> {
             listener.onEvent(mCurrentAntennaStatus.ordinal());
     }
 
-    private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
-        @Override
-        public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
-            Log.d(TAG, "onConnectionChanged="+connection);
-            broadcastChangeEvent();
-        }
+    @Override
+    public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
+        Log.d(TAG, "onConnectionChanged="+connection);
+        broadcastChangeEvent();
+    }
 
-        @Override
-        public void onSignalLevelChanged(int level) {
-            Log.d(TAG, "onSignalLevelChanged="+level);
-            broadcastChangeEvent();
-        }
-    }; 
+    @Override
+    public void onSignalLevelChanged(int level) {
+        Log.d(TAG, "onSignalLevelChanged="+level);
+        broadcastChangeEvent();
+    } 
 
     private final IUserBluetoothCallback.Stub mUserBluetoothCallback = 
         new IUserBluetoothCallback.Stub() {

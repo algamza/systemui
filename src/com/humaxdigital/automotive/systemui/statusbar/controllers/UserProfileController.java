@@ -16,7 +16,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 
-public class UserProfileController {
+public class UserProfileController implements StatusBarSystem.StatusBarSystemCallback {
     private static final String TAG = "UserProfileController"; 
     private Context mContext;
     private View mParentView; 
@@ -42,13 +42,14 @@ public class UserProfileController {
     public void init(StatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
-        mService.registerSystemCallback(mUserProfileCallback);
+        mService.registerSystemCallback(this);
         if ( mService.isUserProfileInitialized() ) initView();
         checkUserIconDisable();
     }
 
     public void deinit() {
-        if ( mService != null ) mService.unregisterSystemCallback(mUserProfileCallback);
+        if ( mService != null ) 
+            mService.unregisterSystemCallback(this);
     }
 
     private void checkUserIconDisable() {
@@ -122,135 +123,131 @@ public class UserProfileController {
         super.finalize();
     }
 
-    private final StatusBarSystem.StatusBarSystemCallback mUserProfileCallback 
-        = new StatusBarSystem.StatusBarSystemCallback() {
-        
-        @Override
-        public void onUserProfileInitialized() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    initView();
-                }
-            });  
-        }
-        @Override
-        public void onUserChanged(BitmapParcelable data) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( mUserProfileView != null ) 
-                        mUserProfileView.setImageBitmap(getUserBitmap()); 
-                }
-            }); 
-        }
+    @Override
+    public void onUserProfileInitialized() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                initView();
+            }
+        });  
+    }
+    @Override
+    public void onUserChanged(BitmapParcelable data) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mUserProfileView != null ) 
+                    mUserProfileView.setImageBitmap(getUserBitmap()); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onPowerStateChanged(int state) {
-            Log.d(TAG, "onPowerStateChanged="+state);
-            mIsPowerOff = (state == 2)?true:false;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onPowerStateChanged(int state) {
+        Log.d(TAG, "onPowerStateChanged="+state);
+        mIsPowerOff = (state == 2)?true:false;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onUserAgreementMode(boolean on) {
-            Log.d(TAG, "onUserAgreementMode="+on);
-            mUserAgreementMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onUserAgreementMode(boolean on) {
+        Log.d(TAG, "onUserAgreementMode="+on);
+        mUserAgreementMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onUserSwitching(boolean on) {
-            Log.d(TAG, "onUserSwitching="+on);
-            mUserSwitching = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onUserSwitching(boolean on) {
+        Log.d(TAG, "onUserSwitching="+on);
+        mUserSwitching = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onBTCalling(boolean on) {
-            Log.d(TAG, "onBTCalling="+on);
-            mBTCalling = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onBTCalling(boolean on) {
+        Log.d(TAG, "onBTCalling="+on);
+        mBTCalling = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onEmergencyMode(boolean on) {
-            Log.d(TAG, "onEmergencyMode="+on);
-            mEmergencyMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onEmergencyMode(boolean on) {
+        Log.d(TAG, "onEmergencyMode="+on);
+        mEmergencyMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onBluelinkMode(boolean on) {
-            Log.d(TAG, "onBluelinkMode="+on);
-            mBluelinkMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onBluelinkMode(boolean on) {
+        Log.d(TAG, "onBluelinkMode="+on);
+        mBluelinkMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onImmoilizationMode(boolean on) {
-            Log.d(TAG, "onImmoilizationMode="+on);
-            mImmoilizationMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onImmoilizationMode(boolean on) {
+        Log.d(TAG, "onImmoilizationMode="+on);
+        mImmoilizationMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onSlowdownMode(boolean on) {
-            Log.d(TAG, "onSlowdownMode="+on);
-            mSlowdownMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
+    @Override
+    public void onSlowdownMode(boolean on) {
+        Log.d(TAG, "onSlowdownMode="+on);
+        mSlowdownMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onRearCamera(boolean on) {
-            Log.d(TAG, "onRearCamera="+on);
-            mRearCameraMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkUserIconDisable(); 
-                }
-            }); 
-        }
-    };
+    @Override
+    public void onRearCamera(boolean on) {
+        Log.d(TAG, "onRearCamera="+on);
+        mRearCameraMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkUserIconDisable(); 
+            }
+        }); 
+    }
 }

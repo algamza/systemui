@@ -14,7 +14,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
-public class MuteController implements BaseController {
+public class MuteController implements BaseController, SystemControl.SystemCallback {
     private final String TAG = "MuteController";
     private MenuLayout mView;
     private SystemControl mSystem;  
@@ -35,7 +35,7 @@ public class MuteController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         mOn = mSystem.getMuteOn(); 
         mView.updateEnable(mOn);
 
@@ -70,36 +70,34 @@ public class MuteController implements BaseController {
         }
     }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onMuteOnChanged(boolean isOn) {
-            if ( mView == null ) return;
-            if ( isOn ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
-        }
+    @Override
+    public void onMuteOnChanged(boolean isOn) {
+        if ( mView == null ) return;
+        if ( isOn ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
+    }
 
-        @Override
-        public void onVolumeSettingsActivated(boolean on) {
-            mIsVolumeSettingsActivated = on;
-        }
+    @Override
+    public void onVolumeSettingsActivated(boolean on) {
+        mIsVolumeSettingsActivated = on;
+    }
 
-        @Override
-        public void onCallingChanged(boolean on) {
-            mIsCalling = on; 
-            if ( mIsCalling ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-        }
-        
-        @Override
-        public void onAVOnChanged(boolean on) {
-            mIsAVOn = on; 
-            updateModeEnable(mIsAVOn); 
-        }
-    };
+    @Override
+    public void onCallingChanged(boolean on) {
+        mIsCalling = on; 
+        if ( mIsCalling ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+    }
+    
+    @Override
+    public void onAVOnChanged(boolean on) {
+        mIsAVOn = on; 
+        updateModeEnable(mIsAVOn); 
+    }
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override

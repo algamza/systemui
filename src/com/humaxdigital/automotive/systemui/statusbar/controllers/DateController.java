@@ -14,7 +14,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import android.util.Log; 
 import java.util.Objects; 
 
-public class DateController {
+public class DateController implements StatusBarSystem.StatusBarSystemCallback {
     private static String TAG = "DateController"; 
     private View mParentView; 
     private Context mContext;
@@ -41,14 +41,14 @@ public class DateController {
     public void init(StatusBarSystem service) {
         if ( service == null ) return;
         mService = service; 
-        mService.registerSystemCallback(mDateTimeCallback); 
+        mService.registerSystemCallback(this); 
         if ( mService.isDateTimeInitialized() ) initView(); 
         checkSpecialCase();
     }
 
     public void deinit() {
         if ( mService == null ) return;
-        mService.unregisterSystemCallback(mDateTimeCallback); 
+        mService.unregisterSystemCallback(this); 
     }
 
     private void initView() {
@@ -148,88 +148,87 @@ public class DateController {
         }
     }
 
-    private final StatusBarSystem.StatusBarSystemCallback mDateTimeCallback = new StatusBarSystem.StatusBarSystemCallback() {
-        @Override
-        public void onDateTimeInitialized() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    initView(); 
-                }
-            });  
-        }
-        @Override
-        public void onDateTimeChanged(String time) {
-            mTime = time; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateClockUI(mTime, mType);
-                }
-            }); 
-        }
 
-        @Override
-        public void onTimeTypeChanged(String type) {
-            mType = type; 
-            mTime = mService.getDateTime(); 
+    @Override
+    public void onDateTimeInitialized() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                initView(); 
+            }
+        });  
+    }
+    @Override
+    public void onDateTimeChanged(String time) {
+        mTime = time; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateClockUI(mTime, mType);
+            }
+        }); 
+    }
 
-            Log.d(TAG, "onTimeTypeChanged:type="+type+", time="+mTime);
-            
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateClockUI(mTime, mType);
-                }
-            }); 
-        }
+    @Override
+    public void onTimeTypeChanged(String type) {
+        mType = type; 
+        mTime = mService.getDateTime(); 
 
-        @Override
-        public void onPowerStateChanged(int state) {
-            Log.d(TAG, "onPowerStateChanged="+state);
-            mIsPowerOff = (state == 2)?true:false;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkSpecialCase(); 
-                }
-            }); 
-        }
+        Log.d(TAG, "onTimeTypeChanged:type="+type+", time="+mTime);
+        
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateClockUI(mTime, mType);
+            }
+        }); 
+    }
 
-        @Override
-        public void onUserAgreementMode(boolean on) {
-            Log.d(TAG, "onUserAgreementMode="+on);
-            mUserAgreementMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkSpecialCase(); 
-                }
-            }); 
-        }
+    @Override
+    public void onPowerStateChanged(int state) {
+        Log.d(TAG, "onPowerStateChanged="+state);
+        mIsPowerOff = (state == 2)?true:false;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkSpecialCase(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onUserSwitching(boolean on) {
-            Log.d(TAG, "onUserSwitching="+on);
-            mUserSwitching = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkSpecialCase(); 
-                }
-            }); 
-        }
+    @Override
+    public void onUserAgreementMode(boolean on) {
+        Log.d(TAG, "onUserAgreementMode="+on);
+        mUserAgreementMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkSpecialCase(); 
+            }
+        }); 
+    }
 
-        @Override
-        public void onRearCamera(boolean on) {
-            Log.d(TAG, "onRearCamera="+on);
-            mRearCameraMode = on; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    checkSpecialCase(); 
-                }
-            }); 
-        }
-    };
+    @Override
+    public void onUserSwitching(boolean on) {
+        Log.d(TAG, "onUserSwitching="+on);
+        mUserSwitching = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkSpecialCase(); 
+            }
+        }); 
+    }
+
+    @Override
+    public void onRearCamera(boolean on) {
+        Log.d(TAG, "onRearCamera="+on);
+        mRearCameraMode = on; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                checkSpecialCase(); 
+            }
+        }); 
+    }
 }

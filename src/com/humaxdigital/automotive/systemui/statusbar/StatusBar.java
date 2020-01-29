@@ -50,7 +50,7 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-public class StatusBar implements SystemUIBase {
+public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemCallback {
     private static final String TAG = "StatusBar";
     private WindowManager mWindowManager;
     private AudioManager mAudioManager;
@@ -78,6 +78,7 @@ public class StatusBar implements SystemUIBase {
     private ActivityMonitor mActivityMonitor = null; 
     private boolean mIsSwipeGestureMode = true;
     private boolean mIsDroplistTouchEnable = false; 
+    private StatusBar mThis = this; 
 
     @Override
     public void onCreate(Context context) {
@@ -273,7 +274,7 @@ public class StatusBar implements SystemUIBase {
 
             mStatusBarSystem = mStatusBarService.getStatusBarSystem(); 
             if ( mStatusBarSystem != null ) 
-                mStatusBarSystem.registerSystemCallback(mSystemStatusCallback);
+                mStatusBarSystem.registerSystemCallback(mThis);
         }
 
         @Override
@@ -283,6 +284,10 @@ public class StatusBar implements SystemUIBase {
                 mControllerManager = null;
             });
 
+            if ( mStatusBarSystem != null ) 
+                mStatusBarSystem.unregisterSystemCallback(mThis);
+
+            mStatusBarSystem = null; 
             mStatusBarService = null;
         }
     };
@@ -435,16 +440,15 @@ public class StatusBar implements SystemUIBase {
         if ( mStatusBarService.isUserSwitching() ) is_special = true; 
         return is_special; 
     }
-    private StatusBarSystem.StatusBarSystemCallback mSystemStatusCallback = new StatusBarSystem.StatusBarSystemCallback() {
-        @Override
-        public void onUserAgreementMode(boolean on) {
-            //updateDisableWindow(); 
-        }
-        @Override
-        public void onUserSwitching(boolean on) {
-            updateDisableWindow(); 
-        }
-    }; 
+    
+    @Override
+    public void onUserAgreementMode(boolean on) {
+        //updateDisableWindow(); 
+    }
+    @Override
+    public void onUserSwitching(boolean on) {
+        updateDisableWindow(); 
+    }
 
     private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
         @Override

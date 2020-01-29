@@ -27,7 +27,7 @@ import android.util.Log;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 import com.humaxdigital.automotive.systemui.R; 
 
-public class VolumeController extends VolumeControllerBase {
+public class VolumeController extends VolumeControllerBase implements VolumeControlService.VolumeCallback {
     private static final String TAG = "VolumeController"; 
 
     private enum AudioStateIcon {
@@ -113,7 +113,7 @@ public class VolumeController extends VolumeControllerBase {
         Log.d(TAG, "fetch"); 
         mController = service; 
         if ( mController == null ) return; 
-        mController.registerCallback(mServiceCallback); 
+        mController.registerCallback(this); 
         mCurrentVolumeType = mController.getCurrentVolumeType(); 
         mCurrentVolumeMax = mController.getVolumeMax(mCurrentVolumeType); 
         mCurrentVolume = mController.getVolume(mCurrentVolumeType); 
@@ -130,75 +130,72 @@ public class VolumeController extends VolumeControllerBase {
         mVolumeMute = mController.getCurrentMute(); 
     }
 
-    private VolumeControlService.VolumeCallback mServiceCallback = 
-        new VolumeControlService.VolumeCallback() {
-        @Override
-        public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
-            updateMuteState();
-            mCurrentVolumeType = type; 
+    @Override
+    public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
+        updateMuteState();
+        mCurrentVolumeType = type; 
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
+            }
+        }); 
+        mCurrentVolumeMax = max; 
+        if ( mCurrentVolume > val ) { 
+            mCurrentVolume = val; 
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                   mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
+                    volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                    }
                 }
             }); 
-            mCurrentVolumeMax = max; 
-            if ( mCurrentVolume > val ) { 
-                mCurrentVolume = val; 
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                        }
-                    }
-                }); 
-            } 
-            else {
-                mCurrentVolume = val; 
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                        }
-                    }
-                }); 
-            }
-        }
-
-        @Override
-        public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
-            updateMuteState();
+        } 
+        else {
+            mCurrentVolume = val; 
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
-                    mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
-                    if ( mute ) {
-                        mTextVolume.setText(MUTE_VALUE_TEXT);
-                        mProgress.setProgress(convertToProgressValue(max, 0));
-                    }
-                    else {
-                        mTextVolume.setText(convertToStep(max, volume));
-                        mProgress.setProgress(convertToProgressValue(max, volume));
+                    volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                     }
                 }
             }); 
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onMuteChanged(convertToType(type), mute);
-            }
         }
+    }
 
-        @Override
-        public void onShowUI(boolean show) {
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onShowUI(show);
+    @Override
+    public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
+        updateMuteState();
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
+                mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+                if ( mute ) {
+                    mTextVolume.setText(MUTE_VALUE_TEXT);
+                    mProgress.setProgress(convertToProgressValue(max, 0));
+                }
+                else {
+                    mTextVolume.setText(convertToStep(max, volume));
+                    mProgress.setProgress(convertToProgressValue(max, volume));
+                }
             }
+        }); 
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onMuteChanged(convertToType(type), mute);
         }
-    };
+    }
+
+    @Override
+    public void onShowUI(boolean show) {
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onShowUI(show);
+        }
+    }
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {
         VolumeChangeListener.Type ret = VolumeChangeListener.Type.UNKNOWN; 

@@ -65,14 +65,14 @@ public class TMSClient {
         LOCATION_SHARING
     }
 
-    public static abstract class TMSCallback {
-        public void onConnectionChanged(ConnectionStatus connection) {};
-        public void onSignalLevelChanged(int level) {};
-        public void onCallingStatusChanged(CallingStatus status) {};
-        public void onDataUsingChanged(DataUsingStatus status) {}
-        public void onLocationSharingChanged(LocationSharingStatus status) {};
-        public void onEmergencyCall(boolean on) {};
-        public void onBluelinkCall(boolean on) {};
+    public interface TMSCallback {
+        public void onConnectionChanged(ConnectionStatus connection);
+        default public void onSignalLevelChanged(int level) {};
+        default public void onCallingStatusChanged(CallingStatus status) {};
+        default public void onDataUsingChanged(DataUsingStatus status) {}
+        default public void onLocationSharingChanged(LocationSharingStatus status) {};
+        default public void onEmergencyCall(boolean on) {};
+        default public void onBluelinkCall(boolean on) {};
     }
 
     public TMSClient(Context context) {

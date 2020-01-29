@@ -21,7 +21,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
-public class SystemCallController extends BaseController<Integer> {
+public class SystemCallController extends BaseController<Integer> implements TMSClient.TMSCallback {
     private final String TAG = "SystemCallController";
     private TMSClient mTMSClient = null;
     private IUserBluetooth mUserBluetooth = null; 
@@ -80,7 +80,7 @@ public class SystemCallController extends BaseController<Integer> {
             Log.e(TAG, "error:"+e);
         } 
         if ( mTMSClient != null ) 
-            mTMSClient.unregisterCallback(mTMSCallback);
+            mTMSClient.unregisterCallback(this);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class SystemCallController extends BaseController<Integer> {
     public void fetchTMSClient(TMSClient tms) {
         mTMSClient = tms; 
         if ( mTMSClient != null ) 
-            mTMSClient.registerCallback(mTMSCallback); 
+            mTMSClient.registerCallback(this); 
         mCurrentStatus = getCurrentCallStatus();
         Log.d(TAG, "fetchTMSClient="+mCurrentStatus); 
     }
@@ -280,19 +280,17 @@ public class SystemCallController extends BaseController<Integer> {
         return observer; 
     }
 
-    private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
-        @Override
-        public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
-            Log.d(TAG, "onConnectionChanged="+connection); 
-            broadcastChangeEvent();
-        }
+    @Override
+    public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
+        Log.d(TAG, "onConnectionChanged="+connection); 
+        broadcastChangeEvent();
+    }
 
-        @Override
-        public void onCallingStatusChanged(TMSClient.CallingStatus status) {
-            Log.d(TAG, "onCallingStatusChanged="+status); 
-            broadcastChangeEvent();
-        }
-    }; 
+    @Override
+    public void onCallingStatusChanged(TMSClient.CallingStatus status) {
+        Log.d(TAG, "onCallingStatusChanged="+status); 
+        broadcastChangeEvent();
+    }
 
     private final IUserBluetoothCallback.Stub mUserBluetoothCallback = 
         new IUserBluetoothCallback.Stub() {

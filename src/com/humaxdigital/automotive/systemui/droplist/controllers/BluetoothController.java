@@ -13,7 +13,7 @@ import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
-public class BluetoothController implements BaseController {
+public class BluetoothController implements BaseController, SystemControl.SystemCallback {
     private MenuLayout mView;
     private SystemControl mSystem;
     private Listener mListener; 
@@ -33,7 +33,7 @@ public class BluetoothController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return;
         mSystem = system;
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         mOn = mSystem.getBluetoothOn(); 
         mView.updateEnable(mOn);
     }
@@ -56,35 +56,32 @@ public class BluetoothController implements BaseController {
         mView.updateText(res.getString(R.string.STR_BLUETOOTH_06_ID));
     }
 
+    @Override
+    public void onBluetoothOnChanged(boolean isOn) {
+        if ( mView == null || mHandler == null ) return;
+        if ( isOn ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
+    }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onBluetoothOnChanged(boolean isOn) {
-            if ( mView == null || mHandler == null ) return;
-            if ( isOn ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
-        }
+    @Override
+    public void onCallingChanged(boolean on) {
+        mIsCalling = on; 
+        if ( mIsCalling || mIsCarlifeConnected ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+    }
 
-        @Override
-        public void onCallingChanged(boolean on) {
-            mIsCalling = on; 
-            if ( mIsCalling || mIsCarlifeConnected ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-        }
-
-        @Override
-        public void onCarlifeConnectionChanged(boolean connect) {
-            mIsCarlifeConnected = connect; 
-            if ( mIsCarlifeConnected || mIsCalling ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-        }
-    };
+    @Override
+    public void onCarlifeConnectionChanged(boolean connect) {
+        mIsCarlifeConnected = connect; 
+        if ( mIsCarlifeConnected || mIsCalling ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+    }
 
     private MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override

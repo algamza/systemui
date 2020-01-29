@@ -32,7 +32,7 @@ import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextImg;
 
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarClimate;
 
-public class ClimateController {
+public class ClimateController implements StatusBarClimate.StatusBarClimateCallback {
     private static final String TAG = "ClimateController"; 
     private static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
@@ -118,13 +118,13 @@ public class ClimateController {
     public void init(StatusBarClimate service) {
         Log.d(TAG, "init()"); 
         mService = Objects.requireNonNull(service); 
-        mService.registerClimateCallback(mClimateCallback); 
+        mService.registerClimateCallback(this); 
         if ( mService.isInitialized() ) update(); 
     }
 
     public void deinit() {
         if ( mService != null ) 
-            mService.unregisterClimateCallback(mClimateCallback); 
+            mService.unregisterClimateCallback(this); 
     }
 
     private void initToggleValue() {
@@ -674,201 +674,194 @@ public class ClimateController {
         }
     }; 
 
-    private final StatusBarClimate.StatusBarClimateCallback mClimateCallback 
-        = new StatusBarClimate.StatusBarClimateCallback() {
-        @Override
-        public void onInitialized() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    update(); 
-                }
-            }); 
-        }
-        @Override
-        public void onDRTemperatureChanged(float temp) {
-            if ( mTempDR == null ) return; 
-            mTempDRState = temp;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateTemp(mTempDR, mTempDRState); 
-                }
-            }); 
-        }
-        @Override
-        public void onDRSeatStatusChanged(int status) {
-            if ( mSeatDR == null ) return;
-            mSeatDRState = SeatState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mSeatDR.update(mSeatDRState.ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onDRSeatOptionChanged(int option) {
-            updateClimateType();
-        }
-        @Override
-        public void onAirCirculationChanged(boolean isOn) {
-            if ( mIntake == null ) return; 
-            mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mIntake.update(mIntakeState.ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onAirConditionerChanged(boolean isOn) {
-            if ( mAC == null ) return; 
-            mACState = isOn?ACState.ON:ACState.OFF;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateAC();
-                }
-            });    
-        }
-        @Override
-        public void onAirCleaningChanged(int status) {
-            if ( mAirCleaning == null ) return; 
-            mAirCleaningState = AirCleaning.values()[status]; 
-            
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( mAirCleaning != null ) 
-                        mAirCleaning.update(mAirCleaningState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onSyncChanged(boolean sync) {
-            if ( mSync == null ) return; 
-            mSyncState = sync ? SyncState.ON:SyncState.OFF; 
-            
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( mSync != null ) 
-                        mSync.update(mSyncState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onFanDirectionChanged(int direction) {
-            if ( mFanDirection == null ) return; 
-            mFanDirectionState = FanDirectionState.values()[direction]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateFanDirection();
-                }
-            }); 
-        }
-        @Override
-        public void onBlowerSpeedChanged(int status) {
-            mFanSpeedState = FanSpeedState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( isClimateOff() ) updateClimate(false); 
-                    else {
-                        updateFanSpeed(mFanSpeedState);
-                        updateClimate(true);
-                    }
-                }
-            }); 
-        }
-        @Override
-        public void onPSSeatStatusChanged(int status) {
-            if ( mSeatPS == null ) return; 
-            mSeatPSState = SeatState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mSeatPS.update(mSeatPSState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onPSSeatOptionChanged(int option) {
-            updateClimateType();
-        }
 
-        @Override
-        public void onPSTemperatureChanged(float temp) {
-            if ( mTempPS == null ) return; 
-            mTempPSState = temp;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateTemp(mTempPS, mTempPSState); 
-                }
-            }); 
-        }
-
-        @Override
-        public void onFrontDefogStatusChanged(int state) {
-            mFrontDefogState = FrontDefogState.values()[state]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateFanDirection();
-                }
-            }); 
-        }
-
-        @Override
-        public void onModeOffChanged(boolean off) {
-            if ( mHandler == null ) return; 
-
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateModeOff(off); 
-                }
-            }); 
-        }
-
-        @Override
-        public void onIGNOnChanged(boolean on) {
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateIGOnChange(on); 
-                }
-            }); 
-        }
+    @Override
+    public void onInitialized() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                update(); 
+            }
+        }); 
+    }
+    @Override
+    public void onDRTemperatureChanged(float temp) {
+        if ( mTempDR == null ) return; 
+        mTempDRState = temp;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateTemp(mTempDR, mTempDRState); 
+            }
+        }); 
+    }
+    @Override
+    public void onDRSeatStatusChanged(int status) {
+        if ( mSeatDR == null ) return;
+        mSeatDRState = SeatState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSeatDR.update(mSeatDRState.ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onDRSeatOptionChanged(int option) {
+        updateClimateType();
+    }
+    @Override
+    public void onAirCirculationChanged(boolean isOn) {
+        if ( mIntake == null ) return; 
+        mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mIntake.update(mIntakeState.ordinal());
+            }
+        }); 
+    }
+    @Override
+    public void onAirConditionerChanged(boolean isOn) {
+        if ( mAC == null ) return; 
+        mACState = isOn?ACState.ON:ACState.OFF;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateAC();
+            }
+        });    
+    }
+    @Override
+    public void onAirCleaningChanged(int status) {
+        if ( mAirCleaning == null ) return; 
+        mAirCleaningState = AirCleaning.values()[status]; 
         
-        @Override
-        public void onOperateOnChanged(boolean on) {
-            if ( mHandler == null ) return; 
-
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateOperateOnChange(on); 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mAirCleaning != null ) 
+                    mAirCleaning.update(mAirCleaningState.ordinal()); 
+            }
+        }); 
+    }
+    @Override
+    public void onSyncChanged(boolean sync) {
+        if ( mSync == null ) return; 
+        mSyncState = sync ? SyncState.ON:SyncState.OFF; 
+        
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mSync != null ) 
+                    mSync.update(mSyncState.ordinal()); 
+            }
+        }); 
+    }
+    @Override
+    public void onFanDirectionChanged(int direction) {
+        if ( mFanDirection == null ) return; 
+        mFanDirectionState = FanDirectionState.values()[direction]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateFanDirection();
+            }
+        }); 
+    }
+    @Override
+    public void onBlowerSpeedChanged(int status) {
+        mFanSpeedState = FanSpeedState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( isClimateOff() ) updateClimate(false); 
+                else {
+                    updateFanSpeed(mFanSpeedState);
+                    updateClimate(true);
                 }
-            }); 
-        }
+            }
+        }); 
+    }
+    @Override
+    public void onPSSeatStatusChanged(int status) {
+        if ( mSeatPS == null ) return; 
+        mSeatPSState = SeatState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSeatPS.update(mSeatPSState.ordinal()); 
+            }
+        }); 
+    }
+    @Override
+    public void onPSSeatOptionChanged(int option) {
+        updateClimateType();
+    }
 
-        @Override
-        public void onRearCameraOn(boolean on) {
-            // Not implement
-        }
-    };
+    @Override
+    public void onPSTemperatureChanged(float temp) {
+        if ( mTempPS == null ) return; 
+        mTempPSState = temp;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateTemp(mTempPS, mTempPSState); 
+            }
+        }); 
+    }
+
+    @Override
+    public void onFrontDefogStatusChanged(int state) {
+        mFrontDefogState = FrontDefogState.values()[state]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateFanDirection();
+            }
+        }); 
+    }
+
+    @Override
+    public void onModeOffChanged(boolean off) {
+        if ( mHandler == null ) return; 
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateModeOff(off); 
+            }
+        }); 
+    }
+
+    @Override
+    public void onIGNOnChanged(boolean on) {
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateIGOnChange(on); 
+            }
+        }); 
+    }
+    
+    @Override
+    public void onOperateOnChanged(boolean on) {
+        if ( mHandler == null ) return; 
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateOperateOnChange(on); 
+            }
+        }); 
+    }
 }
