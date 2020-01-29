@@ -20,6 +20,7 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class SystemUserProfileController extends BaseController<Bitmap> {
     private final String TAG = "SystemUserProfileController"; 
@@ -41,7 +42,6 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         //filter.addAction(Intent.ACTION_USER_REMOVED);
         //filter.addAction(Intent.ACTION_USER_ADDED);
@@ -69,17 +69,14 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     }
 
     public void registerUserChangeCallback(UserChangeListener listener) {
-        if ( listener == null ) return; 
-        mUserChangeListeners.add(listener); 
+        mUserChangeListeners.add(Objects.requireNonNull(listener)); 
     }
 
     public void unregisterUserChangeCallback(UserChangeListener listener) {
-        if ( listener == null ) return; 
-        mUserChangeListeners.remove(listener);
+        mUserChangeListeners.remove(Objects.requireNonNull(listener));
     }
 
     private void requestUserIcon() {
-        if ( mContext == null ) return;
         Intent intent = new Intent(CONSTANTS.REQUEST_CURRENT_USER_ICON); 
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
     }
@@ -94,7 +91,7 @@ public class SystemUserProfileController extends BaseController<Bitmap> {
     }
 
     private Bitmap getUserBitmap(int id) {
-        if ( mUserManager == null || mContext == null ) return null;
+        if ( mUserManager == null ) return null;
         Log.d(TAG, "getUserBitmap"); 
         Bitmap bm = mUserManager.getUserIcon(id);
         if ( bm == null ) {

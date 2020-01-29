@@ -5,7 +5,7 @@ import android.extension.car.CarAudioManagerEx;
 import android.extension.car.log.VcrmEventLog; 
 
 import android.util.Log;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 
 public class ScenarioVCRMLog {
     private final String TAG = "ScenarioVCRMLog"; 
@@ -32,7 +32,7 @@ public class ScenarioVCRMLog {
     }
 
     private CarAudioManagerEx mCarAudioManagerEx = null;
-    private HashMap<LogType,Integer> mLogVolume = new HashMap<>();
+    private WeakHashMap<LogType,Integer> mLogVolume = new WeakHashMap<>();
 
     public ScenarioVCRMLog() {
     }

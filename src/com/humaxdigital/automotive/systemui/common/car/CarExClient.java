@@ -21,10 +21,11 @@ import android.car.CarNotConnectedException;
 
 import android.util.Log;
 import java.util.ArrayList;
+import java.util.Objects;
 
-public class CarExClient {
-    private static final String TAG = "CarExClient";
-
+public enum CarExClient {
+    INSTANCE; 
+    private static final String TAG = CarExClient.class.getSimpleName();
     private enum STATE {
         IDLE, 
         CONNECTED, 
@@ -49,21 +50,12 @@ public class CarExClient {
     private CarUSMManager mUsmManager = null; 
     private CarNaviManagerEx mCarNaviMananger = null;
 
-    private static CarExClient mInstance = null; 
-    private CarExClient() {}
-    private static class Singleton {
-        private static final CarExClient instance = new CarExClient(); 
-    }
-    public static CarExClient getInstance() {
-        return Singleton.instance;
-    }
-
     public synchronized void connect(Context context, CarExClientListener listener) {
-        if ( context == null || listener == null ) return;
-        mContext = context; 
-        mListeners.add(listener); 
-        if ( mState == STATE.CONNECTED ) listener.onConnected(); 
-        if ( (mState == STATE.IDLE) 
+        mContext = Objects.requireNonNull(context); 
+        mListeners.add(Objects.requireNonNull(listener)); 
+        if ( mState == STATE.CONNECTED ) 
+            Objects.requireNonNull(listener).onConnected(); 
+        if ( ( mState == STATE.IDLE) 
             && mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE) ) {
             mCarEx = CarEx.createCar(mContext, mServiceConnectionListenerClient);
             mState = STATE.CONNECTING; 
@@ -72,8 +64,7 @@ public class CarExClient {
     }
 
     public synchronized void disconnect(CarExClientListener listener) {
-        if ( listener == null ) return;
-        mListeners.remove(listener);
+        mListeners.remove(Objects.requireNonNull(listener));
     }
 
     public synchronized CarHvacManagerEx getHvacManager() {

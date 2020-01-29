@@ -64,7 +64,6 @@ public class BeepImpl extends BaseImplement<Boolean> {
     }
 
     private void init() {
-        if ( mContext == null ) return;
         mContentResolver = mContext.getContentResolver();
         if ( mContentResolver == null ) return; 
         mBeepObserver = createObserver(); 
@@ -75,7 +74,6 @@ public class BeepImpl extends BaseImplement<Boolean> {
 
 
     private void setBeepOn(boolean on) {
-        if ( mContext == null ) return;
         Log.d(TAG, "setBeepOn="+on);
         Settings.System.putIntForUser(mContext.getContentResolver(), 
             Settings.System.SOUND_EFFECTS_ENABLED,
@@ -83,7 +81,6 @@ public class BeepImpl extends BaseImplement<Boolean> {
     }
 
     private boolean isBeepOn() {
-        if ( mContext == null ) return false;
         int on = 0; 
         try {
             on = Settings.System.getIntForUser(mContext.getContentResolver(), 

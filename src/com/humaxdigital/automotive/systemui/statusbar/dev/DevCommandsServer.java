@@ -10,12 +10,14 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.util.Objects; 
+
 public class DevCommandsServer implements DevCommands {
     private static final String TAG = "DevCommandsServer";
     private Context mContext;
 
     public DevCommandsServer(Context context) {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public Bundle invokeDevCommand(String command, Bundle args) {

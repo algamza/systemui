@@ -18,8 +18,9 @@ import android.os.UserHandle;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
+import java.util.Objects; 
 
 import android.util.Log;
 
@@ -87,20 +88,19 @@ public class VolumeController extends VolumeControllerBase {
     private VolumeUtil.Type mCurrentVolumeType; 
     private boolean mIsVolumeUp = false; 
 
-    private Map<Integer, Integer> mVolumeTypeImages = new HashMap<>();
+    private Map<Integer, Integer> mVolumeTypeImages = new WeakHashMap<>();
 
     public VolumeController() { }
 
     @Override
     public void init(Context context, View view) {
         Log.d(TAG, "VolumeController"); 
-        mContext = context;
-        mView = view;
+        mContext = Objects.requireNonNull(context);
+        mView = Objects.requireNonNull(view);
         int id_progress_max = mContext.getResources().getIdentifier("progress_max", "integer",  mContext.getPackageName());
         if ( id_progress_max > 0 ) PROGRESS_STEP_MAX = mContext.getResources().getInteger(id_progress_max);
         createViews();
         initViews();
-        if ( mContext == null ) return; 
         mUIHandler = new Handler(mContext.getMainLooper());
         registKeyObserver();
     }
@@ -134,7 +134,6 @@ public class VolumeController extends VolumeControllerBase {
         new VolumeControlService.VolumeCallback() {
         @Override
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
-            if ( mUIHandler == null ) return; 
             updateMuteState();
             mCurrentVolumeType = type; 
             mUIHandler.post(new Runnable() {
@@ -192,6 +191,13 @@ public class VolumeController extends VolumeControllerBase {
                 listener.onMuteChanged(convertToType(type), mute);
             }
         }
+
+        @Override
+        public void onShowUI(boolean show) {
+            for ( VolumeChangeListener listener : mListener ) {
+                listener.onShowUI(show);
+            }
+        }
     };
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {
@@ -223,7 +229,6 @@ public class VolumeController extends VolumeControllerBase {
     }
 
     private void createViews() {
-        if ( mView == null ) return;
         Log.d(TAG, "createViews"); 
         mImgPlusN = mView.findViewById(R.id.img_plus_n);
         mImgPlusS = mView.findViewById(R.id.img_plus_s);
@@ -605,12 +610,10 @@ public class VolumeController extends VolumeControllerBase {
     }
 
     private void registKeyObserver() {
-        if ( mContext == null ) return;
         ContentResolver resolver = mContext.getContentResolver(); 
         ContentObserver observer_volume_up = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContext == null || mUIHandler == null ) return;
                 if ( mCurrentVolume != mCurrentVolumeMax ) return;
                 int on = Settings.Global.getInt(mContext.getContentResolver(), 
                     CONSTANTS.GLOBAL_KEY_VOLUME_UP, 
@@ -630,7 +633,6 @@ public class VolumeController extends VolumeControllerBase {
         ContentObserver observer_volume_down = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange, Uri uri, int userId) {
-                if ( mContext == null || mUIHandler == null ) return;
                 if ( mCurrentVolume != 0 ) return;
                 int on = Settings.Global.getInt(mContext.getContentResolver(), 
                     CONSTANTS.GLOBAL_KEY_VOLUME_DOWN, 

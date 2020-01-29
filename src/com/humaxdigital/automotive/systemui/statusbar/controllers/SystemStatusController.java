@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
+import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.ui.SystemView;
 
@@ -21,12 +22,13 @@ import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class SystemStatusController {
     private static final String TAG = "SystemStatusController"; 
 
     enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
-    enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL }
+    enum BLEStatus { NONE, BLE_CONNECTED, BLE_CONNECTING, BLE_CONNECTION_FAIL, BLE_DISCONNECTED }
     enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
     enum CallStatus { NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, HF_FREE_STREAMING_CONNECTED
         , CALL_HISTORY_DOWNLOADING, CONTACTS_HISTORY_DOWNLOADING, TMU_CALLING, BT_CALLING, BT_PHONE_MIC_MUTE }
@@ -57,10 +59,9 @@ public class SystemStatusController {
     private StatusBarSystem mService; 
 
     public SystemStatusController(Context context, View view) {
-        if ( (view == null) || (context == null) ) return;
-        mContext = context;
-        if ( mContext != null ) mRes = mContext.getResources();
-        mStatusBar = view;  
+        mContext = Objects.requireNonNull(context);
+        mRes = mContext.getResources();
+        mStatusBar = Objects.requireNonNull(view);  
         mHandler = new Handler(mContext.getMainLooper());
         initView();
     }
@@ -82,8 +83,6 @@ public class SystemStatusController {
     }
 
     private void initView() {
-        if ( (mStatusBar == null) || (mRes == null) ) return;
-
         Drawable none = ResourcesCompat.getDrawable(mRes, R.drawable.co_clear, null);
 
         if ( ProductConfig.getFeature() == ProductConfig.FEATURE.AVNT ) {
@@ -179,6 +178,7 @@ public class SystemStatusController {
                 add(ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_02, null));
             }})
             .addIcon(BLEStatus.BLE_CONNECTION_FAIL.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_error, null))
+            .addIcon(BLEStatus.BLE_DISCONNECTED.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_ic_ble_no, null))
             .inflate(); 
         mSystemViews.add(mBle);
 
@@ -237,7 +237,6 @@ public class SystemStatusController {
         }
         @Override
         public void onMuteStatusChanged(int status) {
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -249,7 +248,6 @@ public class SystemStatusController {
         @Override
         public void onBLEStatusChanged(int status) {
             if ( mBle == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -261,7 +259,6 @@ public class SystemStatusController {
         @Override
         public void onBTBatteryStatusChanged(int status) {
             if ( mBtBattery == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -273,7 +270,6 @@ public class SystemStatusController {
         @Override
         public void onCallStatusChanged(int status) {
             if ( mPhone == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -284,8 +280,7 @@ public class SystemStatusController {
         }
         @Override
         public void onAntennaStatusChanged(int status) {
-            if ( mAntenna == null ) return;
-            if ( mHandler == null ) return;             
+            if ( mAntenna == null ) return;           
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -298,7 +293,6 @@ public class SystemStatusController {
         @Override
         public void onDataStatusChanged(int status) {
             if ( mPhoneData == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -310,7 +304,6 @@ public class SystemStatusController {
         @Override
         public void onWifiStatusChanged(int status) {
             if ( mWifi == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -322,20 +315,22 @@ public class SystemStatusController {
         @Override
         public void onWirelessChargeStatusChanged(int status) {
             if ( mWirelessCharging == null ) return;
-            if ( mHandler == null ) return; 
+            if ( WirelessChargeStatus.values()[status] == WirelessChargeStatus.CHARGING ) {
+                OSDPopup.send(mContext, 
+                    mContext.getResources().getString(R.string.STR_WIRELESS_CHARGING_ID), 
+                    R.drawable.co_ic_osd_battery_charging);
+            }
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.d(TAG, "onWirelessChargeStatusChanged="+status); 
                     mWirelessCharging.update(WirelessChargeStatus.values()[status].ordinal());
                 }
-            }); 
-            
+            });
         }
         @Override
         public void onModeStatusChanged(int status) {
             if ( mLocationSharing == null ) return;
-            if ( mHandler == null ) return; 
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {

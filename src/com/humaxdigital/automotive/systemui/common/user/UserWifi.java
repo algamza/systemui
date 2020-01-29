@@ -15,6 +15,7 @@ import android.net.ConnectivityManager;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class UserWifi extends IUserWifi.Stub {
     private final String TAG = "UserWifi";
@@ -28,10 +29,8 @@ public class UserWifi extends IUserWifi.Stub {
 
     public UserWifi(PerUserService service) {
         Log.d(TAG, "UserWifi");
-        mService = service; 
-        if ( service == null ) return;
+        mService = Objects.requireNonNull(service); 
         mContext = mService.getApplicationContext(); 
-        if ( mContext == null ) return;
         mManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
         mConnectivityMgr = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE); 
         IntentFilter filter = new IntentFilter();
@@ -54,13 +53,13 @@ public class UserWifi extends IUserWifi.Stub {
     @Override
     public void registCallback(IUserWifiCallback callback) throws RemoteException {
         Log.d(TAG, "registCallback");
-        mListeners.add(callback);
+        mListeners.add(Objects.requireNonNull(callback));
     }
 
     @Override
     public void unregistCallback(IUserWifiCallback callback) throws RemoteException {
         Log.d(TAG, "unregistCallback");
-        mListeners.remove(callback);
+        mListeners.remove(Objects.requireNonNull(callback));
     }
 
     @Override

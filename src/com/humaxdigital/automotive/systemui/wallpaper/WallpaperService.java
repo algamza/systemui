@@ -29,6 +29,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.io.IOException;
+import java.util.Objects; 
 
 import android.extension.car.settings.CarExtraSettings;
 
@@ -46,8 +47,7 @@ public class WallpaperService implements SystemUIBase {
     @Override
     public void onCreate(Context context) {
         Log.d(TAG, "onCreate"); 
-        mContext = context; 
-        if ( mContext == null ) return;
+        mContext = Objects.requireNonNull(context); 
         registUserSwicher();
         initThemeObserver();
     }
@@ -64,7 +64,6 @@ public class WallpaperService implements SystemUIBase {
     }
 
     private void initThemeObserver() {
-        if ( mContext == null ) return;
         mContentResolver =  mContext.getContentResolver();
         if ( mContentResolver == null ) return;
         setWallPaper(getCurrentTheme()); 
@@ -94,7 +93,6 @@ public class WallpaperService implements SystemUIBase {
     }
 
     private int getCurrentTheme() {
-        if ( mContext == null ) return 0;
         int theme = Settings.System.getIntForUser(mContext.getContentResolver(), 
             CarExtraSettings.System.ADVANCED_THEME_STYLE,
             CarExtraSettings.System.ADVANCED_THEME_STYLE_DEFAULT,
@@ -136,14 +134,12 @@ public class WallpaperService implements SystemUIBase {
 
     private void registUserSwicher() {
         Log.d(TAG, "registUserSwicher");
-        if ( mContext == null ) return;
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_SWITCHED);
         mContext.registerReceiverAsUser(mUserChangeReceiver, UserHandle.ALL, filter, null, null);
     }
 
     private void unregistUserSwicher() {
-        if ( mContext == null ) return;
         mContext.unregisterReceiver(mUserChangeReceiver);
     }
 
@@ -156,7 +152,6 @@ public class WallpaperService implements SystemUIBase {
 
     private Point getDefaultDisplaySize() {
         Point p = new Point();
-        if ( mContext == null ) return p;
         WindowManager wm = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         Display d = wm.getDefaultDisplay();
         d.getRealSize(p);

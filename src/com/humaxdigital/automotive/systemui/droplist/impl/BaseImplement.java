@@ -1,6 +1,7 @@
 package com.humaxdigital.automotive.systemui.droplist.impl;
 
 import android.content.Context;
+import java.util.Objects; 
 
 public class BaseImplement<E> {
     public interface Listener<E> {
@@ -11,7 +12,7 @@ public class BaseImplement<E> {
     protected Context mContext;
 
     public BaseImplement(Context context) {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public BaseImplement setListener(Listener listener) {

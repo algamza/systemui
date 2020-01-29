@@ -12,8 +12,8 @@ import android.widget.RemoteViews;
 import android.widget.FrameLayout;
 import android.view.View;
 import android.util.Log;
-import java.util.HashMap;
-
+import java.util.WeakHashMap;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.R;
 
@@ -34,7 +34,7 @@ public class NotificationUI extends LinearLayout {
     private ImageView mIcon;
     private ImageView mLine;
     private FrameLayout mViews;
-    private HashMap<Flag, Boolean> mFlags = new HashMap<>();
+    private WeakHashMap<Flag, Boolean> mFlags = new WeakHashMap<>();
 
     private String mDataTitle = ""; 
     private String mDataText = ""; 
@@ -44,7 +44,7 @@ public class NotificationUI extends LinearLayout {
 
     public NotificationUI(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
         initFlags();
     }
 
@@ -57,7 +57,6 @@ public class NotificationUI extends LinearLayout {
     }
 
     public void inflate() {
-        if ( mContext == null ) return;
         LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if ( mFlags.get(Flag.VIEWS)) {
             inflater.inflate(R.layout.notification_remote_view, this, true);

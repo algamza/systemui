@@ -44,6 +44,7 @@ import com.humaxdigital.automotive.systemui.droplist.impl.WifiImpl;
 import com.humaxdigital.automotive.systemui.droplist.impl.CallingImpl;
 
 import com.humaxdigital.automotive.systemui.common.user.PerUserService;
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.user.IUserService;
 import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
@@ -52,6 +53,7 @@ import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 import android.util.Log; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
@@ -116,7 +118,7 @@ public class SystemControl extends Service {
         
         Log.d(TAG, "onCreate");
 
-        CarExClient.getInstance().connect(this, mCarClientListener); 
+        CarExClient.INSTANCE.connect(this, mCarClientListener); 
 
         mDisplay =  new DisplayImpl(this);
         mImplements.add(mDisplay);
@@ -191,7 +193,7 @@ public class SystemControl extends Service {
         unregistUserSwicher();
         for ( BaseImplement impl : mImplements ) impl.destroy();
 
-        CarExClient.getInstance().disconnect(mCarClientListener); 
+        CarExClient.INSTANCE.disconnect(mCarClientListener); 
 
         super.onDestroy();
     }
@@ -242,7 +244,7 @@ public class SystemControl extends Service {
 
     public void registerCallback(SystemCallback callback) {
         synchronized (mCallbacks) {
-            mCallbacks.add(callback);
+            mCallbacks.add(Objects.requireNonNull(callback));
         }
     }
 
@@ -253,7 +255,7 @@ public class SystemControl extends Service {
         return mBluetooth == null ? false : mBluetooth.get();
     }
     public void openBluetoothSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_BLUETOOTH_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_BLUETOOTH_SETTING); 
     };
 
     public void setWifiOn(boolean isOn) {
@@ -263,7 +265,7 @@ public class SystemControl extends Service {
         return mWifi == null ? false : mWifi.get();
     }
     public void openWifiSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_WIFI_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_WIFI_SETTING); 
     };
 
     public void setMuteOn(boolean isOn) {
@@ -280,7 +282,7 @@ public class SystemControl extends Service {
         return mQuietMode == null ? false : mQuietMode.get();
     }
     public void openQuietModeSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_QUIET_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_QUIET_SETTING); 
     };
 
     public void setBeepOn(boolean isOn) {
@@ -298,7 +300,7 @@ public class SystemControl extends Service {
         return mAutoMode.get();
     }
     public void openAutomaticSetting() {
-        openActivity(CONSTANTS.ACTION_OPEN_AUTOMATIC_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_AUTOMATIC_SETTING); 
     };
 
     public void setBrightness(int progress) {
@@ -368,12 +370,12 @@ public class SystemControl extends Service {
     }
     public void openThemeSetting() {
         Log.d(TAG, "openThemeSetting");
-        openActivity(CONSTANTS.ACTION_OPEN_THEME_SETTING); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_THEME_SETTING); 
     }
 
     public void openSetup() {
         Log.d(TAG, "openSetup");
-        openActivity(CONSTANTS.ACTION_OPEN_SETUP); 
+        openActivityAndCloseVR(CONSTANTS.ACTION_OPEN_SETUP); 
     }
 
     public void performClick() {
@@ -488,7 +490,7 @@ public class SystemControl extends Service {
         new CarExClient.CarExClientListener() {
         @Override
         public void onConnected() {
-            CarExClient client = CarExClient.getInstance(); 
+            CarExClient client = CarExClient.INSTANCE; 
             if ( client == null ) return;
             if ( mBrightness != null ) mBrightness.fetchEx(client);
             if ( mAutoMode != null ) mAutoMode.fetchEx(client);
@@ -501,7 +503,7 @@ public class SystemControl extends Service {
 
         @Override
         public void onDisconnected() {
-            CarExClient.getInstance().getTMSManager().unregisterCallback(mTMSEventListener); 
+            CarExClient.INSTANCE.getTMSManager().unregisterCallback(mTMSEventListener); 
             if ( mBrightness != null ) mBrightness.fetchEx(null);
             if ( mAutoMode != null ) mAutoMode.fetchEx(null);
             if ( mQuietMode != null ) mQuietMode.fetchEx(null);
@@ -509,6 +511,11 @@ public class SystemControl extends Service {
             if ( mClusterBrightness != null ) mClusterBrightness.fetchEx(null); 
         }
     };
+
+    private void openActivityAndCloseVR(String action) {
+        CommonMethod.closeVR(this); 
+        openActivity(action); 
+    }
 
     private void openActivity(String action) {
         if ( !action.equals("") ) {

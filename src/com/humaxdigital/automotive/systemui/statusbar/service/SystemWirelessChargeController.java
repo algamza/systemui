@@ -30,7 +30,6 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
     @Override
     public void connect() {
         Log.d(TAG, "connect"); 
-        if ( mContext == null ) return;
     }
 
     @Override

@@ -14,6 +14,8 @@ import android.graphics.Rect;
 import android.content.Context;
 import android.content.res.Resources;
 
+import java.util.Objects; 
+
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.droplist.SystemControl;
 import com.humaxdigital.automotive.systemui.droplist.ui.CustomSeekBar;
@@ -52,12 +54,12 @@ public class BrightnessController implements BaseController {
     private boolean mIsUserSeek = false; 
 
     public BrightnessController(Context context) {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     @Override
     public BaseController init(View view) {
-        if ( view == null || mContext == null ) return this;
+        if ( view == null ) return this;
         mView = view;
 
         mSeekbar = mView.findViewById(R.id.seekbar);
@@ -83,14 +85,16 @@ public class BrightnessController implements BaseController {
 
     @Override
     public void fetch(SystemControl system) {
-        if ( system == null || mCheckbox == null || mSeekbar == null || mImgCenter == null ) return;
-        mSystem = system;
+        
+        mSystem = Objects.requireNonNull(system);
         mSystem.registerCallback(mBrightnessListener);
 
         mBrightnessProgress = mSystem.getBrightness();
         mClusterChecked = mSystem.getClusterCheck();
         mClusterBrightnessProgress = mSystem.getClusterBrightness();
         
+        if ( mCheckbox == null || mSeekbar == null || mImgCenter == null ) return;
+
         mCheckbox.setChecked(mClusterChecked);
 
         if ( mCheckbox.isChecked() ) {
@@ -119,9 +123,9 @@ public class BrightnessController implements BaseController {
 
     @Override
     public void refresh(Context context) {
-        if ( context == null || mCheckboxText == null ) return;
-        Resources res = context.getResources();
-        mCheckboxText.setText(res.getString(R.string.STR_MESG_14967_ID));
+        Resources res = Objects.requireNonNull(context).getResources();
+        if ( mCheckboxText != null ) 
+            mCheckboxText.setText(res.getString(R.string.STR_MESG_14967_ID));
     }
 
     public void clear() {
@@ -255,7 +259,7 @@ public class BrightnessController implements BaseController {
                 mClusterBrightnessProgress = convertValidClusterBrightness(progress); 
                 if ( mText != null ) 
                     mText.setText(Integer.toString(progress)); 
-                if ( fromUser ) mSystem.setClusterBrightness(mClusterBrightnessProgress);
+                // if ( fromUser ) mSystem.setClusterBrightness(mClusterBrightnessProgress);
             } else {
                 mBrightnessProgress = convertLevelToBrightness(progress, mBrightnessMin, mBrightnessMax);
                 if ( mText != null ) 
@@ -287,6 +291,9 @@ public class BrightnessController implements BaseController {
                 case MotionEvent.ACTION_UP: {
                     if ( mSystem != null ) mSystem.performClick();
                     if ( mPopupView != null ) mPopupView.setVisibility(View.GONE);
+                    if ( mCheckbox.isChecked() ) {
+                        mSystem.setClusterBrightness(mClusterBrightnessProgress);
+                    }
                     break;
                 }
             }

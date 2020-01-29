@@ -24,6 +24,7 @@ import android.extension.car.CarPropertyFilter;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,6 +36,7 @@ public class ClimateControllerManager {
         AIR_CIRCULATION, 
         AIR_CONDITIONER,
         AIR_CLEANING,
+        SYNC,
         DRIVER_SEAT,
         DRIVER_SEAT_OPTION,
         DRIVER_TEMPERATURE,
@@ -83,6 +85,7 @@ public class ClimateControllerManager {
     private ClimateAirCirculationController mAirCirculation; 
     private ClimateAirConditionerController mAirConditioner; 
     private ClimateAirCleaningController mAirCleaning; 
+    private ClimateSyncController mSync; 
     private ClimateDRSeatController mDRSeat; 
     private ClimateDRSeatOptionController mDRSeatOption; 
     private ClimateDRTempController mDRTemp; 
@@ -109,6 +112,7 @@ public class ClimateControllerManager {
         public void onDriverSeatOptionChanged(int option);
         public void onAirCirculationChanged(boolean isOn);
         public void onAirConditionerChanged(boolean isOn);
+        public void onSyncChanged(boolean sync);
         public void onAirCleaningChanged(int status);
         public void onFanDirectionChanged(int direction);
         public void onFanSpeedStatusChanged(int status);
@@ -127,15 +131,14 @@ public class ClimateControllerManager {
     }
 
     public ClimateControllerManager(Context context, DataStore store) {
-        if ( context == null || store == null ) return;
-        mContext = context; 
-        mDataStore = store; 
+        mContext = Objects.requireNonNull(context); 
+        mDataStore = Objects.requireNonNull(store); 
 
         createControllers(); 
     }
 
     public ClimateControllerManager registerListener(ClimateListener listener) {
-        mListener = listener; 
+        mListener = Objects.requireNonNull(listener); 
         return this; 
     }
 
@@ -168,6 +171,7 @@ public class ClimateControllerManager {
             hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT);
             hvac_filter.addId(CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON);
             hvac_filter.addId(CarHvacManagerEx.ID_ZONED_AC_ON);
+            hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_DISPLAY_SYNC);
             hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS);
             hvac_filter.addId(CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS);
             mCarHvacManagerEx.registerCallback(mHvacCallback, hvac_filter);
@@ -303,6 +307,7 @@ public class ClimateControllerManager {
             case AIR_CIRCULATION: return mAirCirculation;  
             case AIR_CONDITIONER: return mAirConditioner; 
             case AIR_CLEANING: return mAirCleaning; 
+            case SYNC: return mSync; 
             case DRIVER_SEAT: return mDRSeat; 
             case DRIVER_SEAT_OPTION: return mDRSeatOption; 
             case DRIVER_TEMPERATURE: return mDRTemp; 
@@ -328,6 +333,8 @@ public class ClimateControllerManager {
         mControllers.add(mAirConditioner); 
         mAirCleaning = new ClimateAirCleaningController(mContext, mDataStore); 
         mControllers.add(mAirCleaning); 
+        mSync = new ClimateSyncController(mContext, mDataStore); 
+        mControllers.add(mSync); 
         mDRSeat = new ClimateDRSeatController(mContext, mDataStore); 
         mControllers.add(mDRSeat); 
         mDRSeatOption = new ClimateDRSeatOptionController(mContext, mDataStore); 
@@ -359,14 +366,8 @@ public class ClimateControllerManager {
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT:
-            case CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_OPERATE_STATUS: {
                 if ( (int)getValue(val) == 0 ) return true;
-                break; 
-            }
-            case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
-            case CarHvacManagerEx.ID_ZONED_AC_ON: {
-                if ( (boolean)getValue(val) ) return true;
                 break; 
             }
             default: break; 
@@ -408,6 +409,9 @@ public class ClimateControllerManager {
                         break;
                     case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON:
                         handleAirCirculationUpdate(getValue(val));
+                        break;
+                    case CarHvacManagerEx.VENDOR_CANRX_HVAC_DISPLAY_SYNC:
+                        handleSyncUpdate(getValue(val));
                         break;
                     case CarHvacManagerEx.ID_ZONED_AC_ON:
                         handleAirConditionerUpdate(getValue(val));
@@ -520,6 +524,15 @@ public class ClimateControllerManager {
         if ( mAirCirculation.update(airCirculationState) )
             if ( mListener != null ) 
                 mListener.onAirCirculationChanged(mAirCirculation.get());
+    }
+
+    private void handleSyncUpdate(int sync) {
+        if ( mSync == null ) return; 
+        if ( mSync.checkValid(sync) ) {
+            if ( mSync.update(mSync.checkOn(sync)) )
+            if ( mListener != null ) 
+                mListener.onSyncChanged(mSync.get());
+        }
     }
 
     private void handleAirConditionerUpdate(boolean airConditionderState) {

@@ -13,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.BroadcastReceiver;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +29,8 @@ import android.view.MotionEvent;
 import android.view.Gravity;
 import android.widget.ImageView;
 
+import java.util.Objects; 
+
 import com.humaxdigital.automotive.systemui.SystemUIBase;
 import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.statusbar.controllers.ControllerManager;
@@ -42,6 +45,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
@@ -49,6 +53,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 public class StatusBar implements SystemUIBase {
     private static final String TAG = "StatusBar";
     private WindowManager mWindowManager;
+    private AudioManager mAudioManager;
     private Context mContext = null; 
     private ViewGroup mNavBarWindow;
     private ViewGroup mStatusBarWindow;
@@ -71,15 +76,15 @@ public class StatusBar implements SystemUIBase {
     private Boolean mTouchValid = false; 
     private int mTouchOffset = 15;
     private ActivityMonitor mActivityMonitor = null; 
-    private boolean mIsGestureMode = true; 
+    private boolean mIsSwipeGestureMode = true;
     private boolean mIsDroplistTouchEnable = false; 
 
     @Override
     public void onCreate(Context context) {
         Log.d(TAG, "onCreate");
-        mContext = context; 
-        if ( mContext == null ) return;
+        mContext = Objects.requireNonNull(context); 
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
         mUseSystemGestures = mContext.getResources().getBoolean(R.bool.config_useSystemGestures);
         startStatusBarService(mContext);
         createNaviBarWindow();
@@ -127,7 +132,6 @@ public class StatusBar implements SystemUIBase {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if ( mContext == null ) return;
         mContext.getResources().updateConfiguration(newConfig, null);
         if ( mControllerManager != null ) mControllerManager.configurationChange(newConfig);
     }
@@ -146,7 +150,7 @@ public class StatusBar implements SystemUIBase {
 
     private void enableDropListTouchWindow(boolean enable) {
         Log.d(TAG, "enableDropListTouchWindow:current="+enable+", old="+mIsDroplistTouchEnable); 
-        if ( mWindowManager == null || mContext == null ) return;
+        if ( mWindowManager == null ) return;
         if ( enable == mIsDroplistTouchEnable ) return; 
         mIsDroplistTouchEnable = enable; 
         if ( mIsDroplistTouchEnable ) {
@@ -177,7 +181,7 @@ public class StatusBar implements SystemUIBase {
     }
 
     private void createNaviBarWindow() {
-        if ( mWindowManager == null || mContext == null ) return;
+        if ( mWindowManager == null ) return;
         mNavBarWindow = (ViewGroup) View.inflate(mContext, R.layout.nav_bar_window, null);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
@@ -284,15 +288,13 @@ public class StatusBar implements SystemUIBase {
     };
 
     private void registerSystemGestureReceiver() {
-        if ( mContext == null ) return;
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(CONSTANTS.ACTION_SYSTEM_GESTURE);
         mContext.registerReceiver(mSystemGestureReceiver, intentFilter);
     }
 
     private void unregisterSystemGestureReceiver() {
-        if ( mContext != null ) 
-            mContext.unregisterReceiver(mSystemGestureReceiver);
+        mContext.unregisterReceiver(mSystemGestureReceiver);
     }
 
     private final View.OnTouchListener mDroplistTouchListener = new View.OnTouchListener() {
@@ -335,7 +337,7 @@ public class StatusBar implements SystemUIBase {
     }; 
 
     private boolean isSpecialCase() {
-        if ( mStatusBarService == null || mContext == null ) return false; 
+        if ( mStatusBarService == null ) return false; 
         if ( mStatusBarService.isUserAgreement() ) {
             Log.d(TAG, "is special case : user agreement"); 
             return true;
@@ -381,16 +383,49 @@ public class StatusBar implements SystemUIBase {
     }
 
     private void updateUIController(Runnable r) {
-        if ( mControllerManager == null || mContext == null ) return;
+        if ( mControllerManager == null ) return;
         Handler handler = new Handler(mContext.getMainLooper()); 
         handler.post(r); 
     }
 
     private void openDroplist() {
         Log.d(TAG, "openDroplist"); 
-        if ( mContext == null ) return;
         Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DROPLIST); 
         mContext.sendBroadcast(intent);
+    }
+
+    private void closeDroplist() {
+        Log.d(TAG, "closeDroplist");
+        Intent intent = new Intent(CONSTANTS.ACTION_CLOSE_DROPLIST);
+        mContext.sendBroadcast(intent);
+    }
+
+    private boolean checkAndGoToAllMenu() {
+        if (CommonMethod.getShowingHomePageOrNegative(mContext) != 1) {
+            // TODO: Should define dedicated extra instead of gesture's.
+            CommonMethod.goHome(mContext, Bundle.forPair(
+                    CONSTANTS.EXTRA_GESTURE, CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkAndGoToHomeWidgets() {
+        if (CommonMethod.getShowingHomePageOrNegative(mContext) != 0) {
+            CommonMethod.goHome(mContext);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkAndTurnOffDisplay() {
+        ComponentName topActivity = CommonMethod.getTopActivity(mContext);
+        if (topActivity == null)
+            return false;
+        if (CONSTANTS.SCREENSAVER_ACTIVITY_NAME.equals(topActivity.flattenToShortString()))
+            return false;
+        CommonMethod.turnOffDisplay(mContext);
+        return true;
     }
 
     private boolean isUserSpecialCase() {
@@ -414,12 +449,49 @@ public class StatusBar implements SystemUIBase {
     private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ( !mIsGestureMode ) return;
             String action = intent.getAction();
             if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
                 String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
-                if ("swipe-from-top".equals(gesture) && !isSpecialCase()) {
-                    openDroplist();
+                Log.d(TAG, "system gesture received: " + gesture);
+
+                // swipe-from-top - open the drop list.
+                if (CONSTANTS.SYSTEM_GESTURE_SWIPE_FROM_TOP.equals(gesture)){
+                    if (mIsSwipeGestureMode && !isSpecialCase()) {
+                        openDroplist();
+                    }
+                }
+
+                // hold-by-fingers - trigger some actions depends on counter of fingers
+                if (CONSTANTS.SYSTEM_GESTURE_HOLD_BY_FINGERS.equals(gesture)) {
+                    if (!isSpecialCase()) {
+                        boolean didAction = false;
+                        boolean didClose = false;
+                        final int fingers = intent.getIntExtra(CONSTANTS.EXTRA_FINGERS, 0);
+
+                        if (fingers == 3) {         // 3: go to all menu
+                            didAction = checkAndGoToAllMenu();
+                        } else if (fingers == 4) {  // 4: go home (3-widgets)
+                            didAction = checkAndGoToHomeWidgets();
+                        } else if (fingers == 5) {  // 5: enter display-off mode
+                            didAction = checkAndTurnOffDisplay();
+                        }
+
+                        if (CommonMethod.isVRShown(mContext)) {
+                            CommonMethod.closeVR(mContext);
+                            didClose = true;
+                        }
+
+                        if (CommonMethod.isDropListShown(mContext)) {
+                            closeDroplist();
+                            didClose = true;
+                        }
+
+                        Log.d(TAG, fingers + " fingers did action? " + didAction + ", did close? " + didClose);
+
+                        if (didAction || didClose) {
+                            mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK);
+                        }
+                    }
                 }
             }
         }
@@ -433,9 +505,9 @@ public class StatusBar implements SystemUIBase {
             String name = topActivity.getClassName(); 
             Log.d(TAG, "onActivityChanged="+name); 
             if ( name == null ) return;
-            if ( name.contains(".MapAutoActivity") ) mIsGestureMode = false;
-            else mIsGestureMode = true; 
-            enableDropListTouchWindow(!mIsGestureMode); 
+            if ( name.contains(".MapAutoActivity") ) mIsSwipeGestureMode = false;
+            else mIsSwipeGestureMode = true;
+            enableDropListTouchWindow(!mIsSwipeGestureMode);
         }
     }; 
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 public class BaseController<E> {
     protected final List<Listener> mListeners = new ArrayList<>();
@@ -15,16 +16,16 @@ public class BaseController<E> {
     }
 
     public BaseController(Context context, DataStore store) {
-        mContext = context;
-        mDataStore = store;
+        mContext = Objects.requireNonNull(context);
+        mDataStore = Objects.requireNonNull(store);
     }
     
     public void addListener(Listener listener) { 
-        if ( listener != null ) mListeners.add(listener); 
+        mListeners.add(Objects.requireNonNull(listener)); 
     }
     
     public void removeListener(Listener listener) { 
-        if( listener != null ) mListeners.remove(listener); 
+        mListeners.remove(Objects.requireNonNull(listener)); 
     }
 
     protected void connect() {}

@@ -48,7 +48,6 @@ public class SystemDataController extends BaseController<Integer> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
         Log.d(TAG, "connect");
         mConnectivity = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);

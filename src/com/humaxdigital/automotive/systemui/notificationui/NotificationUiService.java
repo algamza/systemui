@@ -56,6 +56,7 @@ public class NotificationUiService extends Service {
     private ArrayList<String> mBlackList = new ArrayList<>(); 
     private String mCurrentKey = ""; 
     private String mCurrentTitle = ""; 
+    private String mCurrentSub = ""; 
 
     private String mBlockKey = ""; 
     private boolean mIsBlockState = false; 
@@ -261,27 +262,31 @@ public class NotificationUiService extends Service {
 
     private boolean isUpdateOSD(String key, String title, CharSequence text, CharSequence sub) {
         boolean ret = false;
+        String _sub = ""; 
+        String _text = ""; 
+        if ( sub != null ) _sub = sub.toString(); 
+        if ( text != null ) _text = text.toString(); 
+
+        if ( mCurrentNotificationUI == null ) return false; 
+
         if ( mCurrentKey.equals(key) ) {
             Log.d(TAG, "isUpdateOSD equals(key)="+key); 
-            if ( title != null && !title.equals("") && title.equals(mCurrentTitle) ) {
-                if ( text != null ) {
-                    if ( mCurrentNotificationUI != null ) 
-                        mCurrentNotificationUI.updateBody(text.toString()); 
+            if ( !_text.equals("") && title != null && title.equals(mCurrentTitle) ) {
+                if ( !_sub.equals("") && mCurrentSub.equals("") ) {
+                    Log.d(TAG, "changed ui"); 
+                } else {
                     Log.d(TAG, "update body"); 
-                    ret = true;
-                }
-                if ( sub != null ) {
-                    if ( mCurrentNotificationUI != null ) 
-                        mCurrentNotificationUI.updateSubBody(sub.toString()); 
-                    Log.d(TAG, "update sub"); 
+                    mCurrentNotificationUI.updateBody(_text); 
+                    mCurrentNotificationUI.updateSubBody(_sub); 
                     ret = true;
                 }
             }
-        } else {
-            mCurrentKey = key;
-            ret = false;
-        }
+        } 
+
+        mCurrentKey = key;
         mCurrentTitle = title; 
+        mCurrentSub = _sub; 
+
         return ret; 
     }
 
@@ -360,6 +365,7 @@ public class NotificationUiService extends Service {
     private void clearSpecialCase() {
         mCurrentKey = ""; 
         mCurrentTitle = ""; 
+        mCurrentSub = ""; 
     }
 
     public void openDialog() {

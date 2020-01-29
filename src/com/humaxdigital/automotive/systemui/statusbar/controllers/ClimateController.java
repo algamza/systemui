@@ -22,8 +22,9 @@ import android.os.UserHandle;
 import android.extension.car.settings.CarExtraSettings;
 import android.util.Log; 
 
-import com.humaxdigital.automotive.systemui.R;
+import java.util.Objects; 
 
+import com.humaxdigital.automotive.systemui.R;
 import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuImg;
 import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextDec;
@@ -42,6 +43,7 @@ public class ClimateController {
     private enum ACState { ON, OFF };
     private enum IntakeState { ON, OFF };
     private enum AirCleaning { ON, OFF }; 
+    private enum SyncState { ON, OFF }; 
     private enum FrontDefogState { ON, OFF }; 
     private enum ClimateType { NONE, DEFAULT, NO_SEAT }; 
 
@@ -79,6 +81,9 @@ public class ClimateController {
     private ClimateMenuImg mAirCleaning; 
     private AirCleaning mAirCleaningState = AirCleaning.OFF; 
 
+    private ClimateMenuImg mSync; 
+    private SyncState mSyncState = SyncState.OFF; 
+
     private FrontDefogState mFrontDefogState = FrontDefogState.OFF; 
 
     private Boolean mModeOff = false; 
@@ -96,10 +101,9 @@ public class ClimateController {
     private final List<View> mClimateViews = new ArrayList<>();
 
     public ClimateController(Context context, View view) {
-        if ( view == null || context == null ) return;
         Log.d(TAG, "ClimateController()"); 
-        mContext = context;
-        mClimate = view;
+        mContext = Objects.requireNonNull(context);
+        mClimate = Objects.requireNonNull(view);
         mRes = mContext.getResources();
         mHandler = new Handler(mContext.getMainLooper());
         mContentResolver = mContext.getContentResolver();
@@ -113,15 +117,14 @@ public class ClimateController {
 
     public void init(StatusBarClimate service) {
         Log.d(TAG, "init()"); 
-        mService = service; 
-        if ( mService != null ) {
-            mService.registerClimateCallback(mClimateCallback); 
-            if ( mService.isInitialized() ) update(); 
-        }
+        mService = Objects.requireNonNull(service); 
+        mService.registerClimateCallback(mClimateCallback); 
+        if ( mService.isInitialized() ) update(); 
     }
 
     public void deinit() {
-        if ( mService != null ) mService.unregisterClimateCallback(mClimateCallback); 
+        if ( mService != null ) 
+            mService.unregisterClimateCallback(mClimateCallback); 
     }
 
     private void initToggleValue() {
@@ -159,6 +162,7 @@ public class ClimateController {
         if ( mIntake != null ) mIntake.setOnClickListener(mClimateIntakeOnClick); 
         if ( mFanDirection != null ) mFanDirection.setOnClickListener(mClimateFanDirectionOnClick); 
         if ( mAirCleaning != null ) mAirCleaning.setOnClickListener(mClimateAirCleaningOnClick); 
+        if ( mSync != null ) mSync.setOnClickListener(mClimateSyncOnClick); 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
             if ( mSeatDR != null ) mSeatDR.setOnClickListener(mSeatHeaterDROnClick); 
             if ( mSeatPS != null ) mSeatPS.setOnClickListener(mSeatHeaterPSOnClick); 
@@ -174,12 +178,11 @@ public class ClimateController {
         if ( mIntake != null ) mIntake.setOnClickListener(null); 
         if ( mFanDirection != null ) mFanDirection.setOnClickListener(null); 
         if ( mAirCleaning != null ) mAirCleaning.setOnClickListener(null); 
+        if ( mSync != null ) mSync.setOnClickListener(null); 
     }
 
     private void initView() {
         Log.d(TAG, "initView()"); 
-        if ( mClimate == null || mContext == null ) return;
-
         if ( mClimatePanel != null ) {
             removeOnClick();
             mClimateViews.clear();
@@ -263,7 +266,13 @@ public class ClimateController {
             .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
             .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
-            .inflate(); 
+            .inflate();
+
+        mSync = new ClimateMenuImg(mContext)
+            .addIcon(SyncState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
+            .addIcon(SyncState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
+            .inflate();  
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 
             || ProductConfig.getModel() == ProductConfig.MODEL.DU2EV ) {
@@ -368,6 +377,7 @@ public class ClimateController {
         mSeatPSState = SeatState.values()[mService.getPSSeatStatus()]; 
         mTempPSState = mService.getPSTemperature();
         mAirCleaningState = AirCleaning.values()[mService.getAirCleaningState()]; 
+        mSyncState = mService.getSyncState() ? SyncState.ON:SyncState.OFF; 
         mModeOff = mService.isModeOff(); 
         mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
 
@@ -379,6 +389,7 @@ public class ClimateController {
         if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
         if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
+        if ( mSync != null ) mSync.update(mSyncState.ordinal()); 
         if ( mFanSpeed != null ) {
             if ( isClimateOff() ) updateClimate(false); 
             else {
@@ -478,8 +489,6 @@ public class ClimateController {
     }
 
     private void updateTemp(ClimateMenuTextDec view, float temp) { 
-        if ( mContext == null ) return; 
-
         if ( !mTempOn && isClimateOff() ) {
             view.update(mContext.getResources().getString(R.string.temp_off)); 
             return; 
@@ -544,6 +553,7 @@ public class ClimateController {
         if ( mSeatPS != null ) mSeatPS.updateDisable(disable);
         if ( mTempPS != null ) mTempPS.updateDisable(disable);
         if ( mAirCleaning != null ) mAirCleaning.updateDisable(disable); 
+        if ( mSync != null ) mSync.updateDisable(disable);
     } 
 
     private View.OnClickListener mClimateOnClick = new View.OnClickListener() {
@@ -610,6 +620,20 @@ public class ClimateController {
                     mService.setAirCleaningState(AirCleaning.ON.ordinal());
                 } else {
                     mService.setAirCleaningState(AirCleaning.OFF.ordinal());
+                }
+            }
+        }
+    }; 
+
+    private final View.OnClickListener mClimateSyncOnClick = new View.OnClickListener() { 
+        @Override
+        public void onClick(View v) {
+            if ( mSync == null || !mIGNOn || mIsOperateOn ) return; 
+            if ( mService != null ) {
+                if ( mSyncState == SyncState.OFF ) {
+                    mService.setSyncState(true);
+                } else {
+                    mService.setSyncState(false);
                 }
             }
         }
@@ -722,6 +746,19 @@ public class ClimateController {
                 public void run() {
                     if ( mAirCleaning != null ) 
                         mAirCleaning.update(mAirCleaningState.ordinal()); 
+                }
+            }); 
+        }
+        @Override
+        public void onSyncChanged(boolean sync) {
+            if ( mSync == null ) return; 
+            mSyncState = sync ? SyncState.ON:SyncState.OFF; 
+            
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if ( mSync != null ) 
+                        mSync.update(mSyncState.ordinal()); 
                 }
             }); 
         }

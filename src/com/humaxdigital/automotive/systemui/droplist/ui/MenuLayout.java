@@ -13,7 +13,8 @@ import android.graphics.drawable.StateListDrawable;
 
 import com.humaxdigital.automotive.systemui.R;
 
-import java.util.HashMap;
+import java.util.WeakHashMap;
+import java.util.Objects; 
 
 public class MenuLayout extends LinearLayout {
     public interface MenuListener {
@@ -36,11 +37,11 @@ public class MenuLayout extends LinearLayout {
     private Context mContext;
 
     private Drawable mResIcon = null;
-    private HashMap<Integer,Drawable> mToggleIcons = new HashMap<>();
+    private WeakHashMap<Integer,Drawable> mToggleIcons = new WeakHashMap<>();
     private int mStatus = 0;
-    private HashMap<ButtonState,Drawable> mButtonIcon = new HashMap<>();
+    private WeakHashMap<ButtonState,Drawable> mButtonIcon = new WeakHashMap<>();
     private boolean mEnable = true;
-    private HashMap<Integer,String> mTexts = new HashMap<>();
+    private WeakHashMap<Integer,String> mTexts = new WeakHashMap<>();
     private String mText;
     private boolean mSupportLongClick = true;
     private boolean mSupportClick = true;  
@@ -52,7 +53,7 @@ public class MenuLayout extends LinearLayout {
 
     public MenuLayout(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public MenuLayout inflate() {

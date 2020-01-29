@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
@@ -24,10 +25,8 @@ public class UserAudio extends IUserAudio.Stub {
 
     public UserAudio(PerUserService service) {
         Log.d(TAG, "UserAudio");
-        mService = service; 
-        if ( service == null ) return;
+        mService = Objects.requireNonNull(service); 
         mContext = mService.getApplicationContext(); 
-        if ( mContext == null ) return;
         mManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE); 
         IntentFilter filter = new IntentFilter(); 
         filter.addAction(AudioManager.ACTION_MICROPHONE_MUTE_CHANGED); 
@@ -46,13 +45,13 @@ public class UserAudio extends IUserAudio.Stub {
     @Override
     public void registCallback(IUserAudioCallback callback) throws RemoteException {
         Log.d(TAG, "registCallback");
-        mListeners.add(callback);
+        mListeners.add(Objects.requireNonNull(callback));
     }
 
     @Override
     public void unregistCallback(IUserAudioCallback callback) throws RemoteException {
         Log.d(TAG, "unregistCallback");
-        mListeners.remove(callback);
+        mListeners.remove(Objects.requireNonNull(callback));
     }
 
     @Override

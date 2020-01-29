@@ -21,6 +21,7 @@ import android.util.Log;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects; 
 
 public class ActivityMonitor {
     private static final String TAG = ActivityMonitor.class.getSimpleName();
@@ -44,16 +45,14 @@ public class ActivityMonitor {
     }
 
     public ActivityMonitor(Context context) {
-        if ( context == null ) return;
-        mContext = context;
+        mContext = Objects.requireNonNull(context); 
         mProcessObserver = new ProcessObserver();
         mTaskListener = new TaskListener();
-        mActivityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        mActivityManager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
         mActivityManagerService = ActivityManager.getService();
     }
 
     public ActivityMonitor init() {
-        if ( mContext == null ) return this;
         mHandler = new ActivityMonitorHandler(mContext.getMainLooper());
         try {
             mActivityManagerService.registerProcessObserver(mProcessObserver);
@@ -85,17 +84,15 @@ public class ActivityMonitor {
     }
 
     public ActivityMonitor registerListener(ActivityChangeListener listener) {
-        if ( listener == null ) return this;
         synchronized (this) {
-            mListeners.add(listener);
+            mListeners.add(Objects.requireNonNull(listener));
         }
         return this;
     }
 
     public ActivityMonitor unregisterListener(ActivityChangeListener listener) {
-        if ( listener == null ) return this;
         synchronized (this) {
-            mListeners.remove(listener);
+            mListeners.remove(Objects.requireNonNull(listener));
         }
         return this;
     }

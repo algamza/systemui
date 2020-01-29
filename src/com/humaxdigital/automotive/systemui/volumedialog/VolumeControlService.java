@@ -31,6 +31,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
@@ -41,6 +42,7 @@ public class VolumeControlService extends Service {
     public static abstract class VolumeCallback {
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
         public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute) {}
+        public void onShowUI(boolean show) {};
     }
 
     public class LocalBinder extends Binder {
@@ -61,6 +63,7 @@ public class VolumeControlService extends Service {
     private ScenarioBackupWran mBackupWran = null;
     private ScenarioVCRMLog mVCRMLog = null; 
     private boolean mIsSettingsActivity = false;
+    private boolean mIsSettingsDefault = false; 
     private boolean mIsShow = false; 
 
     @Override
@@ -68,13 +71,14 @@ public class VolumeControlService extends Service {
         super.onCreate();
         Log.d(TAG, "onCreate");
 
-        CarExClient.getInstance().connect(this, mCarClientListener); 
+        CarExClient.INSTANCE.connect(this, mCarClientListener); 
 
         mAudioManager = (AudioManager)this.getSystemService(Context.AUDIO_SERVICE); 
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         registUserSwicher();
 
         mQuiteMode = new ScenarioQuiteMode(this).init();
+        mQuiteMode.registListener(mQuiteModeListener);
         mBackupWran = new ScenarioBackupWran(this).init();
         mVCRMLog = new ScenarioVCRMLog(); 
 
@@ -91,12 +95,15 @@ public class VolumeControlService extends Service {
         Log.d(TAG, "onDestroy");
         unregistReceiver();
 
-        CarExClient.getInstance().disconnect(mCarClientListener); 
+        CarExClient.INSTANCE.disconnect(mCarClientListener); 
         
         unregistUserSwicher();
         cleanupAudioManager();
         
-        if ( mQuiteMode != null ) mQuiteMode.deinit();
+        if ( mQuiteMode != null ) {
+            mQuiteMode.unregistListener(mQuiteModeListener);
+            mQuiteMode.deinit();
+        }
         if ( mBackupWran != null ) mBackupWran.deinit();
         mQuiteMode = null;
         mBackupWran = null;
@@ -118,6 +125,8 @@ public class VolumeControlService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED);
         filter.addAction(CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED);
+        filter.addAction(CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STARTED); 
+        filter.addAction(CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STOPPED); 
         registerReceiverAsUser(mApplicationActionReceiver, UserHandle.ALL, filter, null, null);
     }
 
@@ -130,41 +139,49 @@ public class VolumeControlService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Bundle extras = intent.getExtras();
             if ( action == null ) return;
             Log.d(TAG, "mApplicationActionReceiver="+action);
             switch(action) {
                 case CONSTANTS.ACTION_VOLUME_SETTINGS_STARTED: {
                     mIsSettingsActivity = true;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
                     break;
                 }
-                
                 case CONSTANTS.ACTION_VOLUME_SETTINGS_STOPPED: {
                     mIsSettingsActivity = false;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
+                    break;
+                }
+                case CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STARTED: {
+                    mIsSettingsDefault = true;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsDefaultState(mIsSettingsDefault);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsDefaultState(mIsSettingsDefault);  
+                    break;
+                }
+                case CONSTANTS.ACTION_DEFAULT_SOUND_SETTINGS_STOPPED: {
+                    mIsSettingsDefault = false;
+                    if ( mQuiteMode != null ) mQuiteMode.setSettingsDefaultState(mIsSettingsDefault);
+                    if ( mBackupWran != null ) mBackupWran.setSettingsDefaultState(mIsSettingsDefault);  
                     break;
                 }
             }
-            if ( mQuiteMode != null ) mQuiteMode.setSettingsActivityState(mIsSettingsActivity);
-            if ( mBackupWran != null ) mBackupWran.setSettingsActivityState(mIsSettingsActivity);  
         }
     };
 
 
     public void registerCallback(VolumeCallback callback) {
-        if (callback == null)
-            return;
         Log.d(TAG, "registerCallback");
         synchronized (mCallbacks) {
-            mCallbacks.add(callback);
+            mCallbacks.add(Objects.requireNonNull(callback));
         }
     }
 
     public void unregisterCallback(VolumeCallback callback) {
-        if (callback == null)
-            return;
         Log.d(TAG, "unregisterCallback");
         synchronized (mCallbacks) {
-            mCallbacks.remove(callback);
+            mCallbacks.remove(Objects.requireNonNull(callback));
         }
     }
 
@@ -220,12 +237,11 @@ public class VolumeControlService extends Service {
     public boolean getCurrentMute() {
         if ( mCarAudioManagerEx == null ) return false;
         boolean mute = false;
-		if(mTelephonyManager.getCallState() == mTelephonyManager.CALL_STATE_RINGING)
-		{
+        int call_state = mTelephonyManager.getCallState(); 
+        if( call_state == mTelephonyManager.CALL_STATE_RINGING 
+            || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ){
 			mute = mCarAudioManagerEx.getAudioMutePathStatus(AudioTypes.AUDIO_MUTE_PATH_PHONE);
-		}
-		else
-		{
+		} else {
 			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
 		}
         Log.d(TAG, "getCurrentMute="+mute);
@@ -278,7 +294,7 @@ public class VolumeControlService extends Service {
     }
 
     private void onCarClientConnected() {
-        mCarAudioManagerEx = CarExClient.getInstance().getAudioManager(); 
+        mCarAudioManagerEx = CarExClient.INSTANCE.getAudioManager(); 
         synchronized (mServiceReady) {
             mServiceReady.notify(); 
         }
@@ -294,7 +310,7 @@ public class VolumeControlService extends Service {
         if ( mQuiteMode != null ) mQuiteMode.fetchCarAudioManagerEx(mCarAudioManagerEx);
         if ( mBackupWran != null ) {
             mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
-            mBackupWran.fetchCarSensorManagerEx(CarExClient.getInstance().getSensorManager()); 
+            mBackupWran.fetchCarSensorManagerEx(CarExClient.INSTANCE.getSensorManager()); 
         }
         if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
     }
@@ -360,6 +376,7 @@ public class VolumeControlService extends Service {
 
             if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
                 Log.d(TAG, "SKIP onMasterMuteChanged");
+                broadcastEventShowUI(false); 
                 return;
             }
             
@@ -407,6 +424,15 @@ public class VolumeControlService extends Service {
         synchronized (mCallbacks) {
             for (VolumeCallback callback : mCallbacks) {
                 callback.onMuteChanged(VolumeUtil.convertToType(mode), max, volume, mute);
+            }
+        }
+    }
+
+    private void broadcastEventShowUI(boolean show) {
+        Log.d(TAG, "broadcastEventShowUI:show=" + show);
+        synchronized (mCallbacks) {
+            for (VolumeCallback callback : mCallbacks) {
+                callback.onShowUI(show);
             }
         }
     }
@@ -487,4 +513,13 @@ public class VolumeControlService extends Service {
             if ( mBackupWran != null ) mBackupWran.userRefresh();
         }
     };
+
+    private final ScenarioQuiteMode.ScenarioQuiteModeListener mQuiteModeListener = 
+        new ScenarioQuiteMode.ScenarioQuiteModeListener() {
+        @Override
+        public void onShowUI(boolean show) {
+            Log.d(TAG, "ScenarioQuiteModeListener:"+show);
+            broadcastEventShowUI(show);
+        }
+    }; 
 }

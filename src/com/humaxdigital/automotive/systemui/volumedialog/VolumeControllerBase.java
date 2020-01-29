@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Objects; 
 
 public abstract class VolumeControllerBase {
     protected ArrayList<VolumeChangeListener> mListener = new ArrayList<>();
@@ -39,17 +40,16 @@ public abstract class VolumeControllerBase {
         void onVolumeUp(Type type, int max, int value);
         void onVolumeDown(Type type, int max, int value);
         void onMuteChanged(Type type, boolean mute);
+        void onShowUI(boolean show); 
     }
 
     public void init(Context context, View view) {}
     public void deinit() {}
     public void registVolumeListener(VolumeChangeListener listener) {
-        if ( listener == null ) return;
-        mListener.add(listener);
+        mListener.add(Objects.requireNonNull(listener));
     }
     public void unregistVolumeListener(VolumeChangeListener listener) {
-        if ( listener == null ) return;
-        mListener.remove(listener);
+        mListener.remove(Objects.requireNonNull(listener));
     }
     public void fetch(VolumeControlService service) { }
 }

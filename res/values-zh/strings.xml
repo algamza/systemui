@@ -18,6 +18,7 @@
     <string name="STR_MESG_14845_ID">通话中无法进行操作</string>
     <string name="STR_FEATURE_CURRENTLY_UNAVAILABLE_ID">功能当前不可用</string>
     <string name="STR_MESG_21268_ID">后座静音模式已开启，系统最大音量为20</string>
+    <string name="STR_WIRELESS_CHARGING_ID">正在无线充电</string>
     <string name="STR_JAN_04_ID">1月</string>
     <string name="STR_FEB_04_ID">2月</string>
     <string name="STR_MAR_04_ID">3月</string>

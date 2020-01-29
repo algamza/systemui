@@ -8,20 +8,21 @@ import android.widget.LinearLayout;
 
 import com.humaxdigital.automotive.systemui.R;
 
-import java.util.HashMap;
+import java.util.WeakHashMap;
+import java.util.Objects; 
 
 public class ClimateMenuImg extends LinearLayout {
     private Context mContext;
     private int mStatus = 0;
     private ImageView mView;
-    private HashMap<Integer,Drawable> mIcons= new HashMap<>();
-    private HashMap<Integer,Drawable> mDisableIcons= new HashMap<>();
+    private WeakHashMap<Integer,Drawable> mIcons= new WeakHashMap<>();
+    private WeakHashMap<Integer,Drawable> mDisableIcons= new WeakHashMap<>();
     private Drawable mDisableIcon; 
     private Boolean mDisable = false; 
 
     public ClimateMenuImg(Context context) {
         super(context);
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public ClimateMenuImg inflate() {

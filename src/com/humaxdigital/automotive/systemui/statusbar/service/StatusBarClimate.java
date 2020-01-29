@@ -8,17 +8,18 @@ import android.content.Intent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.provider.Settings;
+import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
-import android.util.Log;
+import java.util.Objects; 
 
 import android.extension.car.settings.CarExtraSettings;
-
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.util.OSDPopup; 
+import com.humaxdigital.automotive.systemui.common.util.CommonMethod; 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
@@ -53,6 +54,7 @@ public class StatusBarClimate {
         public void onAirCirculationChanged(boolean isOn) {}
         public void onAirConditionerChanged(boolean isOn) {}
         public void onAirCleaningChanged(int status) {}
+        public void onSyncChanged(boolean sync) {}
         public void onFanDirectionChanged(int direction) {}
         public void onBlowerSpeedChanged(int status) {}
         public void onPSSeatStatusChanged(int status) {}
@@ -66,10 +68,9 @@ public class StatusBarClimate {
     }
 
     public StatusBarClimate(Context context, DataStore datastore) {
-        if ( context == null || datastore == null ) return;
         Log.d(TAG, "StatusBarClimate");
-        mContext = context; 
-        mDataStore = datastore; 
+        mContext = Objects.requireNonNull(context); 
+        mDataStore = Objects.requireNonNull(datastore); 
 
         mClimateManager = new ClimateControllerManager(mContext, mDataStore)
             .registerListener(mClimateManagerListener); 
@@ -77,23 +78,20 @@ public class StatusBarClimate {
     
     public void registerClimateCallback(StatusBarClimateCallback callback) {
         Log.d(TAG, "registerClimateCallback");
-        if ( callback == null ) return;
         synchronized (mClimateCallbacks) {
-            mClimateCallbacks.add(callback); 
+            mClimateCallbacks.add(Objects.requireNonNull(callback)); 
         }
     }
 
     public void unregisterClimateCallback(StatusBarClimateCallback callback) {
         Log.d(TAG, "unregisterClimateCallback");
-        if ( callback == null ) return;
         synchronized (mClimateCallbacks) {
-            mClimateCallbacks.remove(callback); 
+            mClimateCallbacks.remove(Objects.requireNonNull(callback)); 
         }
     }
 
     public void destroy() {
         Log.d(TAG, "destroy");
-        
         mContext = null;
         mDataStore = null;
         mCarExClient = null;
@@ -251,6 +249,19 @@ public class StatusBarClimate {
         mClimateManager.getController(ClimateControllerManager.ControllerType.AIR_CLEANING).set(state); 
     }
 
+    public boolean getSyncState() { 
+        if ( mClimateManager == null ) return false; 
+        boolean status = (boolean)mClimateManager.getController(ClimateControllerManager.ControllerType.SYNC).get();
+        Log.d(TAG, "getSyncState="+status);
+        return status;  
+    }
+    
+    public void setSyncState(boolean state) { 
+        if ( mClimateManager == null ) return;  
+        Log.d(TAG, "setSyncState="+state);
+        mClimateManager.getController(ClimateControllerManager.ControllerType.SYNC).set(state); 
+    }
+ 
     public int getFanDirection() {
         if ( mClimateManager == null ) return 0; 
         int status = (int)mClimateManager.getController(ClimateControllerManager.ControllerType.FAN_DIRECTION).get();
@@ -338,7 +349,8 @@ public class StatusBarClimate {
             return;
         }
         if ( isUserAgreement() ) {
-            Log.d(TAG, "Current UserAgreement"); 
+            if ( isPowerOff() ) powerOn();
+            Log.d(TAG, "Current UserAgreement, set power on"); 
             return; 
         }
         if ( isUserSwitching() ) {
@@ -376,27 +388,18 @@ public class StatusBarClimate {
                 }
             };
             mTimer.schedule(mTimerTaskClimateChattering, OPEN_CLIMATE_CHATTERING_TIME);
-            vrCloseRequest();
+            CommonMethod.closeVR(mContext);
             Intent intent = new Intent(CONSTANTS.OPEN_HVAC_APP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }
     }
 
-    private void vrCloseRequest() {
-        if ( mContext == null ) return;
-        Log.d(TAG, "vrCloseRequest");
-        Intent intent = new Intent(); 
-        ComponentName name = new ComponentName(CONSTANTS.VR_PACKAGE_NAME, CONSTANTS.VR_RECEIVER_NAME);
-        intent.setComponent(name);
-        intent.setAction(CONSTANTS.VR_DISMISS_ACTION);
-        mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
-    }
-
     private boolean isUserAgreement() {
         int is_agreement = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_IS_AGREEMENT_SCREEN_OUTPUT,
             CarExtraSettings.Global.FALSE);   
+        Log.d(TAG, "isUserAgreement="+is_agreement);
         if ( is_agreement == CarExtraSettings.Global.FALSE ) return false; 
         else return true;
     }
@@ -406,8 +409,25 @@ public class StatusBarClimate {
         int isUserSwitching = Settings.Global.getInt(mContext.getContentResolver(), 
             CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH, 
             CarExtraSettings.Global.FALSE);
+        Log.d(TAG, "isUserSwitching="+isUserSwitching);
         if ( isUserSwitching == CarExtraSettings.Global.TRUE ) return true; 
         else return false;
+    }
+
+    private boolean isPowerOff() {
+        int is_power_off = Settings.Global.getInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.POWER_OFF_MODE,
+            CarExtraSettings.Global.POWER_OFF_MODE_DEFAULT);   
+        Log.d(TAG, "isPowerOff="+is_power_off);
+        if ( is_power_off == CarExtraSettings.Global.POWER_OFF_MODE_ON ) return true; 
+        else return false;
+    }
+
+    private void powerOn() {
+        Log.d(TAG, "powerOn");
+        Settings.Global.putInt(mContext.getContentResolver(), 
+            CarExtraSettings.Global.POWER_OFF_MODE,
+            CarExtraSettings.Global.POWER_OFF_MODE_OFF_TO_AV_OFF); 
     }
 
     private ClimateControllerManager.ClimateListener mClimateManagerListener = 
@@ -473,6 +493,15 @@ public class StatusBarClimate {
             synchronized (mClimateCallbacks) {
                 for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
                     callback.onAirCleaningChanged(status); 
+            }
+        }
+
+        @Override
+        public void onSyncChanged(boolean sync) {
+            Log.d(TAG, "onSyncChanged="+sync);
+            synchronized (mClimateCallbacks) {
+                for ( StatusBarClimateCallback callback : mClimateCallbacks ) 
+                    callback.onSyncChanged(sync); 
             }
         }
 

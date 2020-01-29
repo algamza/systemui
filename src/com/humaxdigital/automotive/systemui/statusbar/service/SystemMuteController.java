@@ -32,7 +32,6 @@ public class SystemMuteController extends BaseController<Integer> {
 
     @Override
     public void connect() {
-        if ( mContext == null ) return;
         Log.d(TAG, "connect"); 
     }
 

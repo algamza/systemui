@@ -16,7 +16,7 @@ import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects; 
 
 public class ControllerManager {
     public interface  Listener {
@@ -38,8 +38,8 @@ public class ControllerManager {
     private View mCloseBtnP; 
 
     public ControllerManager(Context context, View view) {
-        mContext = context;
-        mPanel = view;
+        mContext = Objects.requireNonNull(context);
+        mPanel = Objects.requireNonNull(view);
         init();
     }
 
@@ -56,8 +56,7 @@ public class ControllerManager {
     }
 
     public void configurationChange(Context context) {
-        if ( context == null ) return;
-        mContext = context; 
+        mContext = Objects.requireNonNull(context); 
         for ( BaseController controller : mControllers )
             controller.refresh(mContext);
     }

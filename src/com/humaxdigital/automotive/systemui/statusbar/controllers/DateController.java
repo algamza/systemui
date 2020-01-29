@@ -12,7 +12,7 @@ import com.humaxdigital.automotive.systemui.statusbar.service.BitmapParcelable;
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarSystem;
 
 import android.util.Log; 
-
+import java.util.Objects; 
 
 public class DateController {
     private static String TAG = "DateController"; 
@@ -25,12 +25,16 @@ public class DateController {
     private String mType = "12";
     private Boolean mIsValidTime = true; 
 
+    private boolean mIsPowerOff; 
+    private boolean mUserAgreementMode;
+    private boolean mUserSwitching; 
+    private boolean mRearCameraMode; 
+
     private Handler mHandler; 
 
     public DateController(Context context, View view) {
-        if ( context == null || view == null ) return;
-        mContext = context;
-        mParentView = view;
+        mContext = Objects.requireNonNull(context);
+        mParentView = Objects.requireNonNull(view);
         mHandler = new Handler(mContext.getMainLooper());
     }
 
@@ -39,6 +43,7 @@ public class DateController {
         mService = service; 
         mService.registerSystemCallback(mDateTimeCallback); 
         if ( mService.isDateTimeInitialized() ) initView(); 
+        checkSpecialCase();
     }
 
     public void deinit() {
@@ -47,24 +52,27 @@ public class DateController {
     }
 
     private void initView() {
-        if ( mParentView == null || mService == null ) return;
-        mParentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if ( mService == null ) return;
-                if ( mIsValidTime ) 
-                    mService.openDateTimeSetting(); 
-            }
-        });
+        mParentView.setOnClickListener(mOnClickListener);
 
         mDateVew = mParentView.findViewById(R.id.text_date_time);
         mDateNoonView = mParentView.findViewById(R.id.text_date_noon);
         
-        mTime = mService.getDateTime(); 
-        mType = mService.getTimeType();
+        if ( mService != null ) {
+            mTime = mService.getDateTime(); 
+            mType = mService.getTimeType();
+        }
         
         updateClockUI(mTime, mType);
     }
+
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if ( mService == null ) return;
+            if ( mIsValidTime ) 
+                mService.openDateTimeSetting(); 
+        }
+    }; 
 
     private Boolean isValidTime(String time) {
         if ( time.contains("error") ) return false;
@@ -113,6 +121,33 @@ public class DateController {
         super.finalize();
     }
 
+    private void checkSpecialCase() {
+        if ( mService == null ) return;
+
+        if ( mService.isPowerOff() ) mIsPowerOff = true;
+        if ( mService.isUserAgreement() ) mUserAgreementMode = true;
+        if ( mService.isUserSwitching() ) mUserSwitching = true;
+        if ( mService.isRearCamera() ) mRearCameraMode = true;
+
+        Log.d(TAG, "checkUserIconDisable:mIsPowerOff="+mIsPowerOff+
+            ", mUserAgreementMode="+mUserAgreementMode+
+            ", mUserSwitching="+mUserSwitching+
+            ", mRearCameraMode="+mRearCameraMode); 
+        if ( mIsPowerOff || mUserAgreementMode 
+            || mUserSwitching || mRearCameraMode ) 
+            setUsable(true);
+        else 
+            setUsable(false);
+    }
+    
+    private void setUsable(boolean usable) {
+        if ( usable ) {
+            mParentView.setOnClickListener(null);
+        } else {
+            mParentView.setOnClickListener(mOnClickListener);
+        }
+    }
+
     private final StatusBarSystem.StatusBarSystemCallback mDateTimeCallback = new StatusBarSystem.StatusBarSystemCallback() {
         @Override
         public void onDateTimeInitialized() {
@@ -125,7 +160,6 @@ public class DateController {
         }
         @Override
         public void onDateTimeChanged(String time) {
-            if ( mHandler == null ) return; 
             mTime = time; 
             mHandler.post(new Runnable() {
                 @Override
@@ -137,7 +171,6 @@ public class DateController {
 
         @Override
         public void onTimeTypeChanged(String type) {
-            if ( mHandler == null ) return; 
             mType = type; 
             mTime = mService.getDateTime(); 
 
@@ -147,6 +180,54 @@ public class DateController {
                 @Override
                 public void run() {
                     updateClockUI(mTime, mType);
+                }
+            }); 
+        }
+
+        @Override
+        public void onPowerStateChanged(int state) {
+            Log.d(TAG, "onPowerStateChanged="+state);
+            mIsPowerOff = (state == 2)?true:false;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onUserAgreementMode(boolean on) {
+            Log.d(TAG, "onUserAgreementMode="+on);
+            mUserAgreementMode = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onUserSwitching(boolean on) {
+            Log.d(TAG, "onUserSwitching="+on);
+            mUserSwitching = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
+                }
+            }); 
+        }
+
+        @Override
+        public void onRearCamera(boolean on) {
+            Log.d(TAG, "onRearCamera="+on);
+            mRearCameraMode = on; 
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    checkSpecialCase(); 
                 }
             }); 
         }

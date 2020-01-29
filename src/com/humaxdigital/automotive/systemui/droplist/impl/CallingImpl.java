@@ -21,7 +21,6 @@ public class CallingImpl extends BaseImplement<Boolean> {
 
     @Override
     public void create() {
-        if ( mContext == null ) return;
         mTelephony = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
         final IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);

@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.Objects; 
+
 public class DevModeController {
     private static final String TAG = DevModeController.class.getSimpleName();
 
@@ -44,7 +46,7 @@ public class DevModeController {
     };
 
     public DevModeController(Context context, View normalView, DevNavigationBar devView) {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
 
         mNormalView = normalView;
         mDevView = devView;

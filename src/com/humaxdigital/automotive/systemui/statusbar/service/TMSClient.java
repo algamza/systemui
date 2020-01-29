@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
@@ -75,17 +76,14 @@ public class TMSClient {
     }
 
     public TMSClient(Context context) {
-        if ( context == null ) return; 
-        mContext = context; 
+        mContext = Objects.requireNonNull(context); 
         createBroadcastReceiver();
     }
 
     public void connect() {
-        if ( mContext == null ) return;
     }
 
     public void disconnect() {
-        if ( mContext == null ) return; 
     }
 
     public void fetch(CarTMSManager mgr) {
@@ -100,13 +98,11 @@ public class TMSClient {
     }
 
     public void registerCallback(TMSCallback callback) {
-        if ( callback == null ) return; 
-        mListeners.add(callback); 
+        mListeners.add(Objects.requireNonNull(callback)); 
     }
 
     public void unregisterCallback(TMSCallback callback) {
-        if ( callback == null ) return; 
-        mListeners.remove(callback);
+        mListeners.remove(Objects.requireNonNull(callback));
     }
 
     public ConnectionStatus getConnectionStatus() {
@@ -278,7 +274,6 @@ public class TMSClient {
     };
 
     private void createBroadcastReceiver() {
-        if ( mContext == null ) return;
         final IntentFilter filter = new IntentFilter(); 
         filter.addAction(CONSTANTS.ACTION_LOCATION_SHARING_COUNT); 
         mContext.registerReceiverAsUser(mReceiver, UserHandle.ALL, filter, null, null);

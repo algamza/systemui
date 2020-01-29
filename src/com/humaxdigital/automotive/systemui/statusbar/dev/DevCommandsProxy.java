@@ -7,13 +7,15 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.Objects; 
+
 public class DevCommandsProxy implements DevCommands {
     private static final String TAG = "DevCommandsProxy";
     
     private Context mContext;
 
     public DevCommandsProxy(Context context) {
-        mContext = context;
+        mContext = Objects.requireNonNull(context);
     }
 
     public void forceStopPackage(String packageName, int userId) {

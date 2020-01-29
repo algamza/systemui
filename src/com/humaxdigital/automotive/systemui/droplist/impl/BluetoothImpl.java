@@ -59,7 +59,6 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
     }
 
     private void setBluetoothOn(boolean on) {
-        if ( mContext == null ) return;
         Log.d(TAG, "setBluetoothOn="+on);
         Settings.Global.putInt(mContext.getContentResolver(), 
             CONSTANTS.BT_SYSTEM,
@@ -67,7 +66,6 @@ public class BluetoothImpl extends BaseImplement<Boolean> {
     }
 
     private boolean isBluetoothOn() {
-        if ( mContext == null ) return false;
         int on = Settings.Global.getInt(mContext.getContentResolver(), CONSTANTS.BT_SYSTEM, 1);
         Log.d(TAG, "isBluetoothOn="+on);
         return on==0?false:true;
