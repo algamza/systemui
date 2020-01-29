@@ -85,15 +85,6 @@ public class VolumeControlService extends Service {
         registReceiver();
     }
 
-    private ScenarioQuiteMode.ScenarioQuiteModeListener mQuiteModeListener = 
-        new ScenarioQuiteMode.ScenarioQuiteModeListener() {
-        @Override
-        public void onShowUI(boolean show) {
-            Log.d(TAG, "ScenarioQuiteModeListener:"+show);
-            broadcastEventShowUI(show);
-        }
-    }; 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
@@ -522,4 +513,13 @@ public class VolumeControlService extends Service {
             if ( mBackupWran != null ) mBackupWran.userRefresh();
         }
     };
+
+    private final ScenarioQuiteMode.ScenarioQuiteModeListener mQuiteModeListener = 
+        new ScenarioQuiteMode.ScenarioQuiteModeListener() {
+        @Override
+        public void onShowUI(boolean show) {
+            Log.d(TAG, "ScenarioQuiteModeListener:"+show);
+            broadcastEventShowUI(show);
+        }
+    }; 
 }
