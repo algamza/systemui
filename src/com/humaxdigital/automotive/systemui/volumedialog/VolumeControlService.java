@@ -78,11 +78,21 @@ public class VolumeControlService extends Service {
         registUserSwicher();
 
         mQuiteMode = new ScenarioQuiteMode(this).init();
+        mQuiteMode.registListener(mQuiteModeListener);
         mBackupWran = new ScenarioBackupWran(this).init();
         mVCRMLog = new ScenarioVCRMLog(); 
 
         registReceiver();
     }
+
+    private ScenarioQuiteMode.ScenarioQuiteModeListener mQuiteModeListener = 
+        new ScenarioQuiteMode.ScenarioQuiteModeListener() {
+        @Override
+        public void onShowUI(boolean show) {
+            Log.d(TAG, "ScenarioQuiteModeListener:"+show);
+            broadcastEventShowUI(show);
+        }
+    }; 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -99,7 +109,10 @@ public class VolumeControlService extends Service {
         unregistUserSwicher();
         cleanupAudioManager();
         
-        if ( mQuiteMode != null ) mQuiteMode.deinit();
+        if ( mQuiteMode != null ) {
+            mQuiteMode.unregistListener(mQuiteModeListener);
+            mQuiteMode.deinit();
+        }
         if ( mBackupWran != null ) mBackupWran.deinit();
         mQuiteMode = null;
         mBackupWran = null;
