@@ -16,7 +16,7 @@ import android.bluetooth.BluetoothA2dpSink;
 import android.bluetooth.BluetoothDevice; 
 
 import java.util.ArrayList;
-import java.util.HashMap; 
+import java.util.WeakHashMap; 
 import java.util.Map;
 import java.util.List;
 import java.util.Objects; 
@@ -35,7 +35,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
     private List<IUserBluetoothCallback> mListeners = new ArrayList<>(); 
     private Context mContext = null; 
     private BluetoothAdapter mBluetoothAdapter = null;
-    private Map<Integer, BluetoothProfile> mCurrentProxy = new HashMap<>(); 
+    private Map<Integer, BluetoothProfile> mCurrentProxy = new WeakHashMap<>(); 
     private int mContactsDownloadingState = 0; 
 
     private int mCurrentContactsDownloadState = 0;
@@ -84,13 +84,7 @@ public class UserBluetooth extends IUserBluetooth.Stub {
         Log.d(TAG, "getAntennaLevel="+mCurrentAntennaLevel); 
         return mCurrentAntennaLevel; 
     }
-/*
-    @Override
-    public int getBluetoothCallingState() throws RemoteException {
-        Log.d(TAG, "getBluetoothCallingState="+mCurrentCallingState); 
-        return mCurrentCallingState; 
-    }
-*/
+
     @Override
     public int getContactsDownloadState() throws RemoteException {
         Log.d(TAG, "getContactsDownloadState="+mCurrentContactsDownloadState); 

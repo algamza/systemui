@@ -18,7 +18,7 @@ import android.os.UserHandle;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
 import java.util.Objects; 
 
@@ -88,7 +88,7 @@ public class VolumeController extends VolumeControllerBase {
     private VolumeUtil.Type mCurrentVolumeType; 
     private boolean mIsVolumeUp = false; 
 
-    private Map<Integer, Integer> mVolumeTypeImages = new HashMap<>();
+    private Map<Integer, Integer> mVolumeTypeImages = new WeakHashMap<>();
 
     public VolumeController() { }
 

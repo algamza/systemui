@@ -26,7 +26,7 @@ import android.car.CarNotConnectedException;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Objects; 
 
 public class ScenarioBackupWran {
@@ -41,8 +41,8 @@ public class ScenarioBackupWran {
     private final int BACKUP_WRAN_BT_MIN = 5; 
     private final float BACKUP_WRAN_BT_DWON_RATE = 0.6f; 
     private ArrayList<VolumeUtil.Type> mBackupWarnAudioTypeList = new ArrayList<>(); 
-    private HashMap<VolumeUtil.Type,Integer> mBackupWarnLastVolume = new HashMap<>();
-    private HashMap<VolumeUtil.Type,Boolean> mBackupWarnAudioChange = new HashMap<>();
+    private WeakHashMap<VolumeUtil.Type,Integer> mBackupWarnLastVolume = new WeakHashMap<>();
+    private WeakHashMap<VolumeUtil.Type,Boolean> mBackupWarnAudioChange = new WeakHashMap<>();
     private boolean mIsRGearDetected = false; 
     private boolean mIsIGNOff = false; 
     private int mBTAudioChangeVolume = 0;

@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import com.humaxdigital.automotive.systemui.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Objects; 
@@ -53,8 +53,8 @@ public class SystemView extends FrameLayout {
     private Context mContext;
     private ImageView mView;
     private int mStatus = 0;
-    private HashMap<Integer,Drawable> mIcons = new HashMap<>();
-    private HashMap<Integer, ArrayList<Drawable>> mAnimationIcons = new HashMap<>();
+    private WeakHashMap<Integer,Drawable> mIcons = new WeakHashMap<>();
+    private WeakHashMap<Integer, ArrayList<Drawable>> mAnimationIcons = new WeakHashMap<>();
     private SystemViewAnimation mTask = null; 
     private Timer mTimer = new Timer();
     private Handler mHandler; 

@@ -11,14 +11,14 @@ import android.util.Log;
 import com.humaxdigital.automotive.systemui.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Objects; 
 
 public class ClimateMenuImgTimeout extends LinearLayout {
     private Context mContext;
     private int mStatus = 0;
     private ImageView mView;
-    private HashMap<Integer,DrawableTimeout> mIcons= new HashMap<>();
+    private WeakHashMap<Integer,DrawableTimeout> mIcons= new WeakHashMap<>();
     private ArrayList<ClimateDrawableTimout> mListeners = new ArrayList<>();
     private Runnable mRunnable;
     private Handler mHandler;

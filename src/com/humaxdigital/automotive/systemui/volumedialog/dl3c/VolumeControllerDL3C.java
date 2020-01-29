@@ -13,7 +13,7 @@ import android.widget.FrameLayout;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
 import java.util.Objects; 
 
@@ -34,7 +34,7 @@ public class VolumeControllerDL3C extends VolumeControllerBase {
     private TextView mTextVolumeName; 
     private ImageView mImgVolumeIcon; 
     private TextView mTextVolumeValue; 
-    private Map<Integer, ImageView> mVolumeSels = new HashMap<>();
+    private Map<Integer, ImageView> mVolumeSels = new WeakHashMap<>();
     private final int UI_SEL_MAX = 45; 
     private int mIdSellOn = 0; 
     private int mIdSellOff = 0;

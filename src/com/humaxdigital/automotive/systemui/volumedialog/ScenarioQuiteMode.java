@@ -23,7 +23,7 @@ import com.humaxdigital.automotive.systemui.common.util.OSDPopup;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Objects; 
 
 public class ScenarioQuiteMode {
@@ -56,10 +56,10 @@ public class ScenarioQuiteMode {
     }
 
     public class UserVolume {
-        public HashMap<VolumeUtil.Type, VolumeDB> mVolumeDB = new HashMap<>(); 
+        public WeakHashMap<VolumeUtil.Type, VolumeDB> mVolumeDB = new WeakHashMap<>(); 
     }
 
-    private HashMap<Integer, UserVolume> mUserVolume = new HashMap<>(); 
+    private WeakHashMap<Integer, UserVolume> mUserVolume = new WeakHashMap<>(); 
     private ArrayList<VolumeUtil.Type> mAudioTypeList = new ArrayList<>(); 
 
 

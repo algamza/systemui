@@ -12,7 +12,7 @@ import android.widget.RemoteViews;
 import android.widget.FrameLayout;
 import android.view.View;
 import android.util.Log;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.R;
@@ -34,7 +34,7 @@ public class NotificationUI extends LinearLayout {
     private ImageView mIcon;
     private ImageView mLine;
     private FrameLayout mViews;
-    private HashMap<Flag, Boolean> mFlags = new HashMap<>();
+    private WeakHashMap<Flag, Boolean> mFlags = new WeakHashMap<>();
 
     private String mDataTitle = ""; 
     private String mDataText = ""; 

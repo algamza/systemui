@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import android.util.Log; 
 
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.R;
@@ -20,7 +20,7 @@ public class ClimateMenuTextImg extends LinearLayout {
     private TextView mTextView;
     private int mStatus = 0; 
     private String mText = "0";
-    private HashMap<Integer,Drawable> mIcons= new HashMap<>();
+    private WeakHashMap<Integer,Drawable> mIcons= new WeakHashMap<>();
     private Drawable mDisableIcon; 
     private Boolean mDisable = false; 
 
