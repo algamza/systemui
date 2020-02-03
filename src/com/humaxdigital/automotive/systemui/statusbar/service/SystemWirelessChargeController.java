@@ -15,7 +15,12 @@ import android.util.Log;
 
 public class SystemWirelessChargeController extends BaseController<Integer> {
     private static final String TAG = "SystemWirelessChargeController";
-    private enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
+    private enum WirelessChargeStatus { 
+        NONE(0), CHARGED(1), CHARGING(2), ERROR(3);
+        private final int state; 
+        WirelessChargeStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private CarSystemManager mManager;
 
     @SuppressWarnings("unchecked")
@@ -65,7 +70,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         if ( mDataStore == null ) return 0; 
         int value = mDataStore.getWirelessChargeState(); 
         Log.d(TAG, "get="+value); 
-        return convertToStatus(value).ordinal(); 
+        return convertToStatus(value).state(); 
     }
 
     private Boolean checkValid(int value) {
@@ -105,7 +110,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
                     if ( !checkValid(mode) ) break;
                     if ( mDataStore.shouldPropagateWirelessChargeStatusUpdate(mode) ) {
                         for ( Listener listener : mListeners ) 
-                            listener.onEvent(convertToStatus(mode).ordinal());
+                            listener.onEvent(convertToStatus(mode).state());
                     }
                     break;
                 }

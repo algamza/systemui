@@ -10,7 +10,12 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateFanDirectionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanDirectionController";
-    private enum FanDirectionStatus { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST }
+    private enum FanDirectionStatus { 
+        FACE(0), FLOOR_FACE(1), FLOOR(2), FLOOR_DEFROST(3);
+        private final int state; 
+        FanDirectionStatus(int state) { this.state = state; }
+        public int state() { return state; } 
+    }
     private final int mZone = 0; 
 
     public ClimateFanDirectionController(Context context, DataStore store) {
@@ -46,7 +51,7 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         if ( mDataStore == null ) return 0;
         FanDirectionStatus state = convertToStatus(mDataStore.getFanDirection()); 
         Log.d(TAG, "get="+state);
-        return state.ordinal(); 
+        return state.state(); 
     }
 
     @Override

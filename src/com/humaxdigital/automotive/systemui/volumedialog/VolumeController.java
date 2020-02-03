@@ -31,28 +31,14 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
     private static final String TAG = "VolumeController"; 
 
     private enum AudioStateIcon {
-        AUDIO,
-        AUDIO_MUTE,
-        BT_AUDIO,
-        BT_AUDIO_MUTE,
-        BT_PHONE,
-        BT_PHONE_MUTE,
-        NAVI,
-        NAVI_MUTE,
-        VR,
-        VR_MUTE,
-        RINGTONE, 
-        RINGTONE_MUTE,
-        CARLIFE_AUDIO,
-        CARLIFE_AUDIO_MUTE,
-        CARLIFE_PHONE,
-        CARLIFE_PHONE_MUTE,
-        CARLIFE_NAVI,
-        CARLIFE_NAVI_MUTE,
-        CARLIFE_VR,
-        CARLIFE_VR_MUTE,
-        CARLIFE_RINGTONE,
-        CARLIFE_RINGTONE_MUTE
+        AUDIO(0), AUDIO_MUTE(1), BT_AUDIO(2), BT_AUDIO_MUTE(3), BT_PHONE(4),
+        BT_PHONE_MUTE(5), NAVI(6), NAVI_MUTE(7), VR(8), VR_MUTE(8), RINGTONE(9), 
+        RINGTONE_MUTE(10), CARLIFE_AUDIO(11), CARLIFE_AUDIO_MUTE(12), CARLIFE_PHONE(13),
+        CARLIFE_PHONE_MUTE(14), CARLIFE_NAVI(15), CARLIFE_NAVI_MUTE(16), CARLIFE_VR(17),
+        CARLIFE_VR_MUTE(18), CARLIFE_RINGTONE(19), CARLIFE_RINGTONE_MUTE(20);
+        private final int state; 
+        AudioStateIcon(int state) { this.state = state;}
+        public int state() { return state; } 
     }
     private Context mContext;
     private View mView;
@@ -238,28 +224,28 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         mPlus = mView.findViewById(R.id.icon_plus);
         mMinus = mView.findViewById(R.id.icon_minus);
 
-        mVolumeTypeImages.put(AudioStateIcon.AUDIO.ordinal(), R.drawable.co_ic_volume); 
-        mVolumeTypeImages.put(AudioStateIcon.AUDIO_MUTE.ordinal(), R.drawable.co_ic_volume_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO.ordinal(), R.drawable.co_ic_btaudio); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO_MUTE.ordinal(), R.drawable.co_ic_btaudio_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE.ordinal(), R.drawable.co_ic_btphone); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE_MUTE.ordinal(), R.drawable.co_ic_btphone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.NAVI.ordinal(), R.drawable.co_ic_navi); 
-        mVolumeTypeImages.put(AudioStateIcon.NAVI_MUTE.ordinal(), R.drawable.co_ic_navi_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.VR.ordinal(), R.drawable.co_ic_vr); 
-        mVolumeTypeImages.put(AudioStateIcon.VR_MUTE.ordinal(), R.drawable.co_ic_vr_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.RINGTONE.ordinal(), R.drawable.co_ic_ringtone); 
-        mVolumeTypeImages.put(AudioStateIcon.RINGTONE_MUTE.ordinal(), R.drawable.co_ic_ringtone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO.ordinal(), R.drawable.co_ic_cp_volume); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO_MUTE.ordinal(), R.drawable.co_ic_cp_volume_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE.ordinal(), R.drawable.co_ic_cp_phone); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE_MUTE.ordinal(), R.drawable.co_ic_cp_phone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI.ordinal(), R.drawable.co_ic_cp_navi); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI_MUTE.ordinal(), R.drawable.co_ic_cp_navi_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR.ordinal(), R.drawable.co_ic_cp_vr); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR_MUTE.ordinal(), R.drawable.co_ic_cp_vr_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE.ordinal(), R.drawable.co_ic_cp_ringtone); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE_MUTE.ordinal(), R.drawable.co_ic_cp_ringtone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.AUDIO.state(), R.drawable.co_ic_volume); 
+        mVolumeTypeImages.put(AudioStateIcon.AUDIO_MUTE.state(), R.drawable.co_ic_volume_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO.state(), R.drawable.co_ic_btaudio); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO_MUTE.state(), R.drawable.co_ic_btaudio_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE.state(), R.drawable.co_ic_btphone); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE_MUTE.state(), R.drawable.co_ic_btphone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.NAVI.state(), R.drawable.co_ic_navi); 
+        mVolumeTypeImages.put(AudioStateIcon.NAVI_MUTE.state(), R.drawable.co_ic_navi_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.VR.state(), R.drawable.co_ic_vr); 
+        mVolumeTypeImages.put(AudioStateIcon.VR_MUTE.state(), R.drawable.co_ic_vr_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.RINGTONE.state(), R.drawable.co_ic_ringtone); 
+        mVolumeTypeImages.put(AudioStateIcon.RINGTONE_MUTE.state(), R.drawable.co_ic_ringtone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO.state(), R.drawable.co_ic_cp_volume); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO_MUTE.state(), R.drawable.co_ic_cp_volume_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE.state(), R.drawable.co_ic_cp_phone); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE_MUTE.state(), R.drawable.co_ic_cp_phone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI.state(), R.drawable.co_ic_cp_navi); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI_MUTE.state(), R.drawable.co_ic_cp_navi_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR.state(), R.drawable.co_ic_cp_vr); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR_MUTE.state(), R.drawable.co_ic_cp_vr_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE.state(), R.drawable.co_ic_cp_ringtone); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE_MUTE.state(), R.drawable.co_ic_cp_ringtone_mute); 
     }
 
     private void initViews() {
@@ -352,7 +338,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
 
     private int convertToVolumeIcon(boolean mute, VolumeUtil.Type type) {
         Log.d(TAG, "convertToVolumeIcon : mute="+mute+", type="+type);
-        int resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.ordinal()); 
+        int resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.state()); 
         switch(type) {
             case UNKNOWN:
             case RADIO_FM:
@@ -362,50 +348,50 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
             case SETUP_GUIDE:
             case BAIDU_MEDIA: 
             case ONLINE_MUSIC: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO_MUTE.state()); 
                 break;
             } 
             case BT_AUDIO: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO_MUTE.state()); 
                 break;
             } 
             case EMERGENCY_CALL: 
             case ADVISOR_CALL: 
             case BT_PHONE_CALL: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE_MUTE.state()); 
                 break;
             } 
             case BAIDU_NAVI: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.NAVI.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.NAVI_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.NAVI.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.NAVI_MUTE.state()); 
                 break;
             } 
             case BAIDU_VR_TTS:  {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.VR.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.VR_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.VR.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.VR_MUTE.state()); 
                 break;
             } 
             case BT_PHONE_RING: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE_MUTE.state()); 
                 break;
             }
             case CARLIFE_MEDIA: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO_MUTE.state()); 
                 break;
             }
             case CARLIFE_TTS: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR_MUTE.state()); 
                 break;
             }
             case CARLIFE_NAVI: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI_MUTE.state()); 
                 break;
             }
             case BEEP:

@@ -9,7 +9,13 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateDRSeatOptionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateDRSeatOptionController";
-    private enum SeatStatus { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
+    private enum SeatStatus { 
+        HEAT_ONLY_2STEP(0), HEAT_ONLY_3STEP(1), VENT_ONLY_2STEP(2), 
+        VENT_ONLY_3STEP(3), HEAT_VENT_2STEP(4), HEAT_VENT_3STEP(5), INVALID(6); 
+        private final int state; 
+        SeatStatus(int state) { this.state = state; }
+        public int state() { return state; }  
+    }
     final int mZone = ClimateControllerManager.SEAT_DRIVER; 
     private SeatStatus mStatus = SeatStatus.INVALID; 
 
@@ -40,7 +46,7 @@ public class ClimateDRSeatOptionController extends ClimateBaseController<Integer
     @Override
     public Integer get() {
         Log.d(TAG, "get="+mStatus); 
-        return mStatus.ordinal(); 
+        return mStatus.state(); 
     }
 
     private SeatStatus convertToStatus(int option) {

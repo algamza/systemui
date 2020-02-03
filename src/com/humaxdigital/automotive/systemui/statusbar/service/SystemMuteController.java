@@ -20,7 +20,12 @@ import android.extension.car.util.AudioTypes;
 
 public class SystemMuteController extends BaseController<Integer> {
     private final String TAG = "SystemMuteController"; 
-    private enum MuteStatus { NONE, AV_MUTE, NAV_MUTE, AV_NAV_MUTE }
+    private enum MuteStatus { 
+        NONE(0), AV_MUTE(1), NAV_MUTE(2), AV_NAV_MUTE(3); 
+        private final int state; 
+        MuteStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private IUserAudio mUserAudio = null;
     private MuteStatus mCurrentStatus = MuteStatus.NONE; 
     private CarAudioManagerEx mCarAudioEx = null;
@@ -99,7 +104,7 @@ public class SystemMuteController extends BaseController<Integer> {
     public Integer get() {
         mCurrentStatus = getCurrentState(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     private MuteStatus getCurrentState() {
@@ -125,7 +130,7 @@ public class SystemMuteController extends BaseController<Integer> {
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
     private final IUserAudioCallback.Stub mUserAudioCallback = 

@@ -12,7 +12,12 @@ import android.extension.car.CarBLEManager;
 import android.util.Log;
 public class SystemBLEController extends BaseController<Integer> {
     private static final String TAG = "SystemBLEController";
-    private enum BLEStatus { NONE, CONNECTED, CONNECTING, CONNECTION_FAIL, DISCONNECTED }
+    private enum BLEStatus { 
+        NONE(0), CONNECTED(1), CONNECTING(2), CONNECTION_FAIL(3), DISCONNECTED(4); 
+        private final int state; 
+        BLEStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private CarBLEManager mManager;
     private boolean mIsRegistered = false;
     private int mIsConnectionState = 0; 
@@ -46,7 +51,7 @@ public class SystemBLEController extends BaseController<Integer> {
         // todo : need to get status
         BLEStatus state = BLEStatus.NONE;  
         Log.d(TAG, "fetch="+state); 
-        mDataStore.setBLEState(state.ordinal());
+        mDataStore.setBLEState(state.state());
         cmdRequest(CarBLEManager.CMD_BLE_REQ_REGISTRATION_STATUS, 0, null);
         cmdRequest(CarBLEManager.CMD_BLE_REQ_CONNECTION_STATUS, 0, null);
     }
@@ -127,9 +132,9 @@ public class SystemBLEController extends BaseController<Integer> {
                     } else if ( id == CarBLEManager.EVT_BLE_ERROR_FOR_CALIBRATION ) {
                         // INFO : BLEStatus.CONNECTION_FAIL 
                         /*
-                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
+                        if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.state()) ) {
                             for ( Listener listener : mListeners ) 
-                                listener.onEvent(BLEStatus.NONE.ordinal());
+                                listener.onEvent(BLEStatus.NONE.state());
                         }
                         */
                     } else if ( id == CarBLEManager.EVT_BLE_CONNECTED_PHONE_INFO ) {
@@ -176,29 +181,29 @@ public class SystemBLEController extends BaseController<Integer> {
         switch(state) {
             case 0: {
                 if ( regist ) {
-                    if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.DISCONNECTED.ordinal()) ) {
+                    if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.DISCONNECTED.state()) ) {
                         for ( Listener listener : mListeners ) 
-                            listener.onEvent(BLEStatus.DISCONNECTED.ordinal());
+                            listener.onEvent(BLEStatus.DISCONNECTED.state());
                     }
                 } else {
-                    if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.ordinal()) ) {
+                    if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.NONE.state()) ) {
                         for ( Listener listener : mListeners ) 
-                            listener.onEvent(BLEStatus.NONE.ordinal());
+                            listener.onEvent(BLEStatus.NONE.state());
                     }
                 }
                 break; 
             }
             case 1: {
-                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTING.ordinal()) ) {
+                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTING.state()) ) {
                     for ( Listener listener : mListeners ) 
-                        listener.onEvent(BLEStatus.CONNECTING.ordinal());
+                        listener.onEvent(BLEStatus.CONNECTING.state());
                 }
                 break; 
             }
             case 2: {
-                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTED.ordinal()) ) {
+                if ( mDataStore.shouldPropagateBLEStatusUpdate(BLEStatus.CONNECTED.state()) ) {
                     for ( Listener listener : mListeners ) 
-                        listener.onEvent(BLEStatus.CONNECTED.ordinal());
+                        listener.onEvent(BLEStatus.CONNECTED.state());
                 }
                 break; 
             }

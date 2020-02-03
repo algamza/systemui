@@ -19,9 +19,11 @@ import android.util.Log;
 public class SystemPowerStateController extends BaseController<Integer> {
     private final String TAG = "SystemPowerStateController"; 
     public enum State {
-        NORMAL,
-        AV_OFF, 
-        POWER_OFF
+        NORMAL(0),AV_OFF(1), POWER_OFF(2);
+        private final int state; 
+        State(int state) { this.state = state;}
+        public int state() { return state; } 
+        
     }
     private CarSystemManager mSystemManager;
     private State mPowerState = State.NORMAL; 
@@ -51,7 +53,7 @@ public class SystemPowerStateController extends BaseController<Integer> {
 
     @Override
     public Integer get() {
-        return mPowerState.ordinal(); 
+        return mPowerState.state(); 
     }
 
     public void fetch(CarSystemManager manager) {
@@ -74,7 +76,7 @@ public class SystemPowerStateController extends BaseController<Integer> {
         }
 
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mPowerState.ordinal());
+            listener.onEvent(mPowerState.state());
     }
 
     private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
@@ -96,7 +98,7 @@ public class SystemPowerStateController extends BaseController<Integer> {
                     }
 
                     for ( Listener listener : mListeners ) 
-                        listener.onEvent(mPowerState.ordinal());
+                        listener.onEvent(mPowerState.state());
 
                     break;
                 }

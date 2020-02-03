@@ -15,9 +15,12 @@ import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
 public class ThemeController implements BaseController, SystemControl.SystemCallback {
     public enum Theme {
-        THEME1,
-        THEME2,
-        THEME3
+        THEME1(0), 
+        THEME2(1),
+        THEME3(2); 
+        private final int theme; 
+        Theme(int theme) { this.theme = theme; }
+        public int theme() { return theme; }
     }
     private MenuLayout mView;
     private SystemControl mSystem;  
@@ -37,7 +40,7 @@ public class ThemeController implements BaseController, SystemControl.SystemCall
         mSystem = system; 
         mSystem.registerCallback(this);
         int mode = mSystem.getThemeMode(); 
-        mView.updateState(convertToTheme(mode).ordinal()); 
+        mView.updateState(convertToTheme(mode).theme()); 
     }
 
     @Override
@@ -55,9 +58,9 @@ public class ThemeController implements BaseController, SystemControl.SystemCall
     public void refresh(Context context) {
         if ( context == null || mView == null ) return;
         Resources res = context.getResources();
-        mView.updateStatusText(Theme.THEME1.ordinal(), res.getString(R.string.STR_THEME1_ID));
-        mView.updateStatusText(Theme.THEME2.ordinal(), res.getString(R.string.STR_THEME2_ID));
-        mView.updateStatusText(Theme.THEME3.ordinal(), res.getString(R.string.STR_THEME3_ID));
+        mView.updateStatusText(Theme.THEME1.theme(), res.getString(R.string.STR_THEME1_ID));
+        mView.updateStatusText(Theme.THEME2.theme(), res.getString(R.string.STR_THEME2_ID));
+        mView.updateStatusText(Theme.THEME3.theme(), res.getString(R.string.STR_THEME3_ID));
     }
 
     private Theme convertToTheme(int mode) {
@@ -101,9 +104,9 @@ public class ThemeController implements BaseController, SystemControl.SystemCall
         public void handleMessage(Message msg) {
             if ( mView == null ) return; 
             switch(msg.what) {
-                case H_THEME1: mView.updateState(Theme.THEME1.ordinal()); break;
-                case H_THEME2: mView.updateState(Theme.THEME2.ordinal()); break;
-                case H_THEME3: mView.updateState(Theme.THEME3.ordinal()); break;
+                case H_THEME1: mView.updateState(Theme.THEME1.theme()); break;
+                case H_THEME2: mView.updateState(Theme.THEME2.theme()); break;
+                case H_THEME3: mView.updateState(Theme.THEME3.theme()); break;
                 default: break;
             }
         }
@@ -114,15 +117,15 @@ public class ThemeController implements BaseController, SystemControl.SystemCall
         public boolean onClick() {
             if ( mSystem == null || mView == null ) return false;
    
-            if ( mView.getStatus() == Theme.THEME1.ordinal() ) {
-                mView.updateState(Theme.THEME2.ordinal());
-                mSystem.setThemeMode(Theme.THEME2.ordinal());
-            } else if ( mView.getStatus() == Theme.THEME2.ordinal() ) {
-                mView.updateState(Theme.THEME3.ordinal());
-                mSystem.setThemeMode(Theme.THEME3.ordinal());
-            } else if ( mView.getStatus() == Theme.THEME3.ordinal() ) {
-                mView.updateState(Theme.THEME1.ordinal());
-                mSystem.setThemeMode(Theme.THEME1.ordinal());
+            if ( mView.getStatus() == Theme.THEME1.theme() ) {
+                mView.updateState(Theme.THEME2.theme());
+                mSystem.setThemeMode(Theme.THEME2.theme());
+            } else if ( mView.getStatus() == Theme.THEME2.theme() ) {
+                mView.updateState(Theme.THEME3.theme());
+                mSystem.setThemeMode(Theme.THEME3.theme());
+            } else if ( mView.getStatus() == Theme.THEME3.theme() ) {
+                mView.updateState(Theme.THEME1.theme());
+                mSystem.setThemeMode(Theme.THEME1.theme());
             }
 
             return true; 

@@ -10,7 +10,13 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateFanSpeedController";
-    private enum FanSpeedStatus { STEP_OFF, STEP_0, STEP_1, STEP_2, STEP_3, STEP_4, STEP_5, STEP_6, STEP_7, STEP_8 }
+    private enum FanSpeedStatus { 
+        STEP_OFF(0), STEP_0(1), STEP_1(2), STEP_2(3), STEP_3(4), 
+        STEP_4(5), STEP_5(6), STEP_6(7), STEP_7(8), STEP_8(9);
+        private final int state; 
+        FanSpeedStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private final int mZone = ClimateControllerManager.HVAC_ALL; 
 
     public ClimateFanSpeedController(Context context, DataStore store) {
@@ -45,7 +51,7 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
         if ( mDataStore == null ) return 0;
         int speed = mDataStore.getFanSpeed(); 
         Log.d(TAG, "get="+speed); 
-        return convertToStatus(speed).ordinal(); 
+        return convertToStatus(speed).state(); 
     }
 
     @Override

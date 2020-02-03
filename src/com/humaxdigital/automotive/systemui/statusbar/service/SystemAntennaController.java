@@ -16,10 +16,14 @@ public class SystemAntennaController extends BaseController<Integer> implements 
     private AntennaStatus mCurrentAntennaStatus = AntennaStatus.NONE; 
 
     private enum AntennaStatus { 
-        NONE, BT_ANTENNA_NO, BT_ANTENNA_1, BT_ANTENNA_2, 
-        BT_ANTENNA_3, BT_ANTENNA_4, BT_ANTENNA_5, TMS_ANTENNA_NO, 
-        TMS_ANTENNA_0, TMS_ANTENNA_1, TMS_ANTENNA_2, TMS_ANTENNA_3, 
-        TMS_ANTENNA_4, TMS_ANTENNA_5 }
+        NONE(0), BT_ANTENNA_NO(1), BT_ANTENNA_1(2), BT_ANTENNA_2(3), 
+        BT_ANTENNA_3(4), BT_ANTENNA_4(5), BT_ANTENNA_5(6), TMS_ANTENNA_NO(7), 
+        TMS_ANTENNA_0(8), TMS_ANTENNA_1(9), TMS_ANTENNA_2(10), TMS_ANTENNA_3(11), 
+        TMS_ANTENNA_4(12), TMS_ANTENNA_5(13); 
+        private final int state; 
+        AntennaStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
 
     private enum Type {
         BT,
@@ -83,7 +87,7 @@ public class SystemAntennaController extends BaseController<Integer> implements 
     public Integer get() {
         mCurrentAntennaStatus = getCurrentStatus();
         Log.d(TAG, "get="+mCurrentAntennaStatus); 
-        return mCurrentAntennaStatus.ordinal(); 
+        return mCurrentAntennaStatus.state(); 
     }
 
     private AntennaStatus getCurrentStatus() {
@@ -144,7 +148,7 @@ public class SystemAntennaController extends BaseController<Integer> implements 
         AntennaStatus status = getCurrentStatus();
         mCurrentAntennaStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentAntennaStatus.ordinal());
+            listener.onEvent(mCurrentAntennaStatus.state());
     }
 
     @Override

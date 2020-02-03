@@ -12,9 +12,12 @@ import android.os.UserHandle;
 
 public class ThemeImpl extends BaseImplement<Integer> {
     public enum Theme {
-        THEME1,
-        THEME2,
-        THEME3
+        THEME1(0),
+        THEME2(1),
+        THEME3(2); 
+        private final int theme; 
+        Theme(int theme) { this.theme = theme; }
+        public int theme() { return theme; }
     };
 
     private final String TAG = "ThemeImpl";
@@ -39,7 +42,7 @@ public class ThemeImpl extends BaseImplement<Integer> {
     @Override
     public Integer get() {
         Log.d(TAG, "get="+mCurrentTheme); 
-        return mCurrentTheme.ordinal(); 
+        return mCurrentTheme.theme(); 
     }
 
     @Override
@@ -125,7 +128,7 @@ public class ThemeImpl extends BaseImplement<Integer> {
                 Log.d(TAG, "onChange : current = "+current+", old = "+mCurrentTheme); 
                 if ( mCurrentTheme == current ) return; 
                 mCurrentTheme = current; 
-                if ( mListener != null ) mListener.onChange(mCurrentTheme.ordinal()); 
+                if ( mListener != null ) mListener.onChange(mCurrentTheme.theme()); 
             }
         };
         return observer; 
@@ -154,6 +157,6 @@ public class ThemeImpl extends BaseImplement<Integer> {
             false, mThemeObserver, UserHandle.USER_CURRENT); 
 
         mCurrentTheme = convertToTheme(getCurrentTheme()); 
-        if ( mListener != null ) mListener.onChange(mCurrentTheme.ordinal()); 
+        if ( mListener != null ) mListener.onChange(mCurrentTheme.theme()); 
     }
 }

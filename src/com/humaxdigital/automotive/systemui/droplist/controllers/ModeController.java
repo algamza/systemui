@@ -15,9 +15,12 @@ import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
 public class ModeController implements BaseController, SystemControl.SystemCallback {
     public enum Mode {
-        AUTOMATIC,
-        DAYLIGHT,
-        NIGHT
+        AUTOMATIC(0),
+        DAYLIGHT(1),
+        NIGHT(2); 
+        private final int mode; 
+        Mode(int mode) { this.mode = mode; }
+        public int mode() { return mode; }
     }
 
     private MenuLayout mView;
@@ -38,7 +41,7 @@ public class ModeController implements BaseController, SystemControl.SystemCallb
         mSystem = system; 
         mSystem.registerCallback(this);
         int mode = mSystem.getAutomaticMode(); 
-        mView.updateState(convertToMode(mode).ordinal()); 
+        mView.updateState(convertToMode(mode).mode()); 
     }
 
     @Override
@@ -56,9 +59,9 @@ public class ModeController implements BaseController, SystemControl.SystemCallb
     public void refresh(Context context) {
         if ( context == null || mView == null ) return;
         Resources res = context.getResources();
-        mView.updateStatusText(Mode.AUTOMATIC.ordinal(), res.getString(R.string.STR_AUTOMATIC_04_ID));
-        mView.updateStatusText(Mode.DAYLIGHT.ordinal(), res.getString(R.string.STR_DAYLIGHT_04_ID));
-        mView.updateStatusText(Mode.NIGHT.ordinal(), res.getString(R.string.STR_NIGHT_04_ID));
+        mView.updateStatusText(Mode.AUTOMATIC.mode(), res.getString(R.string.STR_AUTOMATIC_04_ID));
+        mView.updateStatusText(Mode.DAYLIGHT.mode(), res.getString(R.string.STR_DAYLIGHT_04_ID));
+        mView.updateStatusText(Mode.NIGHT.mode(), res.getString(R.string.STR_NIGHT_04_ID));
     }
 
     private Mode convertToMode(int system_mode) {
@@ -94,15 +97,15 @@ public class ModeController implements BaseController, SystemControl.SystemCallb
         public boolean onClick() {
             if ( mSystem == null || mView == null ) return false;
 
-            if ( mView.getStatus() == Mode.AUTOMATIC.ordinal() ) {
-                mView.updateState(Mode.DAYLIGHT.ordinal());
-                mSystem.setAutomaticMode(Mode.DAYLIGHT.ordinal());
-            } else if ( mView.getStatus() == Mode.DAYLIGHT.ordinal() ) {
-                mView.updateState(Mode.NIGHT.ordinal());
-                mSystem.setAutomaticMode(Mode.NIGHT.ordinal());
-            } else if ( mView.getStatus() == Mode.NIGHT.ordinal() ) {
-                mView.updateState(Mode.AUTOMATIC.ordinal());
-                mSystem.setAutomaticMode(Mode.AUTOMATIC.ordinal());
+            if ( mView.getStatus() == Mode.AUTOMATIC.mode() ) {
+                mView.updateState(Mode.DAYLIGHT.mode());
+                mSystem.setAutomaticMode(Mode.DAYLIGHT.mode());
+            } else if ( mView.getStatus() == Mode.DAYLIGHT.mode() ) {
+                mView.updateState(Mode.NIGHT.mode());
+                mSystem.setAutomaticMode(Mode.NIGHT.mode());
+            } else if ( mView.getStatus() == Mode.NIGHT.mode() ) {
+                mView.updateState(Mode.AUTOMATIC.mode());
+                mSystem.setAutomaticMode(Mode.AUTOMATIC.mode());
             }
 
             return true; 
@@ -129,9 +132,9 @@ public class ModeController implements BaseController, SystemControl.SystemCallb
         public void handleMessage(Message msg) {
             if ( mView == null ) return; 
             switch(msg.what) {
-                case MODE_AUTO: mView.updateState(Mode.AUTOMATIC.ordinal()); break;
-                case MODE_DAYLIGHT: mView.updateState(Mode.DAYLIGHT.ordinal()); break;
-                case MODE_NIGHT: mView.updateState(Mode.NIGHT.ordinal()); break;
+                case MODE_AUTO: mView.updateState(Mode.AUTOMATIC.mode()); break;
+                case MODE_DAYLIGHT: mView.updateState(Mode.DAYLIGHT.mode()); break;
+                case MODE_NIGHT: mView.updateState(Mode.NIGHT.mode()); break;
                 default: break;
             }
         }

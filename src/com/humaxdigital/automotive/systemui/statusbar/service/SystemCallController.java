@@ -41,15 +41,22 @@ public class SystemCallController extends BaseController<Integer> implements TMS
     private TelephonyManager mTelephony = null;
 
     public enum BTStatus {
-        NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
-        HF_FREE_STREAMING_CONNECTED, CALL_HISTORY_DOWNLOADING, 
-        CONTACTS_HISTORY_DOWNLOADING, BT_CALLING
+        NONE(0), HANDS_FREE_CONNECTED(1), STREAMING_CONNECTED(2), 
+        HF_FREE_STREAMING_CONNECTED(3), CALL_HISTORY_DOWNLOADING(4), 
+        CONTACTS_HISTORY_DOWNLOADING(5), BT_CALLING(6);
+        private final int state; 
+        BTStatus(int state) { this.state = state;}
+        public int state() { return state; } 
     }
     public enum CallStatus { 
-        NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
-        HF_FREE_STREAMING_CONNECTED, CALL_HISTORY_DOWNLOADING, 
-        CONTACTS_HISTORY_DOWNLOADING, TMS_CALLING, BT_CALLING, 
-        BT_PHONE_MIC_MUTE }; 
+        NONE(0), HANDS_FREE_CONNECTED(1), STREAMING_CONNECTED(2), 
+        HF_FREE_STREAMING_CONNECTED(3), CALL_HISTORY_DOWNLOADING(4), 
+        CONTACTS_HISTORY_DOWNLOADING(5), TMS_CALLING(6), BT_CALLING(7), 
+        BT_PHONE_MIC_MUTE(8);
+        private final int state; 
+        CallStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
 
     public SystemCallController(Context context, DataStore store) {
         super(context, store);
@@ -141,7 +148,7 @@ public class SystemCallController extends BaseController<Integer> implements TMS
     public Integer get() {
         mCurrentStatus = getCurrentCallStatus(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     private CallStatus getCurrentCallStatus() {
@@ -229,7 +236,7 @@ public class SystemCallController extends BaseController<Integer> implements TMS
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
     private void initObserver() {

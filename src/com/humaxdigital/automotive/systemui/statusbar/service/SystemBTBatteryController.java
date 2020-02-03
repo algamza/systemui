@@ -9,8 +9,13 @@ import com.humaxdigital.automotive.systemui.common.user.IUserBluetoothCallback;
 
 public class SystemBTBatteryController extends BaseController<Integer> {
     private static final String TAG = "SystemBTBatteryController";
-    private enum BTBatteryStatus { NONE, BT_BATTERY_0, BT_BATTERY_1, 
-        BT_BATTERY_2, BT_BATTERY_3, BT_BATTERY_4, BT_BATTERY_5 }
+    private enum BTBatteryStatus { 
+        NONE(0), BT_BATTERY_0(1), BT_BATTERY_1(2), BT_BATTERY_2(3), 
+        BT_BATTERY_3(4), BT_BATTERY_4(5), BT_BATTERY_5(6); 
+        private final int state; 
+        BTBatteryStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private IUserBluetooth mUserBluetooth = null;
 
     public SystemBTBatteryController(Context context, DataStore store) {
@@ -71,9 +76,9 @@ public class SystemBTBatteryController extends BaseController<Integer> {
         Log.d(TAG, "get:connected="+is_connected+", level="+level); 
 
         if ( is_connected ) 
-            return convertToStatus(level).ordinal(); 
+            return convertToStatus(level).state(); 
         else 
-            return BTBatteryStatus.NONE.ordinal(); 
+            return BTBatteryStatus.NONE.state(); 
     }
 
     private BTBatteryStatus convertToStatus(int level) {
@@ -103,7 +108,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             Log.d(TAG, "onBluetoothEnableChanged:enable="+enable);
             if ( enable == 1 ) return; 
             for ( Listener listener : mListeners ) 
-                listener.onEvent(BTBatteryStatus.NONE.ordinal());
+                listener.onEvent(BTBatteryStatus.NONE.state());
         }
         @Override
         public void onHeadsetConnectionStateChanged(int state) throws RemoteException {
@@ -117,10 +122,10 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             Log.d(TAG, "onConnectionStateChanged:level="+level+", connected="+is_connected);
             if ( is_connected ) {
                 for ( Listener listener : mListeners ) 
-                    listener.onEvent(convertToStatus(level).ordinal());
+                    listener.onEvent(convertToStatus(level).state());
             } else {
                 for ( Listener listener : mListeners ) 
-                    listener.onEvent(BTBatteryStatus.NONE.ordinal());
+                    listener.onEvent(BTBatteryStatus.NONE.state());
             }
         }
         @Override
@@ -138,7 +143,7 @@ public class SystemBTBatteryController extends BaseController<Integer> {
             if ( !is_connected ) return;
             Log.d(TAG, "onBatteryStateChanged:level="+level);
             for ( Listener listener : mListeners ) 
-                listener.onEvent(convertToStatus(level).ordinal());
+                listener.onEvent(convertToStatus(level).state());
         }
         @Override
         public void onAntennaStateChanged(int level) throws RemoteException {

@@ -11,7 +11,12 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateDRSeatController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateDRSeatController";
-    enum SeatStatus { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
+    enum SeatStatus { 
+        HEATER3(0), HEATER2(1), HEATER1(2), NONE(3), COOLER1(4), COOLER2(5), COOLER3(6); 
+        private final int state; 
+        SeatStatus(int state) { this.state = state; }
+        public int state() { return state; }  
+    }
     final int mZone = ClimateControllerManager.SEAT_DRIVER; 
 
     public ClimateDRSeatController(Context context, DataStore store) {
@@ -45,7 +50,7 @@ public class ClimateDRSeatController extends ClimateBaseController<Integer> {
         if ( mDataStore == null ) return 0;
         int val = mDataStore.getSeatWarmerLevel(mZone); 
         Log.d(TAG, "get="+val); 
-        return convertToStatus(val).ordinal(); 
+        return convertToStatus(val).state(); 
     }
 
     @Override

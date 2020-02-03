@@ -22,7 +22,12 @@ import android.util.Log;
 
 public class SystemDataController extends BaseController<Integer> {
     private static final String TAG = "SystemDataController";
-    private enum DataStatus { NONE, DATA_4G, DATA_4G_NO, DATA_E, DATA_E_NO }
+    private enum DataStatus { 
+        NONE(0), DATA_4G(1), DATA_4G_NO(2), DATA_E(3), DATA_E_NO(4);
+        private final int state; 
+        DataStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private ConnectivityManager mConnectivity = null;
     private TelephonyManager mTelephony = null;
     private TMSClient mTMSClient = null;
@@ -142,7 +147,7 @@ public class SystemDataController extends BaseController<Integer> {
                 status = DataStatus.NONE; 
         }
         Log.d(TAG, "get="+status+", mDataStatus="+mDataStatus); 
-        return status.ordinal(); 
+        return status.state(); 
     }
 
     private boolean isAvaliableData(int direction) {
@@ -272,6 +277,6 @@ public class SystemDataController extends BaseController<Integer> {
         Log.d(TAG, "broadcastStatus="+_status+", status="+status); 
 
         for ( Listener<Integer> listener : mListeners ) 
-            listener.onEvent(_status.ordinal());
+            listener.onEvent(_status.state());
     }
 }

@@ -15,7 +15,12 @@ public class SystemLocationController extends BaseController<Integer> implements
     private TMSClient mTMSClient = null; 
     private LocationStatus mCurrentStatus = LocationStatus.NONE; 
     
-    public enum LocationStatus { NONE, LOCATION_SHARING }
+    public enum LocationStatus { 
+        NONE(0), LOCATION_SHARING(1);
+        private final int state; 
+        LocationStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
 
     public SystemLocationController(Context context, DataStore store) {
         super(context, store);
@@ -42,7 +47,7 @@ public class SystemLocationController extends BaseController<Integer> implements
     public Integer get() {
         mCurrentStatus = getCurrentStatus(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     private LocationStatus getCurrentStatus() {
@@ -62,7 +67,7 @@ public class SystemLocationController extends BaseController<Integer> implements
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
     @Override

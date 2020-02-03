@@ -10,7 +10,13 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateAirCleaningController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateAirCleaningController";
-    private enum Status { ON, OFF }
+    private enum Status { 
+        ON(0), OFF(1);
+        private final int state; 
+        Status(int state) { this.state = state; }
+        public int state() { return state; }
+    }
+
     public ClimateAirCleaningController(Context context, DataStore store) {
         super(context, store);
     }
@@ -45,7 +51,7 @@ public class ClimateAirCleaningController extends ClimateBaseController<Integer>
         if ( mDataStore == null ) return 0;
         Integer val = mDataStore.getAirCleaningState(); 
         Log.d(TAG, "get="+val); 
-        return convertToStatus(val).ordinal();
+        return convertToStatus(val).state();
     }
 
     @Override

@@ -309,15 +309,15 @@ public class StatusBarSystem {
     public boolean isPowerOff() {
         if ( mPowerStateController == null ) return true;
         int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        if ( state == SystemPowerStateController.State.POWER_OFF.state() ) return true;
         return false; 
     }
 
     public boolean isAVOff() {
         if ( mPowerStateController == null ) return true;
         int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.AV_OFF.ordinal() 
-            || state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        if ( state == SystemPowerStateController.State.AV_OFF.state() 
+            || state == SystemPowerStateController.State.POWER_OFF.state() ) return true;
         return false; 
     }
     
@@ -461,7 +461,7 @@ public class StatusBarSystem {
     
     public void openDateTimeSetting() {      
         if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            == SystemPowerStateController.State.POWER_OFF.state()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         }  
@@ -514,7 +514,7 @@ public class StatusBarSystem {
     
     public void openUserProfileSetting() {        
         if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            == SystemPowerStateController.State.POWER_OFF.state()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         } 
