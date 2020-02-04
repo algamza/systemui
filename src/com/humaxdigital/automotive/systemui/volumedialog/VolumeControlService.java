@@ -239,12 +239,12 @@ public class VolumeControlService extends Service {
         boolean mute = false;
         int call_state = mTelephonyManager.getCallState(); 
         if( call_state == mTelephonyManager.CALL_STATE_RINGING 
-            || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ){
+            || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ) {
 			mute = mCarAudioManagerEx.getAudioMutePathStatus(AudioTypes.AUDIO_MUTE_PATH_PHONE);
 		} else {
 			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
 		}
-        Log.d(TAG, "getCurrentMute="+mute);
+        Log.d(TAG, "getCurrentMute="+mute+", call state="+call_state);
         return mute;
     }
 

@@ -134,7 +134,7 @@ public class VolumeDialog implements SystemUIBase {
             if ( show ) {
                 mDialog.open();
             } else {
-                mDialog.close(true);
+                mDialog.close(false);
             }
         }
     };
@@ -184,7 +184,7 @@ public class VolumeDialog implements SystemUIBase {
                 Log.d(TAG, "onChange:lastmode="+lastmode);
                 if ( mLastMode == lastmode ) return;
                 mLastMode = lastmode; 
-                mDialog.close(true);
+                mDialog.close(false);
             }
         };
         return observer; 

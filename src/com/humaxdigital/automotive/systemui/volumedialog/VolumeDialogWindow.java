@@ -40,6 +40,7 @@ public class VolumeDialogWindow extends VolumeDialogWindowBase {
     private final DialogHandler mHandler = new DialogHandler();
     private Timer mTimer;
     private TimerTask mHideTask;
+    private boolean mTryClose = false; 
 
     @Override
     public void init(Context context) {
@@ -93,7 +94,7 @@ public class VolumeDialogWindow extends VolumeDialogWindowBase {
     
     @Override
     public void close(boolean force) {
-        if ( force ) closeDialog(force);
+        closeDialog(force);
     }
 
     @Override
@@ -128,6 +129,7 @@ public class VolumeDialogWindow extends VolumeDialogWindowBase {
                             public void run() {
                                 mDialog.dismiss();
                                 mShowing = false;
+                                mTryClose = false; 
                                 broadcastShowEvent(mShowing); 
                             }
                         }, MOVE_TIME_MS/4);
@@ -193,13 +195,17 @@ public class VolumeDialogWindow extends VolumeDialogWindowBase {
     }
 
     private void closeDialog(boolean force) {
-        if ( force )  mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
-        else closeDialog();
+        if ( force )  {
+            mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
+        } else {
+            closeDialog();
+            mTryClose = true; 
+        }
     }
 
     private void closeDialog() {
         Log.d(TAG, "closeDialog");
-        if ( !mShowing ) return;
+        if ( !mShowing || mTryClose ) return;
         mHandler.obtainMessage(DialogHandler.DISMISS, 0).sendToTarget();
     }
 
@@ -242,6 +248,7 @@ public class VolumeDialogWindow extends VolumeDialogWindowBase {
                                 @Override
                                 public void run() {
                                     mShowing = true;
+                                    mTryClose = false;
                                     broadcastShowEvent(mShowing); 
                                 }
                             }, MOVE_TIME_MS/2);
