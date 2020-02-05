@@ -193,7 +193,7 @@ public class NotificationUI extends LinearLayout {
     public void updateSubBody(String sub) {
         if ( sub == null || mSubBody == null || mSubDataText == null ) return; 
         setSubText(sub); 
-        if ( mFlags.get(Flag.SUB_TEXT) ) {
+        if ( mFlags.get(Flag.SUB_TEXT) && !sub.equals("") ) {
             mSubBody.setVisibility(View.VISIBLE); 
             mSubBody.setText(mSubDataText);
         } else {
