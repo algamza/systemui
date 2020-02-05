@@ -741,6 +741,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onDRTemperatureChanged(float temp) {
         if ( mTempDR == null ) return; 
+        Log.d(TAG, "onDRTemperatureChanged="+temp);
         mTempDRState = temp;
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -753,6 +754,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onDRSeatStatusChanged(int status) {
         if ( mSeatDR == null ) return;
+        Log.d(TAG, "onDRSeatStatusChanged="+status);
         mSeatDRState = SeatState.values()[status]; 
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -769,6 +771,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onAirCirculationChanged(boolean isOn) {
         if ( mIntake == null ) return; 
+        Log.d(TAG, "onAirCirculationChanged="+isOn);
         mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -781,6 +784,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onAirConditionerChanged(boolean isOn) {
         if ( mAC == null ) return; 
+        Log.d(TAG, "onAirConditionerChanged="+isOn);
         mACState = isOn?ACState.ON:ACState.OFF;
         mHandler.post(new Runnable() {
             @Override
@@ -792,8 +796,8 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onAirCleaningChanged(int status) {
         if ( mAirCleaning == null ) return; 
+        Log.d(TAG, "onAirCleaningChanged="+status);
         mAirCleaningState = AirCleaning.values()[status]; 
-        
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -805,6 +809,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onSyncChanged(boolean sync) {
         if ( mSync == null ) return; 
+        Log.d(TAG, "onSyncChanged="+sync);
         mSyncState = sync ? SyncState.ON:SyncState.OFF; 
         
         mHandler.post(new Runnable() {
@@ -818,6 +823,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     @Override
     public void onFanDirectionChanged(int direction) {
         if ( mFanDirection == null ) return; 
+        Log.d(TAG, "onFanDirectionChanged="+direction);
         mFanDirectionState = FanDirectionState.values()[direction]; 
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -829,6 +835,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     }
     @Override
     public void onBlowerSpeedChanged(int status) {
+        Log.d(TAG, "onBlowerSpeedChanged="+status);
         mFanSpeedState = FanSpeedState.values()[status]; 
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -844,6 +851,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     }
     @Override
     public void onPSSeatStatusChanged(int status) {
+        Log.d(TAG, "onPSSeatStatusChanged="+status);
         if ( mSeatPS == null ) return; 
         mSeatPSState = SeatState.values()[status]; 
         if ( mHandler == null ) return; 
@@ -856,11 +864,13 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     }
     @Override
     public void onPSSeatOptionChanged(int option) {
+        Log.d(TAG, "onPSSeatStatusChanged="+option);
         updateClimateType();
     }
 
     @Override
     public void onPSTemperatureChanged(float temp) {
+        Log.d(TAG, "onPSTemperatureChanged="+temp);
         if ( mTempPS == null ) return; 
         mTempPSState = temp;
         if ( mHandler == null ) return; 
@@ -874,6 +884,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
 
     @Override
     public void onFrontDefogStatusChanged(int state) {
+        Log.d(TAG, "onFrontDefogStatusChanged="+state);
         mFrontDefogState = FrontDefogState.values()[state]; 
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
@@ -886,6 +897,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
 
     @Override
     public void onModeOffChanged(boolean off) {
+        Log.d(TAG, "onModeOffChanged="+off);
         if ( mHandler == null ) return; 
 
         mHandler.post(new Runnable() {
@@ -898,6 +910,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
 
     @Override
     public void onIGNOnChanged(boolean on) {
+        Log.d(TAG, "onIGNOnChanged="+on);
         if ( mHandler == null ) return; 
         mHandler.post(new Runnable() {
             @Override
@@ -909,6 +922,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
     
     @Override
     public void onOperateOnChanged(boolean on) {
+        Log.d(TAG, "onOperateOnChanged="+on);
         if ( mHandler == null ) return; 
 
         mHandler.post(new Runnable() {
