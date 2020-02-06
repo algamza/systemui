@@ -344,16 +344,12 @@ public class VolumeControlService extends Service {
             if ( isExceptionVolume(VolumeUtil.convertToType(mode)) ) return;
 
             if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
-                boolean isNeedToShowUI = mQuiteMode.isNeedToShowUI(); 
-                Log.d(TAG, "isNeedToShowUI="+isNeedToShowUI); 
-                if ( !isNeedToShowUI ) {
-                    Log.d(TAG, "SKIP broadcastEventVolumeChange : mIsShow ="+mIsShow);
-                    if ( !mIsShow ) {
-                        return;
-                    } 
-                }
+                Log.d(TAG, "SKIP broadcastEventVolumeChange : mIsShow ="+mIsShow);
+                if ( !mIsShow ) {
+                    return;
+                } 
             }
-
+            
             if ( isUserSwitching() ) return; 
 
             broadcastEventVolumeChange(mode, max, volume);
