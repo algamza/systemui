@@ -86,11 +86,11 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="10"/>
+                android:layout_weight="20"/>
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="80" >
+                android:layout_weight="70" >
                 <TextView
                     android:id="@+id/text_dec"
                     android:layout_width="wrap_content"
