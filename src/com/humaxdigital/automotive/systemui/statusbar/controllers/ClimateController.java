@@ -323,9 +323,9 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
             .inflate();
 
         mSync = new ClimateMenuImg(mContext)
-            .addIcon(SyncState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
-            .addIcon(SyncState.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
-            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
+            .addIcon(SyncState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_off, null))
+            .addIcon(SyncState.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_on, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_dis, null))
             .inflate();  
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 
@@ -363,6 +363,7 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
             mClimateViews.add(mIntake);
             mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mSync); 
             mClimateViews.add(mTempPS);
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
