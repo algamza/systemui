@@ -240,7 +240,7 @@ public class VolumeControlService extends Service {
         int call_state = mTelephonyManager.getCallState(); 
         if( call_state == mTelephonyManager.CALL_STATE_RINGING 
             || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ) {
-			mute = mCarAudioManagerEx.getAudioMutePathStatus(AudioTypes.AUDIO_MUTE_PATH_PHONE);
+			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_FORCED_MEDIA);
 		} else {
 			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
 		}
