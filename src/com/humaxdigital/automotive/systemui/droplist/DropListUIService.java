@@ -162,13 +162,12 @@ public class DropListUIService implements SystemUIBase, SystemControl.SystemCall
         mDialog.setContentView(R.layout.panel_main);
         
         mDialog.setOnShowListener(mShowListener);
-
-        updateShownStateSettings();
  
         mPanelBody = mDialog.findViewById(R.id.panel);
         mPanelBody.setTranslationY(0);
         //mPanelBody.setOnTouchListener(mDropListTouchListener);
         mShowing = false;
+        saveShownStateInSettings(false);
 
         mControllerManager = new ControllerManager(mContext, mPanelBody);
         mControllerManager.setListener(mPanelListener);
@@ -280,7 +279,6 @@ public class DropListUIService implements SystemUIBase, SystemControl.SystemCall
         mHandler.removeMessages(DialogHandler.SHOW);
         mHandler.removeMessages(DialogHandler.DISMISS);
         mDialog.show();
-        updateShownStateSettings();
     }
 
     private void dismissH() {
@@ -309,18 +307,17 @@ public class DropListUIService implements SystemUIBase, SystemControl.SystemCall
                                 mDialog.dismiss();
                                 mShowing = false; 
                                 mStartedDismiss = false;
+                                saveShownStateInSettings(false);
                             }
                         }, DROP_CLOSE_TIME_MS/2);
                     }
                 })
                 .start();
-
-        updateShownStateSettings();
     }
 
-    private void updateShownStateSettings() {
+    private void saveShownStateInSettings(boolean shown) {
         Settings.Global.putInt(mContext.getContentResolver(),
-                CONSTANTS.SETTINGS_DROPLIST, mDialog.isShowing() ? 1 : 0);
+                CONSTANTS.SETTINGS_DROPLIST, shown ? 1 : 0);
     }
 
     private void cancelPressedStateRecursively(ViewGroup viewGroup) {
@@ -438,6 +435,7 @@ public class DropListUIService implements SystemUIBase, SystemControl.SystemCall
                                 @Override
                                 public void run() {
                                     mShowing = true;
+                                    saveShownStateInSettings(true);
                                 }
                             }, DROP_OPEN_TIME_MS/2);
                         }
