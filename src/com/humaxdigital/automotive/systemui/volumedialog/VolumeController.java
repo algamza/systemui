@@ -32,10 +32,10 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
 
     private enum AudioStateIcon {
         AUDIO(0), AUDIO_MUTE(1), BT_AUDIO(2), BT_AUDIO_MUTE(3), BT_PHONE(4),
-        BT_PHONE_MUTE(5), NAVI(6), NAVI_MUTE(7), VR(8), VR_MUTE(8), RINGTONE(9), 
-        RINGTONE_MUTE(10), CARLIFE_AUDIO(11), CARLIFE_AUDIO_MUTE(12), CARLIFE_PHONE(13),
-        CARLIFE_PHONE_MUTE(14), CARLIFE_NAVI(15), CARLIFE_NAVI_MUTE(16), CARLIFE_VR(17),
-        CARLIFE_VR_MUTE(18), CARLIFE_RINGTONE(19), CARLIFE_RINGTONE_MUTE(20);
+        BT_PHONE_MUTE(5), NAVI(6), NAVI_MUTE(7), VR(8), VR_MUTE(9), RINGTONE(10), 
+        RINGTONE_MUTE(11), CARLIFE_AUDIO(12), CARLIFE_AUDIO_MUTE(13), CARLIFE_PHONE(14),
+        CARLIFE_PHONE_MUTE(15), CARLIFE_NAVI(16), CARLIFE_NAVI_MUTE(17), CARLIFE_VR(18),
+        CARLIFE_VR_MUTE(19), CARLIFE_RINGTONE(20), CARLIFE_RINGTONE_MUTE(21);
         private final int state; 
         AudioStateIcon(int state) { this.state = state;}
         public int state() { return state; } 
