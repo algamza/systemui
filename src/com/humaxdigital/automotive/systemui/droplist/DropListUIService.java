@@ -1,5 +1,6 @@
 package com.humaxdigital.automotive.systemui.droplist;
 
+import android.animation.Animator;
 import android.app.Dialog;
 import android.app.Service;
 import android.app.Dialog;
@@ -311,6 +312,14 @@ public class DropListUIService implements SystemUIBase, SystemControl.SystemCall
                             }
                         }, DROP_CLOSE_TIME_MS/2);
                     }
+                })
+                .setListener(new Animator.AnimatorListener() {
+                    @Override public void onAnimationStart(Animator animation) {}
+                    @Override public void onAnimationEnd(Animator animation) {}
+                    @Override public void onAnimationCancel(Animator animation) {
+                        mStartedDismiss = false;
+                    }
+                    @Override public void onAnimationRepeat(Animator animation) {}
                 })
                 .start();
     }
