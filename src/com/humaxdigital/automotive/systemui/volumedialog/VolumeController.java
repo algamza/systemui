@@ -100,6 +100,11 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         mController = service; 
         if ( mController == null ) return; 
         mController.registerCallback(this); 
+        fetchVolume(); 
+    }
+
+    private void fetchVolume() {
+        if ( mController == null ) return;
         mCurrentVolumeType = mController.getCurrentVolumeType(); 
         mCurrentVolumeMax = mController.getVolumeMax(mCurrentVolumeType); 
         mCurrentVolume = mController.getVolume(mCurrentVolumeType); 
@@ -181,6 +186,11 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         for ( VolumeChangeListener listener : mListener ) {
             listener.onShowUI(show);
         }
+    }
+
+    @Override
+    public void onUserChanged() {
+        fetchVolume();
     }
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {

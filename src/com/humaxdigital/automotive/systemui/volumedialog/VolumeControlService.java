@@ -14,6 +14,7 @@ import android.content.IntentFilter;
 
 import android.provider.Settings;
 import android.database.ContentObserver;
+import android.net.Uri;
 
 import android.media.AudioManager; 
 
@@ -43,6 +44,7 @@ public class VolumeControlService extends Service {
         public void onVolumeChanged(VolumeUtil.Type type, int max, int val); 
         public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute); 
         default public void onShowUI(boolean show) {};
+        default public void onUserChanged() {}; 
     }
 
     public class LocalBinder extends Binder {
@@ -58,6 +60,7 @@ public class VolumeControlService extends Service {
     private CarAudioManagerEx mCarAudioManagerEx;
     private AudioManager mAudioManager; 
     private TelephonyManager mTelephonyManager;
+    private ContentObserver mUserSwitchingObserver; 
 
     private ScenarioQuiteMode mQuiteMode = null;
     private ScenarioBackupWran mBackupWran = null;
@@ -82,7 +85,9 @@ public class VolumeControlService extends Service {
         mBackupWran = new ScenarioBackupWran(this).init();
         mVCRMLog = new ScenarioVCRMLog(); 
 
+        createObserver(); 
         registReceiver();
+        
     }
 
     @Override
@@ -133,6 +138,24 @@ public class VolumeControlService extends Service {
     private void unregistReceiver() {
         Log.d(TAG, "unregistReceiver");
         unregisterReceiver(mApplicationActionReceiver);
+    }
+
+    private void createObserver() {
+        mUserSwitchingObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( isUserSwitching() ) return; 
+                synchronized (mCallbacks) {
+                    for (VolumeCallback callback : mCallbacks) {
+                        callback.onUserChanged();
+                    }
+                }
+            }
+        };
+        
+        this.getContentResolver().registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH), 
+            false, mUserSwitchingObserver, UserHandle.USER_CURRENT); 
     }
 
     private final BroadcastReceiver mApplicationActionReceiver = new BroadcastReceiver() {
