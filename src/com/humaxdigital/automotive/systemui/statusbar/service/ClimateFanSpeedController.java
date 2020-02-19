@@ -56,16 +56,8 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try {
-            int speed = mManager.getIntProperty(
-                CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
-            Log.d(TAG, "fetch="+speed); 
-            if ( FanSpeedStatus.isValidFromSignal(speed) ) 
-                mDataStore.setFanSpeed(speed);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanSpeed");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -75,6 +67,22 @@ public class ClimateFanSpeedController extends ClimateBaseController<Integer> {
         if ( !FanSpeedStatus.isValidFromSignal(e) || 
             !mDataStore.shouldPropagateFanSpeedUpdate(mZone, e) ) return false;
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try {
+            int speed = mManager.getIntProperty(
+                CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT, mZone); 
+            Log.d(TAG, "update="+speed); 
+            if ( FanSpeedStatus.isValidFromSignal(speed) ) 
+                mDataStore.setFanSpeed(speed);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanSpeed");
+            return false; 
+        }
+        return true; 
     }
 
     @Override

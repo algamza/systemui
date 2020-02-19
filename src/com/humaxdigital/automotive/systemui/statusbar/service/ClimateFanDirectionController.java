@@ -44,15 +44,8 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try {
-            int val = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
-            if ( FanDirectionStatus.isValidFromSignal(val) ) mDataStore.setFanDirection(val);
-            Log.d(TAG, "fetch:mode="+val);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanDirection");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -63,6 +56,21 @@ public class ClimateFanDirectionController extends ClimateBaseController<Integer
         if ( !mDataStore.shouldPropagateFanDirectionUpdate(e) ) 
             return false;
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try {
+            int val = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
+            if ( FanDirectionStatus.isValidFromSignal(val) ) mDataStore.setFanDirection(val);
+            Log.d(TAG, "update:mode="+val);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanDirection");
+            return false;
+        }
+        return true; 
     }
 
     @Override

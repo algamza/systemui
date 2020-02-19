@@ -39,17 +39,8 @@ public class ClimateAirCleaningController extends ClimateBaseController<Integer>
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try { 
-            int val = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS, 
-                VehicleUtils.VEHICLE_AREA_TYPE_GLOBAL); 
-            Log.d(TAG, "fetch="+val);
-            if ( !Status.isValidFromSignal(val) ) return; 
-            mDataStore.setAirCleaningState(val);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchAirConditionerState");
-        }
+        Log.d(TAG, "fetch");
+        update();
     }
 
     @Override
@@ -58,6 +49,23 @@ public class ClimateAirCleaningController extends ClimateBaseController<Integer>
         Log.d(TAG, "update="+e); 
         if ( !Status.isValidFromSignal(e) ) return false;  
         if ( !mDataStore.shouldPropagateAirCleaningStateUpdate(e) ) return false;
+        return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try { 
+            int val = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_AIR_CLEANING_STATUS, 
+                VehicleUtils.VEHICLE_AREA_TYPE_GLOBAL); 
+            Log.d(TAG, "update="+val);
+            if ( !Status.isValidFromSignal(val) ) return false; 
+            mDataStore.setAirCleaningState(val);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchAirConditionerState");
+            return false; 
+        }
         return true;
     }
 

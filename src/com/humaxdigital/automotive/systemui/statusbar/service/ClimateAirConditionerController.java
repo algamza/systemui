@@ -17,16 +17,8 @@ public class ClimateAirConditionerController extends ClimateBaseController<Boole
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try { 
-            boolean val = mManager.getBooleanProperty(
-                CarHvacManagerEx.ID_ZONED_AC_ON, 
-                ClimateControllerManager.HVAC_ALL); 
-            Log.d(TAG, "fetch="+val);
-            mDataStore.setAirConditionerState(val);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchAirConditionerState");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -35,6 +27,22 @@ public class ClimateAirConditionerController extends ClimateBaseController<Boole
         Log.d(TAG, "update="+e); 
         if ( !mDataStore.shouldPropagateAirConditionerUpdate(e) ) return false;
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try { 
+            boolean val = mManager.getBooleanProperty(
+                CarHvacManagerEx.ID_ZONED_AC_ON, 
+                ClimateControllerManager.HVAC_ALL); 
+            Log.d(TAG, "update="+val);
+            mDataStore.setAirConditionerState(val);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchAirConditionerState");
+            return false; 
+        }
+        return true; 
     }
 
     @Override

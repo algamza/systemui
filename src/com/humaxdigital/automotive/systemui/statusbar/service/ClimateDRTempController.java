@@ -36,7 +36,13 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager);
-        if ( mManager == null || mDataStore == null ) return;
+        Log.d(TAG, "fetch"); 
+        update();
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
         try {
             int value = 0; 
             if ( mMode == MODE.CELSIUS ) {
@@ -46,11 +52,13 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
                 value = mManager.getIntProperty(
                     CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
             }
-            Log.d(TAG, "fetch="+value); 
+            Log.d(TAG, "update="+value); 
             mDataStore.setTemperature(mZone, value);
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchTemperature");
+            return false; 
         }
+        return true;
     }
 
     public void fetchUSMManager(CarUSMManager manager) { 

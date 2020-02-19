@@ -47,14 +47,8 @@ public class ClimatePSSeatController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try {
-            int level = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS, mZone);
-            Log.d(TAG, "fetch="+level); 
-            mDataStore.setSeatWarmerLevel(mZone, level);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchSeatWarmer");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -64,6 +58,20 @@ public class ClimatePSSeatController extends ClimateBaseController<Integer> {
         if ( !mDataStore.shouldPropagateSeatWarmerLevelUpdate(mZone, e) ) 
             return false;
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try {
+            int level = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS, mZone);
+            Log.d(TAG, "update="+level); 
+            mDataStore.setSeatWarmerLevel(mZone, level);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchSeatWarmer");
+            return false; 
+        }
+        return true; 
     }
 
     @Override

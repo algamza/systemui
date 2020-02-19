@@ -26,16 +26,8 @@ public class ClimateDefogController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try {
-            int front_def = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
-            if ( checkValid(front_def) )
-                mDataStore.setDefrosterState(mZone, front_def==FRONT_DEFOG_VALUE?true:false);
-            Log.d(TAG, "fetch:front="+front_def);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanDirection");
-        }
+        Log.d(TAG, "fetch");
+        update();
     }
 
     @Override
@@ -45,6 +37,22 @@ public class ClimateDefogController extends ClimateBaseController<Integer> {
         Log.d(TAG, "update="+e);
         if ( !mDataStore.shouldPropagateDefrosterUpdate(mZone, e==FRONT_DEFOG_VALUE?true:false) ) 
             return false; 
+        return true; 
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try {
+            int front_def = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
+            if ( checkValid(front_def) )
+                mDataStore.setDefrosterState(mZone, front_def==FRONT_DEFOG_VALUE?true:false);
+            Log.d(TAG, "update="+front_def);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanDirection");
+            return false; 
+        }
         return true; 
     }
 
