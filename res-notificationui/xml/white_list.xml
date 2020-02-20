@@ -30,4 +30,5 @@
     <app name="DuerOS">com.baidu.che.codriver</app>
     <app name="sidebar">com.humaxdigital.automotive.sidebarservice</app>
     <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
+    <app name="ev">com.humaxautomotive.ev</app>
 </whitelist>
