@@ -293,6 +293,7 @@ public class NotificationUiService extends Service {
     private View.OnClickListener mOnClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            Log.d(TAG, "onClick");
             if ( mCurrentNotificationIntent != null ) {
                 synchronized(mCurrentNotificationIntent) {
                     try {
@@ -301,9 +302,8 @@ public class NotificationUiService extends Service {
                         Log.d(TAG, "failed to send intent for " + e);
                     }
                 }
+                updateBlock();
             }
-            Log.d(TAG, "onClick");
-            updateBlock();
             closeDialog();
         }
     }; 
