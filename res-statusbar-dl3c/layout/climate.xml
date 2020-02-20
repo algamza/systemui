@@ -15,31 +15,31 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="10" />
+        android:layout_weight="17" />
     <FrameLayout
         android:id="@+id/climate_menu_1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="136" />
+        android:layout_weight="122" />
     <FrameLayout
         android:id="@+id/climate_menu_2"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="134" />
+        android:layout_weight="120" />
     <FrameLayout
         android:id="@+id/climate_menu_3"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="160" />
+        android:layout_weight="154" />
     <FrameLayout
         android:id="@+id/climate_menu_4"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="113" />
+        android:layout_weight="103" />
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="5" />
+        android:layout_weight="7" />
     <FrameLayout
         android:id="@+id/climate_menu_5"
         android:layout_width="0dp"
@@ -48,16 +48,16 @@
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="15" />
+        android:layout_weight="22" />
     <FrameLayout
         android:id="@+id/climate_menu_6"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="118" />
+        android:layout_weight="140" />
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="8" />
+        android:layout_weight="14" />
     <FrameLayout
         android:id="@+id/climate_menu_7"
         android:layout_width="0dp"
