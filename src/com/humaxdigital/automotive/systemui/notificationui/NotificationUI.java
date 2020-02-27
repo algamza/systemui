@@ -3,8 +3,10 @@ package com.humaxdigital.automotive.systemui.notificationui;
 import android.content.Context;
 import android.content.res.Resources.NotFoundException; 
 import android.graphics.drawable.Icon;
+import android.graphics.Rect; 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.Gravity; 
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,6 +29,7 @@ public class NotificationUI extends LinearLayout {
         VIEWS
     }
 
+    private final static int SUBTEXT_GRAVITY_RIGHT_SIZE = 416; 
     private Context mContext;
     private TextView mTitle;
     private TextView mBody;
@@ -124,6 +127,7 @@ public class NotificationUI extends LinearLayout {
             if ( mFlags.get(Flag.SUB_TEXT) ) {
                 mSubBody.setVisibility(View.VISIBLE); 
                 mSubBody.setText(mSubDataText);
+                updateSubTexGravity();
                 mSubBody.setMarqueeDPPerSecond(100); 
                 mSubBody.setSelected(true);
             } else {
@@ -137,6 +141,15 @@ public class NotificationUI extends LinearLayout {
                 mIcon.setVisibility(View.GONE); 
             }
         }
+    }
+
+    private void updateSubTexGravity() {
+        if ( mSubBody == null ) return;
+        Rect size = new Rect(); 
+        mSubBody.getPaint().getTextBounds(mSubBody.getText().toString(), 0, mSubBody.getText().length(), size); 
+        Log.d(TAG, "updateSubTexGravity="+size.width()); 
+        if ( size.width() > SUBTEXT_GRAVITY_RIGHT_SIZE ) mSubBody.setGravity(Gravity.LEFT);
+        else mSubBody.setGravity(Gravity.RIGHT);
     }
 
     public NotificationUI setTitle(String title) {
@@ -196,6 +209,7 @@ public class NotificationUI extends LinearLayout {
         if ( mFlags.get(Flag.SUB_TEXT) && !sub.equals("") ) {
             mSubBody.setVisibility(View.VISIBLE); 
             mSubBody.setText(mSubDataText);
+            updateSubTexGravity();
         } else {
             mSubBody.setVisibility(View.GONE);
         }
