@@ -294,6 +294,12 @@ public class SystemCallController extends BaseController<Integer> implements TMS
     }
 
     @Override
+    public void onActivationChanged(TMSClient.ActiveStatus active) {
+        Log.d(TAG, "onActivationChanged="+active); 
+        broadcastChangeEvent();
+    }
+
+    @Override
     public void onCallingStatusChanged(TMSClient.CallingStatus status) {
         Log.d(TAG, "onCallingStatusChanged="+status); 
         broadcastChangeEvent();

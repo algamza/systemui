@@ -77,6 +77,12 @@ public class SystemLocationController extends BaseController<Integer> implements
     }
 
     @Override
+    public void onActivationChanged(TMSClient.ActiveStatus active) {
+        Log.d(TAG, "onActivationChanged="+active); 
+        broadcastChangeEvent();
+    }
+
+    @Override
     public void onLocationSharingChanged(TMSClient.LocationSharingStatus status) {
         Log.d(TAG, "onLocationSharingChanged="+status); 
         broadcastChangeEvent();

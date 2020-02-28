@@ -25,11 +25,6 @@ public class SystemAntennaController extends BaseController<Integer> implements 
         public int state() { return state; } 
     }
 
-    private enum Type {
-        BT,
-        TMS
-    }
-
     public SystemAntennaController(Context context, DataStore store) {
         super(context, store);
     }
@@ -97,15 +92,16 @@ public class SystemAntennaController extends BaseController<Integer> implements 
             boolean tms_connected = mTMSClient.getConnectionStatus() == TMSClient.ConnectionStatus.CONNECTED ? true:false;
             if ( tms_connected ) {
                 int tms_level = mTMSClient.getSignalLevel(); 
-                status = convertToAntennaLevel(Type.TMS, tms_level); 
-                Log.d(TAG, "get type="+Type.TMS+", level="+tms_level+", status="+status); 
+                TMSClient.ConnectionStatus connection = mTMSClient.getConnectionStatus(); 
+                status = convertToTMSAntennaLevel(tms_level, connection); 
+                Log.d(TAG, "TMS level="+tms_level+", network="+connection+", status="+status); 
                 return status;
             }
             boolean bt_connected = mUserBluetooth.isHeadsetDeviceConnected();
             if ( bt_connected ) {
                 int bt_level = mUserBluetooth.getAntennaLevel();
-                status = convertToAntennaLevel(Type.BT, bt_level); 
-                Log.d(TAG, "get type="+Type.BT+", level="+bt_level+", status="+status); 
+                status = convertToBTAntennaLevel(bt_level); 
+                Log.d(TAG, "BT level="+bt_level+", status="+status); 
                 return status;
             }
         } catch( RemoteException e ) {
@@ -114,34 +110,34 @@ public class SystemAntennaController extends BaseController<Integer> implements 
         return status;
     }
 
-    private AntennaStatus convertToAntennaLevel(Type type, int level) {
+    private AntennaStatus convertToBTAntennaLevel(int level) {
         AntennaStatus status = AntennaStatus.NONE; 
-        switch(type) {
-            case BT: {
-                switch(level) {
-                    case 0: status = AntennaStatus.BT_ANTENNA_NO; break; 
-                    case 1: status = AntennaStatus.BT_ANTENNA_1; break; 
-                    case 2: status = AntennaStatus.BT_ANTENNA_2; break; 
-                    case 3: status = AntennaStatus.BT_ANTENNA_3; break; 
-                    case 4: status = AntennaStatus.BT_ANTENNA_4; break; 
-                    case 5: status = AntennaStatus.BT_ANTENNA_5; break; 
-                }
-                break;
-            }
-            case TMS: {
-                switch(level) {
-                    case 0: status = AntennaStatus.TMS_ANTENNA_NO; break; 
-                    case 1: status = AntennaStatus.TMS_ANTENNA_0; break;
-                    case 2: status = AntennaStatus.TMS_ANTENNA_1; break; 
-                    case 3: status = AntennaStatus.TMS_ANTENNA_2; break; 
-                    case 4: status = AntennaStatus.TMS_ANTENNA_3; break; 
-                    case 5: status = AntennaStatus.TMS_ANTENNA_4; break; 
-                    case 6: status = AntennaStatus.TMS_ANTENNA_5; break; 
-                    case 7: status = AntennaStatus.TMS_ANTENNA_5; break; 
-                }
-            }
+        switch(level) {
+            case 0: status = AntennaStatus.BT_ANTENNA_NO; break; 
+            case 1: status = AntennaStatus.BT_ANTENNA_1; break; 
+            case 2: status = AntennaStatus.BT_ANTENNA_2; break; 
+            case 3: status = AntennaStatus.BT_ANTENNA_3; break; 
+            case 4: status = AntennaStatus.BT_ANTENNA_4; break; 
+            case 5: status = AntennaStatus.BT_ANTENNA_5; break; 
         }
         return status; 
+    }
+
+    private AntennaStatus convertToTMSAntennaLevel(int level, TMSClient.ConnectionStatus connection) {
+        AntennaStatus status = AntennaStatus.NONE; 
+        switch(level) {
+            case 0: status = AntennaStatus.TMS_ANTENNA_0; break; 
+            case 1: status = AntennaStatus.TMS_ANTENNA_1; break;
+            case 2: status = AntennaStatus.TMS_ANTENNA_2; break; 
+            case 3: status = AntennaStatus.TMS_ANTENNA_3; break; 
+            case 4: status = AntennaStatus.TMS_ANTENNA_4; break; 
+            case 5: 
+            case 6: 
+            case 7: status = AntennaStatus.TMS_ANTENNA_5; break; 
+        }
+        if ( connection == TMSClient.ConnectionStatus.DISCONNECTED ) 
+            status = AntennaStatus.TMS_ANTENNA_NO; 
+        return status;
     }
 
     private void broadcastChangeEvent() {
@@ -154,6 +150,12 @@ public class SystemAntennaController extends BaseController<Integer> implements 
     @Override
     public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
         Log.d(TAG, "onConnectionChanged="+connection);
+        broadcastChangeEvent();
+    }
+
+    @Override
+    public void onActivationChanged(TMSClient.ActiveStatus active) {
+        Log.d(TAG, "onactivationChanged="+active);
         broadcastChangeEvent();
     }
 

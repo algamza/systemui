@@ -67,6 +67,7 @@ public class TMSClient {
 
     public interface TMSCallback {
         public void onConnectionChanged(ConnectionStatus connection);
+        public void onActivationChanged(ActiveStatus active);
         default public void onSignalLevelChanged(int level) {};
         default public void onCallingStatusChanged(CallingStatus status) {};
         default public void onDataUsingChanged(DataUsingStatus status) {}
@@ -134,6 +135,20 @@ public class TMSClient {
     public LocationSharingStatus getLocationSharingStatus() {
         Log.d(TAG, "getLocationSharingStatus="+mCurrentLocationSharingStatus); 
         return mCurrentLocationSharingStatus; 
+    }
+
+    private void updateActiveStatus(int active) {
+        
+        if ( active == 0 ) {
+            if ( mCurrentActiveStatus == ActiveStatus.DEACTIVE ) return; 
+            mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
+        } else {
+            if ( mCurrentActiveStatus == ActiveStatus.ACTIVE ) return; 
+            mCurrentActiveStatus = ActiveStatus.ACTIVE; 
+        }
+
+        for ( TMSCallback callback : mListeners ) 
+            callback.onActivationChanged(mCurrentActiveStatus);
     }
 
     private void updateDataStatus(ConnectionStatus status) {
@@ -216,10 +231,8 @@ public class TMSClient {
                         for ( TMSCallback callback : mListeners ) 
                             callback.onSignalLevelChanged(mCurrentSignalLevel); 
                     }
-                    if ( active == 0 ) 
-                        mCurrentActiveStatus = ActiveStatus.DEACTIVE; 
-                    else 
-                        mCurrentActiveStatus = ActiveStatus.ACTIVE; 
+
+                    updateActiveStatus(active); 
 
                     Log.d(TAG, "APP_TMS_MODEM_LIVE_SIGNAL_1SEC:active="+active
                         +", signal="+rssiSignal+", stauts="+networkStatus);
