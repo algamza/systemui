@@ -108,12 +108,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         mCurrentVolumeType = mController.getCurrentVolumeType(); 
         mCurrentVolumeMax = mController.getVolumeMax(mCurrentVolumeType); 
         mCurrentVolume = mController.getVolume(mCurrentVolumeType); 
-        if ( mImgVolume != null ) 
-            mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        if ( mTextVolume != null ) 
-            mTextVolume.setText(convertToStep(mCurrentVolumeMax, mCurrentVolume));
-        if ( mProgress != null ) 
-            mProgress.setProgress(convertToProgressValue(mCurrentVolumeMax, mCurrentVolume));
+        updateUI(isVolumeMute(), mCurrentVolumeType, mCurrentVolume, mCurrentVolumeMax); 
     }
 
     private void updateMuteState() {
@@ -128,7 +123,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
+                updateUI(isVolumeMute(), mCurrentVolumeType, mCurrentVolume, mCurrentVolumeMax);  
             }
         }); 
         mCurrentVolumeMax = max; 
@@ -164,16 +159,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
-                mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
-                if ( mute ) {
-                    mTextVolume.setText(MUTE_VALUE_TEXT);
-                    mProgress.setProgress(convertToProgressValue(max, 0));
-                }
-                else {
-                    mTextVolume.setText(convertToStep(max, volume));
-                    mProgress.setProgress(convertToProgressValue(max, volume));
-                }
+                updateUI(mute, type, volume, max); 
             }
         }); 
         for ( VolumeChangeListener listener : mListener ) {
@@ -281,9 +267,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
 
     private void volumeNoUI(VolumeUtil.Type type, int max, int value) {
         Log.d(TAG, "volumeUpNoUI:type="+type+", max="+max+", value="+value); 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        if ( mProgress != null ) mProgress.setProgress(convertToProgressValue(max, value));
-        if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private void volumeUp(VolumeUtil.Type type, int max, int value) {
@@ -308,9 +292,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
 
         mTimer.schedule(mVolumeUpTask, VOLUME_SELECT_TIME);
 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        mProgress.setProgress(convertToProgressValue(max, value));
-        mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private void volumeDown(VolumeUtil.Type type, int max, int value) {
@@ -336,9 +318,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
 
         mTimer.schedule(mVolumeDownTask, VOLUME_SELECT_TIME);
 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        mProgress.setProgress(convertToProgressValue(max, value));
-        mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private boolean isVolumeMute() {
@@ -489,6 +469,20 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
         if ( !mController.setVolume(mCurrentVolumeType, down_volume) ) return;
 
         mUIHandler.post(new VolumeRunnable(1, down_volume)); 
+    }
+
+    private void updateUI(boolean mute, VolumeUtil.Type type, int volume, int max) {
+        if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
+        Log.d(TAG, "updateUI:mute="+mute+", type="+type+", volume="+volume+", max="+max); 
+        mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+        if ( mute ) {
+            mTextVolume.setText(MUTE_VALUE_TEXT);
+            mProgress.setProgress(convertToProgressValue(max, 0));
+        }
+        else {
+            mTextVolume.setText(convertToStep(max, volume));
+            mProgress.setProgress(convertToProgressValue(max, volume));
+        }
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {

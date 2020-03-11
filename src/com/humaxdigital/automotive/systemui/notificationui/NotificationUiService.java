@@ -43,7 +43,7 @@ public class NotificationUiService extends Service {
     private Window mWindow;
     private View mPanel;
     private boolean mShowing;
-    private final int MOVE_TIME_MS = 200;
+    private final int MOVE_TIME_MS = 100;
     private final long SHOWING_TIME_MS = 5000;
     private final DialogHandler mHandler = new DialogHandler();
     private ArrayList<NotificationUI> mNotificationUIs = new ArrayList<>();
