@@ -96,7 +96,7 @@ public class MenuLayout extends LinearLayout {
         } else {
             StateListDrawable states = new StateListDrawable();
             states.addState(new int[] {android.R.attr.state_pressed},
-                getResources().getDrawable(R.drawable.dr_btn_d));
+                getResources().getDrawable(R.drawable.dr_btn_p));
             states.addState(new int[] { android.R.attr.state_enabled},
                     getResources().getDrawable(R.drawable.dr_btn_d));
             mIconBG.setImageDrawable(states); 
