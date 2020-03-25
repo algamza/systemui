@@ -1,6 +1,6 @@
 <resources>
     <string name="STR_MESG_18334_ID">현재 모드에서는 사용하실 수 없습니다.</string>
-    <string name="STR_MESG_14967_ID">레오스탯 연동</string>
+    <string name="STR_MESG_14967_ID">계기판 화면 밝기 연동</string>
     <string name="STR_WI_FI_08_ID">Wi-Fi</string>
     <string name="STR_MUTE_06_ID">음소거</string>
     <string name="STR_QUIET_MODE_04_ID">후석 취침 모드</string>
