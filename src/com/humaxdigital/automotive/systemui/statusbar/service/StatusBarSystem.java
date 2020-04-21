@@ -482,6 +482,11 @@ public class StatusBarSystem {
 
         if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
+            if ( mFrontCamera ) {
+                Log.d(TAG, "REQUEST_FRONT_CAMERA_FINISH : TRUE"); 
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CONSTANTS.ACTION_REQUEST_FRONT_CAMERA_FINISH, 1);
+            }
             return; 
         }
 
@@ -535,6 +540,11 @@ public class StatusBarSystem {
 
         if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
+            if ( mFrontCamera ) {
+                Log.d(TAG, "REQUEST_FRONT_CAMERA_FINISH : TRUE"); 
+                Settings.Global.putInt(mContext.getContentResolver(), 
+                    CONSTANTS.ACTION_REQUEST_FRONT_CAMERA_FINISH, 1);
+            }
             return; 
         }
 

@@ -454,6 +454,7 @@ public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemC
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "SystemGestureReceiver");
             if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
                 String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
                 Log.d(TAG, "system gesture received: " + gesture);

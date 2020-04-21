@@ -56,5 +56,7 @@ public class CONSTANTS {
     public static final String SCREENSAVER_ACTIVITY_NAME = "com.humaxdigital.automotive.screensaver/.MainActivity";
     public static final String KEY_CURRENT_HOME_PAGE = "com.humaxdigital.dn8c.KEY_CURRENT_HOME_PAGE";
 
+    public static final String ACTION_REQUEST_FRONT_CAMERA_FINISH = "android.extension.car.REQUEST_FRONT_CAMERA_FINISH";
+
     private CONSTANTS() {}
 }
