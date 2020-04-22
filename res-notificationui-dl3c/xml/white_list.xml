@@ -14,8 +14,6 @@
     <app name="CameraAHD">com.humaxdigital.automotive.camera</app>
     <app name="CarMainService">com.humaxdigital.automotive.carmainservice</app>
     <app name="notificationtest">com.humaxdigital.automotive.noti_test</app>
-    <app name="DN8CSetup">com.humaxdigital.dn8c.setup</app>
-    <app name="DU2Setup">com.humaxdigital.du2.setup</app>
     <app name="DL3CSetup">com.humaxdigital.dl3c.setup</app>
     <app name="PhoneContacts">com.android.phone</app>
     <app name="PhoneCall">com.humaxdigital.automotive.btphone</app>
