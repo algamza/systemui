@@ -26,7 +26,6 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
     private Boolean mIsValidTime = true; 
 
     private boolean mIsPowerOff; 
-    private boolean mUserAgreementMode;
     private boolean mUserSwitching; 
     private boolean mRearCameraMode; 
 
@@ -125,16 +124,13 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
         if ( mService == null ) return;
 
         if ( mService.isPowerOff() ) mIsPowerOff = true;
-        if ( mService.isUserAgreement() ) mUserAgreementMode = true;
         if ( mService.isUserSwitching() ) mUserSwitching = true;
         if ( mService.isRearCamera() ) mRearCameraMode = true;
 
         Log.d(TAG, "checkUserIconDisable:mIsPowerOff="+mIsPowerOff+
-            ", mUserAgreementMode="+mUserAgreementMode+
             ", mUserSwitching="+mUserSwitching+
             ", mRearCameraMode="+mRearCameraMode); 
-        if ( mIsPowerOff || mUserAgreementMode 
-            || mUserSwitching || mRearCameraMode ) 
+        if ( mIsPowerOff  || mUserSwitching || mRearCameraMode ) 
             setUsable(true);
         else 
             setUsable(false);
@@ -199,13 +195,6 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
     @Override
     public void onUserAgreementMode(boolean on) {
         Log.d(TAG, "onUserAgreementMode="+on);
-        mUserAgreementMode = on; 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                checkSpecialCase(); 
-            }
-        }); 
     }
 
     @Override
