@@ -341,10 +341,14 @@ public class StatusBarClimate {
         Log.d(TAG, "openClimateSetting : front camera="+mFrontCamera+", rear camera="+mRearCamera+", rear gear="+mRearGearDetected); 
         if ( mRearCamera ) {
             Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( mRearGearDetected ) {
             Log.d(TAG, "Current Rear Gear : only climate toggle");
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( isUserAgreement() ) {

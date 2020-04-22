@@ -27,7 +27,6 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
 
     private boolean mIsPowerOff; 
     private boolean mUserSwitching; 
-    private boolean mRearCameraMode; 
 
     private Handler mHandler; 
 
@@ -83,8 +82,7 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
             || type == null || time == null ) return;
         
         if ( !isValidTime(time) ) {
-            mIsValidTime = false;
-            mDateVew.setText("-- : --");
+            mIsValidTime = false;mDateVew.setText("-- : --");
             mDateNoonView.setText("");
             return;
         }
@@ -125,12 +123,10 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
 
         if ( mService.isPowerOff() ) mIsPowerOff = true;
         if ( mService.isUserSwitching() ) mUserSwitching = true;
-        if ( mService.isRearCamera() ) mRearCameraMode = true;
 
         Log.d(TAG, "checkUserIconDisable:mIsPowerOff="+mIsPowerOff+
-            ", mUserSwitching="+mUserSwitching+
-            ", mRearCameraMode="+mRearCameraMode); 
-        if ( mIsPowerOff  || mUserSwitching || mRearCameraMode ) 
+            ", mUserSwitching="+mUserSwitching); 
+        if ( mIsPowerOff  || mUserSwitching ) 
             setUsable(true);
         else 
             setUsable(false);
@@ -212,12 +208,5 @@ public class DateController implements StatusBarSystem.StatusBarSystemCallback {
     @Override
     public void onRearCamera(boolean on) {
         Log.d(TAG, "onRearCamera="+on);
-        mRearCameraMode = on; 
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                checkSpecialCase(); 
-            }
-        }); 
     }
 }
