@@ -181,7 +181,7 @@ public class NotificationUiService extends Service {
                     Log.d(TAG, "packagename:"+notification.getPackageName()+", title:"+title+", text:"+text); 
                     if ( (remote_view == null) && (text == null || text.equals("")) && 
                         (title == null  || title.equals("")) ) return false; 
-                    if ( (remote_view == null) && !isValidTitle(title) ) return false;
+                    if ( !isValidTitle(title) ) return false;
                     
                     NotificationUI ui = new NotificationUI(NotificationUiService.this); 
                     if ( remote_view != null ) ui.setRemoteViews(remote_view); 
