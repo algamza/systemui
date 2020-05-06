@@ -353,6 +353,10 @@ public class StatusBarClimate {
         }
         if ( isUserAgreement() ) {
             if ( isPowerOff() ) powerOn();
+            if ( mFrontCamera ) {
+                Log.d(TAG, "REQUEST_FRONT_CAMERA_FINISH : TRUE");
+                Settings.Global.putInt(mContext.getContentResolver(), CONSTANTS.ACTION_REQUEST_FRONT_CAMERA_FINISH, 1);
+            }
             OSDPopup.send(mContext, 
                 mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             Log.d(TAG, "Current UserAgreement, set power on"); 
