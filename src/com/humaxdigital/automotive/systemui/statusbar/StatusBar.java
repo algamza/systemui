@@ -47,6 +47,7 @@ import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
@@ -462,6 +463,7 @@ public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemC
                 // swipe-from-top - open the drop list.
                 if (CONSTANTS.SYSTEM_GESTURE_SWIPE_FROM_TOP.equals(gesture)){
                     if (mIsSwipeGestureMode && !isSpecialCase()) {
+                        VCRMLogger.triggerDropDown();
                         openDroplist();
                     }
                 }
@@ -474,8 +476,10 @@ public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemC
                         final int fingers = intent.getIntExtra(CONSTANTS.EXTRA_FINGERS, 0);
 
                         if (fingers == 3) {         // 3: go to all menu
+                            VCRMLogger.triggerThreeFigers();
                             didAction = checkAndGoToAllMenu();
                         } else if (fingers == 4) {  // 4: go home (3-widgets)
+                            VCRMLogger.triggerFourFigers();
                             didAction = checkAndGoToHomeWidgets();
                         } else if (fingers == 5) {  // 5: enter display-off mode
                             didAction = checkAndTurnOffDisplay();
@@ -509,6 +513,7 @@ public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemC
             if ( topActivity == null ) return;
             String name = topActivity.getClassName(); 
             Log.d(TAG, "onActivityChanged="+name); 
+            VCRMLogger.changedScreen(name);
             if ( name == null ) return;
             if ( name.contains(".MapAutoActivity") ) mIsSwipeGestureMode = false;
             else mIsSwipeGestureMode = true;

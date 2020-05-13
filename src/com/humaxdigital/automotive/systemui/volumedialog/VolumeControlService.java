@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class VolumeControlService extends Service {
@@ -64,7 +65,6 @@ public class VolumeControlService extends Service {
 
     private ScenarioQuiteMode mQuiteMode = null;
     private ScenarioBackupWran mBackupWran = null;
-    private ScenarioVCRMLog mVCRMLog = null; 
     private boolean mIsSettingsActivity = false;
     private boolean mIsSettingsDefault = false; 
     private boolean mIsShow = false; 
@@ -83,7 +83,6 @@ public class VolumeControlService extends Service {
         mQuiteMode = new ScenarioQuiteMode(this).init();
         mQuiteMode.registListener(mQuiteModeListener);
         mBackupWran = new ScenarioBackupWran(this).init();
-        mVCRMLog = new ScenarioVCRMLog(); 
 
         createObserver(); 
         registReceiver();
@@ -112,9 +111,6 @@ public class VolumeControlService extends Service {
         if ( mBackupWran != null ) mBackupWran.deinit();
         mQuiteMode = null;
         mBackupWran = null;
-
-        if ( mVCRMLog != null ) mVCRMLog.destroy();
-        mVCRMLog = null;
 
         super.onDestroy();
     }
@@ -335,7 +331,6 @@ public class VolumeControlService extends Service {
             mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
             mBackupWran.fetchCarSensorManagerEx(CarExClient.INSTANCE.getSensorManager()); 
         }
-        if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
     }
 
     private final CarExClient.CarExClientListener mCarClientListener = 
@@ -350,6 +345,34 @@ public class VolumeControlService extends Service {
         }
     }; 
 
+    private VCRMLogger.VolumeType convertToVCRMVolumeType(int mode) {
+        VCRMLogger.VolumeType type = VCRMLogger.VolumeType.UNKNOWN;
+        switch (mode) {
+            case 0: type = VCRMLogger.VolumeType.UNKNOWN; break;
+            case 1: type = VCRMLogger.VolumeType.RADIO_FM; break; 
+            case 2: type = VCRMLogger.VolumeType.RADIO_AM; break; 
+            case 3: type = VCRMLogger.VolumeType.USB; break; 
+            case 4: type = VCRMLogger.VolumeType.ONLINE_MUSIC; break; 
+            case 5: type = VCRMLogger.VolumeType.BT_AUDIO; break; 
+            case 6: type = VCRMLogger.VolumeType.BT_PHONE_RING; break; 
+            case 7: type = VCRMLogger.VolumeType.BT_PHONE_CALL; break; 
+            case 8: type = VCRMLogger.VolumeType.CARLIFE_MEDIA; break; 
+            case 9: type = VCRMLogger.VolumeType.CARLIFE_NAVI; break; 
+            case 10: type = VCRMLogger.VolumeType.CARLIFE_TTS; break; 
+            case 11: type = VCRMLogger.VolumeType.BAIDU_MEDIA; break; 
+            case 12: type = VCRMLogger.VolumeType.BAIDU_ALERT; break; 
+            case 13: type = VCRMLogger.VolumeType.BAIDU_VR_TTS; break; 
+            case 14: type = VCRMLogger.VolumeType.BAIDU_NAVI; break; 
+            case 15: type = VCRMLogger.VolumeType.EMERGENCY_CALL; break; 
+            case 16: type = VCRMLogger.VolumeType.ADVISOR_CALL; break; 
+            case 17: type = VCRMLogger.VolumeType.BEEP; break; 
+            case 18: type = VCRMLogger.VolumeType.WELCOME_SOUND; break; 
+            case 19: type = VCRMLogger.VolumeType.SETUP_GUIDE; break; 
+            default: break;
+        }
+        return type;
+    }
+
     private final ICarVolumeCallback mVolumeChangeCallback = new ICarVolumeCallback.Stub() {
         @Override
         public void onGroupVolumeChanged(int groupId, int flags) {
@@ -361,7 +384,8 @@ public class VolumeControlService extends Service {
 
             if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(mode, volume) ) return;
             if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(mode, volume) ) return;
-            if ( mVCRMLog != null ) mVCRMLog.updateLog(mode, volume);
+
+            VCRMLogger.changedVolume(convertToVCRMVolumeType(mode), volume);
 
             if ( mIsSettingsActivity && mode != AudioTypes.LAS_BAIDU_VR_TTS ) return;
             if ( isExceptionVolume(VolumeUtil.convertToType(mode)) ) return;
