@@ -96,6 +96,11 @@ public class VCRMLogger {
         VcrmEventLog.writeNewStandardLog(VcrmEventLog.NewVCRMStandard.ID_STD_AV_11, sb.toString());
     }
 
+    public static void triggerTimeSettingFromStatusBar() {
+        // setting menu [1], Status Bar [2], home widget [3]
+        VcrmEventLog.writeNewStandardLog(VcrmEventLog.NewVCRMStandard.ID_STD_SYS_10, Integer.toString(2));
+    }
+
     public static void triggerThreeFigers() {
         Log.d(TAG, "triggerThreeFigers"); 
         VcrmEventLog.writeNewUtilCount(VcrmEventLog.NewVCRMUtilCount.ID_UTIL_SYS_11); 

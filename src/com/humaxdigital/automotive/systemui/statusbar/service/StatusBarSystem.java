@@ -29,6 +29,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
@@ -505,6 +506,7 @@ public class StatusBarSystem {
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DATE_SETTING);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
+            VCRMLogger.triggerTimeSettingFromStatusBar();
         }
     } 
     
