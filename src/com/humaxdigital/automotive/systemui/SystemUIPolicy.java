@@ -3,6 +3,7 @@
 
 package com.humaxdigital.automotive.systemui;
 
+import android.app.StatusBarManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.ServiceManager;
@@ -23,6 +24,7 @@ public class SystemUIPolicy {
     public static void applyPolicies(Context context) {
         applyImmersiveModePolicy(context);
         applyDefaultAnimationScales(context);
+        disableStatusBarOptions(context);
     }
 
     private static void applyImmersiveModePolicy(Context context) {
@@ -48,5 +50,13 @@ public class SystemUIPolicy {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void disableStatusBarOptions(Context context) {
+        final ContentResolver ContentResolver = context.getContentResolver();
+
+        final StatusBarManager statusBarManager =
+                (StatusBarManager) context.getSystemService(Context.STATUS_BAR_SERVICE);
+        statusBarManager.disable2(StatusBarManager.DISABLE2_GLOBAL_ACTIONS);
     }
 }
