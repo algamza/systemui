@@ -12,9 +12,27 @@ public class VCRMLogger {
         CARLIFE_TTS, BAIDU_MEDIA, BAIDU_ALERT, BAIDU_VR_TTS, BAIDU_NAVI, 
         EMERGENCY_CALL, ADVISOR_CALL, BEEP, WELCOME_SOUND, SETUP_GUIDE
     }
+    public enum WirelessChargingState {
+        OFF, CELLPHONE_ON_PAD, CHARGING, CHARGING_COMPLETE, CELLPHONE_REMINDER, CHARGING_ERROR
+    }
 
     public static void changedTimeSetting(String time) {
         Log.d(TAG, "changedTimeSetting:time="+time); 
+    }
+
+    public static void changedWirelessCharging(WirelessChargingState state) {
+        Log.d(TAG, "changedWirelessCharging="+state); 
+        int value = 0; 
+        switch(state) {
+            case OFF:  value = 1; break; 
+            case CELLPHONE_ON_PAD: value = 2; break; 
+            case CHARGING: value = 3; break; 
+            case CHARGING_COMPLETE: value = 4; break; 
+            case CELLPHONE_REMINDER: value = 5; break; 
+            case CHARGING_ERROR: value = 6; break; 
+            default: return; 
+        }
+        VcrmEventLog.writeNewStandardLog(VcrmEventLog.NewVCRMStandard.ID_STD_VI_158, Integer.toString(value));
     }
 
     public static void changedScreen(String screen) {
