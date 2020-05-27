@@ -366,6 +366,16 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
             mClimateViews.add(mSync); 
             mClimateViews.add(mTempPS);
         }
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.NPPE ) {
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mAirCleaning); 
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mSync); 
+            mClimateViews.add(mTempPS);
+        }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat ) {
                 mClimateViews.add(mTempDR);
