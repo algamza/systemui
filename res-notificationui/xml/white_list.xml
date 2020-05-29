@@ -34,4 +34,5 @@
     <app name="climate">com.humaxdigital.automotive.climate</app>
     <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
     <app name="ev">com.humaxautomotive.ev</app>
+    <app name="gasstation">com.humaxdigital.automotive.gasstation</app>
 </whitelist>
