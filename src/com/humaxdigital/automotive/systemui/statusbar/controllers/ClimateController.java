@@ -258,6 +258,8 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
             || ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
             if ( support_seat ) mClimatePanel = inflater.inflate(R.layout.climate, null); 
             else mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
+        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.NPPE ) {
+            mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
         } else {
             mClimatePanel = inflater.inflate(R.layout.climate, null); 
         }
@@ -367,14 +369,12 @@ public class ClimateController implements StatusBarClimate.StatusBarClimateCallb
             mClimateViews.add(mTempPS);
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.NPPE ) {
-            mClimateViews.add(mTempDR);
-            mClimateViews.add(mFanDirection);
             mClimateViews.add(mAC);
             mClimateViews.add(mIntake);
-            mClimateViews.add(mAirCleaning); 
+            mClimateViews.add(mTempDR);
             mClimateViews.add(mFanSpeed);
-            mClimateViews.add(mSync); 
-            mClimateViews.add(mTempPS);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAirCleaning); 
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat ) {
