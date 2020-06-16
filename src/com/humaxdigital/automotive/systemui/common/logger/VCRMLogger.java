@@ -106,7 +106,7 @@ public class VCRMLogger {
             case ADVISOR_CALL: sb.append(Integer.toString(34)); break; 
             case BEEP: sb.append(Integer.toString(19)); break; 
             //case WELCOME_SOUND: break;  
-            case SETUP_GUIDE: sb.append(Integer.toString(38)); break; 
+            //case SETUP_GUIDE: sb.append(Integer.toString(38)); break; 
             default: return; 
         }
         sb.append("\t"); 
