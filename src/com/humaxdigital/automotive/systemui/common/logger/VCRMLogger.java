@@ -5,6 +5,10 @@ import android.util.Log;
 
 public class VCRMLogger {
     private static final String TAG = "VCRMLogger"; 
+
+    private static VolumeType sLastVolumeType = VolumeType.UNKNOWN;
+    private static int sLastVolumeLevel = -1;
+
     private VCRMLogger() {}
     public enum VolumeType {
         UNKNOWN, RADIO_FM, RADIO_AM, USB, ONLINE_MUSIC, BT_AUDIO, 
@@ -85,6 +89,13 @@ public class VCRMLogger {
     */
     public static void changedVolume(VolumeType type, int level) {
         Log.d(TAG, "changedVolume:type="+type+", level="+level); 
+
+        if (type == sLastVolumeType && level == sLastVolumeLevel) {
+            return;
+        }
+        sLastVolumeType = type;
+        sLastVolumeLevel = level;
+
         StringBuffer sb = new StringBuffer(); 
         switch(type) {
             //case UNKNOWN: break; 
