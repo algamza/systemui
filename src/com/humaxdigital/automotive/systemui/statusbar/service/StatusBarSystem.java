@@ -504,9 +504,10 @@ public class StatusBarSystem {
             Log.d(TAG, "openDateTimeSetting="+CONSTANTS.ACTION_OPEN_DATE_SETTING);
             CommonMethod.closeVR(mContext); 
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DATE_SETTING);
+            intent.putExtra(CONSTANTS.ACTION_OPEN_DATE_SETTING_EXTRA_KEY, 
+                CONSTANTS.ACTION_OPEN_DATE_SETTING_EXTRA_VALUE);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
-            VCRMLogger.triggerTimeSettingFromStatusBar();
         }
     } 
     
