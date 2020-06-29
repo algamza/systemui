@@ -102,7 +102,7 @@ public class VCRMLogger {
             case RADIO_FM: sb.append(Integer.toString(25)); break;  
             case RADIO_AM: sb.append(Integer.toString(26)); break;  
             case USB: sb.append(Integer.toString(21)); break;  
-            case ONLINE_MUSIC: sb.append(Integer.toString(14)); break;  
+            case ONLINE_MUSIC: sb.append(Integer.toString(40)); break;  
             case BT_AUDIO: sb.append(Integer.toString(1)); break; 
             case BT_PHONE_RING: sb.append(Integer.toString(4)); break; 
             case BT_PHONE_CALL: sb.append(Integer.toString(3)); break; 
