@@ -630,7 +630,7 @@ public class VolumeController extends VolumeControllerBase implements VolumeCont
                     public void run() {
                         if ( mController.getCurrentMute() ) mController.setMasterMuteShowUI(false);
                         for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                            listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
                     }
                 });  
