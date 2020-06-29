@@ -112,7 +112,7 @@ public class VCRMLogger {
             //case BAIDU_MEDIA: break; 
             //case BAIDU_ALERT: break; 
             case BAIDU_VR_TTS: sb.append(Integer.toString(32)); break; 
-            case BAIDU_NAVI: sb.append(Integer.toString(6)); break; 
+            case BAIDU_NAVI: sb.append(Integer.toString(8)); break; 
             case EMERGENCY_CALL: sb.append(Integer.toString(35)); break; 
             case ADVISOR_CALL: sb.append(Integer.toString(34)); break; 
             case BEEP: sb.append(Integer.toString(19)); break; 
