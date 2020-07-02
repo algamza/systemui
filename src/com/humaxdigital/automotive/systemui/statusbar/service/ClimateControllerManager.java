@@ -268,6 +268,10 @@ public class ClimateControllerManager {
             mAirConditioner.update(); 
             mListener.onAirConditionerChanged(mAirConditioner.get());
         }
+        if ( mFanSpeed != null ) {
+            mFanSpeed.update(); 
+            mListener.onFanSpeedStatusChanged(mFanSpeed.get());
+        }
     }
 
     public int getIGNStatus() {
@@ -378,7 +382,6 @@ public class ClimateControllerManager {
         if ( !mChatteringWrongSignal ) return false; 
         switch (id) {
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
-            case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
@@ -388,7 +391,8 @@ public class ClimateControllerManager {
                 break; 
             }
             case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON: 
-            case CarHvacManagerEx.ID_ZONED_AC_ON: {
+            case CarHvacManagerEx.ID_ZONED_AC_ON:
+            case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT: {
                 return true; 
             }
             default: break; 
