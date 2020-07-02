@@ -33,4 +33,5 @@
     <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
     <app name="ev">com.humaxautomotive.ev</app>
     <app name="gasstation">com.humaxdigital.automotive.gasstation</app>
+    <app name="usbphoto">com.humaxdigital.dl3c.usbphoto</app>
 </whitelist>
