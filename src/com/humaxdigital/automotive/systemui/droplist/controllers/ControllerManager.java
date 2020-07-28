@@ -110,13 +110,13 @@ public class ControllerManager {
                     .setSupportLongClick(false))); 
         mControllers.add(new ModeController()
                 .init(new MenuLayout(mContext)
-                    .addIconText(ModeController.Mode.AUTOMATIC.ordinal(), 
+                    .addIconText(ModeController.Mode.AUTOMATIC.mode(), 
                         res.getDrawable(R.drawable.dr_btn_auto_n),
                         res.getString(R.string.STR_AUTOMATIC_04_ID))
-                    .addIconText(ModeController.Mode.DAYLIGHT.ordinal(), 
+                    .addIconText(ModeController.Mode.DAYLIGHT.mode(), 
                         res.getDrawable(R.drawable.dr_btn_a_day_n),
                         res.getString(R.string.STR_DAYLIGHT_04_ID))
-                    .addIconText(ModeController.Mode.NIGHT.ordinal(), 
+                    .addIconText(ModeController.Mode.NIGHT.mode(), 
                         res.getDrawable(R.drawable.dr_btn_a_night_n),
                         res.getString(R.string.STR_NIGHT_04_ID)))
                 .setListener(mControlListener));
@@ -132,13 +132,13 @@ public class ControllerManager {
         //}
         mControllers.add(new ThemeController()
                 .init(new MenuLayout(mContext)
-                    .addIconText(ThemeController.Theme.THEME1.ordinal(), 
+                    .addIconText(ThemeController.Theme.THEME1.theme(), 
                         res.getDrawable(R.drawable.dr_btn_theme1_n),
                         res.getString(R.string.STR_THEME1_ID))
-                    .addIconText(ThemeController.Theme.THEME2.ordinal(), 
+                    .addIconText(ThemeController.Theme.THEME2.theme(), 
                         res.getDrawable(R.drawable.dr_btn_theme2_n),
                         res.getString(R.string.STR_THEME2_ID))
-                    .addIconText(ThemeController.Theme.THEME3.ordinal(), 
+                    .addIconText(ThemeController.Theme.THEME3.theme(), 
                         res.getDrawable(R.drawable.dr_btn_theme3_n),
                         res.getString(R.string.STR_THEME3_ID)))
                 .setListener(mControlListener));

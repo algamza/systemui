@@ -44,7 +44,6 @@ public class ScenarioQuiteMode {
 
     private CarAudioManagerEx mCarAudioManagerEx = null;
     private boolean mIsQuiteModeApplying = false; 
-    private boolean mNeedToShowUI = false; 
     private boolean mIsSettingsActivity = false; 
     private boolean mIsSettingsDefault = false; 
 
@@ -148,8 +147,6 @@ public class ScenarioQuiteMode {
     public boolean checkQuietMode(int mode, int volume) {
         if ( !isQuiteMode() ) return false; 
 
-        mNeedToShowUI = false;
-
         if ( !mIsQuiteModeApplying && volume != QUITE_MODE_VOLUME ) 
             checkSettingsMode(mode); 
 
@@ -169,8 +166,6 @@ public class ScenarioQuiteMode {
                 }
             }
             
-            if ( volume == QUITE_MODE_MAX ) mNeedToShowUI = true;
-            
             if ( volume > QUITE_MODE_MAX ) {
                 setAudioVolume(mode, QUITE_MODE_MAX); 
                 if ( mContext != null ) 
@@ -182,10 +177,6 @@ public class ScenarioQuiteMode {
         }
 
         return false;
-    }
-
-    public boolean isNeedToShowUI() {
-        return mNeedToShowUI; 
     }
 
     public void userRefresh() {

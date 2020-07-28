@@ -20,15 +20,8 @@ public class ClimateModeOffController extends ClimateBaseController<Boolean> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null ) return;
-        try {
-            mModeOff = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, 
-                mZone) == MODE_OFF ? true:false; 
-            Log.d(TAG, "fetch:mode off="+mModeOff);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanDirection");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -37,6 +30,21 @@ public class ClimateModeOffController extends ClimateBaseController<Boolean> {
         if ( mModeOff == e ) return false;
         mModeOff = e; 
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null ) return false;
+        try {
+            mModeOff = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, 
+                mZone) == MODE_OFF ? true:false; 
+            Log.d(TAG, "update:mode off="+mModeOff);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanDirection");
+            return false; 
+        }
+        return true; 
     }
 
     public Boolean convertUpdateValue(int val) {

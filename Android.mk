@@ -45,6 +45,12 @@ LOCAL_RESOURCE_DIR += \
 	$(LOCAL_PATH)/res-statusbar-dl3c \
 	$(LOCAL_PATH)/res-notificationui-dl3c \
 	$(LOCAL_PATH)/res-volumedialog-dl3c
+else ifneq ($(filter nppe_%, $(TARGET_PRODUCT)),)
+LOCAL_RESOURCE_DIR += \
+	$(LOCAL_PATH)/res-droplist-dl3c \
+	$(LOCAL_PATH)/res-statusbar-dl3c \
+	$(LOCAL_PATH)/res-notificationui-dl3c \
+	$(LOCAL_PATH)/res-volumedialog-dl3c
 else ifneq ($(filter bhcn_%, $(TARGET_PRODUCT)),)
 LOCAL_RESOURCE_DIR += \
 	$(LOCAL_PATH)/res-droplist \

@@ -18,15 +18,8 @@ public class ClimateSyncController extends ClimateBaseController<Boolean> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try { 
-            int sync = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_DISPLAY_SYNC, mZone); 
-            if ( checkValid(sync) ) mDataStore.setSyncState(checkOn(sync));
-            Log.d(TAG, "fetch="+sync);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in sync fetch");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
@@ -35,6 +28,20 @@ public class ClimateSyncController extends ClimateBaseController<Boolean> {
         Log.d(TAG, "update="+e); 
         if ( !mDataStore.shouldPropagateSyncStateUpdate(e) ) return false;
         return true;
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try { 
+            int sync = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_DISPLAY_SYNC, mZone); 
+            if ( checkValid(sync) ) mDataStore.setSyncState(checkOn(sync));
+            Log.d(TAG, "update="+sync);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in sync fetch");
+        }
+        return true; 
     }
 
     @Override

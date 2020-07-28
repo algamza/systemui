@@ -249,10 +249,29 @@ public class ClimateControllerManager {
             public void run() {
                 Log.d(TAG, "wrong signal chattering end"); 
                 mChatteringWrongSignal = false; 
+                updateControllers(); 
+                if ( mListener != null ) 
+                    mListener.onIGNOnChanged(mIGNOn);
             }
         };
 
         mTimer.schedule(mChatteringTask, CHATTERING_WRONG_SIGNAL);
+    }
+
+    private void updateControllers() {
+        if ( mListener == null ) return; 
+        if ( mAirCirculation != null ) {
+            mAirCirculation.update(); 
+            mListener.onAirCirculationChanged(mAirCirculation.get());
+        }
+        if ( mAirConditioner != null ) {
+            mAirConditioner.update(); 
+            mListener.onAirConditionerChanged(mAirConditioner.get());
+        }
+        if ( mFanSpeed != null ) {
+            mFanSpeed.update(); 
+            mListener.onFanSpeedStatusChanged(mFanSpeed.get());
+        }
     }
 
     public int getIGNStatus() {
@@ -263,10 +282,12 @@ public class ClimateControllerManager {
         Log.d(TAG, "updateIGNStatus="+on);
         mIGNOn = on; 
         
-        if ( on ) chatteringWrongSignal(); 
-
-        if ( mListener != null ) 
-            mListener.onIGNOnChanged(mIGNOn);
+        if ( on ) {
+            chatteringWrongSignal(); 
+        } else {
+            if ( mListener != null ) 
+                mListener.onIGNOnChanged(mIGNOn);
+        }
     }
 
     public boolean isOperateOn() {
@@ -361,7 +382,6 @@ public class ClimateControllerManager {
         if ( !mChatteringWrongSignal ) return false; 
         switch (id) {
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY:
-            case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_C:
             case CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT_STATUS:
@@ -370,9 +390,14 @@ public class ClimateControllerManager {
                 if ( (int)getValue(val) == 0 ) return true;
                 break; 
             }
+            case CarHvacManagerEx.ID_ZONED_AIR_RECIRCULATION_ON: 
+            case CarHvacManagerEx.ID_ZONED_AC_ON:
+            case CarHvacManagerEx.ID_ZONED_FAN_SPEED_SETPOINT: {
+                return true; 
+            }
             default: break; 
         }
-        return false; 
+        return false;
     }
 
     private final CarHvacManager.CarHvacEventCallback mHvacCallback =

@@ -16,7 +16,7 @@ import com.humaxdigital.automotive.systemui.droplist.ui.MenuLayout;
 
 import android.util.Log;
 
-public class BeepController implements BaseController {
+public class BeepController implements BaseController, SystemControl.SystemCallback {
     private static final String TAG = "BeepController";
     private MenuLayout mView;
     private SystemControl mSystem;  
@@ -37,7 +37,7 @@ public class BeepController implements BaseController {
     public void fetch(SystemControl system) {
         if ( system == null || mView == null ) return; 
         mSystem = system; 
-        mSystem.registerCallback(mSystemCallback);
+        mSystem.registerCallback(this);
         mOn = mSystem.getBeepOn(); 
         mView.updateEnable(mOn);
     }
@@ -59,27 +59,23 @@ public class BeepController implements BaseController {
         mView.updateText(res.getString(R.string.STR_BEEP_04_ID));
     }
 
-    private SystemControl.SystemCallback mSystemCallback = new SystemControl.SystemCallback() {
-        @Override
-        public void onBeepOnChanged(boolean isOn) {
-            if ( mView == null ) return;
-            if ( isOn ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
-        }
+    @Override
+    public void onBeepOnChanged(boolean isOn) {
+        if ( mView == null ) return;
+        if ( isOn ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_ON, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_OFF, 0).sendToTarget(); 
+    }
 
-        @Override
-        public void onCallingChanged(boolean on) {
-            mIsCalling = on; 
-            if ( mIsCalling ) 
-                mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
-            else 
-                mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
-        }
-    };
-
-    
+    @Override
+    public void onCallingChanged(boolean on) {
+        mIsCalling = on; 
+        if ( mIsCalling ) 
+            mHandler.obtainMessage(UpdateHandler.MODE_DISABLE, 0).sendToTarget(); 
+        else 
+            mHandler.obtainMessage(UpdateHandler.MODE_ENABLE, 0).sendToTarget(); 
+    }
 
     private final MenuLayout.MenuListener mMenuCallback = new MenuLayout.MenuListener() {
         @Override

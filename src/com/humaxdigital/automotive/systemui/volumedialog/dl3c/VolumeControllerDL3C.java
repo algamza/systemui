@@ -25,7 +25,7 @@ import com.humaxdigital.automotive.systemui.volumedialog.VolumeControllerBase;
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeControlService; 
 import com.humaxdigital.automotive.systemui.volumedialog.VolumeUtil; 
 
-public class VolumeControllerDL3C extends VolumeControllerBase {
+public class VolumeControllerDL3C extends VolumeControllerBase implements VolumeControlService.VolumeCallback {
     private static final String TAG = "VolumeControllerDL3C"; 
 
     private Context mContext;
@@ -63,7 +63,7 @@ public class VolumeControllerDL3C extends VolumeControllerBase {
         Log.d(TAG, "fetch"); 
         mController = service; 
         if ( mController == null ) return; 
-        mController.registerCallback(mServiceCallback); 
+        mController.registerCallback(this); 
         updateCurrentVolume();
         updateVolumeUI();
     }
@@ -90,28 +90,25 @@ public class VolumeControllerDL3C extends VolumeControllerBase {
             mVolumeSels.get(i).setImageResource(mIdSellOff); 
     }
 
-    private VolumeControlService.VolumeCallback mServiceCallback = 
-        new VolumeControlService.VolumeCallback() {
-        @Override
-        public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
-            Log.d(TAG, "onVolumeChanged"); 
-            updateCurrentVolume();
-            updateVolumeUI();
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-            }
+    @Override
+    public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
+        Log.d(TAG, "onVolumeChanged"); 
+        updateCurrentVolume();
+        updateVolumeUI();
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
         }
+    }
 
-        @Override
-        public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
-            Log.d(TAG, "onMuteChanged"); 
-            updateCurrentVolume();
-            updateVolumeUI();
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onMuteChanged(convertToType(type), mute);
-            }
+    @Override
+    public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
+        Log.d(TAG, "onMuteChanged"); 
+        updateCurrentVolume();
+        updateVolumeUI();
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onMuteChanged(convertToType(type), mute);
         }
-    };
+    }
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {
         VolumeChangeListener.Type ret = VolumeChangeListener.Type.UNKNOWN; 

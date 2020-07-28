@@ -7,7 +7,7 @@ import android.util.Log;
 public class ProductConfig {
     private static final String TAG = "ProductConfig"; 
 
-    public enum MODEL { DN8C, DU2, CN7C, DL3C, DU2EV }
+    public enum MODEL { DN8C, DU2, CN7C, DL3C, DU2EV, NPPE }
     public enum FEATURE { AV, AVC, AVN, AVNT }
 
     private ProductConfig() {}
@@ -23,6 +23,7 @@ public class ProductConfig {
             else if ( array[0].contains("BHDU") ) model = MODEL.DU2; 
             else if ( array[0].contains("BHCN") ) model = MODEL.CN7C; 
             else if ( array[0].contains("DYDL") ) model = MODEL.DL3C; 
+            else if ( array[0].contains("NPPE") ) model = MODEL.NPPE; 
         }
         Log.d(TAG, "name="+name+", model="+model); 
         return model; 

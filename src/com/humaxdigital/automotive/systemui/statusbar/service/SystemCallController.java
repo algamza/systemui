@@ -21,7 +21,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudioCallback;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
-public class SystemCallController extends BaseController<Integer> {
+public class SystemCallController extends BaseController<Integer> implements TMSClient.TMSCallback {
     private final String TAG = "SystemCallController";
     private TMSClient mTMSClient = null;
     private IUserBluetooth mUserBluetooth = null; 
@@ -41,15 +41,22 @@ public class SystemCallController extends BaseController<Integer> {
     private TelephonyManager mTelephony = null;
 
     public enum BTStatus {
-        NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
-        HF_FREE_STREAMING_CONNECTED, CALL_HISTORY_DOWNLOADING, 
-        CONTACTS_HISTORY_DOWNLOADING, BT_CALLING
+        NONE(0), HANDS_FREE_CONNECTED(1), STREAMING_CONNECTED(2), 
+        HF_FREE_STREAMING_CONNECTED(3), CALL_HISTORY_DOWNLOADING(4), 
+        CONTACTS_HISTORY_DOWNLOADING(5), BT_CALLING(6);
+        private final int state; 
+        BTStatus(int state) { this.state = state;}
+        public int state() { return state; } 
     }
     public enum CallStatus { 
-        NONE, HANDS_FREE_CONNECTED, STREAMING_CONNECTED, 
-        HF_FREE_STREAMING_CONNECTED, CALL_HISTORY_DOWNLOADING, 
-        CONTACTS_HISTORY_DOWNLOADING, TMS_CALLING, BT_CALLING, 
-        BT_PHONE_MIC_MUTE }; 
+        NONE(0), HANDS_FREE_CONNECTED(1), STREAMING_CONNECTED(2), 
+        HF_FREE_STREAMING_CONNECTED(3), CALL_HISTORY_DOWNLOADING(4), 
+        CONTACTS_HISTORY_DOWNLOADING(5), TMS_CALLING(6), BT_CALLING(7), 
+        BT_PHONE_MIC_MUTE(8);
+        private final int state; 
+        CallStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
 
     public SystemCallController(Context context, DataStore store) {
         super(context, store);
@@ -80,7 +87,7 @@ public class SystemCallController extends BaseController<Integer> {
             Log.e(TAG, "error:"+e);
         } 
         if ( mTMSClient != null ) 
-            mTMSClient.unregisterCallback(mTMSCallback);
+            mTMSClient.unregisterCallback(this);
     }
 
     @Override
@@ -132,7 +139,7 @@ public class SystemCallController extends BaseController<Integer> {
     public void fetchTMSClient(TMSClient tms) {
         mTMSClient = tms; 
         if ( mTMSClient != null ) 
-            mTMSClient.registerCallback(mTMSCallback); 
+            mTMSClient.registerCallback(this); 
         mCurrentStatus = getCurrentCallStatus();
         Log.d(TAG, "fetchTMSClient="+mCurrentStatus); 
     }
@@ -141,7 +148,7 @@ public class SystemCallController extends BaseController<Integer> {
     public Integer get() {
         mCurrentStatus = getCurrentCallStatus(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     private CallStatus getCurrentCallStatus() {
@@ -229,7 +236,7 @@ public class SystemCallController extends BaseController<Integer> {
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
     private void initObserver() {
@@ -280,19 +287,23 @@ public class SystemCallController extends BaseController<Integer> {
         return observer; 
     }
 
-    private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
-        @Override
-        public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
-            Log.d(TAG, "onConnectionChanged="+connection); 
-            broadcastChangeEvent();
-        }
+    @Override
+    public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
+        Log.d(TAG, "onConnectionChanged="+connection); 
+        broadcastChangeEvent();
+    }
 
-        @Override
-        public void onCallingStatusChanged(TMSClient.CallingStatus status) {
-            Log.d(TAG, "onCallingStatusChanged="+status); 
-            broadcastChangeEvent();
-        }
-    }; 
+    @Override
+    public void onActivationChanged(TMSClient.ActiveStatus active) {
+        Log.d(TAG, "onActivationChanged="+active); 
+        broadcastChangeEvent();
+    }
+
+    @Override
+    public void onCallingStatusChanged(TMSClient.CallingStatus status) {
+        Log.d(TAG, "onCallingStatusChanged="+status); 
+        broadcastChangeEvent();
+    }
 
     private final IUserBluetoothCallback.Stub mUserBluetoothCallback = 
         new IUserBluetoothCallback.Stub() {

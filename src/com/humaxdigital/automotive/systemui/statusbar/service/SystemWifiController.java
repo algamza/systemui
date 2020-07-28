@@ -17,7 +17,12 @@ import com.humaxdigital.automotive.systemui.common.user.IUserWifiCallback;
 
 public class SystemWifiController extends BaseController<Integer> {
     private final String TAG = "SystemWifiController"; 
-    private enum WifiStatus { NONE, WIFI_1, WIFI_2, WIFI_3, WIFI_4 }
+    private enum WifiStatus { 
+        NONE(0), WIFI_1(1), WIFI_2(2), WIFI_3(3), WIFI_4(4); 
+        private final int state; 
+        WifiStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private IUserWifi mUserWifi = null;
     private WifiStatus mCurrentStatus = WifiStatus.NONE; 
 
@@ -46,7 +51,7 @@ public class SystemWifiController extends BaseController<Integer> {
     public Integer get() {
         mCurrentStatus = getCurrentState(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     public void fetchUserWifi(IUserWifi wifi) {
@@ -88,7 +93,7 @@ public class SystemWifiController extends BaseController<Integer> {
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
     private final IUserWifiCallback.Stub mUserWifiCallback = 

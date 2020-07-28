@@ -29,6 +29,7 @@ import com.humaxdigital.automotive.systemui.common.user.IUserBluetooth;
 import com.humaxdigital.automotive.systemui.common.user.IUserWifi;
 import com.humaxdigital.automotive.systemui.common.user.IUserAudio;
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
@@ -76,31 +77,31 @@ public class StatusBarSystem {
     private boolean mSVIOn = false;
     private boolean mSVSOn = false; 
 
-    public static abstract class StatusBarSystemCallback {
-        public void onSystemInitialized() {}
-        public void onUserProfileInitialized() {}
-        public void onDateTimeInitialized() {}
-        public void onMuteStatusChanged(int status) {}
-        public void onBLEStatusChanged(int status) {}
-        public void onBTBatteryStatusChanged(int status) {}
-        public void onCallStatusChanged(int status) {}
-        public void onAntennaStatusChanged(int status) {}
-        public void onDataStatusChanged(int status) {}
-        public void onWifiStatusChanged(int status) {}
-        public void onWirelessChargeStatusChanged(int status) {}
-        public void onModeStatusChanged(int status) {}
-        public void onDateTimeChanged(String time) {}
-        public void onTimeTypeChanged(String type) {}
-        public void onUserChanged(BitmapParcelable bitmap) {}
-        public void onPowerStateChanged(int state) {}
-        public void onUserAgreementMode(boolean on) {}
-        public void onUserSwitching(boolean on) {}
-        public void onBTCalling(boolean on) {}
-        public void onEmergencyMode(boolean on) {}
-        public void onBluelinkMode(boolean on) {}
-        public void onImmoilizationMode(boolean on) {}
-        public void onSlowdownMode(boolean on) {}
-        public void onRearCamera(boolean on) {}
+    public interface StatusBarSystemCallback {
+        default public void onSystemInitialized() {}
+        default public void onUserProfileInitialized() {}
+        default public void onDateTimeInitialized() {}
+        default public void onMuteStatusChanged(int status) {}
+        default public void onBLEStatusChanged(int status) {}
+        default public void onBTBatteryStatusChanged(int status) {}
+        default public void onCallStatusChanged(int status) {}
+        default public void onAntennaStatusChanged(int status) {}
+        default public void onDataStatusChanged(int status) {}
+        default public void onWifiStatusChanged(int status) {}
+        default public void onWirelessChargeStatusChanged(int status) {}
+        default public void onModeStatusChanged(int status) {}
+        default public void onDateTimeChanged(String time) {}
+        default public void onTimeTypeChanged(String type) {}
+        default public void onUserChanged(BitmapParcelable bitmap) {}
+        default public void onPowerStateChanged(int state) {}
+        default public void onUserAgreementMode(boolean on) {}
+        default public void onUserSwitching(boolean on) {}
+        default public void onBTCalling(boolean on) {}
+        default public void onEmergencyMode(boolean on) {}
+        default public void onBluelinkMode(boolean on) {}
+        default public void onImmoilizationMode(boolean on) {}
+        default public void onSlowdownMode(boolean on) {}
+        default public void onRearCamera(boolean on) {}
     }
 
     public StatusBarSystem(Context context, DataStore datastore) {
@@ -309,15 +310,15 @@ public class StatusBarSystem {
     public boolean isPowerOff() {
         if ( mPowerStateController == null ) return true;
         int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        if ( state == SystemPowerStateController.State.POWER_OFF.state() ) return true;
         return false; 
     }
 
     public boolean isAVOff() {
         if ( mPowerStateController == null ) return true;
         int state = mPowerStateController.get(); 
-        if ( state == SystemPowerStateController.State.AV_OFF.ordinal() 
-            || state == SystemPowerStateController.State.POWER_OFF.ordinal() ) return true;
+        if ( state == SystemPowerStateController.State.AV_OFF.state() 
+            || state == SystemPowerStateController.State.POWER_OFF.state() ) return true;
         return false; 
     }
     
@@ -461,7 +462,7 @@ public class StatusBarSystem {
     
     public void openDateTimeSetting() {      
         if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            == SystemPowerStateController.State.POWER_OFF.state()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         }  
@@ -481,6 +482,8 @@ public class StatusBarSystem {
         }
 
         if ( isUserAgreement() ) {
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             Log.d(TAG, "Current UserAgreement"); 
             return; 
         }
@@ -501,6 +504,8 @@ public class StatusBarSystem {
             Log.d(TAG, "openDateTimeSetting="+CONSTANTS.ACTION_OPEN_DATE_SETTING);
             CommonMethod.closeVR(mContext); 
             Intent intent = new Intent(CONSTANTS.ACTION_OPEN_DATE_SETTING);
+            intent.putExtra(CONSTANTS.ACTION_OPEN_DATE_SETTING_EXTRA_KEY, 
+                CONSTANTS.ACTION_OPEN_DATE_SETTING_EXTRA_VALUE);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivityAsUser(intent, UserHandle.CURRENT);
         }
@@ -514,7 +519,7 @@ public class StatusBarSystem {
     
     public void openUserProfileSetting() {        
         if ( mPowerStateController != null && (mPowerStateController.get() 
-            == SystemPowerStateController.State.POWER_OFF.ordinal()) ) {
+            == SystemPowerStateController.State.POWER_OFF.state()) ) {
             Log.d(TAG, "Current Power Off"); 
             return; 
         } 
@@ -535,6 +540,8 @@ public class StatusBarSystem {
 
         if ( isUserAgreement() ) {
             Log.d(TAG, "Current UserAgreement"); 
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return; 
         }
 

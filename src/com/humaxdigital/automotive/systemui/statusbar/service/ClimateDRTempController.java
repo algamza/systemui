@@ -11,8 +11,19 @@ import android.support.car.CarNotConnectedException;
 public class ClimateDRTempController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateDRTempController";
     public enum MODE {
-        CELSIUS,
-        FAHRENHEIT
+        CELSIUS(0), FAHRENHEIT(1);
+        private final int state; 
+        MODE(int state) { this.state = state; }
+        public int state() { return state; }  
+        static MODE getStateFromSignal(int signal) { 
+            MODE ret = MODE.CELSIUS; 
+            switch(signal) {
+                case 0x1: ret = CELSIUS; break; 
+                case 0x2: ret = FAHRENHEIT; break; 
+                default: break; 
+            }
+            return ret; 
+        }; 
     }
     final int mZone = ClimateControllerManager.SEAT_DRIVER; 
     MODE mMode = MODE.CELSIUS; 
@@ -25,7 +36,13 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager);
-        if ( mManager == null || mDataStore == null ) return;
+        Log.d(TAG, "fetch"); 
+        update();
+    }
+
+    @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
         try {
             int value = 0; 
             if ( mMode == MODE.CELSIUS ) {
@@ -35,11 +52,13 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
                 value = mManager.getIntProperty(
                     CarHvacManagerEx.VENDOR_CANRX_HVAC_TEMPERATURE_F, mZone);
             }
-            Log.d(TAG, "fetch="+value); 
+            Log.d(TAG, "update="+value); 
             mDataStore.setTemperature(mZone, value);
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchTemperature");
+            return false; 
         }
+        return true;
     }
 
     public void fetchUSMManager(CarUSMManager manager) { 
@@ -48,7 +67,7 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
         try {
             int value = mUSMMgr.getIntProperty(
                 CarUSMManager.VENDOR_CANRX_USM_TEMPRATURE_UNIT, 0);
-            mMode = convertToMode(value); 
+            mMode = MODE.getStateFromSignal(value); 
             Log.d(TAG, "fetchUSMManager="+value+", mode="+mMode); 
         } catch (android.car.CarNotConnectedException e) {
             Log.e(TAG, "Car not connected in fetchTemperature");
@@ -78,7 +97,7 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
 
     public Boolean updateMode(int mode) {
         if ( mManager == null || mDataStore == null ) return false;
-        MODE _mode = convertToMode(mode);
+        MODE _mode = MODE.getStateFromSignal(mode);
         if ( _mode == mMode ) return false; 
         mMode = _mode; 
         try {
@@ -96,15 +115,5 @@ public class ClimateDRTempController extends ClimateBaseController<Integer> {
             Log.e(TAG, "Car not connected in fetchTemperature");
         }
         return true; 
-    }
-
-    private MODE convertToMode(int mode) {
-        MODE ret = MODE.CELSIUS; 
-        switch(mode) {
-            case 0x1: ret = MODE.CELSIUS; break; 
-            case 0x2: ret = MODE.FAHRENHEIT; break; 
-            default: break; 
-        }
-        return ret; 
     }
 }

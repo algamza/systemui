@@ -9,7 +9,7 @@
         android:layout_height="590px"
         android:layout_gravity="top|center_horizontal"
         android:background="@color/colorBackground"
-        android:alpha="0.92" />
+        android:alpha="1.0" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="630px"

@@ -43,7 +43,7 @@ public class NotificationUiService extends Service {
     private Window mWindow;
     private View mPanel;
     private boolean mShowing;
-    private final int MOVE_TIME_MS = 200;
+    private final int MOVE_TIME_MS = 100;
     private final long SHOWING_TIME_MS = 5000;
     private final DialogHandler mHandler = new DialogHandler();
     private ArrayList<NotificationUI> mNotificationUIs = new ArrayList<>();
@@ -181,7 +181,7 @@ public class NotificationUiService extends Service {
                     Log.d(TAG, "packagename:"+notification.getPackageName()+", title:"+title+", text:"+text); 
                     if ( (remote_view == null) && (text == null || text.equals("")) && 
                         (title == null  || title.equals("")) ) return false; 
-                    if ( (remote_view == null) && !isValidTitle(title) ) return false;
+                    if ( !isValidTitle(title) ) return false;
                     
                     NotificationUI ui = new NotificationUI(NotificationUiService.this); 
                     if ( remote_view != null ) ui.setRemoteViews(remote_view); 
@@ -293,6 +293,7 @@ public class NotificationUiService extends Service {
     private View.OnClickListener mOnClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            Log.d(TAG, "onClick");
             if ( mCurrentNotificationIntent != null ) {
                 synchronized(mCurrentNotificationIntent) {
                     try {
@@ -301,9 +302,8 @@ public class NotificationUiService extends Service {
                         Log.d(TAG, "failed to send intent for " + e);
                     }
                 }
+                updateBlock();
             }
-            Log.d(TAG, "onClick");
-            updateBlock();
             closeDialog();
         }
     }; 

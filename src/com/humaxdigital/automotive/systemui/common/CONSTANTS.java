@@ -26,6 +26,8 @@ public class CONSTANTS {
     public static final String ACTION_CAMERA_START = "com.humaxdigital.automotive.camera.ACTION_CAM_STARTED";
     public static final String ACTION_CAMERA_STOP = "com.humaxdigital.automotive.camera.ACTION_CAM_STOPED";
     public static final String ACTION_OPEN_DATE_SETTING = "com.humaxdigital.dn8c.ACTION_SETTINGS_CLOCK";
+    public static final String ACTION_OPEN_DATE_SETTING_EXTRA_KEY = "vcrm_std_sys_10"; 
+    public static final String ACTION_OPEN_DATE_SETTING_EXTRA_VALUE = "statusbar"; 
     public static final String ACTION_OPEN_USERPROFILE_SETTING = "com.humaxdigital.automotive.app.USERPROFILE";
     public static final String ACTION_LOCATION_SHARING_COUNT = "com.humaxdigital.automotive.bluelink.LSC_COUNT";
     public static final String ACTION_OPEN_SCREEN_SAVER = "com.humaxdigital.dn8c.ACTION_SS_SCREEN_OFF";
@@ -55,6 +57,8 @@ public class CONSTANTS {
     public static final String HOME_ACTIVITY_NAME = "com.humaxdigital.automotive.dn8clauncher/.HomeActivity";
     public static final String SCREENSAVER_ACTIVITY_NAME = "com.humaxdigital.automotive.screensaver/.MainActivity";
     public static final String KEY_CURRENT_HOME_PAGE = "com.humaxdigital.dn8c.KEY_CURRENT_HOME_PAGE";
+
+    public static final String ACTION_REQUEST_FRONT_CAMERA_FINISH = "android.extension.car.REQUEST_FRONT_CAMERA_FINISH";
 
     private CONSTANTS() {}
 }

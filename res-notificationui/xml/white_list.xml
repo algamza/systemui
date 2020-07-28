@@ -16,6 +16,8 @@
     <app name="notificationtest">com.humaxdigital.automotive.noti_test</app>
     <app name="DN8CSetup">com.humaxdigital.dn8c.setup</app>
     <app name="DU2Setup">com.humaxdigital.du2.setup</app>
+    <app name="DU2EVSetup">com.humaxdigital.du2ev.setup</app>
+    <app name="CN7CSetup">com.humaxdigital.cn7c.setup</app>
     <app name="PhoneContacts">com.android.phone</app>
     <app name="PhoneCall">com.humaxdigital.automotive.btphone</app>
     <app name="CarDialer">com.android.car.dialer</app>
@@ -29,5 +31,9 @@
     <app name="HomeLauncher">com.humaxdigital.automotive.dn8clauncher</app>
     <app name="DuerOS">com.baidu.che.codriver</app>
     <app name="sidebar">com.humaxdigital.automotive.sidebarservice</app>
+    <app name="climate">com.humaxdigital.automotive.climate</app>
     <app name="SmartGuide">com.humaxdigital.media.smartguide</app>
+    <app name="ev">com.humaxautomotive.ev</app>
+    <app name="gasstation">com.humaxdigital.automotive.gasstation</app>
+    <app name="usbphoto">com.humaxdigital.automotive.usbphoto</app>
 </whitelist>

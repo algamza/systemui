@@ -14,6 +14,7 @@ import android.content.IntentFilter;
 
 import android.provider.Settings;
 import android.database.ContentObserver;
+import android.net.Uri;
 
 import android.media.AudioManager; 
 
@@ -34,15 +35,17 @@ import java.util.List;
 import java.util.Objects; 
 
 import com.humaxdigital.automotive.systemui.common.car.CarExClient;
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 
 public class VolumeControlService extends Service {
     private static final String TAG = "VolumeControlService";
 
-    public static abstract class VolumeCallback {
-        public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {}
-        public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute) {}
-        public void onShowUI(boolean show) {};
+    public interface VolumeCallback {
+        public void onVolumeChanged(VolumeUtil.Type type, int max, int val); 
+        public void onMuteChanged(VolumeUtil.Type type, int max, int val, boolean mute); 
+        default public void onShowUI(boolean show) {};
+        default public void onUserChanged() {}; 
     }
 
     public class LocalBinder extends Binder {
@@ -58,10 +61,10 @@ public class VolumeControlService extends Service {
     private CarAudioManagerEx mCarAudioManagerEx;
     private AudioManager mAudioManager; 
     private TelephonyManager mTelephonyManager;
+    private ContentObserver mUserSwitchingObserver; 
 
     private ScenarioQuiteMode mQuiteMode = null;
     private ScenarioBackupWran mBackupWran = null;
-    private ScenarioVCRMLog mVCRMLog = null; 
     private boolean mIsSettingsActivity = false;
     private boolean mIsSettingsDefault = false; 
     private boolean mIsShow = false; 
@@ -80,9 +83,10 @@ public class VolumeControlService extends Service {
         mQuiteMode = new ScenarioQuiteMode(this).init();
         mQuiteMode.registListener(mQuiteModeListener);
         mBackupWran = new ScenarioBackupWran(this).init();
-        mVCRMLog = new ScenarioVCRMLog(); 
 
+        createObserver(); 
         registReceiver();
+        
     }
 
     @Override
@@ -108,9 +112,6 @@ public class VolumeControlService extends Service {
         mQuiteMode = null;
         mBackupWran = null;
 
-        if ( mVCRMLog != null ) mVCRMLog.destroy();
-        mVCRMLog = null;
-
         super.onDestroy();
     }
 
@@ -133,6 +134,24 @@ public class VolumeControlService extends Service {
     private void unregistReceiver() {
         Log.d(TAG, "unregistReceiver");
         unregisterReceiver(mApplicationActionReceiver);
+    }
+
+    private void createObserver() {
+        mUserSwitchingObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange, Uri uri, int userId) {
+                if ( isUserSwitching() ) return; 
+                synchronized (mCallbacks) {
+                    for (VolumeCallback callback : mCallbacks) {
+                        callback.onUserChanged();
+                    }
+                }
+            }
+        };
+        
+        this.getContentResolver().registerContentObserver(
+            Settings.Global.getUriFor(CarExtraSettings.Global.USERPROFILE_USER_SWITCHING_START_FINISH), 
+            false, mUserSwitchingObserver, UserHandle.USER_CURRENT); 
     }
 
     private final BroadcastReceiver mApplicationActionReceiver = new BroadcastReceiver() {
@@ -239,12 +258,12 @@ public class VolumeControlService extends Service {
         boolean mute = false;
         int call_state = mTelephonyManager.getCallState(); 
         if( call_state == mTelephonyManager.CALL_STATE_RINGING 
-            || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ){
-			mute = mCarAudioManagerEx.getAudioMutePathStatus(AudioTypes.AUDIO_MUTE_PATH_PHONE);
+            || call_state == mTelephonyManager.CALL_STATE_OFFHOOK ) {
+			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_FORCED_MEDIA);
 		} else {
 			mute = mCarAudioManagerEx.getAudioMuteStatus(AudioTypes.AUDIO_MUTE_ID_USER);
 		}
-        Log.d(TAG, "getCurrentMute="+mute);
+        Log.d(TAG, "getCurrentMute="+mute+", call state="+call_state);
         return mute;
     }
 
@@ -312,7 +331,6 @@ public class VolumeControlService extends Service {
             mBackupWran.fetchCarAudioManagerEx(mCarAudioManagerEx);
             mBackupWran.fetchCarSensorManagerEx(CarExClient.INSTANCE.getSensorManager()); 
         }
-        if ( mVCRMLog != null ) mVCRMLog.fetch(mCarAudioManagerEx).updateLogAll();
     }
 
     private final CarExClient.CarExClientListener mCarClientListener = 
@@ -327,6 +345,34 @@ public class VolumeControlService extends Service {
         }
     }; 
 
+    private VCRMLogger.VolumeType convertToVCRMVolumeType(int mode) {
+        VCRMLogger.VolumeType type = VCRMLogger.VolumeType.UNKNOWN;
+        switch (mode) {
+            case 0: type = VCRMLogger.VolumeType.UNKNOWN; break;
+            case 1: type = VCRMLogger.VolumeType.RADIO_FM; break; 
+            case 2: type = VCRMLogger.VolumeType.RADIO_AM; break; 
+            case 3: type = VCRMLogger.VolumeType.USB; break; 
+            case 4: type = VCRMLogger.VolumeType.ONLINE_MUSIC; break; 
+            case 5: type = VCRMLogger.VolumeType.BT_AUDIO; break; 
+            case 6: type = VCRMLogger.VolumeType.BT_PHONE_RING; break; 
+            case 7: type = VCRMLogger.VolumeType.BT_PHONE_CALL; break; 
+            case 8: type = VCRMLogger.VolumeType.CARLIFE_MEDIA; break; 
+            case 9: type = VCRMLogger.VolumeType.CARLIFE_NAVI; break; 
+            case 10: type = VCRMLogger.VolumeType.CARLIFE_TTS; break; 
+            case 11: type = VCRMLogger.VolumeType.BAIDU_MEDIA; break; 
+            case 12: type = VCRMLogger.VolumeType.BAIDU_ALERT; break; 
+            case 13: type = VCRMLogger.VolumeType.BAIDU_VR_TTS; break; 
+            case 14: type = VCRMLogger.VolumeType.BAIDU_NAVI; break; 
+            case 15: type = VCRMLogger.VolumeType.EMERGENCY_CALL; break; 
+            case 16: type = VCRMLogger.VolumeType.ADVISOR_CALL; break; 
+            case 17: type = VCRMLogger.VolumeType.BEEP; break; 
+            case 18: type = VCRMLogger.VolumeType.WELCOME_SOUND; break; 
+            case 19: type = VCRMLogger.VolumeType.SETUP_GUIDE; break; 
+            default: break;
+        }
+        return type;
+    }
+
     private final ICarVolumeCallback mVolumeChangeCallback = new ICarVolumeCallback.Stub() {
         @Override
         public void onGroupVolumeChanged(int groupId, int flags) {
@@ -338,22 +384,19 @@ public class VolumeControlService extends Service {
 
             if ( (mQuiteMode != null) && mQuiteMode.checkQuietMode(mode, volume) ) return;
             if ( (mBackupWran != null) && mBackupWran.checkBackupWarn(mode, volume) ) return;
-            if ( mVCRMLog != null ) mVCRMLog.updateLog(mode, volume);
+
+            VCRMLogger.changedVolume(convertToVCRMVolumeType(mode), volume);
 
             if ( mIsSettingsActivity && mode != AudioTypes.LAS_BAIDU_VR_TTS ) return;
             if ( isExceptionVolume(VolumeUtil.convertToType(mode)) ) return;
 
             if ((flags & AudioManager.FLAG_SHOW_UI) == 0){
-                boolean isNeedToShowUI = mQuiteMode.isNeedToShowUI(); 
-                Log.d(TAG, "isNeedToShowUI="+isNeedToShowUI); 
-                if ( !isNeedToShowUI ) {
-                    Log.d(TAG, "SKIP broadcastEventVolumeChange : mIsShow ="+mIsShow);
-                    if ( !mIsShow ) {
-                        return;
-                    } 
-                }
+                Log.d(TAG, "SKIP broadcastEventVolumeChange : mIsShow ="+mIsShow);
+                if ( !mIsShow ) {
+                    return;
+                } 
             }
-
+            
             if ( isUserSwitching() ) return; 
 
             broadcastEventVolumeChange(mode, max, volume);

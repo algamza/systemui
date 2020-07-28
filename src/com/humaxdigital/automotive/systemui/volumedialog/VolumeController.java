@@ -27,32 +27,18 @@ import android.util.Log;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS;
 import com.humaxdigital.automotive.systemui.R; 
 
-public class VolumeController extends VolumeControllerBase {
+public class VolumeController extends VolumeControllerBase implements VolumeControlService.VolumeCallback {
     private static final String TAG = "VolumeController"; 
 
     private enum AudioStateIcon {
-        AUDIO,
-        AUDIO_MUTE,
-        BT_AUDIO,
-        BT_AUDIO_MUTE,
-        BT_PHONE,
-        BT_PHONE_MUTE,
-        NAVI,
-        NAVI_MUTE,
-        VR,
-        VR_MUTE,
-        RINGTONE, 
-        RINGTONE_MUTE,
-        CARLIFE_AUDIO,
-        CARLIFE_AUDIO_MUTE,
-        CARLIFE_PHONE,
-        CARLIFE_PHONE_MUTE,
-        CARLIFE_NAVI,
-        CARLIFE_NAVI_MUTE,
-        CARLIFE_VR,
-        CARLIFE_VR_MUTE,
-        CARLIFE_RINGTONE,
-        CARLIFE_RINGTONE_MUTE
+        AUDIO(0), AUDIO_MUTE(1), BT_AUDIO(2), BT_AUDIO_MUTE(3), BT_PHONE(4),
+        BT_PHONE_MUTE(5), NAVI(6), NAVI_MUTE(7), VR(8), VR_MUTE(9), RINGTONE(10), 
+        RINGTONE_MUTE(11), CARLIFE_AUDIO(12), CARLIFE_AUDIO_MUTE(13), CARLIFE_PHONE(14),
+        CARLIFE_PHONE_MUTE(15), CARLIFE_NAVI(16), CARLIFE_NAVI_MUTE(17), CARLIFE_VR(18),
+        CARLIFE_VR_MUTE(19), CARLIFE_RINGTONE(20), CARLIFE_RINGTONE_MUTE(21);
+        private final int state; 
+        AudioStateIcon(int state) { this.state = state;}
+        public int state() { return state; } 
     }
     private Context mContext;
     private View mView;
@@ -113,16 +99,16 @@ public class VolumeController extends VolumeControllerBase {
         Log.d(TAG, "fetch"); 
         mController = service; 
         if ( mController == null ) return; 
-        mController.registerCallback(mServiceCallback); 
+        mController.registerCallback(this); 
+        fetchVolume(); 
+    }
+
+    private void fetchVolume() {
+        if ( mController == null ) return;
         mCurrentVolumeType = mController.getCurrentVolumeType(); 
         mCurrentVolumeMax = mController.getVolumeMax(mCurrentVolumeType); 
         mCurrentVolume = mController.getVolume(mCurrentVolumeType); 
-        if ( mImgVolume != null ) 
-            mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        if ( mTextVolume != null ) 
-            mTextVolume.setText(convertToStep(mCurrentVolumeMax, mCurrentVolume));
-        if ( mProgress != null ) 
-            mProgress.setProgress(convertToProgressValue(mCurrentVolumeMax, mCurrentVolume));
+        updateUI(isVolumeMute(), mCurrentVolumeType, mCurrentVolume, mCurrentVolumeMax); 
     }
 
     private void updateMuteState() {
@@ -130,75 +116,68 @@ public class VolumeController extends VolumeControllerBase {
         mVolumeMute = mController.getCurrentMute(); 
     }
 
-    private VolumeControlService.VolumeCallback mServiceCallback = 
-        new VolumeControlService.VolumeCallback() {
-        @Override
-        public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
-            updateMuteState();
-            mCurrentVolumeType = type; 
+    @Override
+    public void onVolumeChanged(VolumeUtil.Type type, int max, int val) {
+        updateMuteState();
+        mCurrentVolumeType = type; 
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateUI(isVolumeMute(), mCurrentVolumeType, mCurrentVolume, mCurrentVolumeMax);  
+            }
+        }); 
+        mCurrentVolumeMax = max; 
+        if ( mCurrentVolume > val ) { 
+            mCurrentVolume = val; 
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                   mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
+                    volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                    }
                 }
             }); 
-            mCurrentVolumeMax = max; 
-            if ( mCurrentVolume > val ) { 
-                mCurrentVolume = val; 
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                        }
-                    }
-                }); 
-            } 
-            else {
-                mCurrentVolume = val; 
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
-                        for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
-                        }
-                    }
-                }); 
-            }
-        }
-
-        @Override
-        public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
-            updateMuteState();
+        } 
+        else {
+            mCurrentVolume = val; 
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
-                    mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
-                    if ( mute ) {
-                        mTextVolume.setText(MUTE_VALUE_TEXT);
-                        mProgress.setProgress(convertToProgressValue(max, 0));
-                    }
-                    else {
-                        mTextVolume.setText(convertToStep(max, volume));
-                        mProgress.setProgress(convertToProgressValue(max, volume));
+                    volumeNoUI(mCurrentVolumeType, mCurrentVolumeMax, mCurrentVolume);
+                    for ( VolumeChangeListener listener : mListener ) {
+                        listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                     }
                 }
             }); 
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onMuteChanged(convertToType(type), mute);
-            }
         }
+    }
 
-        @Override
-        public void onShowUI(boolean show) {
-            for ( VolumeChangeListener listener : mListener ) {
-                listener.onShowUI(show);
+    @Override
+    public void onMuteChanged(VolumeUtil.Type type, int max, int volume, boolean mute) {
+        updateMuteState();
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateUI(mute, type, volume, max); 
             }
+        }); 
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onMuteChanged(convertToType(type), mute);
         }
-    };
+    }
+
+    @Override
+    public void onShowUI(boolean show) {
+        for ( VolumeChangeListener listener : mListener ) {
+            listener.onShowUI(show);
+        }
+    }
+
+    @Override
+    public void onUserChanged() {
+        fetchVolume();
+    }
 
     private VolumeChangeListener.Type convertToType(VolumeUtil.Type type) {
         VolumeChangeListener.Type ret = VolumeChangeListener.Type.UNKNOWN; 
@@ -241,28 +220,28 @@ public class VolumeController extends VolumeControllerBase {
         mPlus = mView.findViewById(R.id.icon_plus);
         mMinus = mView.findViewById(R.id.icon_minus);
 
-        mVolumeTypeImages.put(AudioStateIcon.AUDIO.ordinal(), R.drawable.co_ic_volume); 
-        mVolumeTypeImages.put(AudioStateIcon.AUDIO_MUTE.ordinal(), R.drawable.co_ic_volume_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO.ordinal(), R.drawable.co_ic_btaudio); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO_MUTE.ordinal(), R.drawable.co_ic_btaudio_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE.ordinal(), R.drawable.co_ic_btphone); 
-        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE_MUTE.ordinal(), R.drawable.co_ic_btphone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.NAVI.ordinal(), R.drawable.co_ic_navi); 
-        mVolumeTypeImages.put(AudioStateIcon.NAVI_MUTE.ordinal(), R.drawable.co_ic_navi_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.VR.ordinal(), R.drawable.co_ic_vr); 
-        mVolumeTypeImages.put(AudioStateIcon.VR_MUTE.ordinal(), R.drawable.co_ic_vr_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.RINGTONE.ordinal(), R.drawable.co_ic_ringtone); 
-        mVolumeTypeImages.put(AudioStateIcon.RINGTONE_MUTE.ordinal(), R.drawable.co_ic_ringtone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO.ordinal(), R.drawable.co_ic_cp_volume); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO_MUTE.ordinal(), R.drawable.co_ic_cp_volume_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE.ordinal(), R.drawable.co_ic_cp_phone); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE_MUTE.ordinal(), R.drawable.co_ic_cp_phone_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI.ordinal(), R.drawable.co_ic_cp_navi); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI_MUTE.ordinal(), R.drawable.co_ic_cp_navi_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR.ordinal(), R.drawable.co_ic_cp_vr); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR_MUTE.ordinal(), R.drawable.co_ic_cp_vr_mute); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE.ordinal(), R.drawable.co_ic_cp_ringtone); 
-        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE_MUTE.ordinal(), R.drawable.co_ic_cp_ringtone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.AUDIO.state(), R.drawable.co_ic_volume); 
+        mVolumeTypeImages.put(AudioStateIcon.AUDIO_MUTE.state(), R.drawable.co_ic_volume_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO.state(), R.drawable.co_ic_btaudio); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_AUDIO_MUTE.state(), R.drawable.co_ic_btaudio_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE.state(), R.drawable.co_ic_btphone); 
+        mVolumeTypeImages.put(AudioStateIcon.BT_PHONE_MUTE.state(), R.drawable.co_ic_btphone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.NAVI.state(), R.drawable.co_ic_navi); 
+        mVolumeTypeImages.put(AudioStateIcon.NAVI_MUTE.state(), R.drawable.co_ic_navi_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.VR.state(), R.drawable.co_ic_vr); 
+        mVolumeTypeImages.put(AudioStateIcon.VR_MUTE.state(), R.drawable.co_ic_vr_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.RINGTONE.state(), R.drawable.co_ic_ringtone); 
+        mVolumeTypeImages.put(AudioStateIcon.RINGTONE_MUTE.state(), R.drawable.co_ic_ringtone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO.state(), R.drawable.co_ic_cp_volume); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_AUDIO_MUTE.state(), R.drawable.co_ic_cp_volume_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE.state(), R.drawable.co_ic_cp_phone); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_PHONE_MUTE.state(), R.drawable.co_ic_cp_phone_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI.state(), R.drawable.co_ic_cp_navi); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_NAVI_MUTE.state(), R.drawable.co_ic_cp_navi_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR.state(), R.drawable.co_ic_cp_vr); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_VR_MUTE.state(), R.drawable.co_ic_cp_vr_mute); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE.state(), R.drawable.co_ic_cp_ringtone); 
+        mVolumeTypeImages.put(AudioStateIcon.CARLIFE_RINGTONE_MUTE.state(), R.drawable.co_ic_cp_ringtone_mute); 
     }
 
     private void initViews() {
@@ -288,9 +267,7 @@ public class VolumeController extends VolumeControllerBase {
 
     private void volumeNoUI(VolumeUtil.Type type, int max, int value) {
         Log.d(TAG, "volumeUpNoUI:type="+type+", max="+max+", value="+value); 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        if ( mProgress != null ) mProgress.setProgress(convertToProgressValue(max, value));
-        if ( mTextVolume != null ) mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private void volumeUp(VolumeUtil.Type type, int max, int value) {
@@ -315,9 +292,7 @@ public class VolumeController extends VolumeControllerBase {
 
         mTimer.schedule(mVolumeUpTask, VOLUME_SELECT_TIME);
 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        mProgress.setProgress(convertToProgressValue(max, value));
-        mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private void volumeDown(VolumeUtil.Type type, int max, int value) {
@@ -343,9 +318,7 @@ public class VolumeController extends VolumeControllerBase {
 
         mTimer.schedule(mVolumeDownTask, VOLUME_SELECT_TIME);
 
-        mImgVolume.setImageResource(convertToVolumeIcon(isVolumeMute(), mCurrentVolumeType)); 
-        mProgress.setProgress(convertToProgressValue(max, value));
-        mTextVolume.setText(convertToStep(max, value));
+        updateUI(isVolumeMute(), mCurrentVolumeType, value, max); 
     }
 
     private boolean isVolumeMute() {
@@ -355,7 +328,7 @@ public class VolumeController extends VolumeControllerBase {
 
     private int convertToVolumeIcon(boolean mute, VolumeUtil.Type type) {
         Log.d(TAG, "convertToVolumeIcon : mute="+mute+", type="+type);
-        int resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.ordinal()); 
+        int resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.state()); 
         switch(type) {
             case UNKNOWN:
             case RADIO_FM:
@@ -365,50 +338,50 @@ public class VolumeController extends VolumeControllerBase {
             case SETUP_GUIDE:
             case BAIDU_MEDIA: 
             case ONLINE_MUSIC: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.AUDIO_MUTE.state()); 
                 break;
             } 
             case BT_AUDIO: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_AUDIO_MUTE.state()); 
                 break;
             } 
             case EMERGENCY_CALL: 
             case ADVISOR_CALL: 
             case BT_PHONE_CALL: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.BT_PHONE_MUTE.state()); 
                 break;
             } 
             case BAIDU_NAVI: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.NAVI.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.NAVI_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.NAVI.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.NAVI_MUTE.state()); 
                 break;
             } 
             case BAIDU_VR_TTS:  {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.VR.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.VR_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.VR.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.VR_MUTE.state()); 
                 break;
             } 
             case BT_PHONE_RING: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.RINGTONE_MUTE.state()); 
                 break;
             }
             case CARLIFE_MEDIA: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_AUDIO_MUTE.state()); 
                 break;
             }
             case CARLIFE_TTS: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_VR_MUTE.state()); 
                 break;
             }
             case CARLIFE_NAVI: {
-                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI.ordinal()); 
-                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI_MUTE.ordinal()); 
+                if ( !mute ) resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI.state()); 
+                else resId = mVolumeTypeImages.get(AudioStateIcon.CARLIFE_NAVI_MUTE.state()); 
                 break;
             }
             case BEEP:
@@ -496,6 +469,20 @@ public class VolumeController extends VolumeControllerBase {
         if ( !mController.setVolume(mCurrentVolumeType, down_volume) ) return;
 
         mUIHandler.post(new VolumeRunnable(1, down_volume)); 
+    }
+
+    private void updateUI(boolean mute, VolumeUtil.Type type, int volume, int max) {
+        if ( mImgVolume == null || mTextVolume == null || mProgress == null ) return;
+        Log.d(TAG, "updateUI:mute="+mute+", type="+type+", volume="+volume+", max="+max); 
+        mImgVolume.setImageResource(convertToVolumeIcon(mute, type)); 
+        if ( mute ) {
+            mTextVolume.setText(MUTE_VALUE_TEXT);
+            mProgress.setProgress(convertToProgressValue(max, 0));
+        }
+        else {
+            mTextVolume.setText(convertToStep(max, volume));
+            mProgress.setProgress(convertToProgressValue(max, volume));
+        }
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -643,7 +630,7 @@ public class VolumeController extends VolumeControllerBase {
                     public void run() {
                         if ( mController.getCurrentMute() ) mController.setMasterMuteShowUI(false);
                         for ( VolumeChangeListener listener : mListener ) {
-                            listener.onVolumeUp(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
+                            listener.onVolumeDown(convertToType(mCurrentVolumeType), mCurrentVolumeMax, mCurrentVolume);
                         }
                     }
                 });  

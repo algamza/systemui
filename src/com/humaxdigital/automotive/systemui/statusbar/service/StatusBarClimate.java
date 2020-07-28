@@ -46,25 +46,24 @@ public class StatusBarClimate {
     private boolean mSVIOn = false;
     private boolean mSVSOn = false; 
 
-    public static abstract class StatusBarClimateCallback {
-        public void onInitialized() {}
-        public void onDRTemperatureChanged(float temp) {}
-        public void onDRSeatStatusChanged(int status) {}
-        public void onDRSeatOptionChanged(int option) {}
-        public void onAirCirculationChanged(boolean isOn) {}
-        public void onAirConditionerChanged(boolean isOn) {}
-        public void onAirCleaningChanged(int status) {}
-        public void onSyncChanged(boolean sync) {}
-        public void onFanDirectionChanged(int direction) {}
-        public void onBlowerSpeedChanged(int status) {}
-        public void onPSSeatStatusChanged(int status) {}
-        public void onPSSeatOptionChanged(int option) {}
-        public void onPSTemperatureChanged(float temp) {}
-        public void onFrontDefogStatusChanged(int status) {}
-        public void onModeOffChanged(boolean off) {}
-        public void onIGNOnChanged(boolean on) {}
-        public void onOperateOnChanged(boolean on) {}
-        public void onRearCameraOn(boolean on) {}  
+    public interface StatusBarClimateCallback {
+        public void onInitialized(); 
+        public void onDRTemperatureChanged(float temp); 
+        public void onDRSeatStatusChanged(int status); 
+        public void onDRSeatOptionChanged(int option); 
+        public void onAirCirculationChanged(boolean isOn); 
+        public void onAirConditionerChanged(boolean isOn); 
+        public void onAirCleaningChanged(int status); 
+        public void onSyncChanged(boolean sync); 
+        public void onFanDirectionChanged(int direction); 
+        public void onBlowerSpeedChanged(int status); 
+        public void onPSSeatStatusChanged(int status); 
+        public void onPSSeatOptionChanged(int option); 
+        public void onPSTemperatureChanged(float temp); 
+        public void onFrontDefogStatusChanged(int status); 
+        public void onModeOffChanged(boolean off); 
+        public void onIGNOnChanged(boolean on); 
+        public void onOperateOnChanged(boolean on); 
     }
 
     public StatusBarClimate(Context context, DataStore datastore) {
@@ -342,14 +341,25 @@ public class StatusBarClimate {
         Log.d(TAG, "openClimateSetting : front camera="+mFrontCamera+", rear camera="+mRearCamera+", rear gear="+mRearGearDetected); 
         if ( mRearCamera ) {
             Log.d(TAG, "Current Rear Camera Mode : only climate toggle");
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( mRearGearDetected ) {
             Log.d(TAG, "Current Rear Gear : only climate toggle");
+            OSDPopup.send(mContext, 
+                mContext.getResources().getString(R.string.STR_MESG_18334_ID));
             return;
         }
         if ( isUserAgreement() ) {
             if ( isPowerOff() ) powerOn();
+            if ( mFrontCamera ) {
+                Log.d(TAG, "REQUEST_FRONT_CAMERA_FINISH : TRUE");
+                Settings.Global.putInt(mContext.getContentResolver(), CONSTANTS.ACTION_REQUEST_FRONT_CAMERA_FINISH, 1);
+            } else {
+                OSDPopup.send(mContext, mContext.getResources().getString(R.string.STR_MESG_18334_ID));
+            }
+
             Log.d(TAG, "Current UserAgreement, set power on"); 
             return; 
         }

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
+
 import android.car.CarNotConnectedException;
 import android.car.hardware.CarPropertyValue;
 import android.extension.car.CarSystemManager;
@@ -15,7 +17,12 @@ import android.util.Log;
 
 public class SystemWirelessChargeController extends BaseController<Integer> {
     private static final String TAG = "SystemWirelessChargeController";
-    private enum WirelessChargeStatus { NONE, CHARGED, CHARGING, ERROR }
+    private enum WirelessChargeStatus { 
+        NONE(0), CHARGED(1), CHARGING(2), ERROR(3);
+        private final int state; 
+        WirelessChargeStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
     private CarSystemManager mManager;
 
     @SuppressWarnings("unchecked")
@@ -65,7 +72,7 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         if ( mDataStore == null ) return 0; 
         int value = mDataStore.getWirelessChargeState(); 
         Log.d(TAG, "get="+value); 
-        return convertToStatus(value).ordinal(); 
+        return convertToStatus(value).state(); 
     }
 
     private Boolean checkValid(int value) {
@@ -93,6 +100,20 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
         return status; 
     }
 
+    private void sendVcrmLog(int mode) {
+        VCRMLogger.WirelessChargingState state = VCRMLogger.WirelessChargingState.OFF; 
+        switch(mode) {
+            case 0x0: state = VCRMLogger.WirelessChargingState.OFF; break; 
+            case 0x1: state = VCRMLogger.WirelessChargingState.CELLPHONE_ON_PAD; break; 
+            case 0x2: state = VCRMLogger.WirelessChargingState.CHARGING; break; 
+            case 0x3: state = VCRMLogger.WirelessChargingState.CHARGING_COMPLETE; break; 
+            case 0x4: state = VCRMLogger.WirelessChargingState.CELLPHONE_REMINDER; break; 
+            case 0x5: state = VCRMLogger.WirelessChargingState.CHARGING_ERROR; break; 
+            default: return;  
+        }
+        VCRMLogger.changedWirelessCharging(state);
+    }
+
     private final CarSystemManager.CarSystemEventCallback mSystemCallback = 
         new CarSystemManager.CarSystemEventCallback () {
         @Override
@@ -102,10 +123,11 @@ public class SystemWirelessChargeController extends BaseController<Integer> {
             switch(id) {
                 case CarSystemManager.VENDOR_CANRX_WPC_STATUS: {
                     int mode = getValue(value);
+                    sendVcrmLog(mode); 
                     if ( !checkValid(mode) ) break;
                     if ( mDataStore.shouldPropagateWirelessChargeStatusUpdate(mode) ) {
                         for ( Listener listener : mListeners ) 
-                            listener.onEvent(convertToStatus(mode).ordinal());
+                            listener.onEvent(convertToStatus(mode).state());
                     }
                     break;
                 }

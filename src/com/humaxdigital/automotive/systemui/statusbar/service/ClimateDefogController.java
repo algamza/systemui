@@ -10,7 +10,12 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimateDefogController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimateDefogController";
-    private enum DefogState { ON, OFF }
+    private enum DefogState { 
+        ON(0), OFF(1);
+        private final int state; 
+        DefogState(int state) { this.state = state; }
+        public int state() { return state; }  
+    }
     private final int mZone = 0; 
     private final int FRONT_DEFOG_VALUE = 0x5; 
 
@@ -21,16 +26,8 @@ public class ClimateDefogController extends ClimateBaseController<Integer> {
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null || mDataStore == null ) return;
-        try {
-            int front_def = mManager.getIntProperty(
-                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
-            if ( checkValid(front_def) )
-                mDataStore.setDefrosterState(mZone, front_def==FRONT_DEFOG_VALUE?true:false);
-            Log.d(TAG, "fetch:front="+front_def);
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchFanDirection");
-        }
+        Log.d(TAG, "fetch");
+        update();
     }
 
     @Override
@@ -44,11 +41,27 @@ public class ClimateDefogController extends ClimateBaseController<Integer> {
     }
 
     @Override
+    public Boolean update() {
+        if ( mManager == null || mDataStore == null ) return false;
+        try {
+            int front_def = mManager.getIntProperty(
+                CarHvacManagerEx.VENDOR_CANRX_HVAC_MODE_DISPLAY, mZone);
+            if ( checkValid(front_def) )
+                mDataStore.setDefrosterState(mZone, front_def==FRONT_DEFOG_VALUE?true:false);
+            Log.d(TAG, "update="+front_def);
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchFanDirection");
+            return false; 
+        }
+        return true; 
+    }
+
+    @Override
     public Integer get() {
         if ( mDataStore == null ) return 0;
         DefogState state = convertToStatus(mDataStore.getDefrosterState(mZone)?FRONT_DEFOG_VALUE:0x0); 
         Log.d(TAG, "get="+state);
-        return state.ordinal(); 
+        return state.state(); 
     }
 
     private Boolean checkValid(int val) {

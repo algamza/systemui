@@ -47,10 +47,11 @@ import com.humaxdigital.automotive.systemui.common.util.ProductConfig;
 import com.humaxdigital.automotive.systemui.common.util.ActivityMonitor;
 import com.humaxdigital.automotive.systemui.common.util.CommonMethod;
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
+import com.humaxdigital.automotive.systemui.common.logger.VCRMLogger;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
-public class StatusBar implements SystemUIBase {
+public class StatusBar implements SystemUIBase, StatusBarSystem.StatusBarSystemCallback {
     private static final String TAG = "StatusBar";
     private WindowManager mWindowManager;
     private AudioManager mAudioManager;
@@ -78,6 +79,7 @@ public class StatusBar implements SystemUIBase {
     private ActivityMonitor mActivityMonitor = null; 
     private boolean mIsSwipeGestureMode = true;
     private boolean mIsDroplistTouchEnable = false; 
+    private StatusBar mThis = this; 
 
     @Override
     public void onCreate(Context context) {
@@ -273,7 +275,7 @@ public class StatusBar implements SystemUIBase {
 
             mStatusBarSystem = mStatusBarService.getStatusBarSystem(); 
             if ( mStatusBarSystem != null ) 
-                mStatusBarSystem.registerSystemCallback(mSystemStatusCallback);
+                mStatusBarSystem.registerSystemCallback(mThis);
         }
 
         @Override
@@ -283,6 +285,10 @@ public class StatusBar implements SystemUIBase {
                 mControllerManager = null;
             });
 
+            if ( mStatusBarSystem != null ) 
+                mStatusBarSystem.unregisterSystemCallback(mThis);
+
+            mStatusBarSystem = null; 
             mStatusBarService = null;
         }
     };
@@ -435,21 +441,21 @@ public class StatusBar implements SystemUIBase {
         if ( mStatusBarService.isUserSwitching() ) is_special = true; 
         return is_special; 
     }
-    private StatusBarSystem.StatusBarSystemCallback mSystemStatusCallback = new StatusBarSystem.StatusBarSystemCallback() {
-        @Override
-        public void onUserAgreementMode(boolean on) {
-            //updateDisableWindow(); 
-        }
-        @Override
-        public void onUserSwitching(boolean on) {
-            updateDisableWindow(); 
-        }
-    }; 
+    
+    @Override
+    public void onUserAgreementMode(boolean on) {
+        //updateDisableWindow(); 
+    }
+    @Override
+    public void onUserSwitching(boolean on) {
+        updateDisableWindow(); 
+    }
 
     private BroadcastReceiver mSystemGestureReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "SystemGestureReceiver");
             if (action.equals(CONSTANTS.ACTION_SYSTEM_GESTURE)) {
                 String gesture = intent.getStringExtra(CONSTANTS.EXTRA_GESTURE);
                 Log.d(TAG, "system gesture received: " + gesture);
@@ -457,6 +463,7 @@ public class StatusBar implements SystemUIBase {
                 // swipe-from-top - open the drop list.
                 if (CONSTANTS.SYSTEM_GESTURE_SWIPE_FROM_TOP.equals(gesture)){
                     if (mIsSwipeGestureMode && !isSpecialCase()) {
+                        VCRMLogger.triggerDropDown();
                         openDroplist();
                     }
                 }
@@ -469,8 +476,10 @@ public class StatusBar implements SystemUIBase {
                         final int fingers = intent.getIntExtra(CONSTANTS.EXTRA_FINGERS, 0);
 
                         if (fingers == 3) {         // 3: go to all menu
+                            VCRMLogger.triggerThreeFigers();
                             didAction = checkAndGoToAllMenu();
                         } else if (fingers == 4) {  // 4: go home (3-widgets)
+                            VCRMLogger.triggerFourFigers();
                             didAction = checkAndGoToHomeWidgets();
                         } else if (fingers == 5) {  // 5: enter display-off mode
                             didAction = checkAndTurnOffDisplay();
@@ -504,6 +513,7 @@ public class StatusBar implements SystemUIBase {
             if ( topActivity == null ) return;
             String name = topActivity.getClassName(); 
             Log.d(TAG, "onActivityChanged="+name); 
+            VCRMLogger.changedScreen(name);
             if ( name == null ) return;
             if ( name.contains(".MapAutoActivity") ) mIsSwipeGestureMode = false;
             else mIsSwipeGestureMode = true;

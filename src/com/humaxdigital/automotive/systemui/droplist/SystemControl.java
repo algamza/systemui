@@ -204,27 +204,27 @@ public class SystemControl extends Service {
         return mBinder;
     }
 
-    public static abstract class SystemCallback {
-        public void onBluetoothOnChanged(boolean isOn) {}
-        public void onWifiOnChanged(boolean isOn) {}
-        public void onBeepOnChanged(boolean isOn) {}
-        public void onQuietModeOnChanged(boolean isOn) {}
-        public void onMuteOnChanged(boolean isOn) {}
-        public void onAutomaticModeChanged(SystemAutoMode mode) {}
-        public void onBrightnessChanged(int brightness) {}
-        public void onClusterBrightnessChanged(int brightness) {}
-        public void onClusterChecked(boolean checked) {}
-        public void onThemeChanged(SystemTheme theme) {}
-        public void onVolumeSettingsActivated(boolean on) {}
-        public void onVRStateChanged(boolean on) {}
-        public void onCallingChanged(boolean on) {}
-        public void onAVOnChanged(boolean on) {}
-        public void onPowerOnChanged(boolean on) {}
-        public void onEmergencyModeChanged(boolean enable) {}
-        public void onBluelinkCallModeChanged(boolean enable) {}
-        public void onImmobilizationModeChanged(boolean enable) {}
-        public void onSlowdownModeChanged(boolean enable) {}
-        public void onCarlifeConnectionChanged(boolean connect) {}
+    public interface SystemCallback {
+        default public void onBluetoothOnChanged(boolean isOn) {}
+        default public void onWifiOnChanged(boolean isOn) {}
+        default public void onBeepOnChanged(boolean isOn) {}
+        default public void onQuietModeOnChanged(boolean isOn) {}
+        default public void onMuteOnChanged(boolean isOn) {}
+        default public void onAutomaticModeChanged(SystemAutoMode mode) {}
+        default public void onBrightnessChanged(int brightness) {}
+        default public void onClusterBrightnessChanged(int brightness) {}
+        default public void onClusterChecked(boolean checked) {}
+        default public void onThemeChanged(SystemTheme theme) {}
+        default public void onVolumeSettingsActivated(boolean on) {}
+        default public void onVRStateChanged(boolean on) {}
+        default public void onCallingChanged(boolean on) {}
+        default public void onAVOnChanged(boolean on) {}
+        default public void onPowerOnChanged(boolean on) {}
+        default public void onEmergencyModeChanged(boolean enable) {}
+        default public void onBluelinkCallModeChanged(boolean enable) {}
+        default public void onImmobilizationModeChanged(boolean enable) {}
+        default public void onSlowdownModeChanged(boolean enable) {}
+        default public void onCarlifeConnectionChanged(boolean connect) {}
     }
 
     public void requestRefresh(final Runnable r, final Handler h) {

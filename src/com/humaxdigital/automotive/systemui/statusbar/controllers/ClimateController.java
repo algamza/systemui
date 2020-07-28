@@ -32,20 +32,74 @@ import com.humaxdigital.automotive.systemui.statusbar.ui.ClimateMenuTextImg;
 
 import com.humaxdigital.automotive.systemui.statusbar.service.StatusBarClimate;
 
-public class ClimateController {
+public class ClimateController implements StatusBarClimate.StatusBarClimateCallback {
     private static final String TAG = "ClimateController"; 
     private static final String PACKAGE_NAME = "com.humaxdigital.automotive.systemui"; 
 
-    private enum SeatState { HEATER3, HEATER2, HEATER1, NONE, COOLER1, COOLER2, COOLER3 }
-    private enum SeatOption { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
-    private enum FanDirectionState { FACE, FLOOR_FACE, FLOOR, FLOOR_DEFROST, DEFROST, OFF }
-    private enum FanSpeedState { STEPOFF, STEP0, STEP1, STEP2, STEP3, STEP4, STEP5, STEP6, STEP7, STEP8 };
-    private enum ACState { ON, OFF };
-    private enum IntakeState { ON, OFF };
-    private enum AirCleaning { ON, OFF }; 
-    private enum SyncState { ON, OFF }; 
-    private enum FrontDefogState { ON, OFF }; 
-    private enum ClimateType { NONE, DEFAULT, NO_SEAT }; 
+    private enum SeatState { 
+        HEATER3(0), HEATER2(1), HEATER1(2), NONE(3), COOLER1(4), COOLER2(5), COOLER3(6); 
+        private final int state; 
+        SeatState(int state) { this.state = state; }
+        public int state() { return state; }
+    }
+    private enum SeatOption { 
+        HEAT_ONLY_2STEP(0), HEAT_ONLY_3STEP(1), VENT_ONLY_2STEP(2), 
+        VENT_ONLY_3STEP(3), HEAT_VENT_2STEP(4), HEAT_VENT_3STEP(5), INVALID(6);
+        private final int state; 
+        SeatOption(int state) { this.state = state; }
+        public int state() { return state; }
+    }
+    private enum FanDirectionState { 
+        FACE(0), FLOOR_FACE(1), FLOOR(2), FLOOR_DEFROST(3), DEFROST(4), OFF(5);
+        private final int state; 
+        FanDirectionState(int state) { this.state = state; }
+        public int state() { return state; }
+        public int next() { return state+1; }
+    }
+    private enum FanSpeedState { 
+        STEPOFF(0), STEP0(1), STEP1(2), STEP2(3), STEP3(4), 
+        STEP4(5), STEP5(6), STEP6(7), STEP7(8), STEP8(9);
+        private final int state; 
+        FanSpeedState(int state) { this.state = state; }
+        public int state() { return state; }
+        public int speed() { return state-1; }
+    }
+    private enum ACState { 
+        ON(0), OFF(1);
+        private final int state; 
+        ACState(int state) { this.state = state; }
+        public int state() { return state; }
+    }
+    private enum IntakeState {         
+        ON(0), OFF(1);
+        private final int state; 
+        IntakeState(int state) { this.state = state;}
+        public int state() { return state; } 
+    };
+    private enum AirCleaning { 
+        ON(0), OFF(1);
+        private final int state; 
+        AirCleaning(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
+    private enum SyncState { 
+        ON(0), OFF(1);
+        private final int state; 
+        SyncState(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
+    private enum FrontDefogState { 
+        ON(0), OFF(1);
+        private final int state; 
+        FrontDefogState(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
+    private enum ClimateType { 
+        NONE(0), DEFAULT(1), NO_SEAT(2);  
+        private final int state; 
+        ClimateType(int state) { this.state = state;}
+        public int state() { return state; } 
+    }; 
 
     private StatusBarClimate mService; 
     private Context mContext;
@@ -118,13 +172,13 @@ public class ClimateController {
     public void init(StatusBarClimate service) {
         Log.d(TAG, "init()"); 
         mService = Objects.requireNonNull(service); 
-        mService.registerClimateCallback(mClimateCallback); 
+        mService.registerClimateCallback(this); 
         if ( mService.isInitialized() ) update(); 
     }
 
     public void deinit() {
         if ( mService != null ) 
-            mService.unregisterClimateCallback(mClimateCallback); 
+            mService.unregisterClimateCallback(this); 
     }
 
     private void initToggleValue() {
@@ -204,6 +258,8 @@ public class ClimateController {
             || ProductConfig.getModel() == ProductConfig.MODEL.CN7C ) {
             if ( support_seat ) mClimatePanel = inflater.inflate(R.layout.climate, null); 
             else mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
+        } else if ( ProductConfig.getModel() == ProductConfig.MODEL.NPPE ) {
+            mClimatePanel = inflater.inflate(R.layout.climate_no_seat, null); 
         } else {
             mClimatePanel = inflater.inflate(R.layout.climate, null); 
         }
@@ -213,23 +269,23 @@ public class ClimateController {
 
         mTempDR = new ClimateMenuTextDec(mContext).inflate(); 
         mSeatDR = new ClimateMenuImg(mContext)
-            .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null))
-            .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_01, null))
-            .addIcon(SeatState.COOLER2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_02, null))
-            .addIcon(SeatState.COOLER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_03, null))
-            .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_04, null))
-            .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_05, null))
-            .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_06, null))
+            .addIcon(SeatState.NONE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_00, null))
+            .addIcon(SeatState.COOLER1.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_01, null))
+            .addIcon(SeatState.COOLER2.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_02, null))
+            .addIcon(SeatState.COOLER3.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_03, null))
+            .addIcon(SeatState.HEATER1.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_04, null))
+            .addIcon(SeatState.HEATER2.state(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_05, null))
+            .addIcon(SeatState.HEATER3.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_06, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_left_dis, null))
             .inflate(); 
         mAC = new ClimateMenuImg(mContext)
-            .addIcon(ACState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_on, null))
-            .addIcon(ACState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_off, null))
+            .addIcon(ACState.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_on, null))
+            .addIcon(ACState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_off, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_ac_dis, null))
             .inflate();
         mIntake = new ClimateMenuImg(mContext)
-            .addIcon(IntakeState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
-            .addIcon(IntakeState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
+            .addIcon(IntakeState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_off, null))
+            .addIcon(IntakeState.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_on, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_car_dis, null))
             .inflate();
         mFanSpeed = new ClimateMenuTextImg(mContext)
@@ -237,41 +293,41 @@ public class ClimateController {
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_dis, null))
             .inflate(); 
         mFanDirection = new ClimateMenuImg(mContext)
-            .addIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null))
-            .addIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null))
-            .addIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
-            .addIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
-            .addIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog, null))
-            .addIcon(FanDirectionState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off, null))
-            .addDisableIcon(FanDirectionState.FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01_dis, null))
-            .addDisableIcon(FanDirectionState.FLOOR.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02_dis, null))
-            .addDisableIcon(FanDirectionState.FLOOR_FACE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03_dis, null))
-            .addDisableIcon(FanDirectionState.FLOOR_DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04_dis, null))
-            .addDisableIcon(FanDirectionState.DEFROST.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog_dis, null))
-            .addDisableIcon(FanDirectionState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off_d, null))
+            .addIcon(FanDirectionState.FACE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01, null))
+            .addIcon(FanDirectionState.FLOOR.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02, null))
+            .addIcon(FanDirectionState.FLOOR_FACE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03, null))
+            .addIcon(FanDirectionState.FLOOR_DEFROST.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04, null))
+            .addIcon(FanDirectionState.DEFROST.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog, null))
+            .addIcon(FanDirectionState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off, null))
+            .addDisableIcon(FanDirectionState.FACE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_01_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_02_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR_FACE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_03_dis, null))
+            .addDisableIcon(FanDirectionState.FLOOR_DEFROST.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_04_dis, null))
+            .addDisableIcon(FanDirectionState.DEFROST.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_defog_dis, null))
+            .addDisableIcon(FanDirectionState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_wind_00_off_d, null))
             .inflate();
         mSeatPS = new ClimateMenuImg(mContext)
-            .addIcon(SeatState.NONE.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_00, null))
-            .addIcon(SeatState.COOLER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_01, null))
-            .addIcon(SeatState.COOLER2.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_02, null))
-            .addIcon(SeatState.COOLER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_03, null))
-            .addIcon(SeatState.HEATER1.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_04, null))
-            .addIcon(SeatState.HEATER2.ordinal(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_05, null))
-            .addIcon(SeatState.HEATER3.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_06, null))
+            .addIcon(SeatState.NONE.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_00, null))
+            .addIcon(SeatState.COOLER1.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_01, null))
+            .addIcon(SeatState.COOLER2.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_02, null))
+            .addIcon(SeatState.COOLER3.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_03, null))
+            .addIcon(SeatState.HEATER1.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_04, null))
+            .addIcon(SeatState.HEATER2.state(),  ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_05, null))
+            .addIcon(SeatState.HEATER3.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_06, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_seat_right_dis, null))
             .inflate(); 
         mTempPS = new ClimateMenuTextDec(mContext).inflate(); 
 
         mAirCleaning = new ClimateMenuImg(mContext)
-            .addIcon(AirCleaning.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
-            .addIcon(AirCleaning.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
+            .addIcon(AirCleaning.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
+            .addIcon(AirCleaning.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
             .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
             .inflate();
 
         mSync = new ClimateMenuImg(mContext)
-            .addIcon(SyncState.OFF.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_off, null))
-            .addIcon(SyncState.ON.ordinal(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_on_02, null))
-            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_aircleaning_dis, null))
+            .addIcon(SyncState.OFF.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_off, null))
+            .addIcon(SyncState.ON.state(), ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_on, null))
+            .addDisableIcon(ResourcesCompat.getDrawable(mRes, R.drawable.co_status_sync_dis, null))
             .inflate();  
 
         if ( ProductConfig.getModel() == ProductConfig.MODEL.DU2 
@@ -309,7 +365,16 @@ public class ClimateController {
             mClimateViews.add(mIntake);
             mClimateViews.add(mAirCleaning); 
             mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mSync); 
             mClimateViews.add(mTempPS);
+        }
+        else if ( ProductConfig.getModel() == ProductConfig.MODEL.NPPE ) {
+            mClimateViews.add(mAC);
+            mClimateViews.add(mIntake);
+            mClimateViews.add(mTempDR);
+            mClimateViews.add(mFanSpeed);
+            mClimateViews.add(mFanDirection);
+            mClimateViews.add(mAirCleaning); 
         }
         else if ( ProductConfig.getModel() == ProductConfig.MODEL.DN8C ) {
             if ( support_seat ) {
@@ -382,14 +447,14 @@ public class ClimateController {
         mFrontDefogState = FrontDefogState.values()[mService.getFrontDefogState()]; 
 
         if ( mTempDR != null ) updateTemp(mTempDR, mTempDRState); 
-        if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.ordinal()); 
+        if ( mSeatDR != null ) mSeatDR.update(mSeatDRState.state()); 
         if ( mAC != null ) updateAC();
-        if ( mIntake != null ) mIntake.update(mIntakeState.ordinal()); 
+        if ( mIntake != null ) mIntake.update(mIntakeState.state()); 
         if ( mFanDirection != null ) updateFanDirection();
-        if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.ordinal()); 
+        if ( mSeatPS != null ) mSeatPS.update(mSeatPSState.state()); 
         if ( mTempPS != null ) updateTemp(mTempPS, mTempPSState); 
-        if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.ordinal()); 
-        if ( mSync != null ) mSync.update(mSyncState.ordinal()); 
+        if ( mAirCleaning != null ) mAirCleaning.update(mAirCleaningState.state()); 
+        if ( mSync != null ) mSync.update(mSyncState.state()); 
         if ( mFanSpeed != null ) {
             if ( isClimateOff() ) updateClimate(false); 
             else {
@@ -419,27 +484,27 @@ public class ClimateController {
     private void updateAC() {
         Log.d(TAG, "updateAC()"); 
         if ( mAC == null ) return;
-        if ( isClimateOff() ) mAC.update(ACState.OFF.ordinal()); 
-        else mAC.update(mACState.ordinal()); 
+        if ( isClimateOff() ) mAC.update(ACState.OFF.state()); 
+        else mAC.update(mACState.state()); 
     }
 
     private void updateFanDirection() {
         if ( mFanDirection == null ) return;
         Log.d(TAG, "updateFanDirection="+mFanDirectionState); 
         if ( mModeOff || isClimateOff() ) {
-            mFanDirection.update(FanDirectionState.OFF.ordinal()); 
+            mFanDirection.update(FanDirectionState.OFF.state()); 
         } else {
             if ( mFrontDefogState == FrontDefogState.ON ) 
-                mFanDirection.update(FanDirectionState.DEFROST.ordinal()); 
+                mFanDirection.update(FanDirectionState.DEFROST.state()); 
             else 
-                mFanDirection.update(mFanDirectionState.ordinal()); 
+                mFanDirection.update(mFanDirectionState.state()); 
         }
     }
 
     private void updateFanSpeed(FanSpeedState state) {
         if ( mFanSpeed == null ) return;
         Log.d(TAG, "updateFanSpeed="+state); 
-        mFanSpeed.update(0, String.valueOf(state.ordinal()-1));
+        mFanSpeed.update(0, String.valueOf(state.speed()));
     }
 
     private void fanOn() {
@@ -447,7 +512,7 @@ public class ClimateController {
         if ( (mFanSpeed != null) 
             && ( isClimateOff() || (mFanSpeedState == FanSpeedState.STEP0) ) ) {
             if ( mService != null )
-                mService.setBlowerSpeed(FanSpeedState.STEP1.ordinal());
+                mService.setBlowerSpeed(FanSpeedState.STEP1.state());
         }
     }
 
@@ -463,7 +528,7 @@ public class ClimateController {
     private void setClimateType(ClimateType type) {
         if ( mContentResolver == null ) return;
         Log.d(TAG, "setClimateType="+type); 
-        Settings.Global.putInt(mContentResolver, CLIMATE_TYPE_KEY, type.ordinal()); 
+        Settings.Global.putInt(mContentResolver, CLIMATE_TYPE_KEY, type.state()); 
     }
 
     private void updateClimateType() {
@@ -600,8 +665,8 @@ public class ClimateController {
             
             int next = 0; 
 
-            if ( !isClimateOff() ) next = mFanDirectionState.ordinal() + 1;
-            else next = mFanDirectionState.ordinal();
+            if ( !isClimateOff() ) next = mFanDirectionState.next();
+            else next = mFanDirectionState.state();
 
             if ( next >= (FanDirectionState.values().length-2) ) {
                 next = 0; 
@@ -617,9 +682,9 @@ public class ClimateController {
             if ( mAirCleaning == null || !mIGNOn || mIsOperateOn ) return; 
             if ( mService != null ) {
                 if ( mAirCleaningState == AirCleaning.OFF ) {
-                    mService.setAirCleaningState(AirCleaning.ON.ordinal());
+                    mService.setAirCleaningState(AirCleaning.ON.state());
                 } else {
-                    mService.setAirCleaningState(AirCleaning.OFF.ordinal());
+                    mService.setAirCleaningState(AirCleaning.OFF.state());
                 }
             }
         }
@@ -653,7 +718,7 @@ public class ClimateController {
                 if ( state == mSeatDRState ) is_next = true; 
    
             }
-            mService.setDRSeatStatus(next.ordinal());
+            mService.setDRSeatStatus(next.state());
         }
     }; 
 
@@ -670,205 +735,212 @@ public class ClimateController {
                 }
                 if ( state == mSeatPSState ) is_next = true; 
             }
-            mService.setPSSeatStatus(next.ordinal());
+            mService.setPSSeatStatus(next.state());
         }
     }; 
 
-    private final StatusBarClimate.StatusBarClimateCallback mClimateCallback 
-        = new StatusBarClimate.StatusBarClimateCallback() {
-        @Override
-        public void onInitialized() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    update(); 
-                }
-            }); 
-        }
-        @Override
-        public void onDRTemperatureChanged(float temp) {
-            if ( mTempDR == null ) return; 
-            mTempDRState = temp;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateTemp(mTempDR, mTempDRState); 
-                }
-            }); 
-        }
-        @Override
-        public void onDRSeatStatusChanged(int status) {
-            if ( mSeatDR == null ) return;
-            mSeatDRState = SeatState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mSeatDR.update(mSeatDRState.ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onDRSeatOptionChanged(int option) {
-            updateClimateType();
-        }
-        @Override
-        public void onAirCirculationChanged(boolean isOn) {
-            if ( mIntake == null ) return; 
-            mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mIntake.update(mIntakeState.ordinal());
-                }
-            }); 
-        }
-        @Override
-        public void onAirConditionerChanged(boolean isOn) {
-            if ( mAC == null ) return; 
-            mACState = isOn?ACState.ON:ACState.OFF;
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateAC();
-                }
-            });    
-        }
-        @Override
-        public void onAirCleaningChanged(int status) {
-            if ( mAirCleaning == null ) return; 
-            mAirCleaningState = AirCleaning.values()[status]; 
-            
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( mAirCleaning != null ) 
-                        mAirCleaning.update(mAirCleaningState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onSyncChanged(boolean sync) {
-            if ( mSync == null ) return; 
-            mSyncState = sync ? SyncState.ON:SyncState.OFF; 
-            
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( mSync != null ) 
-                        mSync.update(mSyncState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onFanDirectionChanged(int direction) {
-            if ( mFanDirection == null ) return; 
-            mFanDirectionState = FanDirectionState.values()[direction]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateFanDirection();
-                }
-            }); 
-        }
-        @Override
-        public void onBlowerSpeedChanged(int status) {
-            mFanSpeedState = FanSpeedState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if ( isClimateOff() ) updateClimate(false); 
-                    else {
-                        updateFanSpeed(mFanSpeedState);
-                        updateClimate(true);
-                    }
-                }
-            }); 
-        }
-        @Override
-        public void onPSSeatStatusChanged(int status) {
-            if ( mSeatPS == null ) return; 
-            mSeatPSState = SeatState.values()[status]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mSeatPS.update(mSeatPSState.ordinal()); 
-                }
-            }); 
-        }
-        @Override
-        public void onPSSeatOptionChanged(int option) {
-            updateClimateType();
-        }
 
-        @Override
-        public void onPSTemperatureChanged(float temp) {
-            if ( mTempPS == null ) return; 
-            mTempPSState = temp;
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateTemp(mTempPS, mTempPSState); 
-                }
-            }); 
-        }
-
-        @Override
-        public void onFrontDefogStatusChanged(int state) {
-            mFrontDefogState = FrontDefogState.values()[state]; 
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateFanDirection();
-                }
-            }); 
-        }
-
-        @Override
-        public void onModeOffChanged(boolean off) {
-            if ( mHandler == null ) return; 
-
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateModeOff(off); 
-                }
-            }); 
-        }
-
-        @Override
-        public void onIGNOnChanged(boolean on) {
-            if ( mHandler == null ) return; 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateIGOnChange(on); 
-                }
-            }); 
-        }
+    @Override
+    public void onInitialized() {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                update(); 
+            }
+        }); 
+    }
+    @Override
+    public void onDRTemperatureChanged(float temp) {
+        if ( mTempDR == null ) return; 
+        Log.d(TAG, "onDRTemperatureChanged="+temp);
+        mTempDRState = temp;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateTemp(mTempDR, mTempDRState); 
+            }
+        }); 
+    }
+    @Override
+    public void onDRSeatStatusChanged(int status) {
+        if ( mSeatDR == null ) return;
+        Log.d(TAG, "onDRSeatStatusChanged="+status);
+        mSeatDRState = SeatState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSeatDR.update(mSeatDRState.state());
+            }
+        }); 
+    }
+    @Override
+    public void onDRSeatOptionChanged(int option) {
+        updateClimateType();
+    }
+    @Override
+    public void onAirCirculationChanged(boolean isOn) {
+        if ( mIntake == null ) return; 
+        Log.d(TAG, "onAirCirculationChanged="+isOn);
+        mIntakeState = isOn?IntakeState.ON:IntakeState.OFF;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mIntake.update(mIntakeState.state());
+            }
+        }); 
+    }
+    @Override
+    public void onAirConditionerChanged(boolean isOn) {
+        if ( mAC == null ) return; 
+        Log.d(TAG, "onAirConditionerChanged="+isOn);
+        mACState = isOn?ACState.ON:ACState.OFF;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateAC();
+            }
+        });    
+    }
+    @Override
+    public void onAirCleaningChanged(int status) {
+        if ( mAirCleaning == null ) return; 
+        Log.d(TAG, "onAirCleaningChanged="+status);
+        mAirCleaningState = AirCleaning.values()[status]; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mAirCleaning != null ) 
+                    mAirCleaning.update(mAirCleaningState.state()); 
+            }
+        }); 
+    }
+    @Override
+    public void onSyncChanged(boolean sync) {
+        if ( mSync == null ) return; 
+        Log.d(TAG, "onSyncChanged="+sync);
+        mSyncState = sync ? SyncState.ON:SyncState.OFF; 
         
-        @Override
-        public void onOperateOnChanged(boolean on) {
-            if ( mHandler == null ) return; 
-
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    updateOperateOnChange(on); 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( mSync != null ) 
+                    mSync.update(mSyncState.state()); 
+            }
+        }); 
+    }
+    @Override
+    public void onFanDirectionChanged(int direction) {
+        if ( mFanDirection == null ) return; 
+        Log.d(TAG, "onFanDirectionChanged="+direction);
+        mFanDirectionState = FanDirectionState.values()[direction]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateFanDirection();
+            }
+        }); 
+    }
+    @Override
+    public void onBlowerSpeedChanged(int status) {
+        Log.d(TAG, "onBlowerSpeedChanged="+status);
+        mFanSpeedState = FanSpeedState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if ( isClimateOff() ) updateClimate(false); 
+                else {
+                    updateFanSpeed(mFanSpeedState);
+                    updateClimate(true);
                 }
-            }); 
-        }
+            }
+        }); 
+    }
+    @Override
+    public void onPSSeatStatusChanged(int status) {
+        Log.d(TAG, "onPSSeatStatusChanged="+status);
+        if ( mSeatPS == null ) return; 
+        mSeatPSState = SeatState.values()[status]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mSeatPS.update(mSeatPSState.state()); 
+            }
+        }); 
+    }
+    @Override
+    public void onPSSeatOptionChanged(int option) {
+        Log.d(TAG, "onPSSeatStatusChanged="+option);
+        updateClimateType();
+    }
 
-        @Override
-        public void onRearCameraOn(boolean on) {
-            // Not implement
-        }
-    };
+    @Override
+    public void onPSTemperatureChanged(float temp) {
+        Log.d(TAG, "onPSTemperatureChanged="+temp);
+        if ( mTempPS == null ) return; 
+        mTempPSState = temp;
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateTemp(mTempPS, mTempPSState); 
+            }
+        }); 
+    }
+
+    @Override
+    public void onFrontDefogStatusChanged(int state) {
+        Log.d(TAG, "onFrontDefogStatusChanged="+state);
+        mFrontDefogState = FrontDefogState.values()[state]; 
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateFanDirection();
+            }
+        }); 
+    }
+
+    @Override
+    public void onModeOffChanged(boolean off) {
+        Log.d(TAG, "onModeOffChanged="+off);
+        if ( mHandler == null ) return; 
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateModeOff(off); 
+            }
+        }); 
+    }
+
+    @Override
+    public void onIGNOnChanged(boolean on) {
+        Log.d(TAG, "onIGNOnChanged="+on);
+        if ( mHandler == null ) return; 
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateIGOnChange(on); 
+            }
+        }); 
+    }
+    
+    @Override
+    public void onOperateOnChanged(boolean on) {
+        Log.d(TAG, "onOperateOnChanged="+on);
+        if ( mHandler == null ) return; 
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateOperateOnChange(on); 
+            }
+        }); 
+    }
 }

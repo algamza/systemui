@@ -9,7 +9,27 @@ import android.support.car.CarNotConnectedException;
 
 public class ClimatePSSeatOptionController extends ClimateBaseController<Integer> {
     private static final String TAG = "ClimatePSSeatOptionController";
-    private enum SeatStatus { HEAT_ONLY_2STEP, HEAT_ONLY_3STEP, VENT_ONLY_2STEP, VENT_ONLY_3STEP, HEAT_VENT_2STEP, HEAT_VENT_3STEP, INVALID }
+    private enum SeatStatus { 
+        HEAT_ONLY_2STEP(0), HEAT_ONLY_3STEP(1), VENT_ONLY_2STEP(2), 
+        VENT_ONLY_3STEP(3), HEAT_VENT_2STEP(4), HEAT_VENT_3STEP(5), INVALID(6);
+        private final int state; 
+        SeatStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+        static SeatStatus getStateFromSignal(int signal) { 
+            SeatStatus status = SeatStatus.INVALID; 
+            switch(signal) {
+                case 0x1: status = HEAT_ONLY_2STEP; break; 
+                case 0x2: status = HEAT_ONLY_3STEP; break;
+                case 0x3: status = VENT_ONLY_2STEP; break;
+                case 0x4: status = VENT_ONLY_3STEP; break;
+                case 0x5: status = HEAT_VENT_2STEP; break; 
+                case 0x6: status = HEAT_VENT_3STEP; break;
+                case 0x7: status = INVALID; break; 
+                default: break; 
+            }
+            return status;
+        };  
+    }
     final int mZone = ClimateControllerManager.SEAT_PASSENGER; 
     private SeatStatus mStatus = SeatStatus.INVALID; 
 
@@ -20,41 +40,34 @@ public class ClimatePSSeatOptionController extends ClimateBaseController<Integer
     @Override
     public void fetch(CarHvacManagerEx manager) {
         super.fetch(manager); 
-        if ( mManager == null ) return;
-        try {
-            int option = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT, mZone);
-            mStatus = convertToStatus(option); 
-            Log.d(TAG, "fetch:option="+option+", status="+mStatus); 
-        } catch (android.car.CarNotConnectedException e) {
-            Log.e(TAG, "Car not connected in fetchSeatWarmer");
-        }
+        Log.d(TAG, "fetch"); 
+        update();
     }
 
     @Override
     public Boolean update(Integer e) {
-        mStatus = convertToStatus(e); 
+        mStatus = SeatStatus.getStateFromSignal(e); 
         Log.d(TAG, "update:option="+e+", status="+mStatus); 
         return true;
     }
 
     @Override
-    public Integer get() {
-        Log.d(TAG, "get="+mStatus); 
-        return mStatus.ordinal(); 
+    public Boolean update() {
+        if ( mManager == null ) return false;
+        try {
+            int option = mManager.getIntProperty(CarHvacManagerEx.VENDOR_CANRX_HVAC_SEAT_HEAT, mZone);
+            mStatus = SeatStatus.getStateFromSignal(option); 
+            Log.d(TAG, "update:option="+option+", status="+mStatus); 
+        } catch (android.car.CarNotConnectedException e) {
+            Log.e(TAG, "Car not connected in fetchSeatWarmer");
+            return false; 
+        }
+        return true; 
     }
 
-    private SeatStatus convertToStatus(int option) {
-        SeatStatus status = SeatStatus.INVALID; 
-        switch(option) {
-            case 0x1: status = SeatStatus.HEAT_ONLY_2STEP; break; 
-            case 0x2: status = SeatStatus.HEAT_ONLY_3STEP; break;
-            case 0x3: status = SeatStatus.VENT_ONLY_2STEP; break;
-            case 0x4: status = SeatStatus.VENT_ONLY_3STEP; break;
-            case 0x5: status = SeatStatus.HEAT_VENT_2STEP; break; 
-            case 0x6: status = SeatStatus.HEAT_VENT_3STEP; break;
-            case 0x7: status = SeatStatus.INVALID; break; 
-            default: break; 
-        }
-        return status;
+    @Override
+    public Integer get() {
+        Log.d(TAG, "get="+mStatus); 
+        return mStatus.state(); 
     }
 }

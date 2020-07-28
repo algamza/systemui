@@ -10,12 +10,17 @@ import android.extension.car.CarTMSManager;
 import android.util.Log; 
 import java.util.Arrays;
 
-public class SystemLocationController extends BaseController<Integer> {
+public class SystemLocationController extends BaseController<Integer> implements TMSClient.TMSCallback {
     private static final String TAG = "SystemLocationController";
     private TMSClient mTMSClient = null; 
     private LocationStatus mCurrentStatus = LocationStatus.NONE; 
     
-    public enum LocationStatus { NONE, LOCATION_SHARING }
+    public enum LocationStatus { 
+        NONE(0), LOCATION_SHARING(1);
+        private final int state; 
+        LocationStatus(int state) { this.state = state;}
+        public int state() { return state; } 
+    }
 
     public SystemLocationController(Context context, DataStore store) {
         super(context, store);
@@ -28,13 +33,13 @@ public class SystemLocationController extends BaseController<Integer> {
     @Override
     public void disconnect() {
         if ( mTMSClient != null ) 
-            mTMSClient.unregisterCallback(mTMSCallback);
+            mTMSClient.unregisterCallback(this);
     }
 
     public void fetchTMSClient(TMSClient tms) {
         mTMSClient = tms; 
         if ( mTMSClient != null ) 
-            mTMSClient.registerCallback(mTMSCallback);
+            mTMSClient.registerCallback(this);
         mCurrentStatus = getCurrentStatus(); 
     }
 
@@ -42,7 +47,7 @@ public class SystemLocationController extends BaseController<Integer> {
     public Integer get() {
         mCurrentStatus = getCurrentStatus(); 
         Log.d(TAG, "get="+mCurrentStatus); 
-        return mCurrentStatus.ordinal(); 
+        return mCurrentStatus.state(); 
     }
 
     private LocationStatus getCurrentStatus() {
@@ -62,20 +67,24 @@ public class SystemLocationController extends BaseController<Integer> {
         if ( mCurrentStatus == status ) return;
         mCurrentStatus = status;
         for ( Listener listener : mListeners ) 
-            listener.onEvent(mCurrentStatus.ordinal());
+            listener.onEvent(mCurrentStatus.state());
     }
 
-    private final TMSClient.TMSCallback mTMSCallback = new TMSClient.TMSCallback() {
-        @Override
-        public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
-            Log.d(TAG, "onConnectionChanged="+connection); 
-            broadcastChangeEvent();
-        }
+    @Override
+    public void onConnectionChanged(TMSClient.ConnectionStatus connection) {
+        Log.d(TAG, "onConnectionChanged="+connection); 
+        broadcastChangeEvent();
+    }
 
-        @Override
-        public void onLocationSharingChanged(TMSClient.LocationSharingStatus status) {
-            Log.d(TAG, "onLocationSharingChanged="+status); 
-            broadcastChangeEvent();
-        }
-    }; 
+    @Override
+    public void onActivationChanged(TMSClient.ActiveStatus active) {
+        Log.d(TAG, "onActivationChanged="+active); 
+        broadcastChangeEvent();
+    }
+
+    @Override
+    public void onLocationSharingChanged(TMSClient.LocationSharingStatus status) {
+        Log.d(TAG, "onLocationSharingChanged="+status); 
+        broadcastChangeEvent();
+    }
 }

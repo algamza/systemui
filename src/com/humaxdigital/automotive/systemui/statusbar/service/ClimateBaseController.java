@@ -9,6 +9,7 @@ public class ClimateBaseController<E> extends BaseController<E> {
         super(context, store);
     }
     protected Boolean update(E e) { return false; }
+    protected Boolean update() { return false; }
     protected void fetch(CarHvacManagerEx manager) {
         super.fetch();
         mManager = manager;

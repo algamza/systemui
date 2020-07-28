@@ -19,9 +19,12 @@ import com.humaxdigital.automotive.systemui.common.car.CarExClient;
 
 public class ModeImpl extends BaseImplement<Integer> {
     public enum Mode {
-        AUTOMATIC,
-        DAYLIGHT,
-        NIGHT
+        AUTOMATIC(0),
+        DAYLIGHT(1),
+        NIGHT(2);
+        private final int mode; 
+        Mode(int mode) { this.mode = mode; }
+        public int mode() { return mode; }
     };
     private final String TAG = "ModeImpl";
     private ContentResolver mContentResolver;
@@ -49,7 +52,7 @@ public class ModeImpl extends BaseImplement<Integer> {
     @Override
     public Integer get() {
         Log.d(TAG, "get="+mCurrentMode); 
-        return mCurrentMode.ordinal(); 
+        return mCurrentMode.mode(); 
     }
 
     @Override
@@ -170,7 +173,7 @@ public class ModeImpl extends BaseImplement<Integer> {
                     Log.d(TAG, "Mode type onChange:mode="+_mode+", type="+mode); 
                     if ( _mode == mCurrentMode ) return;
                     mCurrentMode = _mode; 
-                    mListener.onChange(mCurrentMode.ordinal()); 
+                    mListener.onChange(mCurrentMode.mode()); 
                 }
             }
         };
@@ -204,7 +207,7 @@ public class ModeImpl extends BaseImplement<Integer> {
 
         if ( mListener != null ) {
             mCurrentMode = convertToMode(getCurrentMode()); 
-            mListener.onChange(mCurrentMode.ordinal()); 
+            mListener.onChange(mCurrentMode.mode()); 
         }
     }
 }

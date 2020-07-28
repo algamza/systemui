@@ -1,5 +1,6 @@
 package com.humaxdigital.automotive.systemui.droplist;
 
+import android.animation.Animator;
 import android.app.Dialog;
 import android.app.Service;
 import android.app.Dialog;
@@ -56,7 +57,7 @@ import com.humaxdigital.automotive.systemui.droplist.controllers.ControllerManag
 import com.humaxdigital.automotive.systemui.R; 
 import com.humaxdigital.automotive.systemui.common.CONSTANTS; 
 
-public class DropListUIService implements SystemUIBase {
+public class DropListUIService implements SystemUIBase, SystemControl.SystemCallback {
     private static final String TAG = "DropListUIService";
 
     private final List<View> mAddedViews = new ArrayList<>();
@@ -98,6 +99,7 @@ public class DropListUIService implements SystemUIBase {
     private final int TOUCH_OFFSET = -100; 
 
     private Context mContext; 
+    private DropListUIService mThis = this; 
 
     @Override
     public void onCreate(Context context) {
@@ -161,13 +163,12 @@ public class DropListUIService implements SystemUIBase {
         mDialog.setContentView(R.layout.panel_main);
         
         mDialog.setOnShowListener(mShowListener);
-
-        updateShownStateSettings();
  
         mPanelBody = mDialog.findViewById(R.id.panel);
         mPanelBody.setTranslationY(0);
         //mPanelBody.setOnTouchListener(mDropListTouchListener);
         mShowing = false;
+        saveShownStateInSettings(false);
 
         mControllerManager = new ControllerManager(mContext, mPanelBody);
         mControllerManager.setListener(mPanelListener);
@@ -236,7 +237,7 @@ public class DropListUIService implements SystemUIBase {
                 mSystemController.requestRefresh(r, new Handler(context.getMainLooper()));
             }
 
-            mSystemController.registerCallback(mSystemCallback); 
+            mSystemController.registerCallback(mThis); 
         }
 
         @Override
@@ -279,7 +280,6 @@ public class DropListUIService implements SystemUIBase {
         mHandler.removeMessages(DialogHandler.SHOW);
         mHandler.removeMessages(DialogHandler.DISMISS);
         mDialog.show();
-        updateShownStateSettings();
     }
 
     private void dismissH() {
@@ -308,18 +308,25 @@ public class DropListUIService implements SystemUIBase {
                                 mDialog.dismiss();
                                 mShowing = false; 
                                 mStartedDismiss = false;
+                                saveShownStateInSettings(false);
                             }
                         }, DROP_CLOSE_TIME_MS/2);
                     }
                 })
+                .setListener(new Animator.AnimatorListener() {
+                    @Override public void onAnimationStart(Animator animation) {}
+                    @Override public void onAnimationEnd(Animator animation) {}
+                    @Override public void onAnimationCancel(Animator animation) {
+                        mStartedDismiss = false;
+                    }
+                    @Override public void onAnimationRepeat(Animator animation) {}
+                })
                 .start();
-
-        updateShownStateSettings();
     }
 
-    private void updateShownStateSettings() {
+    private void saveShownStateInSettings(boolean shown) {
         Settings.Global.putInt(mContext.getContentResolver(),
-                CONSTANTS.SETTINGS_DROPLIST, mDialog.isShowing() ? 1 : 0);
+                CONSTANTS.SETTINGS_DROPLIST, shown ? 1 : 0);
     }
 
     private void cancelPressedStateRecursively(ViewGroup viewGroup) {
@@ -437,6 +444,7 @@ public class DropListUIService implements SystemUIBase {
                                 @Override
                                 public void run() {
                                     mShowing = true;
+                                    saveShownStateInSettings(true);
                                 }
                             }, DROP_OPEN_TIME_MS/2);
                         }
@@ -575,40 +583,36 @@ public class DropListUIService implements SystemUIBase {
         }
     };
 
-    private SystemControl.SystemCallback mSystemCallback = 
-        new SystemControl.SystemCallback() {
-        @Override
-        public void onVRStateChanged(boolean on) {
-            Log.d(TAG, "onVRStateChanged="+on);
-            if ( !on ) return;
-            closeDropList();
-        }
-        @Override
-        public void onPowerOnChanged(boolean on) {
-            Log.d(TAG, "onPowerOnChanged="+on);
-            if ( on ) return;
-            closeDropList();
-        }
+    @Override
+    public void onVRStateChanged(boolean on) {
+        Log.d(TAG, "onVRStateChanged="+on);
+        if ( !on ) return;
+        closeDropList();
+    }
+    @Override
+    public void onPowerOnChanged(boolean on) {
+        Log.d(TAG, "onPowerOnChanged="+on);
+        if ( on ) return;
+        closeDropList();
+    }
 
-        @Override
-        public void onEmergencyModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onEmergencyModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onBluelinkCallModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onBluelinkCallModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onImmobilizationModeChanged(boolean enable) {
-            closeDropList();
-        }
+    @Override
+    public void onImmobilizationModeChanged(boolean enable) {
+        closeDropList();
+    }
 
-        @Override
-        public void onSlowdownModeChanged(boolean enable) {
-            closeDropList();
-        }
-    };
-
+    @Override
+    public void onSlowdownModeChanged(boolean enable) {
+        closeDropList();
+    }
 }
